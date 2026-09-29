@@ -1,0 +1,250 @@
+<!--
+  id:        r007-01
+  component: learningnode
+  phase:     motion
+  parents:   r002-01, r004-01, r005-02, r006-03
+  direction: Quiet map (r002-01) supplies the layout; Amber lantern (r004-01) supplies the palette; Trace the route (r005-02) supplies outward direction; Junction relay (r006-03) supplies new-segment-only travel and junction timing. Quick travel with an almost immediate handoff, a 180 ms node glow, and a very short sparse sparkle trail.
+  request:   revision 10
+  inputs:    animation faster.
+the light dot going through a node make it glow (glow animation while passing through it)
+add light particles (sparkly, soft, sober, short life span)  , like a comet effect
+  clarification retained: palette of Amber lantern
+  newly lit: current highlighted route minus previous route; node learning states are unchanged
+  reduced-motion: no travel, particles or passing glow; static Amber lantern remains
+-->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Learning node · Quick spark</title><style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#111;color:#eee}*{box-sizing:border-box}body{margin:0}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:1px solid #fff;outline-offset:6px}main{min-height:100dvh;position:relative;display:grid;align-items:center}.map{position:relative;height:max(700px,100dvh);width:100%;isolation:isolate;overflow:hidden}.edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}.node{position:absolute;width:clamp(130px,23vw,230px);padding:8px;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:14px;transform:translate(-50%,-50%)}.disc{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border:1px solid #aaa;border-radius:50%;position:relative;background:#111}.status{display:block;width:18px;height:18px}.node[aria-pressed="true"] .disc{outline:1px solid white;outline-offset:6px}.name{display:block;font-size:13px;line-height:1.5;font-weight:400;text-align:center;overflow-wrap:anywhere;max-width:100%}.node:hover .disc{border-color:white}.node:hover .name{text-decoration:underline;text-underline-offset:4px}.node.busy .disc{border-style:dashed}.node.folded .disc:after{content:"";position:absolute;width:6px;height:6px;background:#111;border-right:1px solid white;border-bottom:1px solid white;transform:rotate(45deg);bottom:-10px;left:18px}.controls{position:absolute;z-index:2;right:28px;top:24px;display:flex;gap:8px}.controls button{background:#111;border:1px solid #555;width:32px;height:32px;border-radius:50%;display:grid;place-items:center}.controls svg{width:14px;height:14px}.node.muted{opacity:.42}.empty{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:44px;height:44px;border:1px dashed #666;border-radius:50%}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:600px){main{align-items:start}.map{min-height:100dvh}.node{width:calc(100% - var(--indent) - 22px);left:var(--indent)!important;transform:none;flex-direction:row;gap:18px;padding:8px 0;align-items:flex-start}.disc{width:38px;height:38px}.name{text-align:left;padding-top:8px;font-size:13px}.node.folded .disc:after{left:15px}.controls{top:18px;right:18px}}
+:root{--bg:#101827;--surface:#172132;--surface-2:#302b2a;--ink:#f3e9dc;--ink-mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e;--accent-ink:#211b14;--focus:#ffe0ab;--node-open:#969ca7;--node-lit:#ffe1aa;--node-understood:#e8b66e;--glow-near:rgba(255,199,118,.34);--glow-far:rgba(255,182,88,.15);--path-muted:#6f5c42;}
+
+/* Color only: inherited node size, spacing, type and interaction stay fixed.
+   The saved brief explicitly adds a dotted open outline and a static lit glow. */
+:root{background:var(--bg);color:var(--ink)}
+button:focus-visible{outline-color:var(--focus)}
+.disc{background:var(--bg);border-color:var(--node-open);color:var(--node-open)}
+.node[data-state="open"] .disc{border-style:dotted;border-color:var(--node-open);background:var(--bg);color:var(--node-open);box-shadow:none}
+.node[data-state="lit"] .disc{background:var(--surface-2);border-color:var(--node-lit);color:var(--node-lit);box-shadow:0 0 14px 2px var(--glow-near),0 0 38px 9px var(--glow-far)}
+.node[data-state="understood"] .disc{background:var(--surface);border-color:var(--node-understood);color:var(--node-understood);box-shadow:none}
+.node[aria-pressed="true"] .disc{outline-color:var(--focus)}
+.node:hover .disc{border-color:var(--focus)}
+.node[data-state="open"]:hover .disc{border-color:var(--node-open)}
+.node.muted{opacity:1}
+.node.muted .name{color:var(--ink-mute)}
+.node:not(.muted) .name{color:var(--ink)}
+.node.folded .disc:after{background:var(--bg);border-color:var(--accent)}
+.controls button{background:var(--surface);border-color:var(--line);color:var(--ink-mute)}
+.controls button:hover{background:var(--surface-2);color:var(--accent)}
+.empty{border-color:var(--node-open)}
+.edges,.edges path{filter:none;box-shadow:none}
+
+/* Motion changes only. Static geometry, type and colors are inherited intact. */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+html[data-paused] *,html[data-paused] *::before,html[data-paused] *::after{animation-play-state:paused!important}
+
+.traveler{pointer-events:none}
+@media(prefers-reduced-motion:reduce){.traveler{display:none}}
+
+.comet-dust{filter:drop-shadow(0 0 2px var(--glow-near))}
+</style><script src="../learningnode-data.js"></script></head><body><main aria-label="Quick spark"><nav class="controls" aria-label="Graph navigation"><button data-back aria-label="Previous view" title="Previous view"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true"><path d="m7 3-5 5 5 5M2 8h12"/></svg></button><button data-home aria-label="Reset graph" title="Reset graph"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true"><path d="m2 7 6-5 6 5M4 6v8h8V6"/></svg></button></nav><section class="map" aria-label="Learning graph"></section><div class="sr-only" role="status" aria-live="polite"></div></main><script>const mode=1;
+const comet={"speed": 1250, "pause": 15, "ease": false, "glow": 180, "lifeMin": 110, "lifeMax": 190, "emitEvery": 34, "cap": 10, "drift": 18};
+
+const nodes=window.LEARNINGNODE_DATA.nodes;
+const byId=new Map(nodes.map(n=>[n.id,n]));
+const map=document.querySelector('.map');
+const children=id=>nodes.filter(n=>n.parentId===id);
+const label=n=>n.title||'Untitled question';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const root=nodes.find(n=>!n.parentId);
+let selected=byId.has('n2')?'n2':root?.id;
+let expanded=new Set([root?.id,selected]);
+const glyph={open:'<circle cx="9" cy="9" r="4" fill="none" stroke="currentColor"/>',lit:'<circle cx="9" cy="9" r="4" fill="currentColor"/>',understood:'<path d="m3 9 4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.5"/>'};
+function path(id){const ids=new Set();let n=byId.get(id);while(n&&!ids.has(n.id)){ids.add(n.id);n=byId.get(n.parentId)}return ids;}
+function visible(){
+ if(mode===1)return nodes;
+ if(mode===2)return nodes.filter(n=>{let p=byId.get(n.parentId);while(p){if(!expanded.has(p.id))return false;p=byId.get(p.parentId)}return true;});
+ const focus=byId.get(selected);return nodes.filter(n=>n.id===selected||n.id===focus?.parentId||n.parentId===selected);
+}
+function positions(shown){
+ const ids=new Set(shown.map(n=>n.id));let cursor=0;const positions=new Map();
+ const walk=(n,depth)=>{const kids=shown.filter(c=>c.parentId===n.id);const ys=kids.map(k=>walk(k,depth+1));const y=ys.length?ys.reduce((a,b)=>a+b,0)/ys.length:cursor++;positions.set(n.id,{depth,y});return y;};
+ shown.filter(n=>!ids.has(n.parentId)).forEach(n=>walk(n,0));
+ const maxDepth=Math.max(1,...[...positions.values()].map(p=>p.depth));
+ for(const p of positions.values()){p.x=shown.length===1?50:18+p.depth*64/maxDepth;p.y=cursor<=1?50:15+p.y*70/(cursor-1);}
+ return positions;
+}
+
+
+
+// Motion only: the data's learning states never change with selection.
+const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
+let motionFrame=0,travelFrame=0,traveler=null;
+let lastRoute=path(selected);
+const nodeGlows=new Set();
+function newEdgeIds(previousRoute,nextRoute){
+ return [...nextRoute].reverse().filter(id=>byId.get(id)?.parentId&&!previousRoute.has(id));
+}
+function stopTravel(){
+ cancelAnimationFrame(travelFrame);travelFrame=0;
+ traveler?.remove();traveler=null;
+ nodeGlows.forEach(animation=>animation.cancel());nodeGlows.clear();
+}
+function buildTimeline(segments,config){
+ let time=0;
+ return segments.map((segment,index)=>{
+  const duration=Math.max(160,Math.min(650,segment.length/config.speed*1000));
+  const start=time,end=start+duration;
+  time=end+(index<segments.length-1?config.pause:0);
+  return {...segment,start,end,duration};
+ });
+}
+function routeSample(timeline,elapsed){
+ for(let index=0;index<timeline.length;index++){
+  const segment=timeline[index];
+  if(elapsed<=segment.end){
+   let t=Math.max(0,(elapsed-segment.start)/segment.duration);
+   if(comet.ease)t=t*t*(3-2*t);
+   return {index,distance:segment.length*t,moving:elapsed>=segment.start};
+  }
+  if(index<timeline.length-1&&elapsed<timeline[index+1].start)return {index,distance:segment.length,moving:false};
+ }
+ return null;
+}
+function nodeCues(timeline){
+ const seen=new Set(),cues=[];
+ for(const segment of timeline){
+  const sourceId=byId.get(segment.id)?.parentId;
+  if(sourceId&&!seen.has(sourceId)){cues.push({id:sourceId,at:segment.start});seen.add(sourceId);}
+  if(!seen.has(segment.id)){cues.push({id:segment.id,at:Math.max(segment.start,segment.end-45)});seen.add(segment.id);}
+ }
+ return cues;
+}
+function pulseNode(id){
+ if(reducedMotion.matches||document.hidden)return;
+ const disc=map.querySelector(`[data-id="${id}"] .disc`);if(!disc)return;
+ const style=getComputedStyle(disc);
+ const baseline={boxShadow:style.boxShadow,borderColor:style.borderColor};
+ const colors=getComputedStyle(document.documentElement);
+ const near=colors.getPropertyValue('--glow-near').trim(),far=colors.getPropertyValue('--glow-far').trim();
+ const peak={boxShadow:`0 0 20px 5px ${near},0 0 46px 11px ${far}`,borderColor:colors.getPropertyValue('--node-lit').trim(),offset:.28};
+ const animation=disc.animate([{...baseline,offset:0},peak,{...baseline,offset:1}],{duration:comet.glow,easing:'ease-out'});
+ nodeGlows.add(animation);
+ animation.onfinish=animation.oncancel=()=>nodeGlows.delete(animation);
+}
+function travelNewEdges(ids){
+ stopTravel();
+ if(reducedMotion.matches||document.hidden||!ids.length)return;
+ const svg=map.querySelector('.edges');if(!svg)return;
+ const segments=ids.map(id=>{
+  const edge=svg.querySelector(`[data-edge="${id}"]`);
+  return edge?{id,edge,length:edge.getTotalLength()}:null;
+ }).filter(s=>s&&s.length>0);
+ if(!segments.length)return;
+ const timeline=buildTimeline(segments,comet),cues=nodeCues(timeline);
+ const ns='http://www.w3.org/2000/svg';
+ const layer=document.createElementNS(ns,'g');layer.setAttribute('class','traveler');layer.setAttribute('aria-hidden','true');
+ const dust=document.createElementNS(ns,'g'),head=document.createElementNS(ns,'g');
+ head.innerHTML='<circle r="16" fill="var(--glow-far)"/><circle r="9" fill="var(--glow-near)"/><circle r="3" fill="var(--node-lit)"/>';
+ layer.append(dust,head);traveler=layer;svg.append(layer);
+ let particles=[],started=null,lastEmission=-Infinity,serial=0,cueIndex=0;
+ function emit(pos,tangent,elapsed){
+  if(particles.length>=comet.cap)return;
+  serial++;
+  // Deterministic, sparse scatter keeps repeated comparisons consistent.
+  const scatter=Math.sin(serial*2.39996),variation=(Math.sin(serial*7.13)+1)/2;
+  const life=comet.lifeMin+(comet.lifeMax-comet.lifeMin)*variation;
+  const particle=document.createElementNS(ns,'g');particle.setAttribute('class','comet-dust');
+  particle.innerHTML=`<circle r="3" fill="var(--glow-near)"/><circle r="${serial%4===0?1.15:.7}" fill="var(--node-lit)"/>`;
+  dust.append(particle);
+  particles.push({element:particle,x:pos.x,y:pos.y,born:elapsed,life,vx:-tangent.x*24-tangent.y*scatter*comet.drift,vy:-tangent.y*24+tangent.x*scatter*comet.drift,bright:serial%4===0?.65:.4});
+ }
+ function paintParticles(elapsed){
+  particles=particles.filter(p=>{
+   const age=elapsed-p.born;if(age>=p.life){p.element.remove();return false;}
+   const t=age/p.life;
+   p.element.setAttribute('transform',`translate(${p.x+p.vx*age/1000} ${p.y+p.vy*age/1000}) scale(${1-t*.65})`);
+   p.element.setAttribute('opacity',String(p.bright*Math.min(1,t/.15)*(1-t)**2*(.85+.15*Math.sin(Math.PI*t*3))));
+   return true;
+  });
+ }
+ function tick(now){
+  if(traveler!==layer)return;
+  if(reducedMotion.matches||document.hidden||!layer.isConnected){stopTravel();return;}
+  if(started===null)started=now;
+  const elapsed=now-started;
+  while(cueIndex<cues.length&&elapsed>=cues[cueIndex].at){pulseNode(cues[cueIndex].id);cueIndex++;}
+  const sample=routeSample(timeline,elapsed);
+  if(sample){
+   const segment=timeline[sample.index],pos=segment.edge.getPointAtLength(sample.distance);
+   head.setAttribute('transform',`translate(${pos.x} ${pos.y})`);
+   if(sample.moving&&elapsed-lastEmission>=comet.emitEvery){
+    const before=segment.edge.getPointAtLength(Math.max(0,sample.distance-1));
+    const after=segment.edge.getPointAtLength(Math.min(segment.length,sample.distance+1));
+    const length=Math.hypot(after.x-before.x,after.y-before.y)||1;
+    emit(pos,{x:(after.x-before.x)/length,y:(after.y-before.y)/length},elapsed);lastEmission=elapsed;
+   }
+  }else head.setAttribute('opacity','0');
+  paintParticles(elapsed);
+  // Let arrival glow and existing particles finish naturally, then release everything.
+  if(!sample&&!particles.length&&!nodeGlows.size){stopTravel();return;}
+  travelFrame=requestAnimationFrame(tick);
+ }
+ const first=segments[0].edge.getPointAtLength(0);head.setAttribute('transform',`translate(${first.x} ${first.y})`);
+ travelFrame=requestAnimationFrame(tick);
+}
+reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches)stopTravel();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopTravel();});
+
+function render(refocus=false){
+ stopTravel();
+ const newlyLit=newEdgeIds(lastRoute,path(selected));
+ lastRoute=path(selected);
+ const shown=visible(),layout=positions(shown),route=path(selected);
+ map.innerHTML='<svg class="edges" aria-hidden="true"></svg>'+shown.map(n=>{
+  const p=layout.get(n.id),folded=mode===2&&children(n.id).length&&!expanded.has(n.id);
+  const from=n.parentId?` · from ${label(byId.get(n.parentId))}`:'';
+  const hint=mode===1?'Select and trace path':mode===2?(children(n.id).length?(folded?'Unfold branch':'Fold branch'):'Select concept'):'Focus neighborhood';
+  return `<button class="node ${n.busy?'busy':''} ${folded?'folded':''} ${mode===1&&!route.has(n.id)?'muted':''}" data-id="${n.id}" data-state="${n.state}" style="left:${p.x}%;top:${p.y}%;--indent:${24+p.depth*28}px" aria-label="${esc(label(n)+from+' · '+n.state+(n.busy?' · preparing':''))}" aria-pressed="${n.id===selected}" ${mode===2&&children(n.id).length?`aria-expanded="${expanded.has(n.id)}"`:''} title="${esc(label(n)+' · '+n.state+' · '+hint)}"><span class="disc"><svg class="status" viewBox="0 0 18 18" aria-hidden="true">${glyph[n.state]||glyph.open}</svg></span><span class="name">${esc(label(n))}</span></button>`;
+ }).join('');
+ if(!shown.length)map.innerHTML='<span class="empty" role="img" aria-label="No concepts yet"></span>';
+ layoutMobile();
+ if(refocus)map.querySelector(`[data-id="${selected}"]`)?.focus({preventScroll:true});
+ document.querySelector('[data-back]').disabled=history.length===0;
+ document.querySelector('.sr-only').textContent=selected?`${label(byId.get(selected))}, ${byId.get(selected).state}`:'No concepts yet';
+ cancelAnimationFrame(motionFrame);
+ motionFrame=requestAnimationFrame(()=>{
+  draw();
+  travelNewEdges(newlyLit);
+ });
+}
+function layoutMobile(){
+ if(!matchMedia('(max-width:600px)').matches){map.style.height='';return;}
+ let y=90;
+ // Traverse parents before descendants, preserving distinct branches with indentation.
+ const buttons=[...map.querySelectorAll('.node')];const lookup=new Map(buttons.map(b=>[b.dataset.id,b]));const ordered=[];
+ function append(n){if(!lookup.has(n.id))return;ordered.push(lookup.get(n.id));children(n.id).forEach(append);}
+ nodes.filter(n=>lookup.has(n.id)&&!lookup.has(n.parentId)).forEach(append);
+ ordered.forEach(b=>{b.style.top=`${y}px`;y+=b.offsetHeight+42;});map.style.height=`${Math.max(innerHeight,y+30)}px`;
+}
+function draw(){
+ stopTravel();
+ const svg=map.querySelector('.edges');if(!svg)return;const r=map.getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${r.width} ${r.height}`);
+ const route=path(selected),mobile=matchMedia('(max-width:600px)').matches;
+ svg.innerHTML=nodes.map(n=>{
+  const a=map.querySelector(`[data-id="${n.parentId}"] .disc`),b=map.querySelector(`[data-id="${n.id}"] .disc`);if(!a||!b)return '';
+  const p=a.getBoundingClientRect(),q=b.getBoundingClientRect();let x1=p.left+p.width/2-r.left,y1=p.top+p.height/2-r.top,x2=q.left+q.width/2-r.left,y2=q.top+q.height/2-r.top;
+  // Circles paint over the lines so connections stop cleanly at their boundaries.
+  const d=mobile?`M${x1} ${y1} V${y2} H${x2}`:`M${x1} ${y1} C${(x1+x2)/2} ${y1} ${(x1+x2)/2} ${y2} ${x2} ${y2}`;
+  return `<path data-edge="${n.id}" d="${d}" fill="none" stroke="${mode===1&&route.has(n.id)?'var(--accent)':'var(--path-muted)'}" stroke-width="1"/>`;
+ }).join('');
+}
+const history=[];
+map.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;
+ history.push({selected,expanded:[...expanded]});selected=b.dataset.id;
+ if(mode===2&&children(selected).length){expanded.has(selected)?expanded.delete(selected):expanded.add(selected);}
+ render(true);
+});
+document.querySelector('[data-home]').addEventListener('click',()=>{selected=mode===3?root?.id:(byId.has('n2')?'n2':root?.id);expanded=new Set([root?.id,selected]);history.length=0;render();});
+document.querySelector('[data-back]').addEventListener('click',()=>{const prev=history.pop();if(prev){selected=prev.selected;expanded=new Set(prev.expanded);render(true);}});
+let lastWidth=0;new ResizeObserver(()=>{if(map.clientWidth!==lastWidth){lastWidth=map.clientWidth;render();}else draw();}).observe(map);
+render();
+</script></body></html>

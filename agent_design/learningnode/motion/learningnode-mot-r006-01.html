@@ -1,0 +1,195 @@
+<!--
+  id:        r006-01
+  component: learningnode
+  phase:     motion
+  parents:   r002-01, r004-01, r005-02
+  direction: Quiet map (r002-01) keeps the layout, Amber lantern (r004-01) keeps the palette, and Trace the route (r005-02) supplies the route direction. A single light moves at steady speed only along newly highlighted segments; existing shared paths stay still.
+  request:   revision 9
+  inputs:    instead of retracing the path line, make a light point/source traveling allong it.
+make it travel only the path newly lit
+  clarification retained: palette of Amber lantern
+  newly lit: edges added to the active route relative to the previous selection; learning states are unchanged
+  reduced-motion: no traveling source; static palette and path highlight remain
+-->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Learning node · Steady light</title><style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#111;color:#eee}*{box-sizing:border-box}body{margin:0}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:1px solid #fff;outline-offset:6px}main{min-height:100dvh;position:relative;display:grid;align-items:center}.map{position:relative;height:max(700px,100dvh);width:100%;isolation:isolate;overflow:hidden}.edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}.node{position:absolute;width:clamp(130px,23vw,230px);padding:8px;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:14px;transform:translate(-50%,-50%)}.disc{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border:1px solid #aaa;border-radius:50%;position:relative;background:#111}.status{display:block;width:18px;height:18px}.node[aria-pressed="true"] .disc{outline:1px solid white;outline-offset:6px}.name{display:block;font-size:13px;line-height:1.5;font-weight:400;text-align:center;overflow-wrap:anywhere;max-width:100%}.node:hover .disc{border-color:white}.node:hover .name{text-decoration:underline;text-underline-offset:4px}.node.busy .disc{border-style:dashed}.node.folded .disc:after{content:"";position:absolute;width:6px;height:6px;background:#111;border-right:1px solid white;border-bottom:1px solid white;transform:rotate(45deg);bottom:-10px;left:18px}.controls{position:absolute;z-index:2;right:28px;top:24px;display:flex;gap:8px}.controls button{background:#111;border:1px solid #555;width:32px;height:32px;border-radius:50%;display:grid;place-items:center}.controls svg{width:14px;height:14px}.node.muted{opacity:.42}.empty{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:44px;height:44px;border:1px dashed #666;border-radius:50%}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:600px){main{align-items:start}.map{min-height:100dvh}.node{width:calc(100% - var(--indent) - 22px);left:var(--indent)!important;transform:none;flex-direction:row;gap:18px;padding:8px 0;align-items:flex-start}.disc{width:38px;height:38px}.name{text-align:left;padding-top:8px;font-size:13px}.node.folded .disc:after{left:15px}.controls{top:18px;right:18px}}
+:root{--bg:#101827;--surface:#172132;--surface-2:#302b2a;--ink:#f3e9dc;--ink-mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e;--accent-ink:#211b14;--focus:#ffe0ab;--node-open:#969ca7;--node-lit:#ffe1aa;--node-understood:#e8b66e;--glow-near:rgba(255,199,118,.34);--glow-far:rgba(255,182,88,.15);--path-muted:#6f5c42;}
+
+/* Color only: inherited node size, spacing, type and interaction stay fixed.
+   The saved brief explicitly adds a dotted open outline and a static lit glow. */
+:root{background:var(--bg);color:var(--ink)}
+button:focus-visible{outline-color:var(--focus)}
+.disc{background:var(--bg);border-color:var(--node-open);color:var(--node-open)}
+.node[data-state="open"] .disc{border-style:dotted;border-color:var(--node-open);background:var(--bg);color:var(--node-open);box-shadow:none}
+.node[data-state="lit"] .disc{background:var(--surface-2);border-color:var(--node-lit);color:var(--node-lit);box-shadow:0 0 14px 2px var(--glow-near),0 0 38px 9px var(--glow-far)}
+.node[data-state="understood"] .disc{background:var(--surface);border-color:var(--node-understood);color:var(--node-understood);box-shadow:none}
+.node[aria-pressed="true"] .disc{outline-color:var(--focus)}
+.node:hover .disc{border-color:var(--focus)}
+.node[data-state="open"]:hover .disc{border-color:var(--node-open)}
+.node.muted{opacity:1}
+.node.muted .name{color:var(--ink-mute)}
+.node:not(.muted) .name{color:var(--ink)}
+.node.folded .disc:after{background:var(--bg);border-color:var(--accent)}
+.controls button{background:var(--surface);border-color:var(--line);color:var(--ink-mute)}
+.controls button:hover{background:var(--surface-2);color:var(--accent)}
+.empty{border-color:var(--node-open)}
+.edges,.edges path{filter:none;box-shadow:none}
+
+/* Motion changes only. Static geometry, type and colors are inherited intact. */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+html[data-paused] *,html[data-paused] *::before,html[data-paused] *::after{animation-play-state:paused!important}
+
+.traveler{pointer-events:none}
+@media(prefers-reduced-motion:reduce){.traveler{display:none}}
+</style><script src="../learningnode-data.js"></script></head><body><main aria-label="Steady light"><nav class="controls" aria-label="Graph navigation"><button data-back aria-label="Previous view" title="Previous view"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true"><path d="m7 3-5 5 5 5M2 8h12"/></svg></button><button data-home aria-label="Reset graph" title="Reset graph"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true"><path d="m2 7 6-5 6 5M4 6v8h8V6"/></svg></button></nav><section class="map" aria-label="Learning graph"></section><div class="sr-only" role="status" aria-live="polite"></div></main><script>const mode=1;
+const motionStyle=1;
+
+const nodes=window.LEARNINGNODE_DATA.nodes;
+const byId=new Map(nodes.map(n=>[n.id,n]));
+const map=document.querySelector('.map');
+const children=id=>nodes.filter(n=>n.parentId===id);
+const label=n=>n.title||'Untitled question';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const root=nodes.find(n=>!n.parentId);
+let selected=byId.has('n2')?'n2':root?.id;
+let expanded=new Set([root?.id,selected]);
+const glyph={open:'<circle cx="9" cy="9" r="4" fill="none" stroke="currentColor"/>',lit:'<circle cx="9" cy="9" r="4" fill="currentColor"/>',understood:'<path d="m3 9 4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.5"/>'};
+function path(id){const ids=new Set();let n=byId.get(id);while(n&&!ids.has(n.id)){ids.add(n.id);n=byId.get(n.parentId)}return ids;}
+function visible(){
+ if(mode===1)return nodes;
+ if(mode===2)return nodes.filter(n=>{let p=byId.get(n.parentId);while(p){if(!expanded.has(p.id))return false;p=byId.get(p.parentId)}return true;});
+ const focus=byId.get(selected);return nodes.filter(n=>n.id===selected||n.id===focus?.parentId||n.parentId===selected);
+}
+function positions(shown){
+ const ids=new Set(shown.map(n=>n.id));let cursor=0;const positions=new Map();
+ const walk=(n,depth)=>{const kids=shown.filter(c=>c.parentId===n.id);const ys=kids.map(k=>walk(k,depth+1));const y=ys.length?ys.reduce((a,b)=>a+b,0)/ys.length:cursor++;positions.set(n.id,{depth,y});return y;};
+ shown.filter(n=>!ids.has(n.parentId)).forEach(n=>walk(n,0));
+ const maxDepth=Math.max(1,...[...positions.values()].map(p=>p.depth));
+ for(const p of positions.values()){p.x=shown.length===1?50:18+p.depth*64/maxDepth;p.y=cursor<=1?50:15+p.y*70/(cursor-1);}
+ return positions;
+}
+
+
+// A route is highlighted by selection, independently of a node's learning state.
+// Newly lit means current route minus previous route, not all ancestor edges.
+const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
+let motionFrame=0,travelFrame=0,traveler=null;
+let lastRoute=path(selected);
+function newEdgeIds(previousRoute,nextRoute){
+ return [...nextRoute].reverse().filter(id=>byId.get(id)?.parentId&&!previousRoute.has(id));
+}
+function stopTravel(){
+ cancelAnimationFrame(travelFrame);travelFrame=0;
+ traveler?.remove();traveler=null;
+}
+function routeSample(segments,elapsed,style){
+ if(!segments.length)return null;
+ const total=segments.reduce((sum,s)=>sum+s.length,0);
+ if(style===3){
+  // Relay: one source reaches each junction, pauses, then continues outward.
+  let remaining=elapsed;
+  for(let i=0;i<segments.length;i++){
+   const s=segments[i],duration=Math.max(350,Math.min(1100,s.length/430*1000));
+   if(remaining<duration){const t=Math.max(0,remaining/duration);return {index:i,distance:s.length*(t*t*(3-2*t))};}
+   remaining-=duration;
+   if(i<segments.length-1){if(remaining<140)return {index:i,distance:s.length};remaining-=140;}
+  }
+  return null;
+ }
+ const duration=style===1?Math.max(450,total/520*1000):Math.max(650,total/420*1000);
+ if(elapsed>=duration)return null;
+ let t=Math.max(0,elapsed/duration);if(style===2)t=t*t*(3-2*t);
+ let distance=total*t;
+ for(let i=0;i<segments.length;i++){
+  if(distance<=segments[i].length||i===segments.length-1)return {index:i,distance:Math.min(distance,segments[i].length)};
+  distance-=segments[i].length;
+ }
+ return null;
+}
+function travelNewEdges(ids){
+ stopTravel();
+ if(reducedMotion.matches||document.hidden||!ids.length)return;
+ const svg=map.querySelector('.edges');if(!svg)return;
+ const segments=ids.map(id=>{
+  const edge=svg.querySelector(`[data-edge="${id}"]`);
+  return edge?{edge,length:edge.getTotalLength()}:null;
+ }).filter(s=>s&&s.length>0);
+ if(!segments.length)return;
+ const point=document.createElementNS('http://www.w3.org/2000/svg','g');
+ point.setAttribute('class','traveler');point.setAttribute('aria-hidden','true');
+ // Only the point carries a halo; the underlying path receives no glow or dash animation.
+ point.innerHTML='<circle r="16" fill="var(--glow-far)"/><circle r="9" fill="var(--glow-near)"/><circle r="3" fill="var(--node-lit)"/>';
+ traveler=point;svg.append(point);
+ let started=null;
+ function tick(now){
+  if(traveler!==point)return;
+  if(reducedMotion.matches||document.hidden||!point.isConnected){stopTravel();return;}
+  if(started===null)started=now;
+  const sample=routeSample(segments,now-started,motionStyle);
+  if(!sample){stopTravel();return;}
+  const pos=segments[sample.index].edge.getPointAtLength(sample.distance);
+  point.setAttribute('transform',`translate(${pos.x} ${pos.y})`);
+  travelFrame=requestAnimationFrame(tick);
+ }
+ const start=segments[0].edge.getPointAtLength(0);
+ point.setAttribute('transform',`translate(${start.x} ${start.y})`);
+ travelFrame=requestAnimationFrame(tick);
+}
+reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches)stopTravel();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopTravel();});
+
+function render(refocus=false){
+ stopTravel();
+ const newlyLit=newEdgeIds(lastRoute,path(selected));
+ lastRoute=path(selected);
+ const shown=visible(),layout=positions(shown),route=path(selected);
+ map.innerHTML='<svg class="edges" aria-hidden="true"></svg>'+shown.map(n=>{
+  const p=layout.get(n.id),folded=mode===2&&children(n.id).length&&!expanded.has(n.id);
+  const from=n.parentId?` · from ${label(byId.get(n.parentId))}`:'';
+  const hint=mode===1?'Select and trace path':mode===2?(children(n.id).length?(folded?'Unfold branch':'Fold branch'):'Select concept'):'Focus neighborhood';
+  return `<button class="node ${n.busy?'busy':''} ${folded?'folded':''} ${mode===1&&!route.has(n.id)?'muted':''}" data-id="${n.id}" data-state="${n.state}" style="left:${p.x}%;top:${p.y}%;--indent:${24+p.depth*28}px" aria-label="${esc(label(n)+from+' · '+n.state+(n.busy?' · preparing':''))}" aria-pressed="${n.id===selected}" ${mode===2&&children(n.id).length?`aria-expanded="${expanded.has(n.id)}"`:''} title="${esc(label(n)+' · '+n.state+' · '+hint)}"><span class="disc"><svg class="status" viewBox="0 0 18 18" aria-hidden="true">${glyph[n.state]||glyph.open}</svg></span><span class="name">${esc(label(n))}</span></button>`;
+ }).join('');
+ if(!shown.length)map.innerHTML='<span class="empty" role="img" aria-label="No concepts yet"></span>';
+ layoutMobile();
+ if(refocus)map.querySelector(`[data-id="${selected}"]`)?.focus({preventScroll:true});
+ document.querySelector('[data-back]').disabled=history.length===0;
+ document.querySelector('.sr-only').textContent=selected?`${label(byId.get(selected))}, ${byId.get(selected).state}`:'No concepts yet';
+ cancelAnimationFrame(motionFrame);
+ motionFrame=requestAnimationFrame(()=>{
+  draw();
+  travelNewEdges(newlyLit);
+ });
+}
+function layoutMobile(){
+ if(!matchMedia('(max-width:600px)').matches){map.style.height='';return;}
+ let y=90;
+ // Traverse parents before descendants, preserving distinct branches with indentation.
+ const buttons=[...map.querySelectorAll('.node')];const lookup=new Map(buttons.map(b=>[b.dataset.id,b]));const ordered=[];
+ function append(n){if(!lookup.has(n.id))return;ordered.push(lookup.get(n.id));children(n.id).forEach(append);}
+ nodes.filter(n=>lookup.has(n.id)&&!lookup.has(n.parentId)).forEach(append);
+ ordered.forEach(b=>{b.style.top=`${y}px`;y+=b.offsetHeight+42;});map.style.height=`${Math.max(innerHeight,y+30)}px`;
+}
+function draw(){
+ stopTravel();
+ const svg=map.querySelector('.edges');if(!svg)return;const r=map.getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${r.width} ${r.height}`);
+ const route=path(selected),mobile=matchMedia('(max-width:600px)').matches;
+ svg.innerHTML=nodes.map(n=>{
+  const a=map.querySelector(`[data-id="${n.parentId}"] .disc`),b=map.querySelector(`[data-id="${n.id}"] .disc`);if(!a||!b)return '';
+  const p=a.getBoundingClientRect(),q=b.getBoundingClientRect();let x1=p.left+p.width/2-r.left,y1=p.top+p.height/2-r.top,x2=q.left+q.width/2-r.left,y2=q.top+q.height/2-r.top;
+  // Circles paint over the lines so connections stop cleanly at their boundaries.
+  const d=mobile?`M${x1} ${y1} V${y2} H${x2}`:`M${x1} ${y1} C${(x1+x2)/2} ${y1} ${(x1+x2)/2} ${y2} ${x2} ${y2}`;
+  return `<path data-edge="${n.id}" d="${d}" fill="none" stroke="${mode===1&&route.has(n.id)?'var(--accent)':'var(--path-muted)'}" stroke-width="1"/>`;
+ }).join('');
+}
+const history=[];
+map.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b)return;
+ history.push({selected,expanded:[...expanded]});selected=b.dataset.id;
+ if(mode===2&&children(selected).length){expanded.has(selected)?expanded.delete(selected):expanded.add(selected);}
+ render(true);
+});
+document.querySelector('[data-home]').addEventListener('click',()=>{selected=mode===3?root?.id:(byId.has('n2')?'n2':root?.id);expanded=new Set([root?.id,selected]);history.length=0;render();});
+document.querySelector('[data-back]').addEventListener('click',()=>{const prev=history.pop();if(prev){selected=prev.selected;expanded=new Set(prev.expanded);render(true);}});
+let lastWidth=0;new ResizeObserver(()=>{if(map.clientWidth!==lastWidth){lastWidth=map.clientWidth;render();}else draw();}).observe(map);
+render();
+</script></body></html>

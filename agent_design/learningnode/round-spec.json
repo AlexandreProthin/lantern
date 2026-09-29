@@ -1,0 +1,44 @@
+{
+  "selection_revision": 11,
+  "proposals": [
+    {
+      "id": "r008-01",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02",
+        "r006-03",
+        "r007-01"
+      ],
+      "file": "motion/learningnode-mot-r008-01.html",
+      "title": "Node sparks",
+      "direction": "Scattered embers (r008-03) retained in full: identical layout, Amber lantern palette, filled understood nodes, travel speed, passing glow and comet trail. Nodes release a restrained ring of 12 sparks when crossed by the light dot."
+    },
+    {
+      "id": "r008-02",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02",
+        "r006-03",
+        "r007-01"
+      ],
+      "file": "motion/learningnode-mot-r008-02.html",
+      "title": "Forward embers",
+      "direction": "Scattered embers (r008-03) retained in full: identical layout, Amber lantern palette, filled understood nodes, travel speed, passing glow and comet trail. Nodes release a fan of 16 embers in the light dot's direction when crossed."
+    },
+    {
+      "id": "r008-03",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02",
+        "r006-03",
+        "r007-01"
+      ],
+      "file": "motion/learningnode-mot-r008-03.html",
+      "title": "Scattered embers",
+      "direction": "Layout from r002-01; Amber lantern palette from r004-01; outward travel from r005-02; new-segment relay from r006-03; speed and passing glow from r007-01. A slightly fuller trail with gentle sideways drift and a subtle late sparkle. Particles live 610–690 ms (+500 ms). Understood nodes use solid amber with a dark checkmark, per the explicit phase exception."
+    }
+  ]
+}

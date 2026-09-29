@@ -1,0 +1,79 @@
+<!--
+  id:        r001-02
+  component: learningnode
+  phase:     wireframe
+  parents:   none
+  direction: Keep graph nodes compact and stable; selection reveals the full title, teaser and action in a separate inspector.
+  request:   revision 2
+  inputs:    let's design the node rendered in the graph view for the learning room of lantern
+-->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Learning node · Anchor + inspector</title><style>
+*{box-sizing:border-box} :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#101010;color:#f5f5f5}body{margin:0}button,select{font:inherit;color:inherit;background:#101010;border:1px solid #777;padding:9px 12px;cursor:pointer}button:hover{background:#292929}button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid white;outline-offset:4px}button:disabled{opacity:.5;cursor:default}a{color:inherit}header{padding:24px 30px;border-bottom:1px solid #666}header .eyebrow,.label{font:11px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.09em}h1{font-size:25px;margin:12px 0 8px;font-weight:600}p{line-height:1.6}header p{margin:0;font-size:14px}nav.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding:16px 30px;border-bottom:1px solid #555;font-size:12px}.legend{margin-left:auto;display:flex;gap:16px;flex-wrap:wrap}.shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:500px}.mode2 .shell{grid-template-columns:minmax(0,1fr) 280px}.canvas{position:relative;min-width:0;padding:26px;isolation:isolate;overflow:hidden}.canvas>svg{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}.column{display:flex;flex-direction:column;gap:32px;justify-content:center;min-width:0}.tree{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;min-height:430px;align-items:stretch}.node{min-width:0;background:#101010;border:1px solid #888}.node.active{outline:2px solid #fff;outline-offset:4px}.node>button{width:100%;border:0;text-align:left;display:block;padding:15px}.node strong{display:block;font-size:14px;line-height:1.45;overflow-wrap:anywhere;margin:9px 0}.node:not(.active) strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.meta{font:10px ui-monospace,monospace;text-transform:uppercase;line-height:1.6}.state{display:block;margin-top:10px;font:11px ui-monospace,monospace}.detail{border-top:1px solid #777;padding:14px}.detail p{font-size:13px;margin:0 0 15px}.detail button{font-size:12px;width:100%}.inspector{border-left:1px solid #666;padding:26px 22px}.inspector h2{font-size:20px;line-height:1.45;overflow-wrap:anywhere}.inspector p{font-size:14px}.inspector .detail{padding:20px 0}.mode2 .node{border:0}.mode2 .node>button{background:#101010;padding:8px}.mode2 .node.active{outline:none}.mode2 .node.active .dot{outline:2px solid white;outline-offset:5px}.dot{width:26px;height:26px;border:1px solid white;display:grid;place-items:center;font-size:13px}.mode2 .node strong{font-size:12px}.crumbs{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:24px;font-size:12px}.portal{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(190px,1.2fr) minmax(150px,1fr);gap:42px;align-items:center;min-height:380px}.portal .focus .node strong{font-size:20px}.section-label{font:11px ui-monospace,monospace;margin-bottom:16px}.empty{border:1px dashed #777;padding:28px;line-height:1.7}.empty p{font-size:13px}.notes{border-top:1px solid #555;padding:20px 30px;display:grid;grid-template-columns:1fr 1fr;gap:30px;font-size:12px}.notes p{margin:7px 0}.work{margin:0 30px 24px;border:1px solid white;padding:20px;max-width:850px}.work h2{font-size:18px;overflow-wrap:anywhere}.work p{font-size:14px}.work[hidden]{display:none}footer{padding:16px 30px;border-top:1px solid #555;font:11px ui-monospace,monospace}.minor{font-size:12px;line-height:1.6}.busy{border:1px dashed #aaa;padding:8px;margin-top:12px;font-size:11px}.mode1 .node .dot,.mode3 .node .dot{display:none}
+@media(min-width:1500px){.canvas{padding:45px}.tree{gap:70px}.mode2 .shell{grid-template-columns:minmax(0,1fr) 340px}}
+@media(max-width:760px){header{padding:20px}nav.toolbar{padding:14px 20px}.legend{margin-left:0}.mode2 .shell{grid-template-columns:1fr}.inspector{border-left:0;border-top:1px solid #666}.canvas{padding:22px}.tree,.portal{grid-template-columns:1fr;gap:30px;min-height:0}.column{gap:22px}.notes{grid-template-columns:1fr;gap:10px}.node:not(.active) strong{-webkit-line-clamp:3}.work{margin:0 20px 20px}}
+</style><script src="../learningnode-data.js"></script></head>
+<body class="mode2"><header><div class="eyebrow">Lantern / Learn / Node study 02</div><h1>Anchor + inspector</h1><p>Select an anchor. Read the full concept in the inspector.</p></header>
+<nav class="toolbar" aria-label="Prototype controls"><span>How networks recover</span><label>Sample <select><option value="all">Edge cases · 7 nodes</option><option value="minimal">Simple · 3 nodes</option><option value="empty">Empty graph</option></select></label><div class="legend"><span>○ Open</span><span>● Lit</span><span>✓ Understood</span></div></nav>
+<main><div class="shell"><section class="canvas" aria-label="Learning graph"></section><aside class="inspector" aria-label="Selected concept"></aside></div><section class="work" hidden aria-label="Learning panel"></section>
+<div class="notes"><div><span class="label">Interaction hypothesis</span><p>The anchor keeps a small footprint. A fixed inspector absorbs long text without moving the graph.</p></div><div><span class="label">Try the hard cases</span><p>Open the long title, compare both “Try it” nodes, and select the untitled question. “Preparing” is independent of learning progress.</p></div></div></main>
+<footer>r001-02 · wireframe · fresh start · selection does not change understanding · <a href="../index.html">Back to proposals</a></footer><script>const mode=2;
+
+const data=window.LEARNINGNODE_DATA;
+const nodes=data.nodes;
+const get=id=>nodes.find(n=>n.id===id);
+const children=id=>nodes.filter(n=>n.parentId===id);
+const title=n=>n.title||'Untitled question';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const symbols={open:'○',lit:'●',understood:'✓'};
+let selected='n2', scenario='all';
+const canvas=document.querySelector('.canvas');
+function action(n){return n.busy?'<div class="busy" role="status">Tutor is preparing this concept…</div>':`<button data-open="${n.id}">${n.state==='open'?'Start learning':n.state==='lit'?'Continue learning':'Revisit concept'} →</button>`;}
+function detail(n){return `<div class="detail"><p>${esc(n.hook||'No teaser yet. Open the concept to explore this question.')}</p>${action(n)}</div>`;}
+function card(n,expanded=false){return `<article class="node ${n.id===selected?'active':''}" data-node="${n.id}"><button data-select="${n.id}" aria-label="${esc(title(n))}, ${n.id}, ${n.state}" ${mode===1?`aria-expanded="${expanded}"`:`aria-pressed="${n.id===selected}"`}><span class="dot" aria-hidden="true">${symbols[n.state]}</span><span class="meta">${esc(n.kind)} · ${n.id}</span><strong>${esc(title(n))}</strong><span class="state">${symbols[n.state]} ${n.state}${n.busy?' · preparing…':''}</span></button>${expanded?detail(n):''}</article>`;}
+function ancestors(n){let out=[];while(n){out.unshift(n);n=get(n.parentId)}return out;}
+function render(){
+ const previous=document.activeElement?.dataset.select;
+ const chosen=get(selected);
+ document.querySelector('.work').hidden=true;
+ if(scenario==='empty'){
+  canvas.innerHTML='<div class="empty"><span class="label">No nodes yet</span><h2>Your learning map starts here.</h2><p>Begin with a subject. Concepts will appear as you work through it.</p><button data-restore>Show sample subject</button></div>';
+  document.querySelector('.inspector')?.setAttribute('hidden','');return;
+ }
+ const inspector=document.querySelector('.inspector');
+ if(mode!==3){
+  let shown=scenario==='minimal'?nodes.filter(n=>['n1','n2','n3'].includes(n.id)):nodes;
+  canvas.innerHTML='<svg aria-hidden="true"></svg><div class="tree">'+[0,1,2].map(depth=>'<div class="column">'+shown.filter(n=>ancestors(n).length-1===depth).map(n=>card(n,mode===1&&n.id===selected)).join('')+'</div>').join('')+'</div>';
+  if(inspector){inspector.removeAttribute('hidden');inspector.innerHTML=`<span class="label">Selected concept · ${chosen.id}</span><h2>${esc(title(chosen))}</h2><p>${symbols[chosen.state]} ${chosen.state} / ${esc(chosen.kind)}</p>${detail(chosen)}<p class="minor">From: ${chosen.parentId?esc(title(get(chosen.parentId))):'Subject root'}<br>${children(chosen.id).length} next steps</p>`;}
+ }else{
+  const parent=get(chosen.parentId);
+  const next=children(selected).filter(n=>scenario!=='minimal'||['n1','n2','n3'].includes(n.id));
+  canvas.innerHTML=`<svg aria-hidden="true"></svg><div class="crumbs" aria-label="Concept path">${ancestors(chosen).map(n=>`<button data-select="${n.id}" ${n.id===selected?'aria-current="location"':''}>${esc(n.title.length>32?n.title.slice(0,32)+'…':title(n))}</button>`).join('<span aria-hidden="true">/</span>')}</div><div class="portal"><div><div class="section-label">← CAME FROM</div>${parent?card(parent):'<p class="minor">This is the subject root.</p>'}</div><div class="focus"><div class="section-label">HERE · ${chosen.id}</div>${card(chosen,true)}</div><div class="column"><div class="section-label">NEXT STEPS →</div>${next.length?next.map(n=>card(n)).join(''):'<div class="empty">No next steps yet.<p>Keep learning here to find your next question.</p></div>'}</div></div>`;
+ }
+ if(previous)canvas.querySelector(`[data-select="${previous}"]`)?.focus({preventScroll:true});
+ requestAnimationFrame(lines);
+}
+function lines(){
+ const svg=canvas.querySelector('svg');if(!svg)return;
+ const box=canvas.getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${box.width} ${box.height}`);
+ const small=matchMedia('(max-width:760px)').matches;
+ svg.innerHTML=nodes.filter(n=>n.parentId).map(n=>{
+  const a=canvas.querySelector(`[data-node="${n.parentId}"]`),b=canvas.querySelector(`[data-node="${n.id}"]`);if(!a||!b)return '';
+  const p=a.getBoundingClientRect(),q=b.getBoundingClientRect();
+  let x1=small?p.left+p.width/2-box.left:p.right-box.left,y1=small?p.bottom-box.top:p.top+p.height/2-box.top;
+  let x2=small?q.left+q.width/2-box.left:q.left-box.left,y2=small?q.top-box.top:q.top+q.height/2-box.top;
+  return `<path d="M${x1},${y1} C${small?x1:(x1+x2)/2},${small?(y1+y2)/2:y1} ${small?x2:(x1+x2)/2},${small?(y1+y2)/2:y2} ${x2},${y2}" fill="none" stroke="#666" stroke-width="1"/>`;
+ }).join('');
+}
+document.addEventListener('click',e=>{
+ const pick=e.target.closest('[data-select]');if(pick){selected=pick.dataset.select;render();return;}
+ const open=e.target.closest('[data-open]');if(open){
+  const n=get(open.dataset.open),work=document.querySelector('.work');work.hidden=false;
+  work.innerHTML=`<span class="label">Learning panel · interaction preview</span><h2 tabindex="-1">${esc(title(n))}</h2><p>${esc(n.content||n.hook||'This question has no explanation yet.')}</p><p class="minor">This wireframe shows the handoff to the learning panel. No tutor response is generated and the learning state stays unchanged.</p><button data-close>Back to graph</button>`;
+  work.querySelector('h2').focus();work.scrollIntoView({block:'nearest'});return;
+ }
+ if(e.target.closest('[data-close]')){document.querySelector('.work').hidden=true;document.querySelector(`[data-open="${selected}"]`)?.focus();}
+ if(e.target.closest('[data-restore]')){scenario='all';document.querySelector('select').value='all';render();}
+});
+document.querySelector('select').addEventListener('change',e=>{scenario=e.target.value;selected='n2';render();});
+new ResizeObserver(lines).observe(canvas);render();
+</script></body></html>

@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "contract": {
+      "id": "Unique stable node ID; titles need not be unique",
+      "parentId": "Parent ID or null for subject",
+      "title": "May be empty or long",
+      "hook": "Optional teaser",
+      "kind": "PoC NodeKind",
+      "state": "open | lit | understood; independent of selection",
+      "content": "Optional tutor explanation",
+      "busy": "Prototype-only ongoing generation flag"
+    },
+    "note": "Shared illustrative content. Busy is a transient UI state, not a fourth learning state.",
+    "cases": [
+      "empty graph",
+      "missing title and hook",
+      "long title",
+      "duplicate titles with different parents",
+      "ongoing generation",
+      "multiple open branches"
+    ]
+  },
+  "subject": "How networks recover",
+  "nodes": [
+    {
+      "id": "n1",
+      "parentId": null,
+      "title": "TCP congestion control",
+      "hook": "How does a network find its pace?",
+      "kind": "subject",
+      "state": "understood",
+      "content": "TCP adapts how much data can be in flight using feedback from the network."
+    },
+    {
+      "id": "n2",
+      "parentId": "n1",
+      "title": "Slow start",
+      "hook": "Why begin cautiously, then double?",
+      "kind": "axis",
+      "state": "lit",
+      "content": "The congestion window grows rapidly as acknowledgments arrive. Explain what might stop that growth."
+    },
+    {
+      "id": "n3",
+      "parentId": "n1",
+      "title": "Packet loss",
+      "hook": "What does a missing packet tell the sender?",
+      "kind": "axis",
+      "state": "open"
+    },
+    {
+      "id": "n4",
+      "parentId": "n2",
+      "title": "Why a congestion window can keep growing while individual acknowledgments arrive at different times",
+      "hook": "Separate the clock of acknowledgments from the size of the window.",
+      "kind": "deeper",
+      "state": "open"
+    },
+    {
+      "id": "n5",
+      "parentId": "n2",
+      "title": "Try it",
+      "hook": "Trace a window through three round trips.",
+      "kind": "exercise",
+      "state": "lit",
+      "busy": true
+    },
+    {
+      "id": "n6",
+      "parentId": "n3",
+      "title": "Try it",
+      "hook": "Predict the response to a lost packet.",
+      "kind": "exercise",
+      "state": "open"
+    },
+    {
+      "id": "n7",
+      "parentId": "n3",
+      "title": "",
+      "kind": "question",
+      "state": "open"
+    }
+  ]
+}

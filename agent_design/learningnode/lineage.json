@@ -1,0 +1,488 @@
+{
+  "schema_version": 1,
+  "concept": "learningnode",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-09-29T16:53:17.146031+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "learningnode",
+        "revision": 2,
+        "saved_at": "2026-09-29T16:48:39.629689+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "fresh",
+          "prompt": "let's design the node rendered in the graph view for the learning room of lantern"
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-09-29T21:11:35.362329+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "learningnode",
+        "revision": 3,
+        "saved_at": "2026-09-29T21:08:46.094318+00:00",
+        "based_on_round": 1,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "fresh",
+          "prompt": "nodes are circles, with status in them (open, lit, understood), title is the only text. Sober, simple"
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-09-29T21:16:46.253588+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "learningnode",
+        "revision": 4,
+        "saved_at": "2026-09-29T21:15:27.137534+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r002-01"
+        ],
+        "next": {
+          "phase": "form",
+          "mode": "combine",
+          "prompt": "form step"
+        }
+      },
+      "node_ids": [
+        "r003-01",
+        "r003-02",
+        "r003-03"
+      ]
+    },
+    {
+      "number": 4,
+      "created_at": "2026-09-29T21:22:06.507549+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "learningnode",
+        "revision": 5,
+        "saved_at": "2026-09-29T21:20:39.224290+00:00",
+        "based_on_round": 3,
+        "selected_ids": [
+          "r002-01"
+        ],
+        "next": {
+          "phase": "color",
+          "mode": "combine",
+          "prompt": "background night blue, deep marine but warm.\nnode: warm light, glow when lit, neutral dotted outline when open, nice accent\npath: accent colornot glowing"
+        }
+      },
+      "node_ids": [
+        "r004-01",
+        "r004-02",
+        "r004-03"
+      ]
+    },
+    {
+      "number": 5,
+      "created_at": "2026-09-29T21:28:28.084270+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "learningnode",
+        "revision": 8,
+        "saved_at": "2026-09-29T21:25:45.864708+00:00",
+        "based_on_round": 4,
+        "selected_ids": [
+          "r002-01",
+          "r004-01"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": "motion"
+        }
+      },
+      "node_ids": [
+        "r005-01",
+        "r005-02",
+        "r005-03"
+      ]
+    },
+    {
+      "number": 6,
+      "created_at": "2026-09-29T21:34:53.935204+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "learningnode",
+        "revision": 9,
+        "saved_at": "2026-09-29T21:32:33.487852+00:00",
+        "based_on_round": 5,
+        "selected_ids": [
+          "r002-01",
+          "r004-01",
+          "r005-02"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": "instead of retracing the path line, make a light point/source traveling allong it.\nmake it travel only the path newly lit"
+        }
+      },
+      "node_ids": [
+        "r006-01",
+        "r006-02",
+        "r006-03"
+      ]
+    },
+    {
+      "number": 7,
+      "created_at": "2026-09-29T21:42:31.222118+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "learningnode",
+        "revision": 10,
+        "saved_at": "2026-09-29T21:39:19.694399+00:00",
+        "based_on_round": 6,
+        "selected_ids": [
+          "r002-01",
+          "r004-01",
+          "r005-02",
+          "r006-03"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": "animation faster.\nthe light dot going through a node make it glow (glow animation while passing through it)\nadd light particles (sparkly, soft, sober, short life span)  , like a comet effect"
+        }
+      },
+      "node_ids": [
+        "r007-01",
+        "r007-02",
+        "r007-03"
+      ]
+    },
+    {
+      "number": 8,
+      "created_at": "2026-09-29T21:54:09.779001+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "learningnode",
+        "revision": 11,
+        "saved_at": "2026-09-29T21:52:45.046647+00:00",
+        "based_on_round": 7,
+        "selected_ids": [
+          "r002-01",
+          "r004-01",
+          "r005-02",
+          "r006-03",
+          "r007-01"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": "a bit more particles, .5 sec longer lifespan.\nrefinement (not a motion step but make an exception) understood node are filled"
+        }
+      },
+      "node_ids": [
+        "r008-01",
+        "r008-02",
+        "r008-03"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "wireframe/learningnode-wir-r001-01.html",
+      "title": "Unfold in place",
+      "direction": "Expand a node into its teaser and action directly on the graph; the surrounding layout makes room.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "wireframe/learningnode-wir-r001-02.html",
+      "title": "Anchor + inspector",
+      "direction": "Keep graph nodes compact and stable; selection reveals the full title, teaser and action in a separate inspector.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "wireframe/learningnode-wir-r001-03.html",
+      "title": "Neighborhood portal",
+      "direction": "Enter a node to show its parent and immediate next steps; navigate deeper or retrace the breadcrumb.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-01",
+      "parents": [],
+      "file": "wireframe/learningnode-wir-r002-01.html",
+      "title": "Quiet map",
+      "direction": "A fresh circle-only map. Select a node to trace its route while every node stays in place; only titles appear beside the status circles.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-02",
+      "parents": [],
+      "file": "wireframe/learningnode-wir-r002-02.html",
+      "title": "Foldable branches",
+      "direction": "A fresh circle-only tree. Select a node to fold or unfold its descendants; a small non-text notch indicates a folded branch.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-03",
+      "parents": [],
+      "file": "wireframe/learningnode-wir-r002-03.html",
+      "title": "One neighborhood",
+      "direction": "A fresh circle-only neighborhood. Select a node to center its parent and children; return through the parent or the home control.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r002-01"
+      ],
+      "file": "form/learningnode-frm-r003-01.html",
+      "title": "Small markers",
+      "direction": "From r002-01: retain the complete map and path highlighting; use small equal circles, centered titles, and generous space between branches.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r002-01"
+      ],
+      "file": "form/learningnode-frm-r003-02.html",
+      "title": "Side labels",
+      "direction": "From r002-01: retain the complete map and path highlighting; align titles beside equal circles for a compact, horizontally oriented node.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r002-01"
+      ],
+      "file": "form/learningnode-frm-r003-03.html",
+      "title": "Subject and branches",
+      "direction": "From r002-01: retain the complete map and path highlighting; vary circle size by graph depth, with centered titles and a larger subject anchor.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r004-01",
+      "parents": [
+        "r002-01"
+      ],
+      "file": "color/learningnode-col-r004-01.html",
+      "title": "Amber lantern",
+      "direction": "From r002-01: warm midnight navy with honey-amber paths and candlelight nodes. Lit nodes glow; open circles have neutral dotted outlines; understood nodes hold a steady accent.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r002-01"
+      ],
+      "file": "color/learningnode-col-r004-02.html",
+      "title": "Copper dusk",
+      "direction": "From r002-01: deep violet-leaning marine with soft copper paths and peach light. Keep the same circles, typography and path selection; glow belongs only to lit nodes.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r002-01"
+      ],
+      "file": "color/learningnode-col-r004-03.html",
+      "title": "Champagne marine",
+      "direction": "From r002-01: deep marine with a restrained champagne accent and warm ivory light. Open nodes stay neutral and dotted; accent paths remain crisp and unlit.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r005-01",
+      "parents": [
+        "r002-01",
+        "r004-01"
+      ],
+      "file": "motion/learningnode-mot-r005-01.html",
+      "title": "Quiet response",
+      "direction": "Quiet map (r002-01) supplies layout and path selection; Amber lantern (r004-01) supplies the complete palette, as clarified in chat. Selection settles in 180 ms; the map is still at rest.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-02",
+      "parents": [
+        "r002-01",
+        "r004-01"
+      ],
+      "file": "motion/learningnode-mot-r005-02.html",
+      "title": "Trace the route",
+      "direction": "Quiet map (r002-01) supplies layout and path selection; Amber lantern (r004-01) supplies the complete palette, as clarified in chat. Accent paths draw from the subject to the selected node, then its focus ring appears; paths never glow.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-03",
+      "parents": [
+        "r002-01",
+        "r004-01"
+      ],
+      "file": "motion/learningnode-mot-r005-03.html",
+      "title": "Breathing lantern",
+      "direction": "Quiet map (r002-01) supplies layout and path selection; Amber lantern (r004-01) supplies the complete palette, as clarified in chat. Lit-node glow breathes over 4.8 seconds; selection settles softly in 650 ms while paths stay still.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r006-01",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02"
+      ],
+      "file": "motion/learningnode-mot-r006-01.html",
+      "title": "Steady light",
+      "direction": "Quiet map (r002-01) keeps the layout, Amber lantern (r004-01) keeps the palette, and Trace the route (r005-02) supplies the route direction. A single light moves at steady speed only along newly highlighted segments; existing shared paths stay still.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r006-02",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02"
+      ],
+      "file": "motion/learningnode-mot-r006-02.html",
+      "title": "Gentle passage",
+      "direction": "Quiet map (r002-01) keeps the layout, Amber lantern (r004-01) keeps the palette, and Trace the route (r005-02) supplies the route direction. The light eases into and out of the new route section as one continuous journey; no line redraw.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r006-03",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02"
+      ],
+      "file": "motion/learningnode-mot-r006-03.html",
+      "title": "Junction relay",
+      "direction": "Quiet map (r002-01) keeps the layout, Amber lantern (r004-01) keeps the palette, and Trace the route (r005-02) supplies the route direction. One light travels new segments in sequence, pausing 140 ms at each junction; shared segments never replay.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r007-01",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02",
+        "r006-03"
+      ],
+      "file": "motion/learningnode-mot-r007-01.html",
+      "title": "Quick spark",
+      "direction": "Quiet map (r002-01) supplies the layout; Amber lantern (r004-01) supplies the palette; Trace the route (r005-02) supplies outward direction; Junction relay (r006-03) supplies new-segment-only travel and junction timing. Quick travel with an almost immediate handoff, a 180 ms node glow, and a very short sparse sparkle trail.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r007-02",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02",
+        "r006-03"
+      ],
+      "file": "motion/learningnode-mot-r007-02.html",
+      "title": "Soft comet",
+      "direction": "Quiet map (r002-01) supplies the layout; Amber lantern (r004-01) supplies the palette; Trace the route (r005-02) supplies outward direction; Junction relay (r006-03) supplies new-segment-only travel and junction timing. Faster eased travel with a soft 240 ms node glow and a slightly fuller trail that vanishes within 280 ms.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r007-03",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02",
+        "r006-03"
+      ],
+      "file": "motion/learningnode-mot-r007-03.html",
+      "title": "Spark relay",
+      "direction": "Quiet map (r002-01) supplies the layout; Amber lantern (r004-01) supplies the palette; Trace the route (r005-02) supplies outward direction; Junction relay (r006-03) supplies new-segment-only travel and junction timing. A faster junction relay with a 45 ms handoff, a 210 ms passing glow, and restrained particles lasting at most 220 ms.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r008-01",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02",
+        "r006-03",
+        "r007-01"
+      ],
+      "file": "motion/learningnode-mot-r008-01.html",
+      "title": "Node sparks",
+      "direction": "Scattered embers (r008-03) retained in full: identical layout, Amber lantern palette, filled understood nodes, travel speed, passing glow and comet trail. Nodes release a restrained ring of 12 sparks when crossed by the light dot.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r008-02",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02",
+        "r006-03",
+        "r007-01"
+      ],
+      "file": "motion/learningnode-mot-r008-02.html",
+      "title": "Forward embers",
+      "direction": "Scattered embers (r008-03) retained in full: identical layout, Amber lantern palette, filled understood nodes, travel speed, passing glow and comet trail. Nodes release a fan of 16 embers in the light dot's direction when crossed.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r008-03",
+      "parents": [
+        "r002-01",
+        "r004-01",
+        "r005-02",
+        "r006-03",
+        "r007-01"
+      ],
+      "file": "motion/learningnode-mot-r008-03.html",
+      "title": "Scattered embers",
+      "direction": "Layout from r002-01; Amber lantern palette from r004-01; outward travel from r005-02; new-segment relay from r006-03; speed and passing glow from r007-01. A slightly fuller trail with gentle sideways drift and a subtle late sparkle. Particles live 610–690 ms (+500 ms). Understood nodes use solid amber with a dark checkmark, per the explicit phase exception.",
+      "phase": "motion",
+      "tag": "mot"
+    }
+  ]
+}

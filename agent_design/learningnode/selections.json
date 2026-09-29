@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "concept": "learningnode",
+  "revision": 11,
+  "saved_at": "2026-09-29T21:52:45.046647+00:00",
+  "based_on_round": 7,
+  "selected_ids": [
+    "r002-01",
+    "r004-01",
+    "r005-02",
+    "r006-03",
+    "r007-01"
+  ],
+  "next": {
+    "phase": "motion",
+    "mode": "combine",
+    "prompt": "a bit more particles, .5 sec longer lifespan.\nrefinement (not a motion step but make an exception) understood node are filled"
+  }
+}
