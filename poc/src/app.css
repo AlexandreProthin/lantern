@@ -1,0 +1,60 @@
+/* The Learn room: deep blue walls, warm lantern light. Other rooms would repaint --wall. */
+:root {
+  --wall: #121829;
+  --panel: #171f33;
+  --border: #2a3450;
+  --hover: #1f2944;
+  --code: #0e1322;
+  --text: #e8e6df;
+  --muted: #8d94a8;
+  --open: #56607c;
+  --branch: #7fa7d9;
+  --line: #333e5c;
+  --line-lit: #8a6d35;
+  --lantern: #ffb840;
+  --lantern-hot: #ffd98a;
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--wall);
+  color: var(--text);
+  font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  border-color: var(--lantern);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+button.primary {
+  background: var(--lantern);
+  border-color: var(--lantern);
+  color: #1b1405;
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) {
+  background: var(--lantern-hot);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+}

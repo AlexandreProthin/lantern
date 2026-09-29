@@ -1,0 +1,33 @@
+Wiki tooling for the Open Knowledge Format
+==========================================
+
+This directory contains work derived from third-party open source software.
+
+
+-------------------------------------------------------------------------------
+Open Knowledge Format reference agent
+-------------------------------------------------------------------------------
+
+Copyright 2026 Google LLC
+Licensed under the Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+Source: https://github.com/GoogleCloudPlatform/open-knowledge-format
+
+okf.py is a derived work, modified from the upstream source noted below. Every
+modification is listed in the file's own header.
+
+  okf.py             <- src/reference_agent/bundle/document.py
+
+Summary of changes:
+  * The Python package was collapsed into one module, okf.py.
+  * A `validate` subcommand was added; upstream ships no conformance checker.
+  * Link extraction resolves bundle-absolute (`/`-prefixed) links and ignores
+    links inside code spans and fences.
+  * `log.md` is excluded from the concept walk.
+  * Timestamp parsing accepts a trailing `Z` on Python 3.10.
+
+The `visualize` subcommand and the viewer assets it derived from upstream
+(viewer/generator.py, viewer/templates/viz.html, viewer/static/viz.css,
+viewer/static/viz.js) and the libraries it vendored (Cytoscape.js, marked) were
+**removed** — see /decisions/delivery-standalone-app.md. Only the validator, and
+the document loader it shares, remain derived from the reference agent.
