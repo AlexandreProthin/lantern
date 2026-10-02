@@ -5,7 +5,7 @@ description: Room-contributed Study UI, graph and node panel, rendering, setting
 resource: /app/src/frame/Shell.svelte
 tags: [implementation, frame, study, graph, panel, settings]
 status: draft
-generated: { by: Codex/GPT-6, at: 2026-10-02T17:40:00Z }
+generated: { by: Codex/GPT-6, at: 2026-10-02T18:15:00Z }
 ---
 
 # Implemented slice
@@ -23,7 +23,13 @@ Layout and reduced-motion overrides use app settings.
 The ephemeral graph scene creates three simulation bodies for light/more. They
 reserve tree slots, breathe while pending, reveal with stable DOM keys and transfer
 their exact simulation positions to arriving nodes; surplus/cancelled slots shrink.
-They never enter saved data or stats. Reply/check use a node pulse. Motion constants
+Branches now draw sequentially behind light dots, each taking 500 ms with a 120 ms
+gap; the circle appears at arrival and breathes with a soft glow while waiting.
+The generating parent breathes too. Completed options settle, reveal their titles
+and emit 12 fading particles each. Fast responses retain the remaining growth
+sequence before settlement. `spawn-motion.ts` samples live SVG paths in both layouts;
+its timings, particle count, speed and lifetime live in `graphMotion`.
+These effects never enter saved data or stats. Reply/check use a node pulse. Motion constants
 live in `graphMotion`; the Appearance override cancels motion live. Text relations
 from every node are deduplicated, curved, dotted, and separate from tree/route edges.
 Offscreen focus pans at the current zoom; recenter animates without changing focus.
@@ -43,11 +49,12 @@ adapter. The summary cache filename is `summaries.json` (SE-51).
 # Evidence and remaining gates
 
 - Type check: zero errors and warnings.
-- 33 TypeScript tests pass, including transient scene, relation deduplication,
+- 34 TypeScript tests pass, including sequential branch timing, transient scene, relation deduplication,
   settings preservation and disconnected-monitor fallback.
-- Seven Playwright tests pass: startup stub; fake Study loop with edits,
+- Eight Playwright tests pass: startup stub; fake Study loop with edits,
   dismiss/restore and restart persistence; cancellation; in-place spawn in both
-  layouts; math/Mermaid/code/escaped HTML; settings validation/reset/health/motion; missing-provider readiness instructions.
+  layouts; sequential tips, breathing, completion particle cleanup and live reduction;
+  math/Mermaid/code/escaped HTML; settings validation/reset/health/motion; missing-provider readiness instructions.
 - Sixteen Rust tests pass, including app-state migration/future shapes and
   interruption recovery; real CLI and the idle benchmark are explicit opt-in gates.
 - Idle ST-50 five-sample medians: save 63.24 ms, load 25.47 ms for 500 nodes;

@@ -24,6 +24,7 @@
   import type { Settings } from '../../frame/settings';
   import { GraphScene, type SceneNode } from './graph-scene';
   import { graphLinks } from './graph-links';
+  import { SpawnMotion } from './spawn-motion';
 
   let { session, revision, settings, preferencesChanged, navigate = () => {}, visible = true }: { session: LearnSession; revision: number; settings: Settings; preferencesChanged: () => void; navigate?: (space: string) => void; visible?: boolean } = $props();
 
@@ -53,6 +54,7 @@
   let host: HTMLDivElement;
   let edgesSvg: SVGSVGElement;
   let zoomer: ZoomBehavior<HTMLDivElement, unknown>;
+  const spawn = new SpawnMotion(() => host, () => edgesSvg, () => !motionReduced() && visible && !document.hidden);
   let panFrame=0;
   let halfRate=$state(false),settlingFrame=0,lastTick=0,slowSince=0;
   function halfStep(){let skip=false;
@@ -137,6 +139,11 @@
     clearTimeout(cleanupTimer);
     if (scene.remaining) cleanupTimer = setTimeout(() => transientRevision++, scene.remaining);
     const nodes = Object.values(sceneNodes);
+    untrack(() => {
+      for (const n of nodes) if (n.pending === 'waiting') spawn.add(n.id, n.slot ?? 0, performance.now());
+      for (const transfer of scene.transfers) spawn.transfer(transfer.from, transfer.to);
+      spawn.sync(new Set(nodes.filter(n => n.pending !== 'shrinking').map(n => n.id)));
+    });
     let changed = false;
     for (const transfer of scene.transfers) {
       const body = simNodes.get(transfer.from);
@@ -202,6 +209,7 @@
         const mx = (x1 + x2) / 2;
         return {
           id: l.target.id,
+          pending: nodes[l.target.id]?.pending === 'waiting',
           d: tree ? `M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}` : `M${x1} ${y1} L${x2} ${y2}`,
           onRoute: route.has(l.target.id)
         };
@@ -506,10 +514,10 @@
   });
 
   $effect(() => { settings.appearance.reduceMotion;untrack(()=>{
-    stopPan();if(motionReduced()){stopTravel();sim.stop();cancelAnimationFrame(settlingFrame);for(let i=0;sim.alpha()>sim.alphaMin()&&i<300;i++)sim.tick();tick++;}
+    stopPan();if(motionReduced()){spawn.stop();stopTravel();sim.stop();cancelAnimationFrame(settlingFrame);for(let i=0;sim.alpha()>sim.alphaMin()&&i<300;i++)sim.tick();tick++;}
     else if(visible&&sim.alpha()>sim.alphaMin()){if(halfRate)halfStep();else sim.restart();}
   }); });
-  $effect(() => { if (!visible) { sim.stop();cancelAnimationFrame(settlingFrame);stopTravel();stopPan(); } else if (sim.alpha() > sim.alphaMin() && !motionReduced()) {if(halfRate)halfStep();else sim.restart();} });
+  $effect(() => { if (!visible) { spawn.stop();sim.stop();cancelAnimationFrame(settlingFrame);stopTravel();stopPan(); } else if (sim.alpha() > sim.alphaMin() && !motionReduced()) {if(halfRate)halfStep();else sim.restart();} });
   function onNodeKey(e: KeyboardEvent) {
     const target = keyboardTarget(session.visit, session.visit.focusId, e.key);
     if (['Home','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
@@ -525,14 +533,15 @@
       .on('start',e=>{if(e.sourceEvent)stopPan();})
       .on('zoom', (e) => (transform = e.transform));
     select(host).call(zoomer).on('dblclick.zoom', null);
-    const onMotion = () => { if (motionReduced()) stopTravel(); applyLayout(); };
+    const onMotion = () => { if (motionReduced()) { spawn.stop();stopTravel(); } applyLayout(); };
     const initialFit = setTimeout(reset, 500);
-    const onVisibility = () => document.hidden && stopTravel();
+    const onVisibility = () => { if(document.hidden) { spawn.stop();stopTravel(); } };
     reducedMotion.addEventListener('change', onMotion);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       clearTimeout(initialFit); clearTimeout(cleanupTimer);stopPan();cancelAnimationFrame(settlingFrame);
       sim.stop();
+      spawn.stop();
       stopTravel();
       reducedMotion.removeEventListener('change', onMotion);
       document.removeEventListener('visibilitychange', onVisibility);
@@ -551,7 +560,8 @@
     <svg class="edges" bind:this={edgesSvg} aria-hidden="true">
       {#if settings.ui.textLinks}{#each view.references as e (e.id)}<path class="reference" d={e.d} />{/each}{/if}
       {#each view.edges as e (e.id)}
-        <path data-edge={e.id} d={e.d} class:route={e.onRoute} />
+        <path data-edge={e.id} d={e.d} pathLength="1" class:route={e.onRoute}
+          data-spawn-pending={e.pending ? 'true' : undefined} />
       {/each}
     </svg>
     {#each view.nodes as n (scene.key(n.id))}
@@ -564,7 +574,7 @@
         onkeydown={onNodeKey}
         class="node"
         class:busy
-        class:pulsing={busy&&['reply','check'].includes(session.running?.task??'')}
+        class:pulsing={busy}
         class:muted={!route.has(n.id)}
         data-id={n.id}
         data-state={n.state}
@@ -680,6 +690,8 @@
     stroke: var(--accent);
   }
   .edges path.reference { stroke-dasharray:1 5; opacity:.45; }
+  .edges path[data-spawn-pending] { stroke-dasharray:1; stroke-dashoffset:1; }
+  .graph[data-reduced='true'] .edges path[data-spawn-pending] { stroke-dashoffset:0; }
   .tiny .name { visibility:hidden; }
   .degraded .node .disc { box-shadow:none; }
   .large-notice { position:absolute; top:60px; left:20px; color:var(--ink-mute); font-size:12px; }
@@ -776,13 +788,18 @@
     border-style: dashed;
   }
   .node.pulsing .disc { animation:busy-pulse var(--pulse) ease-in-out infinite; }
-  .node[data-pending='waiting'] .disc { border:1.5px dotted var(--path-muted); box-shadow:none; animation:grow var(--grow) ease-out both, breathe var(--breathe) ease-in-out infinite; animation-delay:calc(var(--slot) * var(--stagger)),calc(var(--grow) + var(--slot) * var(--stagger)); }
+  .node[data-pending='waiting'] .disc { border:1.5px dotted var(--node-lit); animation:breathe var(--breathe) ease-in-out infinite; }
+  .node:global([data-spawn-phase='growing']) { visibility:hidden; }
+  .node[data-pending='waiting']:not(:global([data-spawn-phase='breathing'])) { visibility:hidden; }
+  .graph[data-reduced='true'] .node[data-pending='waiting'] { visibility:visible; }
+  .node:global([data-spawn-phase='breathing']) .disc { animation:arrive var(--reveal) ease-out, breathe var(--breathe) ease-in-out infinite; }
   .node[data-pending] {opacity:1;cursor:default;}
   .node[data-pending='shrinking'] .disc { border:1.5px dotted var(--path-muted); animation:shrink var(--shrink) ease-in both; }
   .node[data-growing='true'] .disc { animation:grow var(--grow) ease-out; }
   .node:not([data-pending]) .name { animation:reveal var(--reveal) ease-out; }
   @keyframes grow { from { transform:scale(0); } to { transform:scale(1); } }
-  @keyframes breathe { 0%,100% { opacity:var(--opacity-low); } 50% { opacity:var(--opacity-high); } }
+  @keyframes breathe { 0%,100% { opacity:var(--opacity-low); box-shadow:0 0 6px 1px var(--glow-far); } 50% { opacity:var(--opacity-high); box-shadow:0 0 18px 4px var(--glow-near),0 0 32px 6px var(--glow-far); } }
+  @keyframes arrive { from { transform:scale(.75); } to { transform:scale(1); } }
   @keyframes shrink { to { transform:translate(var(--back-x),var(--back-y)) scale(0); opacity:0; } }
   @keyframes reveal { from { opacity:0; } to { opacity:1; } }
   @keyframes busy-pulse { 50% { box-shadow:0 0 20px 5px var(--glow-near),0 0 46px 11px var(--glow-far); } }

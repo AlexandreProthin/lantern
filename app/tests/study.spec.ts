@@ -56,6 +56,34 @@ test('GV-92/94/96: pending bodies reveal in place and stay out of saved state', 
   await expect(page.locator('.node[data-pending]')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+test('GV-90/91/92: sequential branch tips, breathing, completion particles and reduced motion', async ({page}) => {
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/?study=1&subject=Branch%20motion&delay=200');
+  const pending=page.locator('.node[data-pending="waiting"]');
+  await expect(pending).toHaveCount(3);
+  await expect(page.locator('.spawn-tip')).toHaveCount(1);
+  await expect(pending.nth(0)).toHaveAttribute('data-spawn-phase','breathing');
+  await expect(pending.nth(1)).toHaveAttribute('data-spawn-phase','growing');
+  expect(await pending.nth(1).evaluate(el=>getComputedStyle(el).visibility)).toBe('hidden');
+  await expect(page.locator('.node[data-pending="waiting"][data-spawn-phase="breathing"]')).toHaveCount(3);
+  await expect(page.locator('.spawn-tip')).toHaveCount(0);
+  expect(await pending.first().locator('.disc').evaluate(el=>getComputedStyle(el).animationName)).toContain('breathe');
+  await expect.poll(()=>page.locator('.spawn-particle').count(),{intervals:[50],timeout:10000}).toBeGreaterThan(0);
+  await page.screenshot({path:'test-results/spawn-completion.png'});
+  await expect(page.locator('.spawn-light')).toHaveCount(0);
+  await expect(page.locator('.node[data-pending]')).toHaveCount(0);
+  // System reduction applies immediately, including to an in-flight growth sequence.
+  await page.locator('.panel').getByRole('button',{name:'Mechanism 1',exact:false}).click();
+  await page.locator('.panel').getByRole('button',{name:'Light it up',exact:true}).click();
+  await expect(page.locator('.spawn-tip')).toHaveCount(1);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await expect(page.locator('.spawn-light')).toHaveCount(0);
+  await expect(pending.first()).toBeVisible();
+  await expect(page.locator('.node[data-pending]')).toHaveCount(0);
+  await expect(page.locator('.spawn-particle')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
 test('NP-55: math geometry, Mermaid labels, code and escaped untrusted HTML', async ({page}) => {
   const errors:string[]=[]; page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/?study=1&subject=Rendering');

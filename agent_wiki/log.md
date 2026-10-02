@@ -2,6 +2,8 @@
 
 ## 2026-10-02
 
+* **Spawn tuning**: user clarified [graph motion](/specs/graph-view.md): branches draw one after another behind a glowing tip, pending nodes and the generating parent breathe with light, completed nodes settle and emit particles. [Study](/components/v010-study.md) implements this independently of focus-route motion, preserves stable scene bodies, and finishes growth for fast responses. Live reduction cancels tips, particles and arrival animations. Native motion acceptance remains open.
+
 * **Prose review**: first-run English/French eval samples match the requested language but contain internally inconsistent analogies. [Tutor prose quality](/issues/tutor-prose-quality.md) separates this concrete issue from the passing automatic protocol score; no approved prompt was changed.
 
 * **Motion and Settings**: [Study](/components/v010-study.md) now has transient in-place spawn bodies, both layouts, text relations, pan/recenter, busy/reduced motion, per-subject view memory and viewport fallbacks. Seven browser tests, 33 TS tests and 16 Rust tests pass. The isolated 500-node zoom sample passes at 16.7 ms median/33.4 ms p95; earlier failures and native limits remain recorded. [Settings](/components/v010-settings.md) add verified library transfer/rollback, validation/reset/provider health and window memory. D1 and manual acceptance remain open.
