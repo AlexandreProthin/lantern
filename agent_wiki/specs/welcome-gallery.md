@@ -4,7 +4,7 @@ title: Welcome and Gallery
 description: The Learn room's two library spaces - Welcome (start or continue a subject) and Gallery (browse all subjects with stats) - and the progress definitions both share.
 tags: [welcome, gallery, library, progress, learn-room]
 status: stable
-generated: { by: claude-code/opus-5.5, at: 2026-10-02T18:45:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-02T18:55:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -19,7 +19,7 @@ roles in one column.
 # Welcome
 
 **The visual design of Welcome comes from an `agent_design` component named `welcome`, designed
-before it is implemented.** This spec fixes content and behaviour only; layout, type, colour and
+before it is implemented** (final: `agent_design/welcome/RECIPE.md`). This spec fixes content and behaviour only; layout, type, colour and
 motion are the component's final recipe, and no Welcome UI is built before that recipe exists.
 
 ## Contents
@@ -196,7 +196,8 @@ are computed from the room visit of the room (`learn`) and never stored
 
 # Open
 
-- Welcome's look: the `welcome` design component (`agent_design/welcome/`, to be created). It is a design task, not an undecided behaviour.
+- Nothing. Welcome's look is final: `agent_design/welcome/RECIPE.md` (D1, 2026-10-02). The Gallery card has no
+  design component; it follows the same tokens.
 
 Related: [rooms-spaces](/specs/rooms-spaces.md), [graph-view](/specs/graph-view.md),
 [node-panel](/specs/node-panel.md), [domain-model](/specs/domain-model.md),

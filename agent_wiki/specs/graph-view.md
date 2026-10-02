@@ -4,11 +4,13 @@ title: Graph view
 description: The Study space's graph - layouts, node rendering per state, route highlight, text links, spawn and busy animation, controls, keyboard, the graph/panel split, performance and reduced motion.
 tags: [graph, study, layout, animation, keyboard, split, accessibility]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: Codex/GPT-6, at: 2026-10-02T18:15:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 Source: spec workshop rounds 1–3 (2026-10-01/02). Agreed with the user 2026-10-02 (q-r3-review).
+Spawn motion refined by the user's 2026-10-02 implementation feedback: sequential
+branch growth led by a light dot, breathing light while waiting, settling with particles on completion.
 
 The left side of Study; the reading side is [node-panel](/specs/node-panel.md). It builds on the
 PoC `Graph.svelte` and on the final learning-node design `agent_design/learningnode/RECIPE.md`
@@ -203,27 +205,36 @@ and nothing else in the code hard-codes them.
 | Constant | Start value |
 |---|---|
 | `SPAWN_COUNT` | 3 |
-| `SPAWN_STAGGER_MS` | 120 |
+| `SPAWN_STAGGER_MS` | 120 (gap after each branch finishes) |
 | `SPAWN_GROW_MS` | 500, ease-out |
 | `PENDING_BREATHE_OPACITY` | 0.5 ↔ 0.8 |
 | `PENDING_BREATHE_PERIOD_MS` | 2400 |
 | `SPAWN_REVEAL_MS` | 200 (title fade-in) |
 | `SPAWN_SHRINK_MS` | 300 (surplus, cancel, error) |
 | `BUSY_PULSE_PERIOD_MS` | 1800 |
+| `SPAWN_PARTICLES` | 12 per arriving node |
+| `SPAWN_PARTICLE_LIFE_MS` | 800 |
+| `SPAWN_PARTICLE_SPEED` | 38 px/s maximum |
 
-- **GV-90** When a light-up or *More options* starts, **3 pending placeholders** MUST grow out of
-  the parent's rim, staggered by `SPAWN_STAGGER_MS`, each scaling and moving to its slot over
-  `SPAWN_GROW_MS`, rendered as the *pending* style of the node table.
-- **GV-91** While waiting they MUST breathe between the two opacities with the given period.
+- **GV-90** When a light-up or *More options* starts, **3 branches** MUST grow from
+  the parent one after another. Each branch draws over `SPAWN_GROW_MS`, led by a
+  glowing dot at its tip; the next begins after a `SPAWN_STAGGER_MS` gap. Its pending
+  circle appears when the tip arrives. Dot and branch follow live layout geometry.
+- **GV-91** While waiting, pending nodes MUST breathe between the two opacities
+  with the given period, including a soft light glow. The generating parent also breathes.
 - **GV-92** When the options block parses, each placeholder becomes the real open node **in
-  place** (same element, no jump) and its title fades in over `SPAWN_REVEAL_MS`. Surplus
+  place** (same element, no jump), settles with a small light-particle burst and its
+  title fades in over `SPAWN_REVEAL_MS`. A fast response finishes the branch's growth
+  before the settle/reveal/burst. Surplus
   placeholders shrink back into the parent over `SPAWN_SHRINK_MS`. If more nodes arrive than
   placeholders, the extra ones grow from the parent like a placeholder with no waiting.
 - **GV-93** On **cancel** or **error**, all placeholders shrink back over `SPAWN_SHRINK_MS`.
 - **GV-94** These rules apply in **both layouts**. In free layout the placeholders MUST be real
   simulation bodies so the graph makes room; in tree layout the layout MUST reserve their slots
   as if they were children, relaxing when they go.
-- **GV-95** The travelling light and embers are unchanged (GV-32) and MUST NOT fire for spawns.
+- **GV-95** The focus-route travelling light and embers are unchanged (GV-32).
+  Spawn tips and completion particles are a separate effect and MUST NOT replay
+  the focus-route effect. Cancellation/error MUST NOT emit completion particles.
 - **GV-96** Placeholders MUST NOT be persisted, focusable, or counted in stats; they carry
   `aria-hidden`. The graph's live region announces *Lighting <title>* then *3 options ready*.
 

@@ -64,7 +64,7 @@ subject        what you're working through ("how TCP congestion control works")
 
 ## State
 
-**Proof of concept.** The project has only just started.
+**v0.1.0 implementation started.** The PoC remains available as a reference.
 
 1. **Proof of concept** ✔ built, being tried. Use case: **learning**. A graph, a view
    panel, and one LLM provider (Claude Code CLI), wired end to end. Throwaway code whose
@@ -73,8 +73,9 @@ subject        what you're working through ("how TCP congestion control works")
    project's working memory (decisions, architecture, open issues, roadmap).
 3. **Specs + v0.1.0 plan** ✔ 13 agreed specs in [`agent_wiki/specs/`](agent_wiki/specs/index.md),
    worked out in the [spec workshop](agent_design/tool/specs_work/README.md).
-4. **v0.1.0 implementation** ▶ next: follow the [plan](agent_wiki/plans/v0-1-0.md), starting
-   at M0 (scaffold) and the Welcome design track.
+4. **v0.1.0 implementation** ▶ [`app/`](app/README.md): M0 scaffold complete; M1 core and storage in progress.
+   Follow the [plan](agent_wiki/plans/v0-1-0.md). The Welcome design (D1) is final:
+   [`agent_design/welcome/RECIPE.md`](agent_design/welcome/RECIPE.md).
 
 ## Open work
 

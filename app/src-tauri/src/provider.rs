@@ -1,0 +1,108 @@
+//! IP: blocking per-call provider, callback on the calling worker thread.
+use serde::{Deserialize, Serialize};
+use std::{io::{BufRead, BufReader, Read, Write}, path::PathBuf, process::Stdio,
+    sync::{Arc, atomic::{AtomicBool, Ordering}, mpsc}, time::{Duration, Instant}};
+mod stream;
+mod process;
+pub mod commands;
+pub use stream::StreamParser;
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Usage { pub input: u64, pub output: u64, pub thinking: u64, pub cache_read: u64, pub cache_write: u64 }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ErrorKind { NotInstalled, NotLoggedIn, UsageLimit, ModelUnknown, Network, ProcessCrashed, Protocol, Cancelled }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Completion { pub text: String, pub model: String, pub usage: Usage, pub duration_ms: u64,
+    pub cost_usd: Option<f64>, pub outcome: String, pub resolved_effort: Option<String> }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProviderError { pub kind: ErrorKind, pub details: String, pub model: String, pub usage: Usage, pub duration_ms: u64 }
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Request { pub request_id: String, pub system: String, pub prompt: String, pub model: Option<String>, pub effort: Option<String> }
+pub type Cancel = Arc<AtomicBool>;
+pub trait InferenceProvider: Send + Sync {
+    fn stream(&self, request: &Request, cancel: Cancel, on_text: &mut dyn FnMut(&str)) -> Result<Completion, ProviderError>;
+}
+pub struct ClaudeCliProvider { pub executable: PathBuf, pub stall_timeout: Duration }
+impl ClaudeCliProvider { pub fn new(executable: PathBuf) -> Self { Self { executable, stall_timeout: Duration::from_secs(120) } } }
+pub fn detect() -> Option<PathBuf> {
+    let mut folders: Vec<PathBuf> = std::env::var_os("PATH").map(|p| std::env::split_paths(&p).collect()).unwrap_or_default();
+    if let Some(home) = std::env::var_os("USERPROFILE") { folders.push(PathBuf::from(home).join(".local/bin")); }
+    if let Some(appdata) = std::env::var_os("APPDATA") { folders.push(PathBuf::from(appdata).join("npm")); }
+    if let Some(local) = std::env::var_os("LOCALAPPDATA") { folders.push(PathBuf::from(local).join("Programs/claude")); }
+    for folder in folders { for name in ["claude.exe", "claude.cmd", "claude"] {
+        let path = folder.join(name); if path.is_file() { return Some(path); }
+    } }
+    None
+}
+pub fn classify(details: &str) -> ErrorKind {
+    let t = details.to_lowercase();
+    if ["/login", "not logged", "not signed", "authentication", "unauthorized", "401", "please log in", "please login"].iter().any(|p| t.contains(p)) { ErrorKind::NotLoggedIn }
+    else if ["rate limit", "usage limit", "quota", "overloaded", "429", "limit reached", "hit your limit"].iter().any(|p| t.contains(p)) { ErrorKind::UsageLimit }
+    else if t.contains("model") && ["unknown", "invalid", "not found", "unavailable", "not available", "does not exist", "may not exist", "not have access"].iter().any(|p| t.contains(p)) { ErrorKind::ModelUnknown }
+    else if ["connection", "timeout", "dns", "fetch failed", "network", "econn", "enotfound"].iter().any(|p| t.contains(p)) { ErrorKind::Network }
+    else { ErrorKind::ProcessCrashed }
+}
+impl InferenceProvider for ClaudeCliProvider {
+    fn stream(&self, req: &Request, cancel: Cancel, on_text: &mut dyn FnMut(&str)) -> Result<Completion, ProviderError> {
+        let start = Instant::now(); let mut parser = StreamParser::default();
+        let initial_error = |kind, details| ProviderError { kind, details, model: String::new(), usage: Usage::default(), duration_ms: start.elapsed().as_millis() as u64 };
+        if cancel.load(Ordering::SeqCst) { return Err(initial_error(ErrorKind::Cancelled, String::new())); }
+        if req.effort.as_ref().is_some_and(|e| !["low", "medium", "high", "xhigh", "max"].contains(&e.as_str())) { return Err(initial_error(ErrorKind::Protocol, "Invalid effort".into())); }
+        let mut cmd = process::command(&self.executable);
+        cmd.args(["-p", "--output-format", "stream-json", "--verbose", "--include-partial-messages", "--safe-mode", "--strict-mcp-config", "--no-session-persistence", "--tools", "", "--system-prompt", &req.system]);
+        if let Some(model) = &req.model { cmd.args(["--model", model]); }
+        if let Some(effort) = &req.effort { cmd.args(["--effort", effort]); }
+        cmd.current_dir(std::env::temp_dir()).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
+        let mut child = cmd.spawn().map_err(|e| initial_error(if e.kind() == std::io::ErrorKind::NotFound { ErrorKind::NotInstalled } else { ErrorKind::ProcessCrashed }, e.to_string()))?;
+        let job = match process::ProcessTree::attach(&child) { Ok(job) => job, Err(e) => { let _ = child.kill(); let _ = child.wait(); return Err(initial_error(ErrorKind::ProcessCrashed, e)); } };
+        let mut stdin = child.stdin.take().expect("piped stdin"); let prompt = req.prompt.clone();
+        let writer = std::thread::spawn(move || stdin.write_all(prompt.as_bytes()));
+        let stdout = child.stdout.take().expect("piped stdout"); let stderr = child.stderr.take().expect("piped stderr");
+        let errors = std::thread::spawn(move || { let mut bytes = Vec::new(); let mut reader = BufReader::new(stderr);
+            let mut chunk = [0u8; 4096]; while let Ok(n) = reader.read(&mut chunk) { if n == 0 { break; } bytes.extend_from_slice(&chunk[..n]); if bytes.len() > 65536 { bytes.drain(..bytes.len()-65536); } } String::from_utf8_lossy(&bytes).into_owned() });
+        let (tx, rx) = mpsc::sync_channel(128);
+        let reader = std::thread::spawn(move || { for line in BufReader::new(stdout).lines() { if tx.send(line).is_err() { break; } } });
+        let mut last_event = Instant::now(); let mut failure = None;
+        loop {
+            if cancel.load(Ordering::SeqCst) { failure = Some((ErrorKind::Cancelled, String::new())); break; }
+            if last_event.elapsed() >= self.stall_timeout { failure = Some((ErrorKind::Protocol, "Stream stalled for 120 seconds".into())); break; }
+            match rx.recv_timeout(Duration::from_millis(25)) {
+                Ok(Ok(line)) => { if parser.consume(&line, on_text) { last_event = Instant::now(); } }
+                Ok(Err(e)) => { failure = Some((ErrorKind::Protocol, e.to_string())); break; }
+                Err(mpsc::RecvTimeoutError::Timeout) => continue,
+                Err(mpsc::RecvTimeoutError::Disconnected) => break,
+            }
+        }
+        if failure.is_some() { job.kill(); let _ = child.kill(); }
+        // Drop the receiver before joining to unblock a full bounded channel on cancel.
+        drop(rx);
+        let status = loop {
+            match child.try_wait() {
+                Ok(Some(status)) => break Ok(status),
+                Err(e) => break Err(e),
+                Ok(None) => {
+                    if cancel.load(Ordering::SeqCst) { failure = Some((ErrorKind::Cancelled, String::new())); }
+                    else if last_event.elapsed() >= self.stall_timeout { failure = Some((ErrorKind::Protocol, "Stream stalled after stdout closed".into())); }
+                    if failure.is_some() { job.kill(); let _ = child.kill(); }
+                    std::thread::sleep(Duration::from_millis(25));
+                }
+            }
+        };
+        drop(job);
+        let _ = reader.join(); let write_result = writer.join(); let stderr = errors.join().unwrap_or_default();
+        if let Some((kind, details)) = failure { return Err(parser.error(kind, details, start.elapsed())); }
+        if write_result.is_err() || write_result.is_ok_and(|r| r.is_err()) { return Err(parser.error(ErrorKind::ProcessCrashed, "Could not write prompt to CLI".into(), start.elapsed())); }
+        parser.finish(status.map(|s| s.success()).unwrap_or(false), stderr, req.effort.clone(), start.elapsed(), on_text)
+    }
+}
+pub fn version(executable: &std::path::Path) -> Result<String, String> {
+    let output = process::command(executable).arg("--version").current_dir(std::env::temp_dir()).output().map_err(|e| e.to_string())?;
+    if !output.status.success() { return Err(String::from_utf8_lossy(&output.stderr).into_owned()); }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+#[cfg(test)] mod tests;
