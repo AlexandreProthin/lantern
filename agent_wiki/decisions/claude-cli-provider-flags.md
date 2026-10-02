@@ -5,6 +5,7 @@ description: Why the CLI provider runs in safe mode from a temp directory rather
 tags: [llm, claude-cli, provider]
 status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 Decided 2026-09-28.

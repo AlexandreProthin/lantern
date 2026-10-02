@@ -1,5 +1,42 @@
 # Wiki Update Log
 
+## 2026-10-02
+
+* **Review**: on the user's explicit instruction ("i allow you to sign the whole wiki for me (human:alex)"), the agent added `verified: { by: human:alex }` to all 43 concepts; every concept is now human-reviewed. The [v0.1.0 plan](/plans/v0-1-0.md) is approved, and implementation starts at M0 (and D1).
+* **Update**: All 13 specs agreed (round 3), now `stable`; the three round-3 changes (Gallery single click shows detailed stats, sign-in instructions instead of a button, default model `opus`); specs step closed in the [roadmap](/plans/roadmap.md). New decision [cli-signin-instructions-only](/decisions/cli-signin-instructions-only.md).
+* **Update**: Consistency pass across all 13 specs (concurrency, previous, stats, app-side state, round-3 ids).
+* **Creation**: Specs from spec workshop round 3 (all 13 now drafted):
+  [rooms-spaces](/specs/rooms-spaces.md), [learn-room](/specs/learn-room.md),
+  [tutor-protocol](/specs/tutor-protocol.md), [context-assembly](/specs/context-assembly.md),
+  [inference-provider](/specs/inference-provider.md), [welcome-gallery](/specs/welcome-gallery.md),
+  [graph-view](/specs/graph-view.md), [node-panel](/specs/node-panel.md),
+  [settings](/specs/settings.md).
+* **Update**: Round-1 specs revised to the decisions digest:
+  [product-scope](/specs/product-scope.md) (merge and regenerate to Later, spaces, settings contents),
+  [domain-model](/specs/domain-model.md) (tree, `parents` of one id, provenance, edits),
+  [subject-storage](/specs/subject-storage.md) (conflict UX, log forever, library change),
+  [platform-quality](/specs/platform-quality.md) (installer, evals, Playwright scenarios);
+  [specs index](/specs/index.md) lists all 13.
+* **Creation**: Decisions [merge-deferred](/decisions/merge-deferred.md) and
+  [prompts-internal-versioned](/decisions/prompts-internal-versioned.md).
+* **Update**: [roadmap](/plans/roadmap.md) step 4: round 3 is out and all specs are drafted.
+
+## 2026-10-01
+
+* **Creation**: Spec drafts from workshop round 1: [product-scope](/specs/product-scope.md),
+  [domain-model](/specs/domain-model.md), [subject-storage](/specs/subject-storage.md),
+  [platform-quality](/specs/platform-quality.md).
+* **Creation**: Decisions [subject-single-json-file](/decisions/subject-single-json-file.md),
+  [graph-per-room-visit](/decisions/graph-per-room-visit.md),
+  [rooms-have-spaces](/decisions/rooms-have-spaces.md),
+  [v010-daily-tool-learn-only](/decisions/v010-daily-tool-learn-only.md),
+  [latency-masked-not-reduced](/decisions/latency-masked-not-reduced.md).
+* **Deprecation**: [subject-on-disk-format](/issues/subject-on-disk-format.md), resolved by the
+  single-JSON-file decision.
+* **Update**: [llm-latency](/issues/llm-latency.md) and [context-scaling](/issues/context-scaling.md)
+  point to the new direction; [subject-model](/components/subject-model.md) links its successor;
+  [roadmap](/plans/roadmap.md) step 4 is in progress.
+
 ## 2026-09-29
 
 * **Seeding**: Migrated everything from the interim root `MEMORY.md` into concepts and retired

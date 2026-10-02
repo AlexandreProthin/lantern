@@ -4,8 +4,24 @@
     {
       "name": "lantern-poc-web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "poc", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "poc",
+        "run",
+        "dev"
+      ],
       "port": 1430
+    },
+    {
+      "name": "specs-workshop",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "agent_design/tool/specs_work/serve.py",
+        "--no-open",
+        "--port",
+        "8770"
+      ],
+      "port": 8770
     }
   ]
 }

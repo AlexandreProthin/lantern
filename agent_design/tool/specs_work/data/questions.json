@@ -1,0 +1,2194 @@
+{
+  "schema_version": 1,
+  "areas": [
+    {
+      "id": "feedback",
+      "title": "PoC feedback",
+      "blurb": "What the PoC got right and wrong: the first input to every spec."
+    },
+    {
+      "id": "scope",
+      "title": "v0.1.0 scope",
+      "blurb": "What the first release is for, and what is in and out."
+    },
+    {
+      "id": "rooms",
+      "title": "Rooms & spaces",
+      "blurb": "The app frame: rooms, their spaces, navigation."
+    },
+    {
+      "id": "model",
+      "title": "Domain model",
+      "blurb": "Subjects, rooms, nodes, edges, states."
+    },
+    {
+      "id": "learn",
+      "title": "Learn room",
+      "blurb": "How the tutor loop behaves."
+    },
+    {
+      "id": "llm",
+      "title": "Prompts, context, provider",
+      "blurb": "What goes to the model, how fast, how it fails."
+    },
+    {
+      "id": "storage",
+      "title": "Storage",
+      "blurb": "How a subject lives on disk."
+    },
+    {
+      "id": "ui",
+      "title": "UI",
+      "blurb": "Layout, language, interaction."
+    },
+    {
+      "id": "ship",
+      "title": "Platform & quality",
+      "blurb": "Where it runs, how it is checked, when it is done."
+    },
+    {
+      "id": "settings",
+      "title": "Settings",
+      "blurb": "What is configurable, and where."
+    }
+  ],
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-01T19:30:00+00:00",
+      "intro": "**Round 1: the big decisions.** Each answer here fixes the shape of one or more specs. Later rounds go into detail only where needed.\n\n- For each question, **form your own view first**. *Claude's take* is collapsed for that reason.\n- Pick an option, or choose *Other*. Put any nuance in the notes: a half-answer with a good note beats a clean but wrong choice.\n- If a question is badly framed, or you want to talk it through, use **Flag for discussion**. Flagged questions count as answered, and I'll pick them up in chat.\n- Sketches: the *domain model*, *disk format* and *context budget* questions each have an interactive illustration.\n\nSave when you like, as often as you like. Then tell me **next**."
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-01T21:30:00+00:00",
+      "intro": "**Round 2: reconcile, then detail.** Round 1 is folded in: every round-1 card now shows a *Settled* summary. Check that the summaries say what you meant.\n\nThree kinds of question this time:\n\n- **Reconcile**: places where your answers pull in two directions (tree vs merge vs cross-links; regenerate on the board vs in your notes).\n- **New threads** from your notes: spaces, provenance, tone, mid-session model choice, editing, merge, the spawn animation.\n- **Default checklists**: a list of small behaviours I'd write into the spec. **Tick each one you accept**; anything left unticked gets reopened in round 3, so write why in the notes.\n\nAfter this round most specs can move from *draft* to *review*."
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-02T08:00:00+00:00",
+      "intro": "**Round 3: confirm, then review.** Round 2 is folded in. All decisions so far are collected in one digest, [`DECISIONS.md`](DECISIONS.md) in this folder, which the spec writers work from.\n\nThis round is short:\n\n- **Confirmations** of things I inferred or proposed from your notes (navigation, links, text selection, spawn numbers, storage details).\n- **The review gate**: tick each spec you approve as-is. Specs appear in the Specs tab as they are written, and the remaining nine are being drafted now. Anything you don't tick, tell me what's wrong in the notes.\n\nWhen every spec is ticked, the specs step is done and I write the v0.1.0 plan.\n\n**Added after the specs were drafted:** six more questions (*click to light*, *sign-in*, *delete*, *subject menu*, *defaults*, *smaller proposals*). These are decisions the spec writers needed and had to propose; nothing goes into a spec as agreed until you tick it."
+    },
+    {
+      "number": 4,
+      "created_at": "2026-10-02T11:00:00+00:00",
+      "intro": "**Specs step closed (2026-10-02).** All 13 specs are agreed and marked *stable* in the wiki; the v0.1.0 implementation plan is `agent_wiki/plans/v0-1-0.md` (Specs tab). No questions this round. This workshop stays available: a spec change during implementation goes through a new round here, so the reasoning stays on record."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-poc-off",
+      "area": "feedback",
+      "kind": "text",
+      "title": "What is still off in the PoC?",
+      "context": "You judged the PoC *very close* (2026-09-29), but the roadmap lists **what is still off** as the first input to the specs, and none of it has been written down yet.\n\nList anything that felt wrong, missing, slow, confusing or annoying, with the worst first. Rough is fine, for example: *\"lighting a node takes too long\"*, *\"I wanted to add my own question as a node\"*, *\"too much text per node\"*. Each item becomes a requirement or a recorded non-goal.",
+      "take": "Things I would expect from reading the code. Check whether you felt them:\n\n- **~25 s per light-up**, and the new nodes only appear at the very end of the stream.\n- **Exactly 3 options, always**. There's no way to dismiss one, ask for others, or add your own.\n- **Tree only**. Two related concepts on different branches can't be linked.\n- No way to **edit, delete or regenerate** a node, and no **cancel** while it streams.\n- *I get it* marks a node understood with no trace that it was self-declared rather than shown.\n- The home screen is minimal: you can't rename subjects or see progress.",
+      "round": 1,
+      "settled": {
+        "summary": "Recorded as requirements across product-scope, domain-model and the round 2 questions: provenance and token counts on nodes, resizable panel, dismiss/more/own options, edit and correct content, delete, regenerate (see q-r2-regenerate), cancel, a welcoming home, model choice mid-session, a settings panel with room submenus, real prompt engineering and context management, Ctrl+click merge. Latency is **not** a constraint; it is masked by animation. New concept: **rooms have spaces**.",
+        "spec": "specs/product-scope.md"
+      }
+    },
+    {
+      "id": "q-poc-keep",
+      "area": "feedback",
+      "kind": "text",
+      "title": "What must not change?",
+      "context": "The other side of the same question: what felt **right** and must survive the rewrite? Naming it protects it. A rewrite tends to lose the details nobody wrote down: the travelling light, the tone of the tutor, the 3-teaser rhythm, the stats line…",
+      "take": "From the record, at least: the learning-node design (r008-02 *Forward embers*, final); the *never dump everything, exactly-3-teasers* method; streaming text into the panel; and saving as you go with no Save button. I'll treat these as kept unless you say otherwise.",
+      "round": 1,
+      "settled": {
+        "summary": "Kept: palette, subtle motion and travelling light, the calm *warm light in a peaceful place* feel (other rooms may get their own lantern, but the app stays coherent), the 3-teaser rhythm, secondary but accessible stats, a **mandatory legend**, the header elements, and a right-hand reading panel with markdown. Tutor tone becomes selectable (q-r2-tone). *Text highlight* is clarified in q-r2-highlight.",
+        "spec": "specs/product-scope.md"
+      }
+    },
+    {
+      "id": "q-scope-purpose",
+      "area": "scope",
+      "kind": "single",
+      "allow_other": true,
+      "title": "What is v0.1.0 for?",
+      "context": "This one decision sets the quality bar: installer or not, onboarding or not, how much error handling, how much the data format has to last.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Your daily tool",
+          "detail": "A Learn room you use for real, every day. Built and run from source, or a local installer. Polished where you feel it, rough where only a stranger would notice.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "A shareable release",
+          "detail": "Others can install it from GitHub and get going without you: installer, first-run onboarding, a README for users, CLI login checks."
+        },
+        {
+          "id": "c",
+          "label": "A foundation",
+          "detail": "The Learn room plus the room framework (room definitions, room switching), so Think can follow quickly. Less polish on Learn itself."
+        }
+      ],
+      "take": "**Your daily tool**, with one firm constraint: the **data model and on-disk format are designed for several rooms** from the start, even though only Learn ships. Your subjects then survive v0.2, and we don't pay for a room framework before a second room exists to test it. A foundation built for one room usually ends up designed around that one room anyway.",
+      "round": 1,
+      "settled": {
+        "summary": "**Your daily tool**, designed modular from the start: multiple rooms (not all about learning) and new mechanisms must be addable without a rewrite. Reusable components are a requirement.",
+        "spec": "specs/product-scope.md"
+      }
+    },
+    {
+      "id": "q-scope-rooms",
+      "area": "scope",
+      "kind": "single",
+      "allow_other": true,
+      "title": "Which rooms ship in v0.1.0?",
+      "context": "Only Learn exists (PoC). Think has a seed (the *make me think* / socratic skill). Explore, Decide and Discover are names only.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Learn only",
+          "detail": "Harden the PoC loop into a real product. Rooms appear only in the data model.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Learn + Think",
+          "detail": "Two rooms prove the room abstraction is real: different AI role, different node vocabulary, same subject."
+        },
+        {
+          "id": "c",
+          "label": "Learn + Think + a room switcher",
+          "detail": "Two rooms plus taking one subject from one room to the other."
+        }
+      ],
+      "take": "**Learn only.** The PoC proved Learn is worth building; nothing yet proves Think's graph vocabulary (positions, objections, replies). Specifying Think properly would double this spec round. Lock the format so Think fits, and make Think the headline of v0.2.",
+      "round": 1,
+      "settled": {
+        "summary": "**Learn only.** Rooms are present in the model and the UI frame, but there is no second room.",
+        "spec": "specs/product-scope.md"
+      }
+    },
+    {
+      "id": "q-scope-board",
+      "area": "scope",
+      "kind": "scope",
+      "title": "Place each feature: v0.1.0, later, or never",
+      "context": "Drag each chip into a column, or click a chip and pick a column. Every chip must be placed. If a chip is ambiguous, place it anyway and say how you read it in the notes.",
+      "buckets": [
+        {
+          "id": "v010",
+          "label": "v0.1.0"
+        },
+        {
+          "id": "later",
+          "label": "Later"
+        },
+        {
+          "id": "never",
+          "label": "Never"
+        }
+      ],
+      "items": [
+        {
+          "id": "library",
+          "label": "Subject library",
+          "detail": "Home screen: list, open, rename, delete subjects, with progress."
+        },
+        {
+          "id": "crosslinks",
+          "label": "Cross-links",
+          "detail": "Typed edges between nodes on different branches (relates, prerequisite)."
+        },
+        {
+          "id": "own-nodes",
+          "label": "Add my own node",
+          "detail": "Type a topic or question and it becomes a node, without waiting for the tutor to propose it."
+        },
+        {
+          "id": "dismiss",
+          "label": "Dismiss an option",
+          "detail": "Hide a proposed node you won't pursue."
+        },
+        {
+          "id": "more-options",
+          "label": "More options",
+          "detail": "Ask for a different set of next steps on a node."
+        },
+        {
+          "id": "edit-node",
+          "label": "Edit / delete nodes",
+          "detail": "Rename a node, delete a node and its subtree."
+        },
+        {
+          "id": "regenerate",
+          "label": "Regenerate",
+          "detail": "Re-light a node: a new explanation replaces the old one, or sits beside it."
+        },
+        {
+          "id": "cancel",
+          "label": "Cancel generation",
+          "detail": "Stop a reply that is streaming."
+        },
+        {
+          "id": "parallel",
+          "label": "Parallel generation",
+          "detail": "Light up several nodes at once while you read another."
+        },
+        {
+          "id": "context-mgmt",
+          "label": "Scalable context",
+          "detail": "Send the neighbourhood instead of the whole map, so big subjects work."
+        },
+        {
+          "id": "model-setting",
+          "label": "Model setting",
+          "detail": "Choose the model in the app, possibly per task."
+        },
+        {
+          "id": "api-provider",
+          "label": "Anthropic API provider",
+          "detail": "Use an API key instead of the Claude Code CLI."
+        },
+        {
+          "id": "local-provider",
+          "label": "Local LLM provider",
+          "detail": "Ollama or similar."
+        },
+        {
+          "id": "search",
+          "label": "Search in a subject",
+          "detail": "Find a node by text."
+        },
+        {
+          "id": "export",
+          "label": "Export",
+          "detail": "Subject → one markdown or PDF document."
+        },
+        {
+          "id": "undo",
+          "label": "Undo / history",
+          "detail": "Undo the last change; see how a subject grew."
+        },
+        {
+          "id": "review",
+          "label": "Spaced review",
+          "detail": "Come back to understood nodes later; reminders."
+        },
+        {
+          "id": "profile",
+          "label": "Learner profile",
+          "detail": "What you know, across subjects, fed to the tutor."
+        },
+        {
+          "id": "sources",
+          "label": "Bring your own material",
+          "detail": "Paste a text, PDF or URL that the tutor teaches from."
+        },
+        {
+          "id": "rich-content",
+          "label": "Math & diagrams",
+          "detail": "KaTeX math and Mermaid diagrams in explanations."
+        },
+        {
+          "id": "think",
+          "label": "Think room",
+          "detail": "Socratic room: positions, objections, replies."
+        },
+        {
+          "id": "installer",
+          "label": "Installer",
+          "detail": "A Windows .msi/.exe built by Tauri."
+        },
+        {
+          "id": "updater",
+          "label": "Auto-update",
+          "detail": "The app updates itself from GitHub releases."
+        },
+        {
+          "id": "light-theme",
+          "label": "Light theme",
+          "detail": "A light variant of the palette."
+        },
+        {
+          "id": "keyboard",
+          "label": "Keyboard navigation",
+          "detail": "Move through the graph and act on nodes without the mouse."
+        },
+        {
+          "id": "i18n",
+          "label": "French UI",
+          "detail": "The interface (not the tutor) in French."
+        }
+      ],
+      "take": "My placement for *your daily tool, Learn only*:\n\n- **v0.1.0**: library, cross-links, add my own node, dismiss, more options, edit/delete, cancel, scalable context, model setting, search, rich content (math and diagrams), installer, keyboard navigation.\n- **Later**: regenerate, parallel generation, API provider, local provider, export, undo/history, spaced review, learner profile, bring your own material, Think, auto-update, light theme, French UI.\n- **Never**: nothing yet. *Never* is for things that would betray the idea, such as a plain chat mode with no graph.\n\nThe most debatable calls are **parallel generation** (a big win for the 25 s waits, but it complicates sessions and saving) and **undo** (cheap if storage is designed for it from day one, expensive to add later).",
+      "round": 1,
+      "settled": {
+        "summary": "**v0.1.0:** library, cross-links, add my own node, dismiss, more options, edit/delete, cancel, scalable context, model setting, math & diagrams, installer, keyboard navigation. **Later:** regenerate (reopened in q-r2-regenerate), parallel generation, API/local providers, search, export, undo, spaced review, learner profile, own material, Think, auto-update, light theme, French UI. **Never:** nothing.",
+        "spec": "specs/product-scope.md"
+      }
+    },
+    {
+      "id": "q-model-rooms",
+      "area": "model",
+      "kind": "single",
+      "allow_other": true,
+      "illustration": "sketches/domain-model.html",
+      "title": "How do rooms relate to a subject's graph?",
+      "context": "The README says a subject **visits** rooms and that a room sets *what nodes and edges mean*. That leaves open whether each visit grows its own graph, or whether all rooms share one graph. Even with only Learn in v0.1.0, the format has to commit to one or the other. Open the sketch to compare the two.",
+      "options": [
+        {
+          "id": "a",
+          "label": "A: one graph per room visit",
+          "detail": "learn/ and think/ each hold their own nodes and edges. A concept that matters in both rooms exists twice, possibly linked.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "B: one shared graph, rooms add layers",
+          "detail": "One set of nodes per subject; each room adds its own state, nodes and turns on top."
+        },
+        {
+          "id": "c",
+          "label": "Decide in v0.2",
+          "detail": "Store v0.1.0 data under a learn/ room folder and choose when Think is designed. Risk: a migration later."
+        }
+      ],
+      "take": "**A.** It matches the *room furnishes the space* metaphor: Learn's *understood* and Think's *objection* are different kinds of things, not states of the same node. It's also the only option that's simple now. A *same concept as…* link across rooms can come later without breaking anything. B looks elegant, but it forces every room to agree on what a node is, and that agreement is exactly what we don't know yet.",
+      "round": 1,
+      "settled": {
+        "summary": "**A: one graph per room visit.**",
+        "spec": "specs/domain-model.md"
+      }
+    },
+    {
+      "id": "q-model-shape",
+      "area": "model",
+      "kind": "single",
+      "allow_other": true,
+      "title": "Tree, or graph?",
+      "context": "The PoC is a strict **tree** (`parentId`). That gives one path to every node, which is what makes breadcrumbs, the route highlight and the tree layout work. Real knowledge has cross-links: *Fast retransmit* relates to *Slow start* on another branch.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Tree only",
+          "detail": "Keep the PoC shape. Relations are mentioned in text only."
+        },
+        {
+          "id": "b",
+          "label": "Tree spine + cross-links",
+          "detail": "Every node keeps exactly one parent (the path you discovered it by). Extra **typed edges** (relates, prerequisite…) are drawn differently and don't change the path.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Free graph",
+          "detail": "No privileged parent; any node can have several. Breadcrumbs and tree layout need rethinking."
+        }
+      ],
+      "take": "**Tree spine + cross-links.** The spine keeps everything the final learning-node design relies on (route highlight, travelling light, tree layout). Cross-links add what the tree can't say. Who creates them comes next round: the tutor through a tagged block, you by hand, or both.",
+      "round": 1,
+      "settled": {
+        "summary": "You chose *tree only*, but asked for **merging (two parents)** and **relations written in the text**, rebuildable by any parser. The board also places cross-links in v0.1.0. The proposed reconciliation is in q-r2-shape.",
+        "spec": "specs/domain-model.md"
+      }
+    },
+    {
+      "id": "q-model-states",
+      "area": "model",
+      "kind": "multi",
+      "allow_other": true,
+      "title": "Which node states beyond open → lit → understood?",
+      "context": "Today: **open** (proposed, dark), **lit** (explained), **understood** (shown or declared). Select every addition you want. Selecting none keeps the PoC states.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Dismissed",
+          "detail": "A proposed node you won't pursue. Hidden or faded, but kept so the tutor doesn't propose it again.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Shaky",
+          "detail": "Lit, and you tried, but a check showed a misconception. A natural place to come back to."
+        },
+        {
+          "id": "c",
+          "label": "Self-declared vs demonstrated",
+          "detail": "Not a new state but a flag on *understood*: did you pass a check, or press *I get it*?",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Mastery level",
+          "detail": "A 0–3 scale instead of a single *understood*."
+        }
+      ],
+      "take": "**Dismissed** plus the **self-declared/demonstrated flag**. Both are cheap and both carry real information: the tutor stops re-proposing dismissed nodes, and the graph is honest about how sure you are. *Shaky* is attractive but needs the tutor to judge misconceptions reliably. That's better tested after v0.1.0.",
+      "round": 1,
+      "settled": {
+        "summary": "States: **open → lit → understood**, plus **dismissed**. *Understood* records **how**: demonstrated or self-declared.",
+        "spec": "specs/domain-model.md"
+      }
+    },
+    {
+      "id": "q-learn-understood",
+      "area": "learn",
+      "kind": "single",
+      "allow_other": true,
+      "title": "Who decides that a node is understood?",
+      "context": "In the PoC the tutor can emit `<understood/>` after a good answer, and you can toggle *I get it / Not sure anymore* yourself.",
+      "options": [
+        {
+          "id": "a",
+          "label": "The tutor only",
+          "detail": "Understood means you passed a check. No self-declaration."
+        },
+        {
+          "id": "b",
+          "label": "Both, as in the PoC",
+          "detail": "Either way, and no record of which."
+        },
+        {
+          "id": "c",
+          "label": "Both, recorded",
+          "detail": "Either way, but the node records *demonstrated* or *self-declared* and shows the difference (for example a solid fill vs an outlined check).",
+          "recommended": true
+        }
+      ],
+      "take": "**Both, recorded.** You stay in charge (sometimes you just know it), and the graph stays truthful. The visual difference has to fit the final node design. I'd keep the solid amber fill for demonstrated and propose a variant for self-declared in the UI round.",
+      "round": 1,
+      "settled": {
+        "summary": "**Both, recorded.** The tutor (after a check) or you can mark a node understood, and the node records which one did.",
+        "spec": "specs/learn-room.md"
+      }
+    },
+    {
+      "id": "q-learn-options",
+      "area": "learn",
+      "kind": "single",
+      "allow_other": true,
+      "title": "How many next steps does the tutor propose?",
+      "context": "The *exactly 3, genuinely distinct* rule comes from the learning-session skill. It gives the graph its rhythm, but it can force a third option that isn't worth much, or leave out a good fourth.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Always exactly 3",
+          "detail": "Keep the rule as it is."
+        },
+        {
+          "id": "b",
+          "label": "3, and you can ask for more",
+          "detail": "Always 3; a *More options* action asks for 3 different ones.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "The tutor decides, 2 to 5",
+          "detail": "Fewer on narrow topics, more on broad ones."
+        }
+      ],
+      "take": "**3, and you can ask for more.** The rhythm is part of the product's feel and the method's discipline. *More* removes the frustration without losing that discipline.",
+      "round": 1,
+      "settled": {
+        "summary": "**3, and you can ask for more.**",
+        "spec": "specs/learn-room.md"
+      }
+    },
+    {
+      "id": "q-llm-context",
+      "area": "llm",
+      "kind": "single",
+      "allow_other": true,
+      "illustration": "sketches/context-budget.html",
+      "title": "What context goes to the model on each turn?",
+      "context": "Today the whole map is sent as an outline on every call. That's fine at 40 nodes, but grows without limit. Play with the sketch: node count, explanation length, dialogue turns. It shows the three strategies' token totals and what each one hides from the tutor.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Whole map",
+          "detail": "Keep the PoC strategy; revisit when it hurts."
+        },
+        {
+          "id": "b",
+          "label": "Neighbourhood",
+          "detail": "Path, siblings, children, the parent's explanation, plus the **titles** of every other node (so no duplicate proposals), and the last N dialogue turns."
+        },
+        {
+          "id": "c",
+          "label": "Neighbourhood + memory",
+          "detail": "As above, plus short stored summaries of lit nodes and a learner profile. Needs extra LLM calls to write the summaries."
+        },
+        {
+          "id": "d",
+          "label": "Adaptive",
+          "detail": "Whole map while it fits a budget, then switch to the neighbourhood. Same results as the PoC for small subjects.",
+          "recommended": true
+        }
+      ],
+      "take": "**Adaptive.** Small subjects (most of them, for a while) keep the PoC behaviour you liked. Big ones degrade gracefully instead of failing. *Memory* needs summary-writing calls, and with ~3 s of overhead per CLI call that's a real cost. It belongs with the latency work, after v0.1.0.",
+      "round": 1,
+      "settled": {
+        "summary": "**Adaptive**: the whole map while it fits a budget, then the neighbourhood plus the titles of every node.",
+        "spec": "specs/context-assembly.md"
+      }
+    },
+    {
+      "id": "q-llm-latency",
+      "area": "llm",
+      "kind": "multi",
+      "allow_other": true,
+      "title": "Which latency levers for v0.1.0?",
+      "context": "Measured: ~3 s of fixed overhead per `claude -p` call, ~12 s for an introduction, ~25 s to light a node. Streaming hides part of it, but the new nodes only arrive at the end.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Options first",
+          "detail": "The tutor writes the options block *before* the explanation, so the new nodes appear within seconds. Changes the tagged-blocks protocol.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Cheaper model for cheap tasks",
+          "detail": "Suggestions, check questions and short replies go to a faster model (Haiku/Sonnet); light-ups to the main one.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Long-lived CLI session",
+          "detail": "One CLI process kept alive and fed by stdin (stream-json input), removing the ~3 s spawn cost. Needs a spike to confirm the CLI supports it cleanly."
+        },
+        {
+          "id": "d",
+          "label": "Prefetch",
+          "detail": "Quietly light up likely next nodes in the background. Costs tokens, may waste them."
+        },
+        {
+          "id": "e",
+          "label": "Accept it",
+          "detail": "Streaming is enough for v0.1.0."
+        }
+      ],
+      "take": "**Options first** and **cheaper model for cheap tasks**. Both are prompt- or config-level changes with a big perceived gain. The long-lived session is the real fix, but it's an unknown: I'd put a time-boxed spike into the v0.1.0 plan rather than promise it in the spec.",
+      "round": 1,
+      "settled": {
+        "summary": "**Accept the latency for v0.1.0**, and mask it with motion: while a node lights up, child nodes grow out of it as neutral shapes until their titles arrive (q-r2-spawn). Options-first and a cheaper model for cheap tasks come in a later version.",
+        "spec": "specs/tutor-protocol.md"
+      }
+    },
+    {
+      "id": "q-storage-format",
+      "area": "storage",
+      "kind": "single",
+      "allow_other": true,
+      "illustration": "sketches/disk-format.html",
+      "title": "How does a subject live on disk?",
+      "context": "The README asks for *readable and diffable, possibly an OKF bundle, so the prism tooling can read it*. The sketch shows the same subject stored three ways, with the git diff of one node becoming understood in each.",
+      "options": [
+        {
+          "id": "a",
+          "label": "A: one JSON file",
+          "detail": "The PoC format, extended with rooms and edges. Simplest; opaque in diffs; one atomic write."
+        },
+        {
+          "id": "b",
+          "label": "B: folder, JSON graph + markdown bodies",
+          "detail": "graph.json holds the structure (one atomic write); each node's explanation and dialogue is a markdown file."
+        },
+        {
+          "id": "c",
+          "label": "C: an OKF bundle",
+          "detail": "One markdown file per node with YAML frontmatter (kind, state, parent, links). Prism opens it as a wiki. Structure is spread across files.",
+          "recommended": true
+        }
+      ],
+      "take": "**C, the OKF bundle**, because it serves a goal you named: your subjects become first-class knowledge that Prism, git and any markdown reader can use, and the format outlives Lantern. The costs are real but bounded. Lantern needs a frontmatter parser, and a multi-file change (deleting a subtree) isn't atomic, so the spec must define write order and recovery. Loading 500 small files is milliseconds. If interoperability matters less to you than I think, **B** is the safe pragmatic choice.",
+      "round": 1,
+      "settled": {
+        "summary": "**One JSON file per subject**, now and probably for good. Export formats (an OKF bundle, for example) are a later feature.",
+        "spec": "specs/subject-storage.md"
+      }
+    },
+    {
+      "id": "q-storage-location",
+      "area": "storage",
+      "kind": "single",
+      "allow_other": true,
+      "title": "Where do subjects live?",
+      "context": "PoC: `Documents/Lantern/subjects/<id>.json`.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Documents/Lantern",
+          "detail": "Fixed, as in the PoC."
+        },
+        {
+          "id": "b",
+          "label": "A library folder you choose",
+          "detail": "Default Documents/Lantern, changeable in settings. Point it at a synced folder or a git repo.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Several libraries",
+          "detail": "Open any folder as a library, like a vault in Obsidian."
+        }
+      ],
+      "take": "**A library folder you choose**: the default works with no setup, and pointing it at a git repo is what makes a diffable format pay off. Several libraries can come later without a format change.",
+      "round": 1,
+      "settled": {
+        "summary": "**A library folder you choose**, defaulting to Documents/Lantern.",
+        "spec": "specs/subject-storage.md"
+      }
+    },
+    {
+      "id": "q-storage-poc",
+      "area": "storage",
+      "kind": "single",
+      "allow_other": true,
+      "title": "What happens to subjects made with the PoC?",
+      "context": "PoC subjects are `lantern-poc/1` JSON files. You may have some you care about.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Import them",
+          "detail": "v0.1.0 converts PoC files on first launch and keeps the originals.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Drop them",
+          "detail": "The PoC was throwaway; so is its data."
+        }
+      ],
+      "take": "**Import them.** It costs about a day, and keeping your first real subjects builds trust in the tool.",
+      "round": 1,
+      "settled": {
+        "summary": "**Import** `lantern-poc/1` subjects, keeping the originals.",
+        "spec": "specs/subject-storage.md"
+      }
+    },
+    {
+      "id": "q-ui-layout",
+      "area": "ui",
+      "kind": "single",
+      "allow_other": true,
+      "title": "Graph and panel: keep the PoC layout?",
+      "context": "PoC: graph on the left, panel fixed at 44% on the right, header bar with room chip, title and stats.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Keep it",
+          "detail": "It works."
+        },
+        {
+          "id": "b",
+          "label": "Keep it, made adjustable",
+          "detail": "Resizable split; collapse either side (graph full screen to look at the map, panel full width to read).",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Rethink it",
+          "detail": "For example the panel as an overlay over the graph, or a reading mode. Becomes an agent_design component."
+        }
+      ],
+      "take": "**Keep it, made adjustable.** You validated the layout. Resizing and collapsing are cheap and cover both *survey the map* and *read deeply*. A real rethink belongs in the design workflow, not in the specs.",
+      "round": 1,
+      "settled": {
+        "summary": "**Keep it, made adjustable**: resizable split, and either side collapsible.",
+        "spec": "specs/graph-view.md"
+      }
+    },
+    {
+      "id": "q-ui-language",
+      "area": "ui",
+      "kind": "single",
+      "allow_other": true,
+      "title": "Interface language?",
+      "context": "The tutor already answers in the subject's language. This is about the app's own buttons and labels.",
+      "options": [
+        {
+          "id": "a",
+          "label": "English",
+          "detail": "Single language, no i18n layer.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "French",
+          "detail": "Single language."
+        },
+        {
+          "id": "c",
+          "label": "English + French",
+          "detail": "An i18n layer from day one."
+        }
+      ],
+      "take": "**English** for v0.1.0, with all strings in one module so French can be added cheaply later.",
+      "round": 1,
+      "settled": {
+        "summary": "**English.** All UI strings live in one module; French comes later.",
+        "spec": "specs/platform-quality.md"
+      }
+    },
+    {
+      "id": "q-ship-platform",
+      "area": "ship",
+      "kind": "single",
+      "allow_other": true,
+      "title": "Platforms?",
+      "context": "Prism ships Windows only. Tauri can build macOS and Linux, but each one needs testing, and the CLI provider's process handling differs (for example `CREATE_NO_WINDOW` on Windows).",
+      "options": [
+        {
+          "id": "a",
+          "label": "Windows only",
+          "detail": "Like Prism.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Windows + macOS",
+          "detail": ""
+        },
+        {
+          "id": "c",
+          "label": "All three",
+          "detail": ""
+        }
+      ],
+      "take": "**Windows only**, with no Windows-only assumptions outside the provider and paths modules, so a port stays cheap.",
+      "round": 1,
+      "settled": {
+        "summary": "**Windows only.**",
+        "spec": "specs/platform-quality.md"
+      }
+    },
+    {
+      "id": "q-ship-quality",
+      "area": "ship",
+      "kind": "multi",
+      "allow_other": true,
+      "title": "What quality bar?",
+      "context": "The PoC has one ignored Rust test. Pick what v0.1.0 must have.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Unit tests for the core",
+          "detail": "Protocol parsing, graph mutations, storage round-trip, context building.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Rust tests",
+          "detail": "Provider stream parsing (with recorded CLI output), file I/O, path safety.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "UI end-to-end tests",
+          "detail": "Playwright against the web build with the fake tutor: the main loop works.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Prompt evals",
+          "detail": "A small fixed set of subjects run against the real model, checking protocol adherence (3 options, valid JSON, language). Run by hand, not in CI.",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "CI",
+          "detail": "GitHub Actions running everything except the evals on each push."
+        }
+      ],
+      "take": "The first four. The **prompt evals** matter most: the tagged-blocks protocol is the product's spine, and a prompt change that quietly breaks it would be invisible to every other test. Add CI if the repo goes public.",
+      "round": 1,
+      "settled": {
+        "summary": "Core unit tests, Rust tests, UI end-to-end tests with the fake tutor, and prompt evals. **Evals run on a cheap model (Haiku)**: if Haiku follows the protocol, larger models will too, and the same harness can later qualify local or custom providers. No CI.",
+        "spec": "specs/platform-quality.md"
+      }
+    },
+    {
+      "id": "q-ship-done",
+      "area": "ship",
+      "kind": "text",
+      "title": "In your own words: when is v0.1.0 done?",
+      "context": "One or two sentences, or a short list of scenarios that must work. This becomes the acceptance section of the v0.1.0 plan, and specs get trimmed against it.",
+      "take": "A draft to react to: *I can start a subject, learn it over several days across app restarts, and the graph shows honestly what I know, with no data loss, no waits over ~10 s before something useful appears, and no need to open a terminal.*",
+      "round": 1,
+      "settled": {
+        "summary": "*I can start a subject, learn it over several days across app restarts, and the graph shows honestly what I know, with no data loss. Waits over ~10 s are fine because the animation carries them, there's no need to open a terminal, and at least a minimal settings panel lets me customise the app.*",
+        "spec": "plans/v0-1-0.md"
+      }
+    },
+    {
+      "id": "q-r2-spaces",
+      "area": "rooms",
+      "kind": "single",
+      "title": "Rooms and spaces: where do Welcome and Gallery live?",
+      "context": "From your notes: *each room can have multiple spaces*. For Learn: a **learning space** (the PoC graph + panel), a **welcome** space (start a new subject or continue one of the 3 most recent), and a **gallery** to browse past explorations with their stats.\n\nThis mirrors Prism's *project → lens → view*: a room owns its set of spaces, the way a lens owns its views. The open point is whether Welcome and Gallery belong to **each room** or to **the app**.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Per room",
+          "detail": "Each room has its own welcome, gallery and working space(s). Learn's gallery shows Learn progress (understood %); a future Think gallery would show its own measures. The app opens on the **last used room's welcome**.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "App-level welcome and gallery, per-room working spaces",
+          "detail": "One welcome and one gallery for all rooms, listing subjects with every room they visited. Rooms only provide their working space."
+        },
+        {
+          "id": "c",
+          "label": "Both",
+          "detail": "An app-level welcome (pick a room, see recent work in any room) plus per-room spaces."
+        }
+      ],
+      "take": "**Per room**, because what a gallery should show (what *progress* means) is a room's business, exactly like a Prism lens owning its views. With one room, an app-level home would be an empty layer. When the second room arrives, a room switcher in the header (beside the room name) is enough, and an app-level home can be added then without changing any room. Please also give the three spaces names in the notes if *Welcome / Study / Gallery* doesn't fit.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Per room.** Learn owns Welcome, Study and Gallery. The app opens on the last used room's Welcome.",
+        "spec": "specs/rooms-spaces.md"
+      }
+    },
+    {
+      "id": "q-r2-header",
+      "area": "rooms",
+      "kind": "multi",
+      "title": "Header bar: accept these defaults",
+      "context": "Your list: *back to Lantern, room name, room space, title, stats*, with a **mandatory legend**. Tick each line you accept.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Left to right: Lantern mark · room chip · space tabs · subject title · stats · settings gear",
+          "detail": "The Lantern mark goes to the current room's welcome space. In v0.1.0 the room chip is a plain label; it becomes the room switcher later.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Space tabs are always visible",
+          "detail": "Welcome · Study · Gallery. Study is disabled when no subject is open.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Stats are compact",
+          "detail": "*12 lit · 4 understood · 9 dark*, and hovering shows the token total.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "The legend is a small always-available overlay in the graph corner",
+          "detail": "Node states (open, lit, understood demonstrated / self-declared, dismissed), merge nodes, text links. It can be collapsed, but never removed.",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Each room has its own accent colour; the frame and typography stay the same",
+          "detail": "The Learn room keeps the amber lantern. Other rooms get their own lantern on the same structure.",
+          "recommended": true
+        }
+      ],
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "All accepted. Space navigation is **icons, not tabs**: in Study, the top-left of the graph holds Welcome (where *reset graph* sits today) and Gallery. *Reset graph* becomes a separate **recenter** control. Welcome → Gallery; picking a subject → Study; double-click in Gallery → Study. Confirm in q-r3-nav.",
+        "spec": "specs/rooms-spaces.md"
+      }
+    },
+    {
+      "id": "q-r2-shape",
+      "area": "model",
+      "kind": "single",
+      "title": "Reconcile: tree, merge, cross-links, relations in text",
+      "context": "Round 1 pulled in three directions: **tree only** (the q-model-shape choice), **merge nodes with two or more parents** (your notes and Ctrl+click), and **cross-links in v0.1.0** (scope board), with a wish to keep **relations in the text** so another parser could rebuild the graph.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Parents + links in text",
+          "detail": "A node has `parents[]`: none for the root, 1 normally, 2 or more for a merge. That's the only structural edge. **Relations live in the text**: explanations and dialogue can link to other nodes (`[Slow start](node:n2)`, written by the tutor or by you). They're clickable in the panel and can be drawn as faint lines in the graph (toggle). No separate edge list, so the file is the text plus parents.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Parents + typed edge list",
+          "detail": "As A, plus an explicit `edges[]` (relates, prerequisite, contrasts) created by the tutor through a tagged block or by you."
+        },
+        {
+          "id": "c",
+          "label": "Parents only",
+          "detail": "Merge yes; relations stay plain prose. Cross-links move to Later."
+        }
+      ],
+      "take": "**Parents + links in text.** It honours all three wishes. The spine stays a tree except at merges, so the route highlight and travelling light keep working; a merge node's route lights all its parent paths. Merges are first-class. Relations are in the prose, where they mean something and any markdown parser can recover them. A typed edge list can still be derived from the links later. The tutor protocol gains one rule: *link to existing nodes by id when you mention them.*",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Merge is Later.** v0.1.0 is a tree, with relations as links in the text (confirm in q-r3-links).",
+        "spec": "specs/domain-model.md"
+      }
+    },
+    {
+      "id": "q-r2-provenance",
+      "area": "model",
+      "kind": "multi",
+      "title": "Provenance and usage recorded on each node",
+      "context": "From your notes: the **author** of a node's content (the model, the effort when available, your name if you edited it) as node metadata like its state, and **token counts as generation goes**, to know what a graph cost to reach a given state. Tick what the model must record.",
+      "options": [
+        {
+          "id": "a",
+          "label": "A generation log per room visit",
+          "detail": "Every LLM call is recorded: node, task (intro / light / reply / check / more / merge), model, effort (if the provider reports it), start time, duration, input/output/cache tokens, outcome (ok / cancelled / error). Totals per node and per subject are computed from it, never stored twice.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Content author on each node",
+          "detail": "`author: {kind: model, model, effort, generationId}`, becoming `edited: {by: <your name>, at}` when you change it.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Author on each dialogue turn",
+          "detail": "Tutor turns record their model and generation; your turns record your name.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Cancelled and failed calls count",
+          "detail": "They still cost tokens, so they appear in totals, marked.",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Your display name comes from settings",
+          "detail": "Defaults to the Windows user name.",
+          "recommended": true
+        }
+      ],
+      "take": "All five. The **generation log** is the important one. It answers *how many tokens did it take to get here* exactly, survives edits and deletions, and is what a future cost or speed comparison between models needs. The CLI's final `result` line already carries usage, so it costs nothing to capture.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "All five accepted: a generation log, content author, turn author, cancelled/failed calls counted, display name from settings.",
+        "spec": "specs/domain-model.md"
+      }
+    },
+    {
+      "id": "q-r2-usage-display",
+      "area": "model",
+      "kind": "single",
+      "title": "How is usage shown?",
+      "context": "On a subscription, tokens aren't billed per call, but the CLI still reports an API-equivalent cost.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Tokens and time",
+          "detail": "Node meta line: *Opus · 3.2k in / 1.1k out · 24 s*. Subject total in the stats hover and in the gallery. No currency.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Tokens, time and estimated $",
+          "detail": "As above, plus the API-equivalent cost, labelled as an estimate."
+        },
+        {
+          "id": "c",
+          "label": "Tokens only",
+          "detail": ""
+        }
+      ],
+      "take": "**Tokens and time.** A dollar figure on a subscription is misleading. Store the reported cost in the log anyway, so it can be shown once API providers exist.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Tokens and time**, no currency (the cost is stored, not shown).",
+        "spec": "specs/node-panel.md"
+      }
+    },
+    {
+      "id": "q-r2-regenerate",
+      "area": "learn",
+      "kind": "single",
+      "title": "Reconcile: regenerate in v0.1.0?",
+      "context": "The scope board put **Regenerate** in *Later*, but your PoC notes say *delete or regenerate a node and a cancel while it streams ⇒ yes*.",
+      "options": [
+        {
+          "id": "a",
+          "label": "v0.1.0: regenerate the explanation",
+          "detail": "On a lit node: a new explanation replaces the old one (which is kept as the previous version, once). Its children and dialogue stay. The tutor is told the learner wanted a different take.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "v0.1.0: regenerate the options only",
+          "detail": "*More options* covers this already."
+        },
+        {
+          "id": "c",
+          "label": "Later",
+          "detail": "Keep the board placement."
+        }
+      ],
+      "take": "**Regenerate the explanation**, in v0.1.0. It's close to free once *edit* and *cancel* exist, and it's the natural answer to a weak explanation. Keeping the previous version once costs nothing and mirrors what *edit* does.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Not in v0.1.0.** *More options* covers new options; regenerating an explanation is Later.",
+        "spec": "specs/learn-room.md"
+      }
+    },
+    {
+      "id": "q-r2-edit",
+      "area": "learn",
+      "kind": "multi",
+      "title": "Editing: what can you change, and what happens then?",
+      "context": "Your goal: *correct a hallucination, or orient the next generation*. Tick what you accept.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Title and hook are editable",
+          "detail": "On any node.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "The explanation is editable as markdown",
+          "detail": "In place in the panel (edit → save / cancel).",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Tutor dialogue turns are editable",
+          "detail": "To correct a wrong statement the tutor made in conversation.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Edits keep the previous text once",
+          "detail": "Like regenerate: `previous` holds the last model-written version, so you can compare or revert. Not a full history (undo is Later).",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Edited content is marked",
+          "detail": "A small *edited by you* mark on the meta line. The tutor sees your text as the truth and is told in the system prompt that learner corrections take precedence.",
+          "recommended": true
+        },
+        {
+          "id": "f",
+          "label": "Editing never triggers generation",
+          "detail": "You decide whether to regenerate children or ask a follow-up.",
+          "recommended": true
+        }
+      ],
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "All accepted: title/hook, explanation and tutor turns are editable; the previous text is kept once; an edited mark; corrections take precedence; editing never triggers a generation.",
+        "spec": "specs/learn-room.md"
+      }
+    },
+    {
+      "id": "q-r2-merge",
+      "area": "learn",
+      "kind": "single",
+      "title": "Ctrl+click merge: what does it produce?",
+      "context": "You select 2 or more nodes with Ctrl+click, then *Merge*. A new node is created with all of them as parents.",
+      "options": [
+        {
+          "id": "a",
+          "label": "An open synthesis node",
+          "detail": "The tutor proposes a title and hook for what connects them, using the same tagged-block protocol. The node appears **open**, ready to light up like any other. Fast, and keeps the rhythm.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "A lit synthesis node",
+          "detail": "The tutor writes the synthesis explanation right away."
+        },
+        {
+          "id": "c",
+          "label": "You name it",
+          "detail": "You type the title; the tutor lights it when you ask."
+        }
+      ],
+      "take": "**An open synthesis node**, with *Name it yourself* as a secondary action in the same dialog (it reuses *add my own node*). Limit: 2 to 4 nodes, and they can't be ancestors of one another. The spec will also cover merge nodes in the tree layout (placed below their deepest parent) and in the route highlight (all parent paths light).",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Later.** When it comes, it produces an open synthesis node.",
+        "spec": "specs/product-scope.md"
+      }
+    },
+    {
+      "id": "q-r2-actions",
+      "area": "learn",
+      "kind": "multi",
+      "title": "Learn actions: accept these defaults",
+      "context": "Small behaviours to write into the Learn room spec. Tick each one you accept.",
+      "options": [
+        {
+          "id": "a",
+          "label": "More options adds 3 new open children",
+          "detail": "It never replaces existing ones. The tutor sees every existing child (including dismissed ones) and must propose different directions.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Add my own node",
+          "detail": "From a node's panel: title plus optional hook, creating an open child with the author *you*. It is lit like any other.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Dismissed nodes stay in the graph, faded",
+          "detail": "A *Dismissed (n)* fold in the parent's panel lists them, and each one can be restored. A dismissed node is never re-proposed.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Delete removes a node and its subtree",
+          "detail": "Except nodes that keep another surviving parent (merges). A confirm dialog shows how many nodes go. The generation log keeps their entries.",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Cancel discards the partial reply",
+          "detail": "The node returns to its previous state; the log records *cancelled* with the tokens used so far.",
+          "recommended": true
+        },
+        {
+          "id": "f",
+          "label": "One generation at a time per node",
+          "detail": "Other nodes stay usable; you can browse and read while one streams. Parallel generation across nodes is Later.",
+          "recommended": true
+        },
+        {
+          "id": "g",
+          "label": "The tutor may mark understood only after a check",
+          "detail": "`<understood/>` is accepted only in reply to a *Test me* question (demonstrated). *I get it* is always available (self-declared).",
+          "recommended": true
+        }
+      ],
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "All seven accepted: more options, add my own node, dismiss, delete, cancel, one generation per node, understood rules.",
+        "spec": "specs/learn-room.md"
+      }
+    },
+    {
+      "id": "q-r2-tone",
+      "area": "learn",
+      "kind": "single",
+      "title": "Tutor tone: where is it set?",
+      "context": "You want the tone selectable, for example *explain like I'm 5* or *engineer*.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Per subject, with a room default",
+          "detail": "A default tone in the Learn room settings. Each subject can override it from the header, at any time. Presets: **ELI5, Curious, Student, Engineer, Expert**, plus a free-text *custom* tone. Each generation logs the tone used.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Global only",
+          "detail": "One tone for everything, in settings."
+        },
+        {
+          "id": "c",
+          "label": "Per request",
+          "detail": "A tone picker next to *Light it up*."
+        }
+      ],
+      "take": "**Per subject, with a room default.** Tone belongs to *how I'm approaching this subject*. Changing it mid-subject affects new generations only. Please correct the preset names in the notes if you have your own.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Per subject, with a room default.** Presets ELI5 / Curious / Student / Engineer / Expert, plus custom.",
+        "spec": "specs/learn-room.md"
+      }
+    },
+    {
+      "id": "q-r2-highlight",
+      "area": "learn",
+      "kind": "multi",
+      "title": "What did you mean by *text highlight*?",
+      "context": "In your *what must not change* answer, *Text highlight* appears with no detail. Tick everything that applies, or explain in the notes.",
+      "options": [
+        {
+          "id": "a",
+          "label": "The tutor's bold key terms",
+          "detail": "As in the PoC: bold terms rendered in the light *focus* colour. Keep it."
+        },
+        {
+          "id": "b",
+          "label": "You highlight passages",
+          "detail": "Select text in an explanation and mark it; highlights are saved, and the tutor is told what you found important."
+        },
+        {
+          "id": "c",
+          "label": "Select text → act on it",
+          "detail": "Select a passage, then *Ask about this* or *Make it a node*."
+        }
+      ],
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "Bold key terms are kept, plus **select text → act** (*Ask about this*, *Make it a node*). Details in q-r3-select.",
+        "spec": "specs/node-panel.md"
+      }
+    },
+    {
+      "id": "q-r2-spawn",
+      "area": "learn",
+      "kind": "single",
+      "title": "The spawn animation while a node lights up",
+      "context": "Your idea: *while the lit process runs, sub-nodes spawn and grow from the parent in an animated way… neutral node shapes until their content is known*. This is a motion design problem, and the learning-node design (r008-02) was settled through the agent_design workflow.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Design it in agent_design first",
+          "detail": "A `spawn` component (motion phase, starting from r008-02), done before or in parallel with the v0.1.0 graph work. The spec only fixes the behaviour: when placeholders appear, how many, what happens when 2 or 0 options arrive, cancel, error.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Spec it in words, implement directly",
+          "detail": "I describe the motion in the graph-view spec and it's tuned in the app."
+        }
+      ],
+      "take": "**Design it in agent_design.** The behaviour has hard cases the spec must pin down: 3 placeholders grow at the start, titles fade in when the options block parses, unused placeholders recede, and on cancel or error all of them recede. The *feel* should come from the design loop that already produced the travelling light. I'll put it in the v0.1.0 plan as an early design task.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Specified in words, tuned in the app.** Proposed numbers in q-r3-spawn.",
+        "spec": "specs/graph-view.md"
+      }
+    },
+    {
+      "id": "q-r2-model",
+      "area": "llm",
+      "kind": "single",
+      "title": "Model choice, even mid-session",
+      "context": "v0.1.0 provider: the Claude Code CLI on your subscription. The model is passed with `--model`.\n\n**Checked 2026-10-01:** the CLI accepts `--model <alias or id>` and **`--effort low|medium|high|xhigh|max`**. Its stream reports the resolved model id (e.g. `claude-haiku-4-5-20251001`) and, at the end, input, output, **thinking** and cache tokens, duration and an API-equivalent cost. Effort can therefore be both **chosen and recorded**.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Per subject, with an app default",
+          "detail": "A default model **and effort** in settings; a picker in the subject header changes them for future generations. Each generation logs the resolved model id and effort, so the node meta shows exactly who wrote what.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Global only",
+          "detail": "Changing it in settings affects everything from then on."
+        },
+        {
+          "id": "c",
+          "label": "Per action",
+          "detail": "A model picker on each action."
+        }
+      ],
+      "take": "**Per subject, with an app default**, mirroring the tone choice, for both model and effort. The picker offers the aliases (opus, sonnet, haiku) plus a free-text id; effort offers the five CLI levels. The log stores the *resolved* model id the CLI reports, not the alias, so *Opus* written today stays distinguishable from *Opus* next year.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Per subject, with app defaults**, for both model and effort. The log stores the resolved model id.",
+        "spec": "specs/inference-provider.md"
+      }
+    },
+    {
+      "id": "q-r2-prompt",
+      "area": "llm",
+      "kind": "single",
+      "title": "Who owns the system prompts?",
+      "context": "You asked for *a proper prompt-engineered pre-prompt*. The spec will define its structure (room role, tone, method, protocol, learner-correction rule, link rule). Open point: can you edit it?",
+      "options": [
+        {
+          "id": "a",
+          "label": "App-internal, versioned",
+          "detail": "Prompts live in code with a version number recorded in each generation. Tone and model are the user-facing controls. The prompt evals guard every change.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Editable in room settings",
+          "detail": "An advanced field that overrides the system prompt."
+        },
+        {
+          "id": "c",
+          "label": "Files in the library folder",
+          "detail": "Prompt templates as editable files next to the subjects."
+        }
+      ],
+      "take": "**App-internal, versioned.** The protocol (tagged blocks, node links) is load-bearing, and a user-edited prompt that breaks it breaks the graph silently. The evals exist to guard exactly these prompts. An override can come later behind an *advanced* flag.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**App-internal, versioned**, guarded by the evals.",
+        "spec": "specs/tutor-protocol.md"
+      }
+    },
+    {
+      "id": "q-r2-context",
+      "area": "llm",
+      "kind": "multi",
+      "title": "Adaptive context: accept these defaults",
+      "context": "Round 1: whole map while it fits, then the neighbourhood. Tick what you accept.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Budget: 12k input tokens for the map part",
+          "detail": "Below it, send the whole map outline (as the PoC does). Above it, send the path, siblings, children, merge parents and the **titles of every node** (so no duplicate proposals), then descendant hooks if budget remains.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Dialogue: the last 12 turns in full",
+          "detail": "Older turns are dropped, with a one-line *(n earlier turns omitted)*. No summary calls in v0.1.0.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Your edits are always sent",
+          "detail": "Edited content of the focused node and its parents is never clipped first.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Node ids are in the outline",
+          "detail": "So the tutor can link to them (`node:id`).",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "The budget lives in Learn room settings (advanced)",
+          "detail": "Default 12k.",
+          "recommended": true
+        }
+      ],
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "All accepted: a 12k map budget, the last 12 turns, edits never clipped first, ids in the outline, the budget in Learn settings.",
+        "spec": "specs/context-assembly.md"
+      }
+    },
+    {
+      "id": "q-r2-welcome",
+      "area": "ui",
+      "kind": "multi",
+      "title": "Welcome and Gallery spaces: accept these defaults",
+      "context": "From your notes: a welcoming home that lets you start or continue, edit, and see progress. Tick each line you accept.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Welcome: one subject field, front and centre",
+          "detail": "Plus *Suggest 3 subjects* (as in the PoC), and the tone picker for the new subject.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Welcome: the 3 most recent subjects as large cards",
+          "detail": "Title, a mini graph thumbnail, *understood / total*, last opened, *Continue*.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Gallery: every subject as a card grid",
+          "detail": "Sort by last opened, created or progress; filter by text.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Gallery card stats",
+          "detail": "Nodes, lit, understood (demonstrated / self-declared), tokens spent, time span (created → last opened), main model.",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Subject actions: rename, delete (with confirmation), reveal file in Explorer",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "f",
+          "label": "The welcome look is designed in agent_design",
+          "detail": "Like the spawn animation, as a design component before implementation.",
+          "recommended": true
+        }
+      ],
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "All accepted, including **designing the Welcome look in agent_design** before implementation.",
+        "spec": "specs/welcome-gallery.md"
+      }
+    },
+    {
+      "id": "q-r2-graph",
+      "area": "ui",
+      "kind": "multi",
+      "title": "Graph and panel: accept these defaults",
+      "context": "Tick each line you accept.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Keep both layouts",
+          "detail": "Free (physics) and tree, with the toggle, as in the PoC.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Resizable split",
+          "detail": "Drag the divider; double-click resets to 44%; collapse either side; the split is remembered per app.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Text links drawn faintly",
+          "detail": "Links found in text appear as thin dotted lines, toggled from the legend.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Rich content",
+          "detail": "KaTeX math, Mermaid diagrams, syntax-highlighted code in explanations and dialogue.",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Keyboard",
+          "detail": "Arrows move between parent, children and siblings; Enter lights an open node / focuses the panel; Ctrl+Enter sends; Esc cancels a generation; Ctrl+click and M merges; `?` shows shortcuts.",
+          "recommended": true
+        },
+        {
+          "id": "f",
+          "label": "Reduced motion respected",
+          "detail": "As in the final learning-node design.",
+          "recommended": true
+        }
+      ],
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "All accepted: both layouts, resizable split, faint text links, KaTeX/Mermaid/code, keyboard, reduced motion.",
+        "spec": "specs/graph-view.md"
+      }
+    },
+    {
+      "id": "q-r2-settings",
+      "area": "settings",
+      "kind": "multi",
+      "title": "What goes into the v0.1.0 settings panel?",
+      "context": "You want at least a minimal settings panel, with **room settings as a submenu**. v0.1.0 targets the Claude Code subscription; other providers and their security come later. Tick what v0.1.0 needs.",
+      "options": [
+        {
+          "id": "a",
+          "label": "General: library folder",
+          "detail": "Change, reveal; moving existing subjects is offered, never forced.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "General: your display name",
+          "detail": "Used in provenance.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Provider: Claude Code CLI status",
+          "detail": "Found or not, version, logged in or not, with a *Test* button that runs a tiny call. A clear fix-it message when something is missing, since you never need to open a terminal.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Provider: default model",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "i",
+          "label": "Provider: default effort level",
+          "detail": "low · medium · high · xhigh · max (CLI `--effort`).",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Learn room: default tone",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "f",
+          "label": "Learn room: context budget (advanced)",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "g",
+          "label": "Appearance: reduce motion override",
+          "detail": "On top of the OS setting.",
+          "recommended": true
+        },
+        {
+          "id": "h",
+          "label": "Appearance: show token stats",
+          "detail": "Hide all usage numbers if you prefer."
+        }
+      ],
+      "take": "All but the last, which is cheap but optional. Settings are stored app-side (the OS config directory), never in the library, so a library folder in git stays clean, as Prism does with its project config.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "Everything listed: library folder, display name, CLI status + Test, default model and effort, Learn tone and context budget, reduce motion, show token stats.",
+        "spec": "specs/settings.md"
+      }
+    },
+    {
+      "id": "q-r2-installer",
+      "area": "ship",
+      "kind": "single",
+      "title": "Installer: reuse Prism's approach?",
+      "context": "Prism ships an **unsigned per-user NSIS installer** on GitHub Releases. Authenticode is a follow-up. Prism's lesson: wiring the updater *plugin* early is cheap, and a release without `latest.json` can never update itself.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Prism's approach, updater plugin wired but off",
+          "detail": "Unsigned NSIS per-user installer, built locally (no CI). The updater plugin and `createUpdaterArtifacts` are configured from v0.1.0, so turning auto-update on later needs no rebuild of the chain.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Prism's approach, no updater at all",
+          "detail": "Strictly as the board says: the updater is Later."
+        },
+        {
+          "id": "c",
+          "label": "No installer: run from a local build",
+          "detail": ""
+        }
+      ],
+      "take": "**Wired but off.** It respects *auto-update: Later* (no update UI, no release flow) while avoiding Prism's v0.1.0 mistake, which cost an extra point release to fix.",
+      "round": 2,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Prism's approach**: unsigned per-user NSIS, updater plugin and artifacts wired but no update flow.",
+        "spec": "specs/platform-quality.md"
+      }
+    },
+    {
+      "id": "q-r3-nav",
+      "area": "rooms",
+      "kind": "multi",
+      "illustration": "sketches/navigation.html",
+      "title": "Navigation between spaces: is this what you meant?",
+      "context": "Built from your header notes. The sketch is clickable: try moving between the three spaces. Tick each line that matches your intent.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Study: Welcome and Gallery icons at the top-left of the graph",
+          "detail": "Where *reset graph* is today.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Recenter is a separate control, with the zoom controls (bottom-right of the graph)",
+          "detail": "What *reset graph* actually does.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Welcome: picking a recent subject opens it in Study",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Welcome: a *Browse all* link opens Gallery",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Gallery: single click selects a card and shows its actions; double-click opens it in Study",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "f",
+          "label": "Gallery and Welcome: an icon back to Study for the subject that was open, if any",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "g",
+          "label": "Header Lantern mark → Welcome",
+          "detail": "Also reachable from any space.",
+          "recommended": true
+        },
+        {
+          "id": "h",
+          "label": "Shortcuts: Ctrl+1 Welcome, Ctrl+2 Study, Ctrl+3 Gallery",
+          "detail": "",
+          "recommended": true
+        }
+      ],
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "All accepted. Addition: a single click in Gallery also shows the subject's **detailed stats**.",
+        "spec": "specs/welcome-gallery.md"
+      }
+    },
+    {
+      "id": "q-r3-links",
+      "area": "model",
+      "kind": "single",
+      "title": "v0.1.0 relations: tree + links in the text?",
+      "context": "Merge is Later, so v0.1.0 is a tree. You placed cross-links in v0.1.0 (round 1) and liked relations living in the text.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Tree + text links",
+          "detail": "Nodes store `parents: [oneId]` (an array, so merge can arrive later without a format change). The tutor and you can link nodes in the text as `[label](node:id)`: clickable in the panel, drawn as faint dotted lines in the graph (toggle in the legend).",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Tree only",
+          "detail": "No links in v0.1.0; cross-links move to Later together with merge."
+        }
+      ],
+      "take": "**Tree + text links.** It delivers the v0.1.0 cross-links you asked for at almost no structural cost, and it's what makes merge cheap later.",
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Tree + text links**: `parents` is an array of one id; relations are `[label](node:id)` links.",
+        "spec": "specs/domain-model.md"
+      }
+    },
+    {
+      "id": "q-r3-select",
+      "area": "learn",
+      "kind": "multi",
+      "title": "Select text → act: accept these details",
+      "context": "Tick what you accept.",
+      "options": [
+        {
+          "id": "a",
+          "label": "A small popover appears above a text selection in explanations and dialogue",
+          "detail": "Two actions; Esc or clicking elsewhere dismisses it.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "*Ask about this* quotes the selection into the dialogue box",
+          "detail": "As `> quote`, cursor below it, nothing sent automatically.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "*Make it a node* creates an open `own` child of the current node",
+          "detail": "The title is the selection (trimmed, at most 80 characters). For a longer selection, the selection becomes the hook and you are asked for a short title.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Only available on lit nodes (which have text)",
+          "detail": "",
+          "recommended": true
+        }
+      ],
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "All accepted.",
+        "spec": "specs/node-panel.md"
+      }
+    },
+    {
+      "id": "q-r3-spawn",
+      "area": "learn",
+      "kind": "multi",
+      "title": "Spawn animation: accept these starting values",
+      "context": "You chose to specify it in words and tune it in the app. These are the starting values; tuning them later in the app is expected and won't need a spec change.",
+      "options": [
+        {
+          "id": "a",
+          "label": "3 placeholders grow from the parent's rim when a light-up or *More options* starts",
+          "detail": "Staggered 120 ms, 500 ms ease-out, a neutral dotted *pending* style distinct from *open*.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "While waiting, placeholders breathe slowly",
+          "detail": "Opacity 0.5 ↔ 0.8, 2.4 s period.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "When the options arrive, each placeholder becomes the real node in place",
+          "detail": "The title fades in over 200 ms; surplus placeholders shrink back into the parent over 300 ms.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Cancel or error: placeholders shrink back over 300 ms",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Replies and checks get no placeholders, just a soft pulse on the node",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "f",
+          "label": "In the free layout, placeholders are physics bodies, so the graph makes room as they grow",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "g",
+          "label": "Reduced motion: placeholders appear and disappear instantly, with no breathing",
+          "detail": "",
+          "recommended": true
+        }
+      ],
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "All starting values accepted; to be tuned in the app.",
+        "spec": "specs/graph-view.md"
+      }
+    },
+    {
+      "id": "q-r3-storage",
+      "area": "storage",
+      "kind": "multi",
+      "title": "Storage details: accept these",
+      "context": "Proposals from the storage draft (ST-20 to ST-24) and points it left open.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Write safety ST-20 to ST-23",
+          "detail": "Temp file + rename, ~300 ms debounce + flush on close, failed saves shown and retried, single app instance.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Conflict: no local changes → reload silently with a toast",
+          "detail": "For example after a git pull in the library.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Conflict: both changed → open the disk version, save yours as `<id>.conflict-<time>.json`, banner *Open conflict copy*",
+          "detail": "Nothing is ever lost or silently overwritten.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Log kept forever",
+          "detail": "About 300 bytes per call: 2,000 calls ≈ 600 KB. No cap in v0.1.0.",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Changing the library folder closes the open subject, then offers to move the subjects",
+          "detail": "Never forced; the old folder is left as it is if you decline.",
+          "recommended": true
+        }
+      ],
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "All accepted: write safety, both conflict rules, the log kept forever, the library change flow.",
+        "spec": "specs/subject-storage.md"
+      }
+    },
+    {
+      "id": "q-r3-evals",
+      "area": "ship",
+      "kind": "multi",
+      "title": "Prompt evals: accept this setup",
+      "context": "Tick what you accept.",
+      "options": [
+        {
+          "id": "a",
+          "label": "An `evals/` folder at the repo root",
+          "detail": "Fixture subjects (EN + FR, small and large) and cases per task: intro, light, reply, check, more options.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Run with `npm run eval -- --model haiku [--effort low]`",
+          "detail": "Through the same provider code as the app.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Checks",
+          "detail": "3 options with distinct titles, valid JSON blocks, the learner's language, `node:` links only to ids in context, no re-proposal of existing or dismissed titles, `<understood/>` only after a check.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Results in `evals/results/<date>-<model>.json` (git-ignored) plus a console table",
+          "detail": "Pass rate per check, tokens and time per case.",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Bar for release: ≥ 95% pass on Haiku across 3 runs",
+          "detail": "",
+          "recommended": true
+        }
+      ],
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "All accepted, including the ≥ 95% bar on Haiku across 3 runs.",
+        "spec": "specs/platform-quality.md"
+      }
+    },
+    {
+      "id": "q-r3-review",
+      "area": "scope",
+      "kind": "multi",
+      "allow_other": false,
+      "title": "Review gate: tick each spec you approve",
+      "context": "Read each spec in the **Specs** tab and tick the ones you approve as-is. For any you don't tick, write what's wrong in the notes, as *spec: problem*. Approving means **agreed**: it becomes the contract that v0.1.0 is implemented and checked against. Small later corrections are still possible, but they become recorded changes.\n\nSpecs still marked *todo* are being written; reload in a while.",
+      "options": [
+        {
+          "id": "product-scope",
+          "label": "Product scope",
+          "detail": "`agent_wiki/specs/product-scope.md`"
+        },
+        {
+          "id": "rooms-spaces",
+          "label": "Rooms and spaces",
+          "detail": "`agent_wiki/specs/rooms-spaces.md`"
+        },
+        {
+          "id": "domain-model",
+          "label": "Domain model",
+          "detail": "`agent_wiki/specs/domain-model.md`"
+        },
+        {
+          "id": "learn-room",
+          "label": "Learn room",
+          "detail": "`agent_wiki/specs/learn-room.md`"
+        },
+        {
+          "id": "tutor-protocol",
+          "label": "Tutor protocol & prompts",
+          "detail": "`agent_wiki/specs/tutor-protocol.md`"
+        },
+        {
+          "id": "context-assembly",
+          "label": "Context assembly",
+          "detail": "`agent_wiki/specs/context-assembly.md`"
+        },
+        {
+          "id": "inference-provider",
+          "label": "Inference provider",
+          "detail": "`agent_wiki/specs/inference-provider.md`"
+        },
+        {
+          "id": "subject-storage",
+          "label": "Subject storage",
+          "detail": "`agent_wiki/specs/subject-storage.md`"
+        },
+        {
+          "id": "welcome-gallery",
+          "label": "Welcome & Gallery",
+          "detail": "`agent_wiki/specs/welcome-gallery.md`"
+        },
+        {
+          "id": "graph-view",
+          "label": "Graph view",
+          "detail": "`agent_wiki/specs/graph-view.md`"
+        },
+        {
+          "id": "node-panel",
+          "label": "Node panel",
+          "detail": "`agent_wiki/specs/node-panel.md`"
+        },
+        {
+          "id": "settings",
+          "label": "Settings",
+          "detail": "`agent_wiki/specs/settings.md`"
+        },
+        {
+          "id": "platform-quality",
+          "label": "Platform & quality",
+          "detail": "`agent_wiki/specs/platform-quality.md`"
+        }
+      ],
+      "round": 3,
+      "settled": {
+        "summary": "**All 13 specs approved** (2026-10-02). They are the v0.1.0 contract.",
+        "spec": "specs/product-scope.md"
+      }
+    },
+    {
+      "id": "q-r3-click",
+      "area": "learn",
+      "kind": "single",
+      "title": "Clicking a next step in the panel: light it at once?",
+      "context": "In the PoC, clicking an open child under *Where to go next* focuses it **and lights it immediately**. That keeps the rhythm, but a stray click spends a generation (tokens, and ~25 s of the tutor's time on that node).",
+      "options": [
+        {
+          "id": "a",
+          "label": "Light at once (PoC)",
+          "detail": "One click = go there and light it. Cancel (Esc) is the safety net."
+        },
+        {
+          "id": "b",
+          "label": "Focus first, then light",
+          "detail": "One click focuses the node; its panel shows the dark state with a prominent *Light it up* (Enter). Two deliberate steps.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Light at once, with a short undo window",
+          "detail": "The light-up starts after ~1.5 s with a *Cancel* toast; clicking elsewhere in that window aborts for free."
+        }
+      ],
+      "take": "**Focus first, then light.** Reading the hook before committing is part of choosing well, and Enter keeps it a one-key action. Clicking a node **in the graph** already behaves this way, so the two would match.",
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Focus first, then light** (Enter or *Light it up*).",
+        "spec": "specs/node-panel.md"
+      }
+    },
+    {
+      "id": "q-r3-signin",
+      "area": "settings",
+      "kind": "single",
+      "title": "Claude Code not signed in: how do you fix it without a terminal?",
+      "context": "You want *no need to open a terminal*. But Claude Code's sign-in happens in Claude Code itself (it opens the browser for OAuth). Lantern can't sign in on your behalf.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Lantern opens the sign-in for you",
+          "detail": "Settings → Provider shows *Sign in to Claude Code*: Lantern opens a console window running `claude` (which starts the browser sign-in), then *Check again*. You never type a command.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Instructions only",
+          "detail": "Lantern explains what to do; you open Claude Code yourself."
+        }
+      ],
+      "take": "**Lantern opens it for you.** It's the closest thing to *no terminal* that's actually possible: one button, a window that closes when you're done. Installation, if Claude Code is missing, stays a link to the official install page.",
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "**Instructions only** in v0.1.0; Lantern opening the sign-in is Later. AC-6 allows the one-time sign-in outside Lantern.",
+        "spec": "specs/settings.md"
+      }
+    },
+    {
+      "id": "q-r3-delete",
+      "area": "ui",
+      "kind": "single",
+      "title": "Deleting a subject from the Gallery",
+      "context": "The spec proposes an explicit confirm dialog (title, node count, tokens spent), with no typing of the title.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Confirm dialog, file goes to the Recycle Bin",
+          "detail": "Recoverable from Windows if it was a mistake.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Confirm dialog, permanent delete",
+          "detail": ""
+        },
+        {
+          "id": "c",
+          "label": "Type the title to confirm, permanent delete",
+          "detail": ""
+        }
+      ],
+      "take": "**Recycle Bin.** Undo is Later; the Recycle Bin is a free undo for the most destructive action in the app.",
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "Confirm dialog; the file goes to the **Recycle Bin**.",
+        "spec": "specs/welcome-gallery.md"
+      }
+    },
+    {
+      "id": "q-r3-menu",
+      "area": "rooms",
+      "kind": "single",
+      "title": "Where do the tone, model and effort pickers sit?",
+      "context": "They are per subject and changeable at any time, so they belong to the open subject, in the header.",
+      "options": [
+        {
+          "id": "a",
+          "label": "A subject menu on the title",
+          "detail": "Click the subject title in the header: a compact menu with Rename, Tone, Model, Effort. The header stays calm.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Visible chips in the header",
+          "detail": "*Curious · Sonnet · medium* always shown next to the title, each one clickable."
+        },
+        {
+          "id": "c",
+          "label": "In the panel composer",
+          "detail": "Next to *Send*, like a chat app."
+        }
+      ],
+      "take": "**A subject menu on the title**, plus a one-line hint under the title showing the current tone and model on hover. Visible chips would compete with the stats and the calm you asked for.",
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "**A subject menu on the title**: rename, tone, model, effort.",
+        "spec": "specs/rooms-spaces.md"
+      }
+    },
+    {
+      "id": "q-r3-defaults",
+      "area": "settings",
+      "kind": "multi",
+      "title": "Default values: accept these",
+      "context": "Defaults the spec writers had to choose. Tick each one you accept.",
+      "options": [
+        {
+          "id": "a",
+          "label": "Default model: sonnet",
+          "detail": "The alias, so it follows new Sonnet versions.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Default effort: medium",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "Default tone: Curious",
+          "detail": "Plain, friendly, assumes no background.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Default graph layout: free (physics)",
+          "detail": "",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "Context budget range: 2k–100k tokens (default 12k)",
+          "detail": "",
+          "recommended": true
+        }
+      ],
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "Accepted, except the model: the default is **`opus`** (the latest Opus, currently Opus 5.5).",
+        "spec": "specs/settings.md"
+      }
+    },
+    {
+      "id": "q-r3-proposals",
+      "area": "scope",
+      "kind": "multi",
+      "title": "Smaller proposals from the spec writers: accept these",
+      "context": "Details the specs needed and the digest didn't fix. Tick each one you accept. Anything you leave unticked I'll remove or rework.",
+      "options": [
+        {
+          "id": "a",
+          "label": "One generation at a time per subject",
+          "detail": "While one node generates, you can browse and read everything, but not start a second generation. Parallel generation is Later, so this is the honest v0.1.0 rule.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "*Last opened* is kept app-side, not in the subject file",
+          "detail": "Opening a subject doesn't modify its file, so a library in git doesn't get a diff just for reading. Gallery stats come from an app-side summary cache, refreshed when a file changes.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "*Previous* only for model-written text",
+          "detail": "Editing the explanation or a tutor turn keeps the model's original once. Title and hook edits keep nothing. Your own dialogue turns are not editable.",
+          "recommended": true
+        },
+        {
+          "id": "d",
+          "label": "Self-declared understood: an outlined amber ring with a check",
+          "detail": "Demonstrated stays the solid amber fill. Distinguishable at 38 px.",
+          "recommended": true
+        },
+        {
+          "id": "e",
+          "label": "A pending *Test me* question stays open until you answer",
+          "detail": "Any reply right after a check is treated as the answer; `<understood/>` is accepted only then.",
+          "recommended": true
+        },
+        {
+          "id": "f",
+          "label": "Stats: *lit* includes understood; *tokens spent* = input + output (thinking included, cache excluded)",
+          "detail": "Cancelled and failed calls are included.",
+          "recommended": true
+        },
+        {
+          "id": "g",
+          "label": "Keyboard extras",
+          "detail": "Home focuses the root. Enter on a lit node focuses the composer. Ctrl+2 with no subject open opens the most recent. Alt+A / Alt+N for the selection popover.",
+          "recommended": true
+        },
+        {
+          "id": "h",
+          "label": "Recenter keeps the focused node",
+          "detail": "It only fits the view; focus doesn't jump to the root.",
+          "recommended": true
+        },
+        {
+          "id": "i",
+          "label": "Large-graph fallback",
+          "detail": "Above ~800 nodes the free layout turns off and tree layout is used, to keep panning smooth.",
+          "recommended": true
+        },
+        {
+          "id": "j",
+          "label": "Markdown safety",
+          "detail": "No remote images or raw HTML in tutor text; links open in the browser, except `node:` links.",
+          "recommended": true
+        },
+        {
+          "id": "k",
+          "label": "Per-node composer drafts",
+          "detail": "An unsent message stays with its node when you move around.",
+          "recommended": true
+        },
+        {
+          "id": "l",
+          "label": "Token estimate: characters ÷ 3",
+          "detail": "Errs on the safe side for French and other non-English text.",
+          "recommended": true
+        }
+      ],
+      "round": 3,
+      "allow_other": true,
+      "settled": {
+        "summary": "All twelve accepted.",
+        "spec": "specs/learn-room.md"
+      }
+    }
+  ]
+}

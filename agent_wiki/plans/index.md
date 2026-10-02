@@ -9,3 +9,4 @@ plan that still reads as current is worse than no plan. When a plan lands, mark
 it `deprecated` and link to what it produced rather than deleting it.
 
 * [Roadmap](roadmap.md) - README, PoC, wiki, then specs and the v0.1.0 plan.
+* [v0.1.0 implementation plan](v0-1-0.md) - Milestones M0–M6 plus the Welcome design track, exit checks and early risks.

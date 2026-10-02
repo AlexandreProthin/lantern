@@ -5,6 +5,7 @@ description: Prism, the make-me-think and make-me-learn skills, and the OKF wiki
 tags: [prism, skills, okf]
 status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 | Name | Where | Relation to Lantern |

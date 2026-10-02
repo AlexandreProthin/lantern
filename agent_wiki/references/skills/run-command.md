@@ -5,6 +5,7 @@ description: Run instructions for a runtime `shell` computation, and the receipt
 tags: [meta, executor, okf]
 status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:05:27Z }
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 # When this applies

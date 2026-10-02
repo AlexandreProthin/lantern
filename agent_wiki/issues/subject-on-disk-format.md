@@ -3,9 +3,12 @@ type: Issue
 title: Subject on-disk format
 description: "Open question: should a saved subject be an OKF bundle or a custom format?"
 tags: [persistence, okf, open-question]
-status: draft
-generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
+status: deprecated
+generated: { by: claude-code/sonnet-5.5, at: 2026-10-01T21:45:00Z }
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
+
+Resolved by [subject-single-json-file](/decisions/subject-single-json-file.md) and [subject-storage](/specs/subject-storage.md): one JSON file per subject.
 
 # Question
 

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context budget per turn</title>
+<style>
+:root{--bg:#101827;--surface:#172132;--surface-2:#1d2a3f;--ink:#f3e9dc;--ink-mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e;--accent-ink:#211b14;--focus:#ffe0ab;--node-open:#969ca7;--node-lit:#ffe1aa;--node-understood:#e8b66e;
+--c-sys:#7a8699;--c-map:#e8b66e;--c-oth:#d9825b;--c-par:#8fb8e8;--c-node:#5b8fd0;--c-dia:#8fd1a0;--c-pro:#c39be0}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Segoe UI",sans-serif;overflow-x:hidden}
+body{padding:14px 16px 28px;max-width:1100px;margin:0 auto}
+h1{font-size:18px;margin:0 0 4px}
+h2{font-size:13px;margin:0 0 8px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.lede{color:var(--ink-mute);margin:0 0 12px;max-width:80ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px}
+.ctrls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px 18px}
+.ctrl label{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-mute)}
+.ctrl output{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);margin:2px 0 0}
+.fixed{font-size:12px;color:var(--ink-mute);margin-top:8px}
+.strat{margin-bottom:12px}
+.strat .hd{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.strat b{font-size:14px}
+.tot{font-variant-numeric:tabular-nums;color:var(--accent)}
+.strat p{margin:2px 0 6px;font-size:12px;color:var(--ink-mute)}
+.bar{position:relative;height:26px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;overflow:hidden;display:flex}
+.bar i{display:block;height:100%;min-width:0;border-right:1px solid var(--bg)}
+.bar .bl{position:absolute;top:0;bottom:0;border-left:2px dashed var(--focus);width:0;pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--ink-mute);margin-top:6px}
+.legend span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c);margin-right:5px;vertical-align:-1px}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--ink-mute);font:11px system-ui,sans-serif}
+.loses{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.loses div{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:9px 11px;font-size:12.5px;color:var(--ink-mute)}
+.loses b{display:block;color:var(--ink);margin-bottom:3px}
+.note{font-size:11.5px;color:var(--ink-mute);margin:6px 0 0}
+.bud{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--ink-mute);margin-bottom:6px}
+.bud input{flex:1;max-width:320px}
+</style>
+</head>
+<body>
+<h1>What goes to the model on each turn</h1>
+<p class="lede">Rough estimate of input tokens per LLM call under three context strategies. Decide how much of the map the tutor should see each turn, and what it may forget. Hover any bar segment for its formula.</p>
+
+<div class="panel"><h2>Subject and turn</h2>
+<div class="ctrls" id="ctrls"></div>
+<div class="fixed">Fixed: system prompt 450 tokens. Every figure is an approximation, not a measured token count.</div></div>
+
+<div class="panel"><h2>Input tokens per call, by component</h2>
+<div class="bud"><label for="budget">Budget line</label><input type="range" id="budget" min="2000" max="30000" step="500" value="8000"><output id="budgetOut">8000</output></div>
+<div id="strats"></div>
+<div class="legend" id="legend"></div></div>
+
+<div class="panel"><h2>Total tokens vs. nodes in subject</h2>
+<svg id="chart" viewBox="0 0 760 300" role="img" aria-label="Line chart of total tokens against node count"></svg>
+<div class="legend" id="clegend"></div>
+<p class="note">Other settings held at the sliders above. Dashed vertical = current node count; dashed horizontal = budget.</p></div>
+
+<div class="panel"><h2>What the tutor loses</h2>
+<div class="loses">
+<div><b>1. Whole map</b>Loses nothing about the map's shape, but pays for it on every call. Past the budget the outline must be cut or the call fails; the first thing dropped is usually the oldest dialogue or the outline's tail, with no rule about which. Remembers nothing about <i>how</i> the learner did on other nodes beyond their state tags.</div>
+<div><b>2. Neighbourhood</b>Cannot see distant open nodes' hooks, so it may re-propose a node that already exists elsewhere in the map. Sees other lit nodes by title only, so it cannot link to what was actually said there. Turns older than the last 8 are reduced to one summary.</div>
+<div><b>3. Neighbourhood + memory</b>Gains short stored summaries of lit nodes and a learner profile, but those summaries must be written and kept current (extra calls, possible staleness). Still blind to distant open nodes; summaries beyond the 1500-token cap drop the least recently visited nodes. A wrong profile can bias the tutor.</div>
+</div></div>
+
+<script>
+const SYS=450;
+const P=[
+ {k:'N',label:'Nodes in subject',min:5,max:600,v:40,step:1},
+ {k:'f',label:'Lit fraction',min:0,max:100,v:50,step:1,fmt:v=>v+'%'},
+ {k:'d',label:'Focus depth',min:1,max:12,v:4,step:1},
+ {k:'c',label:'Avg children per node',min:1,max:6,v:3,step:1},
+ {k:'E',label:'Explanation length (tokens)',min:200,max:2000,v:700,step:50},
+ {k:'T',label:'Dialogue turns on focused node',min:0,max:40,v:6,step:1},
+ {k:'tt',label:'Tokens per turn',min:40,max:400,v:120,step:10},
+ {k:'h',label:'Title + hook tokens per node',min:10,max:60,v:25,step:1}
+];
+const S={};P.forEach(p=>S[p.k]=p.v);
+const SEG={sys:['System prompt','--c-sys'],map:['Map / path / neighbours','--c-map'],oth:['Other lit nodes','--c-oth'],par:['Parent explanation','--c-par'],node:['Focused explanation','--c-node'],dia:['Dialogue','--c-dia'],pro:['Learner profile','--c-pro']};
+const STRATS=[
+ {id:1,name:'1. Whole map (PoC today)',color:'#e8b66e',desc:'Everything the PoC sends: the full outline of every node, the path, the parent and focused explanations, all dialogue turns.'},
+ {id:2,name:'2. Neighbourhood',color:'#7fb6e8',desc:'Path to root, siblings and children of the focus, bare titles of other lit nodes, last 8 turns plus a summary of earlier ones.'},
+ {id:3,name:'3. Neighbourhood + memory',color:'#8fd1a0',desc:'As 2, but other lit nodes carry a stored 30-token summary (capped at 1500 total, most recent first) and a 200-token learner profile is added.'}
+];
+function calc(id,s){
+ const lit=Math.round(s.N*s.f/100);
+ const hk=s.h,pe=Math.min(s.E,625),ne=Math.min(s.E,1500);
+ const out={};
+ out.sys=[SYS,'system prompt = 450 (fixed)'];
+ out.par=[pe,'parent explanation = min(E, 625) = min('+s.E+', 625)'];
+ out.node=[ne,'focused explanation = min(E, 1500) = min('+s.E+', 1500)'];
+ if(id==1){
+  out.map=[s.N*hk+s.d*8,'outline N x (title+hook) + path d x 8 = '+s.N+' x '+hk+' + '+s.d+' x 8'];
+  out.oth=[0,'included in the outline'];
+  out.dia=[s.T*s.tt,'all turns = T x tokens/turn = '+s.T+' x '+s.tt];
+  out.pro=[0,'none'];
+ }else{
+  const sib=Math.min(s.c-1,Math.max(0,s.N-1)),ch=Math.min(s.c,s.N);
+  const nb=(s.d+sib+ch);
+  out.map=[nb*hk,'(path d + siblings (c-1) + children c) x (title+hook) = ('+s.d+' + '+sib+' + '+ch+') x '+hk];
+  const others=Math.max(0,lit-s.d);
+  if(id==2){
+   out.oth=[others*8,'other lit nodes max(0, lit - d) x 8-token title = '+others+' x 8'];
+   const kept=Math.min(s.T,8),summ=s.T>8?150:0;
+   out.dia=[kept*s.tt+summ,'last min(T,8) turns x tokens/turn'+(summ?' + 150-token summary of earlier turns':'')+' = '+kept+' x '+s.tt+(summ?' + 150':'')];
+   out.pro=[0,'none'];
+  }else{
+   out.oth=[Math.min(others*30,1500),'min(other lit x 30-token summary, 1500) = min('+others+' x 30, 1500)'];
+   const kept=Math.min(s.T,8),summ=s.T>8?150:0;
+   out.dia=[kept*s.tt+summ,'last min(T,8) turns x tokens/turn'+(summ?' + 150-token summary of earlier turns':'')+' = '+kept+' x '+s.tt+(summ?' + 150':'')];
+   out.pro=[200,'learner profile = 200 (fixed)'];
+  }
+ }
+ let total=0;for(const k in out)total+=out[k][0];
+ return {parts:out,total};
+}
+const $=id=>document.getElementById(id);
+const ctrls=$('ctrls');
+P.forEach(p=>{
+ const d=document.createElement('div');d.className='ctrl';
+ d.innerHTML='<label for="r_'+p.k+'">'+p.label+'<output id="o_'+p.k+'"></output></label><input type="range" id="r_'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+p.v+'">';
+ ctrls.appendChild(d);
+ d.querySelector('input').addEventListener('input',e=>{S[p.k]=+e.target.value;render();});
+});
+$('budget').addEventListener('input',render);
+$('legend').innerHTML=Object.values(SEG).map(s=>'<span style="--c:var('+s[1]+')">'+s[0]+'</span>').join('');
+$('clegend').innerHTML=STRATS.map(s=>'<span style="--c:'+s.color+'">'+s.name+'</span>').join('');
+$('strats').innerHTML=STRATS.map(s=>'<div class="strat"><div class="hd"><b>'+s.name+'</b><span class="tot" id="t'+s.id+'"></span></div><p>'+s.desc+'</p><div class="bar" id="b'+s.id+'"></div></div>').join('');
+
+function render(){
+ const budget=+$('budget').value;$('budgetOut').textContent=budget;
+ P.forEach(p=>{$('o_'+p.k).textContent=p.fmt?p.fmt(S[p.k]):S[p.k];});
+ const res=STRATS.map(s=>calc(s.id,S));
+ const mx=Math.max(budget*1.05,...res.map(r=>r.total))*1.02;
+ STRATS.forEach((s,i)=>{
+  const r=res[i];
+  $('t'+s.id).textContent='~'+Math.round(r.total).toLocaleString('en')+' tokens'+(r.total>budget?' (over budget)':'');
+  let h='';
+  for(const k of Object.keys(SEG)){
+   const [v,f]=r.parts[k];if(v<=0)continue;
+   h+='<i style="width:'+(v/mx*100)+'%;background:var('+SEG[k][1]+')" title="'+SEG[k][0]+': ~'+Math.round(v)+' tokens\n'+f+'"></i>';
+  }
+  h+='<span class="bl" style="left:'+(budget/mx*100)+'%" title="budget '+budget+'"></span>';
+  $('b'+s.id).innerHTML=h;
+ });
+ chart(budget);
+}
+function chart(budget){
+ const W=760,H=300,L=52,R=14,T=12,B=34;
+ const xs=[];for(let n=5;n<=600;n+=5)xs.push(n);
+ const lines=STRATS.map(s=>xs.map(n=>calc(s.id,Object.assign({},S,{N:n})).total));
+ const ymax=Math.max(budget*1.1,...lines.map(l=>l[l.length-1]))*1.05;
+ const X=n=>L+(n-5)/595*(W-L-R),Y=v=>T+(1-v/ymax)*(H-T-B);
+ let g='';
+ const step=ymax>16000?5000:ymax>8000?2000:1000;
+ for(let v=0;v<=ymax;v+=step){g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#3b4558" stroke-width=".6"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+v+'</text>';}
+ [5,100,200,300,400,500,600].forEach(n=>{g+='<text x="'+X(n)+'" y="'+(H-14)+'" text-anchor="middle">'+n+'</text>';});
+ g+='<text x="'+(W/2)+'" y="'+(H-1)+'" text-anchor="middle">nodes in subject</text>';
+ g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(budget)+'" y2="'+Y(budget)+'" stroke="#ffe0ab" stroke-dasharray="6 4" stroke-width="1.4"/><text x="'+(W-R-4)+'" y="'+(Y(budget)-5)+'" text-anchor="end" style="fill:#ffe0ab">budget '+budget+'</text>';
+ g+='<line x1="'+X(S.N)+'" x2="'+X(S.N)+'" y1="'+T+'" y2="'+(H-B)+'" stroke="#f3e9dc" stroke-dasharray="2 3" stroke-width="1"/><text x="'+(X(S.N)+4)+'" y="'+(T+10)+'">N = '+S.N+'</text>';
+ STRATS.forEach((s,i)=>{
+  g+='<polyline fill="none" stroke="'+s.color+'" stroke-width="2.2" points="'+xs.map((n,j)=>X(n).toFixed(1)+','+Y(lines[i][j]).toFixed(1)).join(' ')+'"><title>'+s.name+'</title></polyline>';
+  const cur=calc(s.id,S).total;
+  g+='<circle cx="'+X(S.N)+'" cy="'+Y(cur)+'" r="4" fill="'+s.color+'" stroke="#101827"><title>'+s.name+': ~'+Math.round(cur)+' tokens</title></circle>';
+ });
+ $('chart').innerHTML=g;
+}
+render();
+</script>
+</body>
+</html>

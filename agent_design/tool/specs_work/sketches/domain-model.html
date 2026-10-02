@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subject domain model</title>
+<style>
+:root{--bg:#101827;--surface:#172132;--surface-2:#1d2a3f;--ink:#f3e9dc;--ink-mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e;--accent-ink:#211b14;--focus:#ffe0ab;--node-open:#969ca7;--node-lit:#ffe1aa;--node-understood:#e8b66e}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Segoe UI",sans-serif;overflow-x:hidden}
+body{padding:14px 16px 28px;max-width:1100px;margin:0 auto}
+h1{font-size:18px;margin:0 0 4px}
+.lede{color:var(--ink-mute);margin:0 0 10px;max-width:84ch}
+.bar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:10px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:var(--surface);color:var(--ink-mute);border:0;padding:6px 12px;font:inherit;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+button:focus-visible,label:focus-within{outline:2px solid var(--focus);outline-offset:1px}
+.chk{display:flex;gap:6px;align-items:center;color:var(--ink-mute);font-size:13px;cursor:pointer}
+.chk input{accent-color:var(--accent)}
+.main{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(220px,1fr);gap:12px;align-items:start}
+@media(max-width:720px){.main{grid-template-columns:1fr}}
+.dia{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px}
+svg{width:100%;height:auto;display:block}
+svg text{font:12px system-ui,sans-serif;fill:var(--ink)}
+.ent{cursor:pointer}
+.ent rect{fill:var(--surface-2);stroke:var(--line);stroke-width:1.2}
+.ent:hover rect{stroke:var(--accent)}
+.ent.sel rect{stroke:var(--focus);stroke-width:2.4}
+.ent .sub{fill:var(--ink-mute);font-size:10.5px}
+.ent.def rect{stroke-dasharray:5 3}
+.ent.off{opacity:.25}
+.rel line,.rel path{stroke:var(--ink-mute);stroke-width:1.2;fill:none}
+.rel text{font-size:10.5px;fill:var(--ink-mute);paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.rel.off{opacity:.2}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;min-height:150px}
+.card h3{margin:0 0 2px;font-size:15px;color:var(--accent)}
+.card p{margin:2px 0 8px;color:var(--ink-mute)}
+.card table{width:100%;border-collapse:collapse}
+.card td{padding:2px 4px;vertical-align:top;border-top:1px solid var(--line)}
+.card td:first-child{font-family:ui-monospace,Consolas,monospace;color:var(--ink);white-space:nowrap}
+.card td:nth-child(2){font-family:ui-monospace,Consolas,monospace;color:var(--node-lit);white-space:nowrap}
+.card td:last-child{color:var(--ink-mute)}
+.poc{margin-top:8px;padding:6px 8px;background:var(--surface-2);border-radius:6px;color:var(--ink-mute)}
+.poc b{color:var(--ink)}
+.v1{margin-top:8px;color:var(--node-lit)}
+h2{font-size:13px;margin:16px 0 6px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--surface);border:1px solid var(--line)}
+.tbl th,.tbl td{padding:7px 9px;border:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th{background:var(--surface-2)}
+.tbl td.rowh{width:16%;color:var(--ink);font-weight:600}
+.tbl td{color:var(--ink-mute)}
+.tbl tr.act td:not(.rowh){color:var(--ink)}
+.tblwrap{overflow-x:auto}
+.legend{font-size:11.5px;color:var(--ink-mute);margin:6px 2px 0}
+</style>
+</head>
+<body>
+<h1>What a subject is made of</h1>
+<p class="lede">Two ways to relate rooms to the graph: one graph per room visit, or one shared graph that rooms annotate with layers. Decide which model the specs should assume. Click an entity for its fields.</p>
+
+<div class="bar">
+ <div class="seg" role="group" aria-label="Variant">
+  <button id="vA" aria-pressed="true">A: one graph per room visit</button>
+  <button id="vB" aria-pressed="false">B: one shared graph, rooms add layers</button>
+ </div>
+ <label class="chk"><input type="checkbox" id="v1"> show v0.1.0 only (Learn room ships alone)</label>
+</div>
+
+<div class="main">
+ <div class="dia"><svg id="svg" viewBox="0 0 740 340" role="img" aria-label="Entity diagram"></svg></div>
+ <div class="card" id="card"></div>
+</div>
+<p class="legend">Dashed outline = definition built into the app (code, not saved data). Cardinalities read from the first entity to the second.</p>
+
+<h2>Trade-offs</h2>
+<div class="tblwrap"><table class="tbl" id="tbl"></table></div>
+
+<script>
+const $=id=>document.getElementById(id);
+// ---------- entities ----------
+// x,y,w,h ; v1: kept in v0.1.0 per variant ; def: built-in definition
+const POS={
+ A:{Library:[10,20,100],Subject:[150,20,120],RoomVisit:[310,20,120],Graph:[480,20,100],Node:[480,140,100],Edge:[630,140,100],Turn:[480,260,100],RoomDef:[310,140,120]},
+ B:{Library:[10,20,100],Subject:[150,20,120],Graph:[330,20,100],Node:[330,140,100],Edge:[490,140,100],RoomVisit:[150,140,120],RoomDef:[10,140,110],Layer:[150,260,120],NodeState:[330,260,100],Turn:[490,260,100]}
+};
+const SUB={Library:'all subjects',Subject:'',RoomVisit:'',Graph:'',Node:'',Edge:'',Turn:'',RoomDef:'built in',Layer:'',NodeState:'per-node, per-room'};
+const OFF1={A:['RoomDef'],B:['RoomDef','Layer','NodeState']};
+const RELS={
+ A:[['Library','Subject','holds 0..n'],['Subject','RoomVisit','1..n visits'],['RoomVisit','Graph','owns 1'],['Graph','Node','0..n'],['Graph','Edge','0..n'],['Edge','Node','from / to'],['Node','Turn','0..n'],['RoomDef','RoomVisit','furnishes']],
+ B:[['Library','Subject','holds 0..n'],['Subject','Graph','owns 1'],['Graph','Node','0..n'],['Graph','Edge','0..n'],['Edge','Node','from / to'],['Subject','RoomVisit','1..n visits'],['RoomVisit','Layer','owns 1'],['Layer','NodeState','0..n'],['NodeState','Node','annotates'],['Layer','Node','adds nodes / edges'],['Turn','Node','of (node, room)'],['RoomDef','RoomVisit','furnishes']]
+};
+const F=(n,t,m)=>[n,t,m];
+const COMMON={
+ Library:{m:'The learner\'s collection of subjects on disk.',f:[F('subjects','Subject[]','Every subject the learner owns.')],v1:'Kept: the PoC already lists subjects from a folder.'},
+ Subject:{m:'What the learner is working through. Belongs to the learner, not to a room.',f:[F('id','string','Stable slug, also the folder or file name.'),F('title','string','"TCP congestion control".'),F('created','datetime','When the subject began.')],poc:'PoC <b>Subject</b>: format, id, title, room, rootId, focusId, nodes, createdAt, updatedAt. The room is a single constant <code>\'learn\'</code>.'},
+ Turn:{m:'One message in the dialogue attached to a node.',f:[F('role','learner | tutor','Who spoke.'),F('text','markdown','The message.'),F('at','datetime','When it was written.')],poc:'PoC <b>Turn</b>: <code>role: learner|tutor</code>, <code>text</code>, <code>at</code>, stored in <code>LNode.dialogue[]</code>.'},
+ RoomDef:{m:'A room as a design: what the AI is and what the graph means in it. Ships with the app, not saved with a subject.',f:[F('id','learn | think | ...','Which room.'),F('aiRole / systemPrompt','text','How the AI behaves here.'),F('nodeKinds','enum[]','Allowed node kinds in this room.'),F('edgeTypes','enum[]','Allowed edge types.'),F('states','enum[]','Progress states a node can have.'),F('actions','Action[]','What the learner can do (explore, check, branch...).')],poc:'PoC: <code>LEARN_SYSTEM</code> and the prompt builders in <code>prompts.ts</code>; kinds and states are TypeScript unions in <code>subject.ts</code>.',v1:'Greyed: with one room this is just constants in code.'}
+};
+const NODE_POC='PoC <b>LNode</b>: id, parentId (the graph is a <b>tree</b>), title, hook, kind, state, content, dialogue[], createdAt.<br>kind: <code>subject | axis | deeper | application | adjacent | exercise | question</code><br>state: <code>open | lit | understood</code>';
+const EDGE_POC='PoC has <b>no Edge type</b>: the only relation is <code>parentId</code> (a tree). A general Edge list is new.';
+const ENT={
+ A:Object.assign({},COMMON,{
+  RoomVisit:{m:'One trip of the subject into one room. Visiting Learn twice is two visits, two graphs.',f:[F('room','learn | think | ...','Which room definition furnishes it.'),F('created','datetime','When the visit started.')],poc:'PoC has exactly one implicit visit: <code>Subject.room = \'learn\'</code>.',v1:'Kept, but only ever one visit with room = learn.'},
+  Graph:{m:'The structure built in this visit. Lives and dies with the visit.',f:[F('nodes','Node[]','0..n nodes.'),F('edges','Edge[]','0..n edges.'),F('rootId / focusId','id','Root node and the currently focused one.')],poc:'PoC: <code>Subject.rootId</code>, <code>focusId</code>, <code>nodes</code> sit directly on the subject.'},
+  Node:{m:'One idea in the graph. State and kind are those of this room.',f:[F('id','string','Stable id; titles need not be unique.'),F('title','string','Short name, may be empty or long.'),F('hook','string','One-line teaser.'),F('kind','room enum','Role of the node in this room.'),F('state','room enum','Progress in this room.'),F('content','markdown','Main body (the tutor\'s explanation in Learn).')],poc:NODE_POC},
+  Edge:{m:'A typed link between two nodes of the same graph.',f:[F('from','Node.id','Source node.'),F('to','Node.id','Target node.'),F('type','room enum','e.g. parent, relates, objects-to.')],poc:EDGE_POC}
+ }),
+ B:Object.assign({},COMMON,{
+  RoomVisit:{m:'One trip into a room. Owns that room\'s layer over the shared graph.',f:[F('room','learn | think | ...','Which room definition furnishes it.'),F('created','datetime','When the visit started.')],poc:'PoC has one implicit visit: <code>Subject.room = \'learn\'</code>.',v1:'Kept, but only ever one visit with room = learn.'},
+  Graph:{m:'The single graph of the subject: the ideas and links common to every room.',f:[F('nodes','Node[]','Shared nodes.'),F('edges','Edge[]','Shared edges.'),F('rootId','id','Root node.')],poc:'PoC: <code>Subject.nodes</code>, <code>rootId</code>.'},
+  Node:{m:'One idea, shared by all rooms. Room-specific state is NOT here; it lives in a layer.',f:[F('id','string','Stable id.'),F('title','string','Short name.'),F('hook','string','One-line teaser.'),F('kind','string','Neutral kind (the room may reinterpret).'),F('content','markdown','Shared body, if any.')],poc:NODE_POC+'<br>In B, <code>state</code> would move out of the node into the Learn layer (<code>NodeState</code>).',v1:'Greyed state detail: with only Learn, <code>state</code> could stay on Node.'},
+  Edge:{m:'A typed link in the shared graph.',f:[F('from','Node.id','Source node.'),F('to','Node.id','Target node.'),F('type','string','e.g. parent, relates.')],poc:EDGE_POC},
+  Layer:{m:'What one room visit adds on top of the shared graph: per-node state plus its own nodes and edges.',f:[F('room','string','Same room as the visit.'),F('nodeStates','NodeState[]','Room-specific state per node.'),F('addedNodes','Node[]','Nodes only this room uses (e.g. an objection).'),F('addedEdges','Edge[]','Edges only this room uses.')],poc:'PoC: nothing; the Learn state is stored on each node.',v1:'Greyed: with one room the layer is empty overhead.'},
+  NodeState:{m:'Room-specific data about one shared node.',f:[F('node','Node.id','Which node it annotates.'),F('state','room enum','Learn: open | lit | understood.'),F('extra','room-specific','Think: position, objection; Learn: none.')],poc:'PoC: <code>LNode.state</code> (<code>open|lit|understood</code>).',v1:'Greyed: could be a plain field on Node.'},
+  Turn:{m:'A dialogue message, attached to a node and to the room it was said in.',f:[F('node','Node.id','Which node.'),F('room','string','Which room (the same node can be discussed in two rooms).'),F('role','learner | tutor','Who spoke.'),F('text','markdown','The message.'),F('at','datetime','When.')],poc:'PoC <b>Turn</b>: role, text, at, in <code>LNode.dialogue[]</code>.'}
+ })
+};
+// ---------- state ----------
+let variant='A',sel='Subject';
+const NS='http://www.w3.org/2000/svg';
+function box(n){const p=POS[variant][n];return{x:p[0],y:p[1],w:p[2],h:46}}
+function clip(a,b){ // point on rect a toward center of b
+ const cx=a.x+a.w/2,cy=a.y+a.h/2,tx=b.x+b.w/2,ty=b.y+b.h/2,dx=tx-cx,dy=ty-cy;
+ const s=Math.min(dx?Math.abs((a.w/2)/dx):1e9,dy?Math.abs((a.h/2)/dy):1e9);
+ return[cx+dx*s,cy+dy*s];
+}
+function draw(){
+ const only=$('v1').checked,off=only?OFF1[variant]:[];
+ let h='<defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#aeb3bf"/></marker></defs>';
+ RELS[variant].forEach(([a,b,l])=>{
+  const A=box(a),B=box(b),p=clip(A,B),q=clip(B,A);
+  const dim=off.includes(a)||off.includes(b);
+  h+='<g class="rel'+(dim?' off':'')+'"><line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" marker-end="url(#ar)"/><text x="'+((p[0]+q[0])/2)+'" y="'+((p[1]+q[1])/2+3)+'" text-anchor="middle">'+l+'</text></g>';
+ });
+ Object.keys(POS[variant]).forEach(n=>{
+  const b=box(n),o=off.includes(n);
+  h+='<g class="ent'+(n==='RoomDef'?' def':'')+(o?' off':'')+(n===sel?' sel':'')+'" data-n="'+n+'" tabindex="0" role="button" aria-label="'+n+'"><rect x="'+b.x+'" y="'+b.y+'" width="'+b.w+'" height="'+b.h+'" rx="6"/><text x="'+(b.x+b.w/2)+'" y="'+(b.y+(SUB[n]?20:27))+'" text-anchor="middle" font-weight="600">'+(n==='RoomDef'?'Room definition':n)+'</text>'+(SUB[n]?'<text class="sub" x="'+(b.x+b.w/2)+'" y="'+(b.y+36)+'" text-anchor="middle">'+SUB[n]+'</text>':'')+'</g>';
+ });
+ $('svg').innerHTML=h;
+ $('svg').querySelectorAll('.ent').forEach(g=>{
+  g.addEventListener('click',()=>{sel=g.dataset.n;draw();card();});
+  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sel=g.dataset.n;draw();card();}});
+ });
+}
+function card(){
+ const e=ENT[variant][sel]||ENT[variant].Subject;
+ const only=$('v1').checked,off=OFF1[variant].includes(sel);
+ let h='<h3>'+(sel==='RoomDef'?'Room definition':sel)+'</h3><p>'+e.m+'</p><table>'+e.f.map(f=>'<tr><td>'+f[0]+'</td><td>'+f[1]+'</td><td>'+f[2]+'</td></tr>').join('')+'</table>';
+ if(e.poc)h+='<div class="poc">'+e.poc+'</div>';
+ if(e.v1&&only)h+='<div class="v1">v0.1.0: '+e.v1+'</div>';
+ else if(only&&off)h+='<div class="v1">v0.1.0: not needed if only Learn ships.</div>';
+ $('card').innerHTML=h;
+}
+const TRADE=[
+ ['Simplicity now',
+  'Simple. A subject holds visits, each visit holds a plain graph. No cross-references between rooms, and the Learn code never has to know a layer exists. For v0.1.0 it is nearly the PoC with a wrapper.',
+  'More moving parts. A node\'s state is split from the node and a layer has to be joined back on every read, even though v0.1.0 has one room. The cost is paid before any second room exists.'],
+ ['Moving a subject between rooms',
+  'Taking a subject into Think starts from an empty graph, or a one-time copy or import step that decides what carries over. Nothing is shared, so the two graphs can drift apart and the learner re-enters the same ideas.',
+  'Natural. The nodes already exist; entering Think creates a new layer and the learner sees the same ideas with a different lens. The cost is that every room must tolerate nodes it did not create and nodes whose kind it does not use.'],
+ ['On-disk layout',
+  'Per visit: <code>learn-1/graph</code>, <code>think-1/graph</code> side by side, each self-contained. Easy to delete or share one visit. Duplicated titles across visits.',
+  'One shared <code>graph</code> plus <code>layers/learn</code>, <code>layers/think</code>. Deleting a room means deleting a layer, but a shared node edit touches the graph used by every room, and layer files point into it by id.']
+];
+function tbl(){
+ let h='<tr><th></th><th>A: one graph per room visit</th><th>B: one shared graph, layers</th></tr>';
+ TRADE.forEach(r=>{h+='<tr class="act"><td class="rowh">'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>';});
+ $('tbl').innerHTML=h;
+}
+function setV(v){
+ variant=v;$('vA').setAttribute('aria-pressed',v==='A');$('vB').setAttribute('aria-pressed',v==='B');
+ if(!POS[v][sel])sel='Subject';
+ draw();card();
+}
+$('vA').onclick=()=>setV('A');$('vB').onclick=()=>setV('B');
+$('v1').onchange=()=>{draw();card();};
+tbl();setV('A');
+</script>
+</body>
+</html>

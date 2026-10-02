@@ -1,0 +1,241 @@
+{
+  "specs": [
+    {
+      "id": "product-scope",
+      "title": "Product scope and non-goals",
+      "area": "scope",
+      "status": "agreed",
+      "file": "specs/product-scope.md",
+      "summary": "What v0.1.0 is for, what is in, what is explicitly out.",
+      "questions": [
+        "q-scope-purpose",
+        "q-scope-rooms",
+        "q-scope-board",
+        "q-poc-off",
+        "q-poc-keep",
+        "q-r3-review"
+      ]
+    },
+    {
+      "id": "rooms-spaces",
+      "title": "Rooms and spaces",
+      "area": "rooms",
+      "status": "agreed",
+      "file": "specs/rooms-spaces.md",
+      "summary": "The app frame: what a room and a space are, navigation, header, room accents.",
+      "questions": [
+        "q-r2-spaces",
+        "q-r2-header",
+        "q-scope-purpose",
+        "q-r3-review",
+        "q-r3-nav",
+        "q-r3-menu"
+      ]
+    },
+    {
+      "id": "domain-model",
+      "title": "Domain model",
+      "area": "model",
+      "status": "agreed",
+      "file": "specs/domain-model.md",
+      "summary": "Library, subject, room visit, node, edge, turn: fields, invariants, states.",
+      "questions": [
+        "q-model-rooms",
+        "q-model-shape",
+        "q-model-states",
+        "q-r2-shape",
+        "q-r2-provenance",
+        "q-r2-usage-display",
+        "q-r3-review",
+        "q-r3-links"
+      ]
+    },
+    {
+      "id": "learn-room",
+      "title": "Learn room behaviour",
+      "area": "learn",
+      "status": "agreed",
+      "file": "specs/learn-room.md",
+      "summary": "Every learner action, what the tutor does, and how the graph changes.",
+      "questions": [
+        "q-learn-understood",
+        "q-learn-options",
+        "q-model-states",
+        "q-r2-regenerate",
+        "q-r2-edit",
+        "q-r2-merge",
+        "q-r2-actions",
+        "q-r2-tone",
+        "q-r2-highlight",
+        "q-r3-review",
+        "q-r3-click",
+        "q-r3-proposals",
+        "q-r3-select"
+      ]
+    },
+    {
+      "id": "tutor-protocol",
+      "title": "Tutor reply protocol",
+      "area": "llm",
+      "status": "agreed",
+      "file": "specs/tutor-protocol.md",
+      "summary": "Tagged blocks, their order, parsing, and how malformed replies degrade.",
+      "questions": [
+        "q-llm-latency",
+        "q-r2-shape",
+        "q-r2-prompt",
+        "q-r3-review",
+        "q-r3-proposals"
+      ]
+    },
+    {
+      "id": "context-assembly",
+      "title": "Context assembly",
+      "area": "llm",
+      "status": "agreed",
+      "file": "specs/context-assembly.md",
+      "summary": "What each call sends, the budget, and what happens when it is exceeded.",
+      "questions": [
+        "q-llm-context",
+        "q-r2-context",
+        "q-r3-review",
+        "q-r3-defaults",
+        "q-r3-proposals"
+      ]
+    },
+    {
+      "id": "inference-provider",
+      "title": "Inference provider",
+      "area": "llm",
+      "status": "agreed",
+      "file": "specs/inference-provider.md",
+      "summary": "Provider contract, model choice, streaming, cancel, errors, concurrency.",
+      "questions": [
+        "q-llm-latency",
+        "q-scope-board",
+        "q-r2-model",
+        "q-r2-provenance",
+        "q-r3-review",
+        "q-r3-signin",
+        "q-r3-proposals"
+      ]
+    },
+    {
+      "id": "subject-storage",
+      "title": "Subject storage",
+      "area": "storage",
+      "status": "agreed",
+      "file": "specs/subject-storage.md",
+      "summary": "Format, layout, write safety, recovery, PoC import.",
+      "questions": [
+        "q-storage-format",
+        "q-storage-location",
+        "q-storage-poc",
+        "q-r3-review",
+        "q-r3-storage",
+        "q-r3-proposals"
+      ]
+    },
+    {
+      "id": "welcome-gallery",
+      "title": "Welcome and Gallery spaces",
+      "area": "ui",
+      "status": "agreed",
+      "file": "specs/welcome-gallery.md",
+      "summary": "Starting, continuing, browsing, renaming and deleting subjects.",
+      "questions": [
+        "q-scope-board",
+        "q-r2-spaces",
+        "q-r2-welcome",
+        "q-r3-review",
+        "q-r3-delete",
+        "q-r3-proposals"
+      ]
+    },
+    {
+      "id": "graph-view",
+      "title": "Graph view",
+      "area": "ui",
+      "status": "agreed",
+      "file": "specs/graph-view.md",
+      "summary": "Layouts, node rendering per state, selection, route light, keyboard.",
+      "questions": [
+        "q-ui-layout",
+        "q-model-shape",
+        "q-r2-graph",
+        "q-r2-spawn",
+        "q-r2-header",
+        "q-r3-review",
+        "q-r3-spawn",
+        "q-r3-links",
+        "q-r3-defaults",
+        "q-r3-proposals"
+      ]
+    },
+    {
+      "id": "node-panel",
+      "title": "Node panel",
+      "area": "ui",
+      "status": "agreed",
+      "file": "specs/node-panel.md",
+      "summary": "What the panel shows per node state and every action it offers.",
+      "questions": [
+        "q-ui-layout",
+        "q-learn-understood",
+        "q-r2-edit",
+        "q-r2-usage-display",
+        "q-r2-highlight",
+        "q-r3-review",
+        "q-r3-select",
+        "q-r3-click",
+        "q-r3-proposals"
+      ]
+    },
+    {
+      "id": "settings",
+      "title": "Settings",
+      "area": "settings",
+      "status": "agreed",
+      "file": "specs/settings.md",
+      "summary": "Global and per-room settings, where they are stored.",
+      "questions": [
+        "q-r2-settings",
+        "q-r2-tone",
+        "q-r2-model",
+        "q-r3-review",
+        "q-r3-storage",
+        "q-r3-signin",
+        "q-r3-defaults",
+        "q-r3-menu"
+      ]
+    },
+    {
+      "id": "platform-quality",
+      "title": "Platform, build and quality",
+      "area": "ship",
+      "status": "agreed",
+      "file": "specs/platform-quality.md",
+      "summary": "Targets, packaging, settings, test strategy, acceptance.",
+      "questions": [
+        "q-ship-platform",
+        "q-ship-quality",
+        "q-ship-done",
+        "q-ui-language",
+        "q-r2-installer",
+        "q-r3-review",
+        "q-r3-evals"
+      ]
+    },
+    {
+      "id": "v010-plan",
+      "title": "v0.1.0 implementation plan",
+      "area": "scope",
+      "status": "agreed",
+      "file": "plans/v0-1-0.md",
+      "summary": "Milestones M0–M6 plus the Welcome design track, exit checks, early risks.",
+      "questions": [
+        "q-ship-done"
+      ]
+    }
+  ]
+}

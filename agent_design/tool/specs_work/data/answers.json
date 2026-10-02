@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "revision": 14,
+  "saved_at": "2026-10-01T22:36:36.902791+00:00",
+  "answers": {
+    "q-poc-off": {
+      "notes": "missing: \n- node content author (model name who wrote it, thinking effort if available + user name if he edited it), this i a node metadata like the state (\"LIT\", ...) tag\n- token count as generation go (to know how many the graph cost to reach a given state)\n- side pannel need to be resizable\n- generation time i am ok to wait no a constraint here (keep the live stream as tokens arrive)\n- Exactly 3 options is too restrictive: i want to be able to dismiss one, ask for others, or add my own\n- i want a way to edit/correct a node content (to influence, orient or adjust the next one generation context), will be handy in case the model halucinate wrong/false info\n- delete or regenerate a node and a cancel while it streams => yes\n- home screen needs more work to be welcoming, allow edits, see progress ...\n- need the ability to choose/change llm model (even mid session)\n- a room setting pannel (sub menu in the global app setting)\n- a proper prompt engineer pre-prompt and an optimized context managment\n- ctrl + clic multiple node to generate a new node merging the ideas\n- settings pannel: to connect the llm provider (v0.1.0 is focused to work with a claude code subscription plan but later codex or other provider even api key suport, when implemented we will have a focus on security here (probably nex version))\nLantern is like Prism, the lantern app (will) have multiple room to do different things. Each room can have multiple spaces.\nLantern spaces example:\n- learning space (the poc)\n- welcome (landing) space to start a new subject or pick a recent one to continue a previous session (up to 3 most recent session)\n- gallery to browse the knowlege exploration with associated stats ",
+      "updated_at": "2026-10-01T20:00:31.722Z"
+    },
+    "q-poc-keep": {
+      "notes": "the color theme, subltle animation, nice detail (travelling light, ...) making a propice learning place no distraction but still appealing. this first room brighten by the learning lantern (warm light in a peacefull place) is perfect. Note: other room may use a different latern for a different feeling but the overall Lantern app need to stay coherent.\nThe tutor tone is ok but should be selectable (explain me like i am 5, engineer, ...).\nThe rhythm is great.\nStats are cool and accessible but not the main subject. Legend is mandatory.\nText highlight, \nGo bach to Lantern, the room name, the room space (to add), title, stats, ...\nReading pannel: on the right, already good (markdown rendering support is mandatory)    ",
+      "updated_at": "2026-10-01T19:25:17.893Z"
+    },
+    "q-scope-purpose": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T19:30:04.510Z",
+      "notes": "We keep in mind where the app will end up having from the start: multiple rooms not necessarly for learning and with possible new mecanism. Modularity and reusable components are key. "
+    },
+    "q-scope-rooms": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T19:34:08.989Z"
+    },
+    "q-scope-board": {
+      "placement": {
+        "library": "v010",
+        "crosslinks": "v010",
+        "own-nodes": "v010",
+        "dismiss": "v010",
+        "more-options": "v010",
+        "edit-node": "v010",
+        "regenerate": "later",
+        "cancel": "v010",
+        "parallel": "later",
+        "context-mgmt": "v010",
+        "model-setting": "v010",
+        "api-provider": "later",
+        "local-provider": "later",
+        "search": "later",
+        "export": "later",
+        "undo": "later",
+        "profile": "later",
+        "sources": "later",
+        "review": "later",
+        "rich-content": "v010",
+        "think": "later",
+        "installer": "v010",
+        "updater": "later",
+        "light-theme": "later",
+        "keyboard": "v010",
+        "i18n": "later"
+      },
+      "updated_at": "2026-10-01T19:42:03.884Z"
+    },
+    "q-model-rooms": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T19:46:23.396Z"
+    },
+    "q-model-shape": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T19:51:35.978Z",
+      "notes": "i want the possibility of merging (two parents for one node), also like the idea of having the relation in the text (the graph can be rebuilt using other parser or app natively)"
+    },
+    "q-model-states": {
+      "choice": [
+        "a",
+        "c"
+      ],
+      "updated_at": "2026-10-01T19:53:55.481Z"
+    },
+    "q-learn-understood": {
+      "choice": [
+        "c"
+      ],
+      "updated_at": "2026-10-01T19:55:22.829Z"
+    },
+    "q-learn-options": {
+      "choice": [
+        "b"
+      ],
+      "updated_at": "2026-10-01T19:56:11.989Z"
+    },
+    "q-llm-context": {
+      "choice": [
+        "d"
+      ],
+      "updated_at": "2026-10-01T20:06:42.751Z"
+    },
+    "q-llm-latency": {
+      "choice": [
+        "e"
+      ],
+      "updated_at": "2026-10-01T20:17:56.975Z",
+      "notes": "some latency can be masked using animation. while the \"lit\" process is going sub nodes spawn/grow from the parent in an animated way to make the graph entertaining while the generation process (if child node content is not known yet, use neutral nodes shape).\nOption first and cheaper model for cheap task in a later version"
+    },
+    "q-storage-format": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T20:45:16.633Z",
+      "notes": "One json file for now (and probably forever). In later version we will set the export options and format (maybe export the graph as an okf bundle)"
+    },
+    "q-storage-location": {
+      "choice": [
+        "b"
+      ],
+      "updated_at": "2026-10-01T20:45:53.201Z"
+    },
+    "q-storage-poc": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T20:47:08.998Z"
+    },
+    "q-ui-layout": {
+      "choice": [
+        "b"
+      ],
+      "updated_at": "2026-10-01T20:47:28.198Z"
+    },
+    "q-ui-language": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T20:49:56.159Z",
+      "notes": "i18n support (for french) in a later vesion"
+    },
+    "q-ship-platform": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T20:50:30.479Z"
+    },
+    "q-ship-quality": {
+      "choice": [
+        "a",
+        "c",
+        "b",
+        "d"
+      ],
+      "updated_at": "2026-10-01T20:54:17.873Z",
+      "notes": "Prompt eval are run on cheap models like haiku (often less capable) to make sure they stay aligned, if they pass larger model will. It will allow me to test small local llm provider/custom endpoint in later versions."
+    },
+    "q-ship-done": {
+      "notes": "I can start a subject, learn it over several days across app restarts, and the graph shows honestly what I know, with no data loss, i can waits over ~10 s before something useful appears (because we have the animation trick), and no need to open a terminal. At least a minimal setting pannel is available to customize the app.",
+      "updated_at": "2026-10-01T20:57:24.734Z"
+    },
+    "q-r2-spaces": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T21:12:19.721Z"
+    },
+    "q-r2-header": {
+      "notes": "Space tabs are not necessarly tabs but accessible via navigation (need to be intuitive).\nWelcome is the current \"reset graph\" icon placed top left in graph view when in Study space. \"reset graph\" icon is more a recenter icon.\nNext to welcome icon, the gallery/study icon.\nFrom Welcome space, Gallery is accessible, swith to Study when a (recent) subject is selected. \nIn Gallery double clic a subject opens it in study space.",
+      "updated_at": "2026-10-01T21:26:44.941Z",
+      "choice": [
+        "a",
+        "c",
+        "d",
+        "e",
+        "b"
+      ]
+    },
+    "q-r2-shape": {
+      "choice": [],
+      "updated_at": "2026-10-01T21:32:58.885Z",
+      "notes": "too soon to support the merge mecanism in v0.1.0 this is a feature for a later version"
+    },
+    "q-r2-provenance": {
+      "choice": [
+        "b",
+        "c",
+        "e",
+        "a",
+        "d"
+      ],
+      "updated_at": "2026-10-01T21:35:09.608Z"
+    },
+    "q-r2-usage-display": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T21:36:05.292Z"
+    },
+    "q-r2-regenerate": {
+      "choice": [
+        "b"
+      ],
+      "updated_at": "2026-10-01T21:39:05.322Z"
+    },
+    "q-r2-edit": {
+      "choice": [
+        "b",
+        "c",
+        "d",
+        "f",
+        "a",
+        "e"
+      ],
+      "updated_at": "2026-10-01T21:41:09.408Z"
+    },
+    "q-r2-merge": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T21:42:28.158Z",
+      "notes": "in a later verion not v0.1.0"
+    },
+    "q-r2-actions": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g"
+      ],
+      "updated_at": "2026-10-01T21:44:23.530Z"
+    },
+    "q-r2-tone": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T21:44:56.997Z"
+    },
+    "q-r2-highlight": {
+      "choice": [
+        "a",
+        "c"
+      ],
+      "updated_at": "2026-10-01T21:46:21.313Z"
+    },
+    "q-r2-spawn": {
+      "choice": [
+        "b"
+      ],
+      "updated_at": "2026-10-01T21:47:52.362Z"
+    },
+    "q-r2-model": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T21:48:41.529Z"
+    },
+    "q-r2-prompt": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T21:49:58.940Z"
+    },
+    "q-r2-context": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "updated_at": "2026-10-01T21:51:24.734Z"
+    },
+    "q-r2-welcome": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "updated_at": "2026-10-01T21:53:30.690Z"
+    },
+    "q-r2-graph": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f"
+      ],
+      "updated_at": "2026-10-01T21:55:21.079Z"
+    },
+    "q-r2-settings": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "i",
+        "e",
+        "f",
+        "g",
+        "h"
+      ],
+      "updated_at": "2026-10-01T21:56:22.121Z"
+    },
+    "q-r2-installer": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T21:58:06.244Z"
+    },
+    "q-r3-nav": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h"
+      ],
+      "updated_at": "2026-10-01T22:22:25.072Z",
+      "notes": "Gallery: single click selects a card and shows its actions and detailed stats; double-click opens it in Study"
+    },
+    "q-r3-links": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T22:23:06.685Z"
+    },
+    "q-r3-select": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "updated_at": "2026-10-01T22:23:45.983Z"
+    },
+    "q-r3-spawn": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g"
+      ],
+      "updated_at": "2026-10-01T22:25:13.664Z"
+    },
+    "q-r3-storage": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "updated_at": "2026-10-01T22:26:31.082Z"
+    },
+    "q-r3-evals": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "updated_at": "2026-10-01T22:27:24.602Z"
+    },
+    "q-r3-review": {
+      "choice": [
+        "product-scope",
+        "rooms-spaces",
+        "domain-model",
+        "learn-room",
+        "tutor-protocol",
+        "context-assembly",
+        "inference-provider",
+        "subject-storage",
+        "welcome-gallery",
+        "graph-view",
+        "node-panel",
+        "settings",
+        "platform-quality"
+      ],
+      "updated_at": "2026-10-01T22:28:37.199Z"
+    },
+    "q-r3-click": {
+      "choice": [
+        "b"
+      ],
+      "updated_at": "2026-10-01T22:30:12.875Z"
+    },
+    "q-r3-signin": {
+      "choice": [
+        "b"
+      ],
+      "updated_at": "2026-10-01T22:31:58.650Z",
+      "notes": "Lantern opens the sign-in for me in later version"
+    },
+    "q-r3-delete": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T22:32:14.609Z"
+    },
+    "q-r3-menu": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-01T22:32:50.278Z"
+    },
+    "q-r3-defaults": {
+      "choice": [
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "updated_at": "2026-10-01T22:33:52.121Z",
+      "notes": "Default model Opus5.5 (latest)"
+    },
+    "q-r3-proposals": {
+      "choice": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "i",
+        "j",
+        "k",
+        "l"
+      ],
+      "updated_at": "2026-10-01T22:36:29.276Z"
+    }
+  }
+}

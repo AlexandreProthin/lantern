@@ -9,6 +9,7 @@ sources:
   - id: okf-spec
     resource: /references/okf-spec.md
     title: Open Knowledge Format v0.2 specification
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 # Purpose

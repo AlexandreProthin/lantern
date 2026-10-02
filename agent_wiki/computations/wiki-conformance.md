@@ -17,6 +17,7 @@ sources:
   - id: okf-conformance
     resource: /references/okf-spec.md
     title: Open Knowledge Format v0.2, §11 Conformance
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 # Computation

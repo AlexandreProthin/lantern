@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Navigation between spaces</title>
+<style>
+:root{--bg:#101827;--surface:#172132;--surface-2:#1d2a3f;--ink:#f3e9dc;--ink-mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e;--accent-ink:#211b14;--focus:#ffe0ab;--node-open:#969ca7;--node-lit:#ffe1aa;--node-understood:#e8b66e}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.4 system-ui,"Segoe UI",sans-serif;overflow-x:hidden}
+body{padding:10px 14px 14px;max-width:1100px;margin:0 auto}
+h1{font-size:17px;margin:0 0 2px}
+.lede{color:var(--ink-mute);margin:0 0 8px;max-width:90ch;font-size:12.5px}
+button,input,select{font:inherit;color:inherit}
+button{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:4px 9px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,.card:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+button:disabled{opacity:.35;cursor:not-allowed}
+button.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.ic{width:30px;height:30px;padding:0;display:inline-grid;place-items:center;font-size:15px;line-height:1}
+input,select{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.app{border:1px solid var(--line);border-radius:8px;background:var(--surface);height:clamp(380px,calc(100vh - 118px),640px);display:flex;flex-direction:column;overflow:hidden;position:relative}
+header{display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--line);background:var(--surface-2);flex-wrap:wrap}
+.mark{font-weight:700;color:var(--accent);background:none;border:1px solid transparent;padding:3px 7px}
+.chip{border:1px solid var(--accent);color:var(--accent);border-radius:99px;padding:1px 9px;font-size:11px;letter-spacing:.08em}
+.title{font-weight:600}
+.stats{color:var(--ink-mute);font-size:12px}
+.sp{flex:1}
+main{flex:1;min-height:0;position:relative}
+.space{display:none;height:100%}
+.space.on{display:flex}
+.pad{padding:14px;overflow:auto;width:100%}
+.mute{color:var(--ink-mute)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.big{flex:1;min-width:200px;font-size:17px;padding:10px 12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:10px}
+.card{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px;cursor:pointer;user-select:none}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.card b{display:block;margin-bottom:2px}
+.card small{color:var(--ink-mute);display:block;font-size:11.5px}
+.thumb{height:34px;margin:6px 0;border:1px dashed var(--line);border-radius:4px;display:grid;place-items:center;color:var(--ink-mute);font-size:10.5px}
+.card .go{margin-top:6px}
+h2{font-size:12px;margin:14px 0 0;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.graph{flex:1;position:relative;min-width:0;background:var(--bg)}
+.graph svg{width:100%;height:100%;display:block}
+.tl{position:absolute;top:8px;left:8px;display:flex;gap:4px;padding:3px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.tr{position:absolute;top:8px;right:8px}
+.br{position:absolute;bottom:8px;right:8px;display:flex;gap:4px;align-items:center}
+.br .gap{width:10px}
+.bl{position:absolute;bottom:8px;left:8px}
+.bl .leg{display:inline-block;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:11.5px;color:var(--ink-mute);cursor:pointer}
+.divider{width:7px;background:var(--line);cursor:col-resize;position:relative;flex:none}
+.divider:after{content:"drag to resize \00b7 double-click resets";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-90deg);white-space:nowrap;font-size:10px;color:var(--ink-mute);background:var(--surface);padding:0 6px;pointer-events:none}
+.panel{width:34%;min-width:200px;padding:12px;overflow:auto;background:var(--surface)}
+.panel .ph{border:1px dashed var(--line);border-radius:6px;padding:10px;color:var(--ink-mute);margin-top:8px}
+.bar{display:flex;gap:8px;align-items:center;margin-top:10px;padding:7px 10px;border:1px solid var(--accent);border-radius:8px;background:var(--surface-2);min-height:40px}
+.trail{margin-top:6px;font-size:11px;color:var(--ink-mute);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#q{position:absolute;right:8px;bottom:8px;width:24px;height:24px;padding:0;border-radius:50%;z-index:3}
+#rules{display:none;position:absolute;right:8px;bottom:38px;width:min(430px,92%);max-height:85%;overflow:auto;background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:10px 12px;z-index:3;font-size:12px;box-shadow:0 6px 24px #0008}
+#rules.on{display:block}
+#rules ol{margin:6px 0 0;padding-left:0;list-style:none}
+#rules li{margin:0 0 6px}
+#rules code{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:0 4px;margin-right:6px;font-weight:700}
+</style>
+</head>
+<body>
+<h1>Navigation between the three spaces</h1>
+<p class="lede">Wireframe of Learn's Welcome, Study and Gallery, with the proposed moves between them. Click through (icons, cards, double-click in Gallery, Ctrl+1/2/3) and decide whether it matches your intent; the "?" lists each rule against q-r3-nav.</p>
+
+<div class="app" id="app">
+<header>
+  <button class="mark" id="mark" title="Lantern: go to Welcome">&#9670; Lantern</button>
+  <span class="chip">LEARN</span>
+  <span class="title" id="htitle"></span>
+  <span class="sp"></span>
+  <span class="stats" id="hstats" title="Hover: token total (fake: 48.2k)"></span>
+  <button class="ic" title="Settings">&#9881;</button>
+</header>
+<main>
+  <section class="space" id="s-welcome"><div class="pad">
+    <div class="row">
+      <input class="big" id="subj" placeholder="What do you want to learn?">
+      <button id="suggest">Suggest 3</button>
+      <select id="tone" aria-label="Tone"><option>Neutral</option><option>Playful</option><option>Rigorous</option></select>
+      <button class="pri" id="start">Start</button>
+      <button class="ic" id="w-back" title="Back to Study" aria-label="Back to Study">&#8630;</button>
+    </div>
+    <div class="mute" id="sugg" style="margin-top:6px;min-height:18px"></div>
+    <h2>Recent</h2>
+    <div class="cards" id="recent"></div>
+    <p><a href="#" id="browse" style="color:var(--accent)">Browse all &rarr;</a></p>
+  </div></section>
+
+  <section class="space" id="s-study">
+    <div class="graph">
+      <svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet" aria-label="Fake graph">
+        <g id="gz"><g stroke="#3b4558" stroke-width="2" fill="none" id="gl"></g>
+        <g id="gn"></g></g>
+      </svg>
+      <div class="tl">
+        <button class="ic" id="st-w" title="Welcome (Ctrl+1)" aria-label="Welcome">&#8962;</button>
+        <button class="ic" id="st-g" title="Gallery (Ctrl+3)" aria-label="Gallery">&#9638;</button>
+      </div>
+      <div class="tr"><button id="layout" title="Layout toggle">Layout: radial</button></div>
+      <div class="br">
+        <button class="ic" id="zin" title="Zoom in">+</button><button class="ic" id="zout" title="Zoom out">&minus;</button>
+        <span class="gap"></span>
+        <button class="ic" id="recenter" title="Recenter" aria-label="Recenter">&#8982;</button>
+      </div>
+      <div class="bl"><span class="leg" id="leg" role="button" tabindex="0">&#9679; Legend &#9656;</span></div>
+    </div>
+    <div class="divider" id="div" title="drag to resize / double-click resets"></div>
+    <aside class="panel" id="panel"><b id="ptitle">Node title</b><div class="mute">Reading panel</div><div class="ph">Placeholder: explanation, examples, chat with the tutor.</div></aside>
+  </section>
+
+  <section class="space" id="s-gallery"><div class="pad">
+    <div class="row">
+      <button class="ic" id="g-w" title="Welcome (Ctrl+1)" aria-label="Welcome">&#8962;</button>
+      <button class="ic" id="g-back" title="Back to Study (Ctrl+2)" aria-label="Back to Study">&#8630;</button>
+      <input id="filter" placeholder="Filter by text" style="flex:1;min-width:140px">
+      <select id="sort" aria-label="Sort"><option value="opened">Sort: last opened</option><option value="created">Sort: created</option><option value="progress">Sort: progress</option></select>
+    </div>
+    <div class="bar" id="bar"></div>
+    <div class="cards" id="grid"></div>
+  </div></section>
+</main>
+<button id="q" title="Proposed rules">?</button>
+<div id="rules"><b>Proposed rules (q-r3-nav)</b><ol>
+<li><code>a</code>Study: Welcome and Gallery icons at the top-left of the graph, where reset graph is today.</li>
+<li><code>b</code>Recenter is its own control, next to zoom +/&minus; at the bottom-right.</li>
+<li><code>c</code>Welcome: picking a recent subject opens it in Study.</li>
+<li><code>d</code>Welcome: a "Browse all" link opens Gallery.</li>
+<li><code>e</code>Gallery: single click selects and shows actions; double-click opens in Study.</li>
+<li><code>f</code>Welcome and Gallery: an icon back to Study for the subject that was open, if any.</li>
+<li><code>g</code>Header Lantern mark goes to Welcome, from any space.</li>
+<li><code>h</code>Ctrl+1 Welcome, Ctrl+2 Study (disabled with no subject open), Ctrl+3 Gallery.</li>
+</ol></div>
+</div>
+<div class="trail"><span id="trail"></span><span>Fake data; nothing is saved. The browser may capture Ctrl+1/2/3 in some frames.</span></div>
+
+<script>
+(function(){
+var SUBJ=[
+ {n:"TCP congestion control",u:4,t:12,l:9,tok:"31k",span:"3 Sep → 28 Sep",m:"Sonnet"},
+ {n:"Tides",u:7,t:10,l:8,tok:"18k",span:"20 Sep → 1 Oct",m:"Sonnet"},
+ {n:"Bayesian reasoning",u:2,t:14,l:6,tok:"22k",span:"25 Sep → 30 Sep",m:"Fable"},
+ {n:"Roman roads",u:9,t:9,l:9,tok:"12k",span:"1 Aug → 14 Aug",m:"Haiku"},
+ {n:"Sourdough chemistry",u:1,t:8,l:3,tok:"6k",span:"29 Sep → 29 Sep",m:"Sonnet"},
+ {n:"Graph theory basics",u:5,t:16,l:11,tok:"40k",span:"10 Jul → 22 Sep",m:"Fable"}
+];
+var $=function(i){return document.getElementById(i)};
+var space="welcome",open=null,sel=null,trailArr=["Welcome"],scale=1,radial=true;
+var names={welcome:"Welcome",study:"Study",gallery:"Gallery"};
+
+function go(s,subjName){
+  if(s==="study"){ if(subjName) open=subjName; if(!open) return; }
+  var label=names[s]+(s==="study"&&open?" ("+open+")":"");
+  if(trailArr[trailArr.length-1]!==label) trailArr.push(label);
+  space=s;
+  ["welcome","study","gallery"].forEach(function(k){$("s-"+k).classList.toggle("on",k===s)});
+  render();
+}
+function render(){
+  $("htitle").textContent=open?"· "+open:"";
+  var o=SUBJ.filter(function(x){return x.n===open})[0];
+  $("hstats").textContent=open&&o?(o.l+" lit · "+o.u+" understood · "+(o.t-o.l)+" dark"):"";
+  $("w-back").style.display=open?"":"none";
+  $("g-back").style.display=open?"":"none";
+  $("ptitle").textContent=open?open+": node title":"Node title";
+  $("trail").textContent="Trail: "+trailArr.slice(-7).join(" → ");
+  renderGallery();
+}
+function recentCards(){
+  $("recent").innerHTML="";
+  SUBJ.slice(0,3).forEach(function(s,i){
+    var c=document.createElement("div");c.className="card";c.tabIndex=0;
+    c.innerHTML="<b></b><div class='thumb'>graph thumbnail</div><small>understood "+s.u+"/"+s.t+"</small><small>opened "+["today","yesterday","3 days ago"][i]+"</small>";
+    c.querySelector("b").textContent=s.n;
+    var b=document.createElement("button");b.className="go pri";b.textContent="Continue";c.appendChild(b);
+    c.onclick=function(){go("study",s.n)};
+    c.onkeydown=function(e){if(e.key==="Enter")go("study",s.n)};
+    $("recent").appendChild(c);
+  });
+}
+function renderGallery(){
+  var f=$("filter").value.toLowerCase(),k=$("sort").value;
+  var list=SUBJ.map(function(s,i){return{s:s,i:i}}).filter(function(x){return x.s.n.toLowerCase().indexOf(f)>=0});
+  if(k==="progress")list.sort(function(a,b){return b.s.u/b.s.t-a.s.u/a.s.t});
+  else if(k==="created")list.sort(function(a,b){return b.i-a.i});
+  $("grid").innerHTML="";
+  list.forEach(function(x){
+    var s=x.s,c=document.createElement("div");c.className="card"+(sel===s.n?" sel":"");c.tabIndex=0;
+    c.innerHTML="<b></b><div class='thumb'>thumbnail</div><small>"+s.t+" nodes · "+s.l+" lit · understood "+s.u+"</small><small>"+s.tok+" tokens · "+s.m+"</small><small>"+s.span+"</small>";
+    c.querySelector("b").textContent=s.n;
+    c.onclick=function(){sel=s.n;renderGallery()};
+    c.ondblclick=function(){go("study",s.n)};
+    c.onkeydown=function(e){if(e.key==="Enter")go("study",s.n);if(e.key===" "){e.preventDefault();sel=s.n;renderGallery()}};
+    $("grid").appendChild(c);
+  });
+  var bar=$("bar");bar.innerHTML="";
+  if(!sel){bar.innerHTML="<span class='mute'>Click a card to select it. Double-click to open it in Study.</span>";return}
+  var t=document.createElement("b");t.textContent=sel;bar.appendChild(t);
+  var msg=document.createElement("span");msg.className="mute";
+  [["Open",function(){go("study",sel)}],["Rename",function(){msg.textContent="(rename: fake)"}],["Delete",function(){msg.textContent="(delete, with confirmation: fake)"}],["Reveal",function(){msg.textContent="(reveal in Explorer: fake)"}]].forEach(function(a,i){
+    var b=document.createElement("button");b.textContent=a[0];if(i===0)b.className="pri";b.onclick=a[1];bar.appendChild(b);
+  });
+  bar.appendChild(msg);
+}
+function nodes(){
+  var P=radial?[[300,200,26,"u"],[190,120,18,"l"],[410,110,18,"l"],[320,320,16,"o"],[110,190,14,"o"],[500,190,14,"o"],[440,40,14,"o"]]
+              :[[300,60,26,"u"],[170,160,18,"l"],[430,160,18,"l"],[110,280,14,"o"],[230,280,14,"o"],[370,280,14,"o"],[490,280,14,"o"]];
+  var col={u:"#e8b66e",l:"#ffe1aa",o:"#969ca7"},h="";
+  P.forEach(function(p){h+="<circle cx='"+p[0]+"' cy='"+p[1]+"' r='"+p[2]+"' fill='"+col[p[3]]+"' stroke='#101827' stroke-width='3'/>"});
+  $("gn").innerHTML=h;
+  var L=radial?[[0,1],[0,2],[0,3],[1,4],[2,5],[2,6]]:[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]],g="";
+  L.forEach(function(l){g+="<line x1='"+P[l[0]][0]+"' y1='"+P[l[0]][1]+"' x2='"+P[l[1]][0]+"' y2='"+P[l[1]][1]+"'/>"});
+  $("gl").innerHTML=g;
+}
+function zoom(){$("gz").setAttribute("transform","translate(300 200) scale("+scale+") translate(-300 -200)")}
+
+$("mark").onclick=function(){go("welcome")};
+$("st-w").onclick=$("g-w").onclick=function(){go("welcome")};
+$("st-g").onclick=function(){go("gallery")};
+$("browse").onclick=function(e){e.preventDefault();go("gallery")};
+$("w-back").onclick=$("g-back").onclick=function(){go("study")};
+$("start").onclick=function(){
+  var v=$("subj").value.trim();if(!v)return;
+  if(!SUBJ.some(function(s){return s.n===v}))SUBJ.unshift({n:v,u:0,t:1,l:1,tok:"1k",span:"today",m:"Sonnet"});
+  recentCards();go("study",v);
+};
+$("subj").onkeydown=function(e){if(e.key==="Enter")$("start").onclick()};
+$("suggest").onclick=function(){$("sugg").textContent="Suggestions (fake): Plate tectonics · Public-key crypto · Counterpoint"};
+$("filter").oninput=renderGallery;$("sort").onchange=renderGallery;
+$("zin").onclick=function(){scale=Math.min(2,scale+.2);zoom()};
+$("zout").onclick=function(){scale=Math.max(.5,scale-.2);zoom()};
+$("recenter").onclick=function(){scale=1;zoom()};
+$("layout").onclick=function(){radial=!radial;$("layout").textContent="Layout: "+(radial?"radial":"tree");nodes()};
+$("leg").onclick=function(){var x=$("leg"),c=x.dataset.o!=="1";x.dataset.o=c?"1":"0";x.innerHTML=c?"&#9679; open &nbsp;&#9679; lit &nbsp;&#9679; understood &nbsp;&#9679; dismissed &nbsp;&middot; dotted = text link &#9662;":"&#9679; Legend &#9656;"};
+$("q").onclick=function(){$("rules").classList.toggle("on")};
+$("div").ondblclick=function(){$("panel").style.width=""};
+document.addEventListener("keydown",function(e){
+  if(!(e.ctrlKey||e.metaKey)||e.altKey)return;
+  var m={"1":"welcome","2":"study","3":"gallery"}[e.key];
+  if(!m)return;
+  e.preventDefault();
+  if(m==="study"&&!open)return;
+  go(m);
+});
+recentCards();nodes();go("welcome");
+})();
+</script>
+</body>
+</html>

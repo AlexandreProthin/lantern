@@ -5,6 +5,7 @@ description: Lantern is a Tauri 2 + Svelte 5 + TypeScript Windows desktop app, t
 tags: [stack, tauri, svelte]
 status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 Decided 2026-09-27.

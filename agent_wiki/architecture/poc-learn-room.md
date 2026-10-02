@@ -6,6 +6,7 @@ tags: [poc, learn-room, tauri, svelte]
 status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
 resource: /poc
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 Throwaway code (about 1600 lines) that shows a conversation with a tutor grows a persistent

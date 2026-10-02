@@ -15,6 +15,7 @@ sources:
     resource: https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing
     title: How the Open Knowledge Format can improve data sharing
     author: process:google-cloud
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 # What it is

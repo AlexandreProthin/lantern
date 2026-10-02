@@ -6,6 +6,7 @@ tags: [overview, rooms, subject, graph]
 status: draft
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
 resource: /README.md
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 Lantern is a desktop workspace for thinking with an AI. The conversation feeds a **graph of

@@ -9,6 +9,7 @@ sources:
   - id: learning-session
     resource: /references/related-projects.md
     title: The learning-session skill (make me learn)
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 Decided and built 2026-09-28 (PoC).

@@ -5,6 +5,7 @@ description: The proof of concept covers one use case, learning, with a graph, a
 tags: [poc, scope, learn-room]
 status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 Decided 2026-09-27. Built 2026-09-28 in [poc/](/architecture/poc-learn-room.md).

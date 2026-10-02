@@ -6,6 +6,7 @@ tags: [subject, graph, persistence]
 status: draft
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
 resource: /poc/src/lib/subject.ts
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 # Model (format tag `lantern-poc/1`)
@@ -31,3 +32,5 @@ resource: /poc/src/lib/subject.ts
 
 Nodes have one parent, so no cross-links between concepts; the rooms and the on-disk format are
 unresolved, see [subject-on-disk-format](/issues/subject-on-disk-format.md).
+
+Successor model: [domain-model](/specs/domain-model.md).

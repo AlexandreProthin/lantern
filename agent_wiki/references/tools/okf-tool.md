@@ -11,6 +11,7 @@ sources:
     resource: https://github.com/GoogleCloudPlatform/open-knowledge-format/tree/main/src/reference_agent
     title: OKF reference agent (Apache-2.0)
     author: process:google-cloud
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
 # What it does

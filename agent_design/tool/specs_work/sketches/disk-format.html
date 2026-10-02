@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subject on disk</title>
+<style>
+:root{--bg:#101827;--surface:#172132;--surface-2:#1d2a3f;--ink:#f3e9dc;--ink-mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e;--accent-ink:#211b14;--focus:#ffe0ab;--node-open:#969ca7;--node-lit:#ffe1aa;--node-understood:#e8b66e;--good:#8fd1a0;--fair:#e8b66e;--poor:#d9825b}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Segoe UI",sans-serif;overflow-x:hidden}
+body{padding:14px 16px 28px;max-width:1150px;margin:0 auto}
+h1{font-size:18px;margin:0 0 4px}
+h2{font-size:13px;margin:16px 0 6px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.lede{color:var(--ink-mute);margin:0 0 10px;max-width:86ch}
+.seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:6px;overflow:hidden;width:max-content;max-width:100%}
+.seg button{background:var(--surface);color:var(--ink-mute);border:0;padding:6px 12px;font:inherit;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.cap{font-size:12.5px;color:var(--ink-mute);margin:8px 0;max-width:100ch}
+.cap code,.cap b{color:var(--ink)}
+.split{display:grid;grid-template-columns:minmax(210px,290px) minmax(0,1fr);gap:10px;align-items:start}
+@media(max-width:700px){.split{grid-template-columns:1fr}}
+.tree{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 4px;font:12px/1.6 ui-monospace,Consolas,monospace;max-height:420px;overflow:auto}
+.tree .d{color:var(--ink-mute);padding-left:8px}
+.tree button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;padding:0 8px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:4px}
+.tree button:hover{background:var(--surface-2)}
+.tree button[aria-current=true]{background:var(--surface-2);color:var(--focus)}
+.view{background:var(--surface);border:1px solid var(--line);border-radius:8px;min-width:0}
+.view .path{padding:6px 10px;border-bottom:1px solid var(--line);font:12px ui-monospace,Consolas,monospace;color:var(--ink-mute);overflow-wrap:anywhere}
+pre{margin:0;padding:10px;font:12px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:372px;overflow:auto;color:var(--ink)}
+.k{color:#8fb8e8}.s{color:#d9c79a}.m{color:var(--ink-mute)}.h{color:var(--accent);font-weight:600}.b{color:#8fd1a0}
+.add{color:#8fd1a0;background:rgba(143,209,160,.1);display:block}.del{color:#e89a80;background:rgba(217,130,91,.12);display:block}.hunk{color:#8fb8e8;display:block}
+.score{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--surface);table-layout:fixed}
+.score th,.score td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.score th{background:var(--surface-2)}
+.score th.act,.score td.act{background:#1e2c44}
+.score td.rowh{width:15%;font-weight:600}
+.score td{color:var(--ink-mute)}
+.badge{display:inline-block;font-weight:700;margin-right:5px;text-transform:uppercase;font-size:11px;letter-spacing:.04em}
+.badge.good{color:var(--good)}.badge.fair{color:var(--fair)}.badge.poor{color:var(--poor)}
+.score pre{padding:4px 0;font-size:10.5px;max-height:none;white-space:pre;overflow-x:auto}
+.sw{overflow-x:auto}
+.score{min-width:760px}
+</style>
+</head>
+<body>
+<h1>How a subject lives on disk</h1>
+<p class="lede">The same sample subject (TCP congestion control, 8 nodes, 2 with dialogue, 1 cross-link) stored three ways. Decide which layout the specs should commit to. Click files on the left to read them; the scorecard compares all three.</p>
+
+<div class="seg" role="group" aria-label="Storage variant">
+ <button data-v="A" aria-pressed="true">A: one JSON file</button>
+ <button data-v="B" aria-pressed="false">B: folder, JSON graph + markdown bodies</button>
+ <button data-v="C" aria-pressed="false">C: OKF bundle</button>
+</div>
+<p class="cap" id="cap"></p>
+
+<div class="split">
+ <div class="tree" id="tree" role="tree"></div>
+ <div class="view"><div class="path" id="path"></div><pre id="code"></pre></div>
+</div>
+
+<h2>Scorecard</h2>
+<div class="sw"><table class="score" id="score"></table></div>
+<p class="cap">Judgements are rough and relative to each other; the 500-node figure assumes about 2 KB of explanation and dialogue per lit node.</p>
+
+<script>
+const $=id=>document.getElementById(id);
+const SID='tcp-congestion-k3f9',STITLE='TCP congestion control',T0='2026-09-30T09:12:00Z';
+const ID={root:'7c1e9a20',slow:'b41f03d7',loss:'e92a6c55',ack:'0d8f71ab',try1:'5a3c2e18',try2:'9f60b3c4',avoid:'2e7d58f1',fast:'c7d20e91'};
+const D=(r,t,at)=>({role:r,text:t,at:'2026-09-30T'+at+'Z'});
+function nodes(slowState){return[
+ {id:ID.root,parent:null,title:STITLE,hook:'How does a network find its pace?',kind:'subject',state:'understood',content:'TCP adapts how much data can be in flight using feedback from the network.',dialogue:[],at:'09:12:00'},
+ {id:ID.slow,parent:ID.root,title:'Slow start',hook:'Why begin cautiously, then double?',kind:'axis',state:slowState,content:'The **congestion window** (cwnd) starts at a few segments and grows by one segment per acknowledgment, which doubles it every round trip.\n\nGrowth stops when a loss is seen or cwnd reaches the slow-start threshold. Explain what might stop that growth.',
+  dialogue:[D('learner','Why double each round trip? Why not just send everything at once?','09:20:11'),D('tutor','The sender has no idea how much the path can carry. Starting small and doubling finds the limit in a few round trips without flooding it. What do you think ends the doubling?','09:20:19'),D('learner','A packet getting dropped, I guess?','09:21:40'),D('tutor','Right: loss says the window outgrew the path. Slow start then stops at a threshold and growth turns linear. Can you say why linear and not doubling?','09:21:47')],at:'09:19:30'},
+ {id:ID.loss,parent:ID.root,title:'Packet loss',hook:'What does a missing packet tell the sender?',kind:'axis',state:'lit',content:'A missing packet is the network\'s main signal that the path is full. A sender notices it in two ways: a **timeout** with no acknowledgment, or **duplicate acknowledgments** from the receiver.',dialogue:[],at:'09:30:02'},
+ {id:ID.ack,parent:ID.slow,title:'ACK clock vs. window size',hook:'Separate the clock of acknowledgments from the size of the window.',kind:'deeper',state:'open',content:'',dialogue:[],at:'09:19:58'},
+ {id:ID.try1,parent:ID.slow,title:'Try it',hook:'Trace a window through three round trips.',kind:'exercise',state:'open',content:'',dialogue:[],at:'09:19:58'},
+ {id:ID.try2,parent:ID.loss,title:'Try it',hook:'Predict the response to a lost packet.',kind:'exercise',state:'open',content:'',dialogue:[],at:'09:30:40'},
+ {id:ID.avoid,parent:ID.root,title:'Congestion avoidance',hook:'Why does growth turn linear?',kind:'axis',state:'open',content:'',dialogue:[],at:'09:13:05'},
+ {id:ID.fast,parent:ID.loss,title:'Fast retransmit',hook:'Resend before the timer fires.',kind:'deeper',state:'lit',content:'When three duplicate ACKs arrive, the sender resends the missing segment immediately instead of waiting for the timeout, then halves its window rather than restarting from one.',
+  dialogue:[D('learner','How does the sender know a packet is lost without waiting for a timeout?','09:34:10'),D('tutor','The receiver keeps repeating the last in-order byte it got. Three duplicate ACKs for the same number mean something after it is missing, so the sender resends at once.','09:34:18')],at:'09:33:50'}
+]}
+const EDGES=[{from:ID.slow,to:ID.fast,type:'relates'}];
+const slugOf=t=>t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+function cSlugs(ns){const cnt={};ns.forEach(n=>{const s=slugOf(n.title);cnt[s]=(cnt[s]||0)+1;});const m={};ns.forEach(n=>{const s=slugOf(n.title);m[n.id]=cnt[s]>1?s+'-'+n.id.slice(0,4):s;});return m;}
+const J=o=>JSON.stringify(o,null,2)+'\n';
+const turnsMd=n=>n.dialogue.map(t=>'**'+(t.role==='learner'?'Learner':'Tutor')+':** '+t.text).join('\n\n');
+const q=s=>JSON.stringify(s);
+
+function filesA(ns){
+ const nd={};ns.forEach(n=>{nd[n.id]={id:n.id,parentId:n.parent,title:n.title,hook:n.hook,kind:n.kind,state:n.state,content:n.content,dialogue:n.dialogue,createdAt:'2026-09-30T'+n.at+'Z'};});
+ return[{p:'subjects/'+SID+'.json',l:'json',c:J({format:'lantern/1',id:SID,title:STITLE,createdAt:T0,rooms:{learn:{rootId:ID.root,focusId:ID.slow,nodes:nd,edges:EDGES}}})}];
+}
+function filesB(ns){
+ const base='subjects/'+SID+'/';
+ const nd={};ns.forEach(n=>{nd[n.id]={id:n.id,parentId:n.parent,title:n.title,hook:n.hook,kind:n.kind,state:n.state,createdAt:'2026-09-30T'+n.at+'Z'};});
+ const out=[{p:base+'subject.json',l:'json',c:J({format:'lantern/1',id:SID,title:STITLE,createdAt:T0,rooms:['learn']})},
+  {p:base+'learn/graph.json',l:'json',c:J({rootId:ID.root,focusId:ID.slow,nodes:nd,edges:EDGES})}];
+ ns.filter(n=>n.content).forEach(n=>{
+  let c='# '+n.title+'\n\n'+n.content+'\n';
+  if(n.dialogue.length)c+='\n## Dialogue\n\n'+turnsMd(n)+'\n';
+  out.push({p:base+'learn/nodes/'+slugOf(n.title)+'--'+n.id+'.md',l:'md',c});
+ });
+ return out;
+}
+function filesC(ns){
+ const base=SID+'/',sl=cSlugs(ns),link=id=>'/learn/'+sl[id]+'.md';
+ const out=[{p:base+'index.md',l:'md',c:'---\nokf_version: "0.2"\ntype: Subject\nid: '+SID+'\ntitle: '+q(STITLE)+'\ncreated: '+T0+'\n---\n\n# '+STITLE+'\n\nA subject worked through with an AI tutor.\n\n## Rooms\n\n- [Learn](/learn/index.md)\n'},
+  {p:base+'learn/index.md',l:'md',c:'---\ntype: Room\ntitle: "Learn"\nroom: learn\nroot: '+link(ID.root)+'\n---\n\n# Learn\n\n'+ns.map(n=>'- ['+n.title+']('+link(n.id)+') '+n.hook).join('\n')+'\n'}];
+ ns.forEach(n=>{
+  let fm='---\ntype: Concept\nid: '+n.id+'\ntitle: '+q(n.title)+'\ndescription: '+q(n.hook)+'\nkind: '+n.kind+'\nstate: '+n.state+'\n';
+  if(n.parent)fm+='parent: '+link(n.parent)+'\n';
+  const rel=EDGES.filter(e=>e.from===n.id&&e.type==='relates').map(e=>link(e.to));
+  if(rel.length)fm+='relates: ['+rel.join(', ')+']\n';
+  fm+='---\n';
+  let body='\n# '+n.title+'\n';
+  if(n.content)body+='\n'+n.content+'\n';
+  if(n.dialogue.length)body+='\n# Dialogue\n\n'+turnsMd(n)+'\n';
+  out.push({p:base+'learn/'+sl[n.id]+'.md',l:'md',c:fm+body});
+ });
+ return out;
+}
+const BUILD={A:filesA,B:filesB,C:filesC};
+const CAP={
+ A:'<b>A. One JSON file</b> (the PoC evolved). <code>Documents/Lantern/subjects/</code> holds one file per subject. Explanations and dialogue are inline strings; parent links are <code>parentId</code>, cross-links are in <code>edges</code>. Dialogue keeps its timestamps.',
+ B:'<b>B. Folder: JSON graph + markdown bodies</b>. Structure (ids, states, edges) stays in <code>graph.json</code>; prose goes to one markdown file per lit node, found by the <code>--&lt;id&gt;</code> suffix. Open nodes have no body file. Dialogue is the markdown variant, so turn timestamps are dropped (a sibling <code>.dialogue.jsonl</code> would keep them).',
+ C:'<b>C. An OKF bundle</b> (Open Knowledge Format v0.2): markdown files with YAML frontmatter, bundle-absolute links, an <code>index.md</code> per folder. The Prism app can open an OKF bundle as a wiki. Both <b>Try it</b> nodes share a slug, so their files get an id prefix; timestamps and the <code>busy</code> flag are not stored. The cross-link is kept on one side only.'
+};
+// ---------- rendering ----------
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function tint(t,l){
+ t=esc(t);
+ if(l==='json')return t.replace(/("(?:[^"\\\n]|\\.)*")(\s*:)?/g,(m,s,c)=>c?'<span class="k">'+s+'</span>'+c:'<span class="s">'+s+'</span>');
+ let fm=0,first=true;
+ return t.split('\n').map(line=>{
+  if(line==='---'){const r='<span class="m">---</span>';if(first){fm=1;}else if(fm){fm=0;}first=false;return r;}
+  first=false;
+  if(fm){return line.replace(/^([\w-]+):(.*)$/,'<span class="k">$1</span>:<span class="s">$2</span>');}
+  if(/^#+ /.test(line))return '<span class="h">'+line+'</span>';
+  return line.replace(/\*\*(.*?)\*\*/g,'<span class="b">**$1**</span>');
+ }).join('\n');
+}
+let cur='A',curFile=0,FILES={};
+function tree(){
+ const fs=FILES[cur];let h='',seen={};
+ fs.forEach((f,i)=>{
+  const parts=f.p.split('/');
+  parts.slice(0,-1).forEach((d,k)=>{const key=parts.slice(0,k+1).join('/');if(!seen[key]){seen[key]=1;h+='<div class="d" style="padding-left:'+(8+k*14)+'px">'+d+'/</div>';}});
+  const name=parts[parts.length-1];
+  h+='<button role="treeitem" data-i="'+i+'" style="padding-left:'+(8+(parts.length-1)*14)+'px" title="'+f.p+'"'+(i===curFile?' aria-current="true"':'')+'>'+esc(name)+'</button>';
+ });
+ $('tree').innerHTML='<div class="d" style="color:var(--ink-mute)">Documents/Lantern/</div>'+h;
+ $('tree').querySelectorAll('button').forEach(b=>b.onclick=()=>{curFile=+b.dataset.i;show();});
+}
+function show(){
+ const f=FILES[cur][curFile];
+ $('path').textContent='Documents/Lantern/'+f.p;
+ $('code').innerHTML=tint(f.c,f.l);
+ tree();
+}
+function setV(v){
+ cur=v;curFile=0;
+ document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
+ $('cap').innerHTML=CAP[v];
+ // open the most informative file by default: the Slow start node
+ const idx=FILES[v].findIndex(f=>f.p.includes(ID.slow)||/slow-start/.test(f.p)||v==='A');
+ curFile=idx>=0?idx:0;
+ show();score();
+}
+// ---------- diff (computed from real before/after content) ----------
+function diffOf(v){
+ const a=BUILD[v](nodes('lit')),b=BUILD[v](nodes('understood'));
+ for(let i=0;i<a.length;i++){
+  if(a[i].c===b[i].c)continue;
+  const x=a[i].c.split('\n'),y=b[i].c.split('\n');
+  const at=x.findIndex((l,j)=>l!==y[j]);
+  const lo=Math.max(0,at-3),hi=Math.min(x.length,at+4);
+  const cut=l=>l.length>64?l.slice(0,61)+'...':l;
+  let out='<span class="m">--- a/'+a[i].p.split('/').slice(-2).join('/')+'\n+++ b/'+a[i].p.split('/').slice(-2).join('/')+'</span>\n<span class="hunk">@@ -'+(lo+1)+','+(hi-lo)+' +'+(lo+1)+','+(hi-lo)+' @@</span>';
+  for(let j=lo;j<hi;j++){
+   if(x[j]!==y[j])out+='<span class="del">-'+esc(cut(x[j]))+'</span><span class="add">+'+esc(cut(y[j]))+'</span>';
+   else out+=' '+esc(cut(x[j]))+'\n';
+  }
+  return out;
+ }
+ return '(no change)';
+}
+const ROWS=[
+ ['Human-readable',[['fair','Valid JSON, but explanations are single-line strings full of \\n escapes.'],['good','Prose reads as markdown; structure is a small JSON file.'],['good','Plain markdown a person can read and edit anywhere; frontmatter is short.']]],
+ ['Git-diff friendly','diff'],
+ ['Atomic save',[['good','One temp file and rename: all or nothing.'],['fair','A state change touches graph.json and maybe a body file; a crash between leaves them out of step.'],['fair','Each node is its own file, so a torn save loses at most one node; indexes must be rewritten too.']]],
+ ['Rename / move safety',[['good','Ids are inside the file; renaming the file or a title breaks nothing.'],['fair','References are by id, but a title change should rename the body file (the suffix keeps it findable).'],['poor','Links are paths: renaming a node or moving it to another room breaks parent and relates links unless the app rewrites them all.']]],
+ ['Cost to load 500 nodes',[['good','One read, roughly 1 MB; but all dialogue is parsed up front.'],['good','graph.json is small (about 100 KB); bodies load only when a node is focused.'],['fair','500+ small file reads and frontmatter parses to rebuild the graph; cacheable, slower cold.']]],
+ ['Readable by Prism / other tools',[['poor','A custom JSON shape; any tool needs a Lantern-specific reader.'],['fair','Markdown bodies open anywhere, but there is no frontmatter or index, so it is not an OKF bundle.'],['good','Open as a wiki in Prism or any OKF-aware tool as is.']]]
+];
+function score(){
+ let h='<tr><th></th>'+['A: one JSON file','B: JSON graph + markdown','C: OKF bundle'].map((t,i)=>'<th'+(['A','B','C'][i]===cur?' class="act"':'')+'>'+t+'</th>').join('')+'</tr>';
+ ROWS.forEach(r=>{
+  h+='<tr><td class="rowh">'+r[0]+'</td>';
+  ['A','B','C'].forEach((v,i)=>{
+   const a=v===cur?' class="act"':'';
+   if(r[1]==='diff')h+='<td'+a+'><div style="margin-bottom:2px">Node "Slow start" becomes understood:</div><pre>'+diffOf(v)+'</pre></td>';
+   else h+='<td'+a+'><span class="badge '+r[1][i][0]+'">'+r[1][i][0]+'</span>'+r[1][i][1]+'</td>';
+  });
+  h+='</tr>';
+ });
+ $('score').innerHTML=h;
+}
+['A','B','C'].forEach(v=>FILES[v]=BUILD[v](nodes('lit')));
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>setV(b.dataset.v));
+setV('A');
+</script>
+</body>
+</html>

@@ -14,3 +14,11 @@ mark it `status: deprecated` and have the replacement link back to it.
 * [Claude CLI provider flags](claude-cli-provider-flags.md) - Safe mode from a temp directory, not `--bare`.
 * [Tutor replies end with tagged blocks](tagged-blocks-protocol.md) - How the conversation grows the graph.
 * [PoC scope is the Learn room only](poc-scope-learning.md) - One use case, the smallest loop that proves the idea.
+* [A subject is one JSON file](subject-single-json-file.md) - Not an OKF bundle or a folder; exports come later.
+* [One graph per room visit](graph-per-room-visit.md) - A concept relevant in two rooms exists twice.
+* [A room owns a set of spaces](rooms-have-spaces.md) - Learn: welcome, learning space, gallery.
+* [v0.1.0 is a daily-use Learn room](v010-daily-tool-learn-only.md) - Real daily tool, modular for future rooms.
+* [Latency is masked, not reduced](latency-masked-not-reduced.md) - Streaming and spawn animation carry the wait.
+* [Merge is Later](merge-deferred.md) - v0.1.0 is a tree with text links; the format stays merge-ready.
+* [Prompts are app-internal and versioned](prompts-internal-versioned.md) - Each generation records its prompt version; evals guard changes.
+* [Sign-in is instructions only in v0.1.0](cli-signin-instructions-only.md) - Step-by-step instructions plus Check again; Lantern opening the sign-in is Later.
