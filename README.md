@@ -74,7 +74,8 @@ subject        what you're working through ("how TCP congestion control works")
 3. **Specs + v0.1.0 plan** ✔ 13 agreed specs in [`agent_wiki/specs/`](agent_wiki/specs/index.md),
    worked out in the [spec workshop](agent_design/tool/specs_work/README.md).
 4. **v0.1.0 implementation** ▶ [`app/`](app/README.md): M0 scaffold complete; M1 core and storage in progress.
-   Follow the [plan](agent_wiki/plans/v0-1-0.md); implementation resumed, with D1 being designed in parallel by the user.
+   Follow the [plan](agent_wiki/plans/v0-1-0.md). The Welcome design (D1) is final:
+   [`agent_design/welcome/RECIPE.md`](agent_design/welcome/RECIPE.md).
 
 ## Open work
 

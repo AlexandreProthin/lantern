@@ -4,7 +4,7 @@ title: Welcome and Gallery
 description: The Learn room's two library spaces - Welcome (start or continue a subject) and Gallery (browse all subjects with stats) - and the progress definitions both share.
 tags: [welcome, gallery, library, progress, learn-room]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-02T18:55:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -19,7 +19,7 @@ roles in one column.
 # Welcome
 
 **The visual design of Welcome comes from an `agent_design` component named `welcome`, designed
-before it is implemented.** This spec fixes content and behaviour only; layout, type, colour and
+before it is implemented** (final: `agent_design/welcome/RECIPE.md`). This spec fixes content and behaviour only; layout, type, colour and
 motion are the component's final recipe, and no Welcome UI is built before that recipe exists.
 
 ## Contents
@@ -31,16 +31,22 @@ motion are the component's final recipe, and no Welcome UI is built before that 
   3. **The tone picker**: the tone applied to the new subject (ELI5, Curious, Student, Engineer,
      Expert, or Custom with a free-text field). Its initial value is the Learn room default
      tone ([settings](/specs/settings.md)); changing it here does not change that default.
-  4. **The 3 most recent subjects** as large cards (WG-5).
-  5. ***Browse all***: opens Gallery; shows the total count (*Browse all 14*).
-- **WG-2** The model and effort of the new subject MUST be the app defaults from Settings →
-  Provider; they are changed later from the subject menu ([rooms-spaces](/specs/rooms-spaces.md)
-  RS-15), not on Welcome.
+  4. **The model picker**, beside the tone picker: the model of the new subject (WG-2).
+  5. **The 3 most recent subjects** as large cards (WG-5).
+  6. ***Browse all***: opens Gallery; shows the total count (*Browse all 14*).
+- **WG-2** The **model** of the new subject MUST be chosen with the model picker: the aliases
+  *opus*, *sonnet*, *haiku*, or a free-text id (validated like `provider.defaultModel`,
+  [settings](/specs/settings.md)). Its initial value on every arrival on Welcome is the default
+  model from Settings → Provider; the choice applies to the subject being created only and MUST
+  NOT change that default (the same rule as the tone). The **effort** of the new subject is the
+  Settings default and is not chosen on Welcome. Both are changed later from the subject menu
+  ([rooms-spaces](/specs/rooms-spaces.md) RS-15). *Changed 2026-10-02 at the user's request during
+  the `welcome` design rounds: previously the model was not chosen on Welcome.*
 
 ## Behaviour
 
 - **WG-3** *Submit* (Enter in the field, or the primary button *Carry the lantern in*) with a
-  non-blank title MUST: create the subject with that title and the chosen tone; write its file;
+  non-blank title MUST: create the subject with that title, the chosen tone and the chosen model; write its file;
   switch to Study; and start the intro generation so that the root node's explanation streams in
   ([node-panel](/specs/node-panel.md) NP-62). Titles are trimmed and limited to 120 characters.
   A blank field disables the button.
@@ -64,8 +70,8 @@ motion are the component's final recipe, and no Welcome UI is built before that 
 
 - **WG-12** *First run, no subjects.* Welcome shows the field, *Suggest 3 subjects* and the tone
   picker, a one-sentence welcome (*Bring a subject. The tutor lights it one node at a time; you
-  choose where to go next.*), no recent cards and no *Browse all*. The header's Study and
-  Gallery icons are disabled ([rooms-spaces](/specs/rooms-spaces.md) RS-11).
+  choose where to go next.*), no recent cards and no *Browse all*. The header's Gallery
+  icon is disabled, and Welcome has no Study icon ([rooms-spaces](/specs/rooms-spaces.md) RS-11, RS-20).
 - **WG-13** *CLI not ready.* When the provider status is not ready, the field stays editable
   but submit and *Suggest 3* are disabled, with the inline text *The Claude Code CLI is not
   ready. Fix it in Settings → Provider.* and a link to that page; the frame banner (RS-40) is
@@ -190,7 +196,8 @@ are computed from the room visit of the room (`learn`) and never stored
 
 # Open
 
-- Welcome's look: the `welcome` design component (`agent_design/welcome/`, to be created). It is a design task, not an undecided behaviour.
+- Nothing. Welcome's look is final: `agent_design/welcome/RECIPE.md` (D1, 2026-10-02). The Gallery card has no
+  design component; it follows the same tokens.
 
 Related: [rooms-spaces](/specs/rooms-spaces.md), [graph-view](/specs/graph-view.md),
 [node-panel](/specs/node-panel.md), [domain-model](/specs/domain-model.md),

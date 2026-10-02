@@ -5,7 +5,7 @@ description: The ordered steps from README to the first release, and where the p
 tags: [roadmap, milestones]
 status: stable
 stale_after: 2026-12-31T00:00:00Z
-generated: { by: Codex/GPT-6, at: 2026-10-02T06:44:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-02T18:55:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -17,7 +17,7 @@ Order decided 2026-09-27: README → PoC → OKF wiki → specs + v0.1.0 plan.
 | 2 | Proof of concept, Learn room ([architecture](/architecture/poc-learn-room.md)) | done, 2026-09-28; tried, "very close" |
 | 3 | Project wiki (this bundle) | done, 2026-09-29; replaces the interim `MEMORY.md` |
 | 4 | Specs | done, 2026-10-02 (13 specs agreed; workshop at `agent_design/tool/specs_work/`) |
-| 5 | v0.1.0 implementation, plan in [v0-1-0](/plans/v0-1-0.md) | M0 done; M1/M2 evidence advanced; M3/M5 implemented slices with acceptance gates open; M4 awaits D1, user doing D1 in parallel |
+| 5 | v0.1.0 implementation, plan in [v0-1-0](/plans/v0-1-0.md) | M0 done; M1/M2 evidence advanced; M3/M5 implemented slices with acceptance gates open; D1 done 2026-10-02, so M4 is unblocked |
 
 # Inputs to the specs
 

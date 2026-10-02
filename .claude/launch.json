@@ -22,6 +22,18 @@
         "8770"
       ],
       "port": 8770
+    },
+    {
+      "name": "design-workflow",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "agent_design/tool/workflow.py",
+        "serve",
+        "--no-open",
+        "--port",
+        "8765"
+      ],
+      "port": 8765
     }
   ]
 }

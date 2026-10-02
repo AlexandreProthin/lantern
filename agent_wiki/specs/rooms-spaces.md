@@ -4,7 +4,7 @@ title: Rooms, spaces and the app frame
 description: The frame every room lives in - Room definitions, startup, header, space navigation, room accent theming, the mandatory legend, frame-level error states and window rules.
 tags: [frame, rooms, spaces, header, navigation, legend, theming]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-02T18:45:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -50,8 +50,8 @@ Data side: [domain-model](/specs/domain-model.md). The three Learn spaces are sp
   stored app-side in the OS config directory ([settings](/specs/settings.md)). With one room it is
   always Learn; if the stored id is unknown the frame MUST fall back to Learn.
 - **RS-11** On first run there are no subjects: Welcome shows its first-run state
-  ([welcome-gallery](/specs/welcome-gallery.md) WG-12) and the Gallery and Study icons are
-  disabled until a subject exists.
+  ([welcome-gallery](/specs/welcome-gallery.md) WG-12) and the Gallery icon is disabled until a
+  subject exists (Welcome shows no Study icon, RS-20).
 
 # Header
 
@@ -94,13 +94,17 @@ Space navigation is not necessarily tabs; it must be intuitive.
 
 - **RS-20** Header navigation MUST show one icon button per space: Welcome (lantern/home glyph),
   Study (graph glyph), Gallery (grid glyph). Each has a tooltip with its name and shortcut. The
-  current space is marked with the room accent and `aria-current="page"`.
+  current space is marked with the room accent and `aria-current="page"`. **Exception: on
+  Welcome the header MUST NOT show the Study icon** (Welcome and Gallery only); Study is reached
+  from Welcome by a recent card, by submitting a subject, or by Ctrl+2 (RS-23), which keeps
+  working there. Every other space shows all three icons. *Changed 2026-10-02 at the user's
+  request during the `welcome` design rounds.*
 - **RS-21** Study MUST also hold, at the **top-left of the graph view**, a Welcome icon (taking
   the place of the PoC's "reset graph" icon) and, next to it, a Gallery icon
   ([graph-view](/specs/graph-view.md) GV-50). These are shortcuts to the same spaces; they MUST
   behave exactly like the header icons.
 - **RS-22** Reachability: Welcome → Gallery via *Browse all*; Welcome → Study by submitting a
-  subject or choosing a recent card; Gallery → Study by double-click or Enter on a card (a single click only selects it and shows its actions and detailed stats, [welcome-gallery](/specs/welcome-gallery.md) WG-60, WG-68); Study →
+  subject, choosing a recent card or Ctrl+2 (there is no Study icon on Welcome, RS-20); Gallery → Study by double-click or Enter on a card (a single click only selects it and shows its actions and detailed stats, [welcome-gallery](/specs/welcome-gallery.md) WG-60, WG-68); Study →
   Welcome and Gallery by the icons; Gallery → Welcome by the header icon or the Lantern mark.
   Every space MUST be reachable from every other in at most one action.
 - **RS-23** Space shortcuts (Ctrl+1 Welcome, Ctrl+2 Study, Ctrl+3 Gallery) are listed in the
