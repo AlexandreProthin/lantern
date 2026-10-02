@@ -1,0 +1,41 @@
+{
+  "selection_revision": 8,
+  "proposals": [
+    {
+      "id": "r005-01",
+      "parents": [
+        "r002-01",
+        "r001-01",
+        "r003-01",
+        "r004-01"
+      ],
+      "file": "motion/welcome-mot-r005-01.html",
+      "title": "Still flame",
+      "direction": "Almost nothing moves: a 240 ms fade on arrival, 150-250 ms ease-out hover changes, chips fading in, a breathing Suggest label while thinking; no travel."
+    },
+    {
+      "id": "r005-02",
+      "parents": [
+        "r002-01",
+        "r001-01",
+        "r003-01",
+        "r004-01"
+      ],
+      "file": "motion/welcome-mot-r005-02.html",
+      "title": "Kindling",
+      "direction": "The glow answers you: it kindles on arrival with a staggered rise, grows with the length of the typed subject, and swells as the button flares on submit."
+    },
+    {
+      "id": "r005-03",
+      "parents": [
+        "r002-01",
+        "r001-01",
+        "r003-01",
+        "r004-01"
+      ],
+      "file": "motion/welcome-mot-r005-03.html",
+      "title": "Embers",
+      "direction": "The learning node's language: a light crosses the underline on arrival, runs into the button on submit and bursts, embers rise while Suggest thinks, a light runs through a hovered thumbnail."
+    }
+  ]
+}

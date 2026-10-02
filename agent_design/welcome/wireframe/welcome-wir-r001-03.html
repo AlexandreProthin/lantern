@@ -1,0 +1,244 @@
+<!--
+  id:        r001-03
+  component: welcome
+  phase:     wireframe
+  parents:   none
+  direction: The start is a sentence (Teach me ___ for a [tone] mind) with Suggest 3 as a combobox dropdown; the most recent subject is a spotlight card, the other two and Browse all stacked beside it.
+  request:   revision 1
+  inputs:    Welcome space of the Learn room (spec welcome-gallery WG-1 to WG-14, header RS-12/RS-20). Content and behaviour are fixed by the spec; explore the structure: how the subject field, Suggest 3, tone picker, 3 recent cards and Browse all are arranged and navigated, plus the first-run, CLI-not-ready and library-unavailable states.
+-->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome · Sentence and spotlight</title>
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#101010;color:#f2f2f2;--line:#777;--mute:#a8a8a8}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column}
+button,input,select{font:inherit;color:inherit;background:#101010;border:1px solid var(--line);padding:9px 12px}
+button{cursor:pointer}button:hover:not(:disabled){background:#262626}
+button:disabled,input:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:2px solid #fff;outline-offset:3px}
+a{color:inherit}
+.mono,.label{font:11px ui-monospace,monospace;letter-spacing:.06em}
+.label{text-transform:uppercase;color:var(--mute)}
+.proto{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 20px;border-bottom:1px dashed #555;font-size:12px;color:var(--mute)}
+.proto select,.proto button{padding:4px 8px;font-size:12px}
+.proto label{display:flex;gap:6px;align-items:center}
+.frame{flex:1;display:flex;flex-direction:column;min-height:0}
+.appbar{display:flex;align-items:center;gap:14px;padding:8px 16px;border-bottom:1px solid var(--line);font-size:13px}
+.mark{border:0;padding:4px 6px;font-weight:600;letter-spacing:.04em}
+.chip{border:1px solid var(--line);padding:2px 8px;font:11px ui-monospace,monospace;text-transform:uppercase}
+.spaces{display:flex;gap:4px}
+.spaces button{padding:4px 9px;border-color:transparent;font-size:14px}
+.spaces button[aria-current=page]{border-color:#fff;border-width:0 0 2px}
+.gear{margin-left:auto;border-color:transparent;padding:4px 8px}
+.banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;background:#1a1a1a}
+.banner .grow{flex:1;min-width:200px}
+.banner button{padding:4px 10px;font-size:12px}
+.space{flex:1;min-height:0;overflow:auto}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chipbtn{text-align:left;display:flex;flex-direction:column;gap:3px;max-width:320px;padding:8px 11px}
+.chipbtn b{font-weight:600;font-size:13px}
+.chipbtn span{font-size:12px;color:var(--mute);line-height:1.4}
+.inline-msg{font-size:13px;line-height:1.5;color:var(--mute)}
+.inline-msg button{padding:2px 8px;font-size:12px;margin-left:6px}
+.thumb{display:block;width:100%;aspect-ratio:16/9;border:1px solid #444;background:#0b0b0b}
+.thumb text{font:9px ui-monospace,monospace;fill:#bbb}
+.title-clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.tones{display:flex;flex-wrap:wrap;gap:0}
+.tones label{border:1px solid var(--line);margin-left:-1px;padding:6px 10px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.tones input{margin:0}
+.tones label:has(input:checked){background:#f2f2f2;color:#101010}
+.tones label:has(input:focus-visible){outline:2px solid #fff;outline-offset:2px}
+.custom-tone{width:100%;margin-top:8px;font-size:13px}
+.notes{border-top:1px dashed #555;padding:14px 20px;display:grid;grid-template-columns:1fr 1fr;gap:24px;font-size:12px;color:var(--mute);line-height:1.6}
+.notes p{margin:4px 0 0}
+.handoff{position:fixed;inset:0;background:rgba(0,0,0,.82);display:grid;place-items:center;padding:20px;z-index:10}
+.handoff[hidden]{display:none}
+.handoff>div{border:1px solid #fff;background:#101010;padding:24px;max-width:520px;width:100%}
+.handoff h2{margin:8px 0 10px;font-size:18px;overflow-wrap:anywhere}
+.handoff p{font-size:14px;line-height:1.6;color:var(--mute)}
+@media(max-width:760px){.notes{grid-template-columns:1fr}.appbar{gap:8px}}
+
+.wrap{max-width:1040px;margin:0 auto;padding:7vh 24px 48px;display:flex;flex-direction:column;gap:30px}
+.wrap.first{padding-top:15vh}
+.lede{font-size:15px;line-height:1.6;color:var(--mute);margin:0}
+.sentence{font-size:24px;line-height:2;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
+.sentence .slot{position:relative;flex:1 1 360px;min-width:0}
+.sentence input[data-field]{width:100%;font-size:24px;border:0;border-bottom:1px solid #fff;padding:4px 2px}
+.sentence select{font-size:20px;padding:2px 8px;border:0;border-bottom:1px solid #fff}
+.sentence .custom-tone{font-size:14px;flex-basis:100%}
+.drop{position:absolute;left:0;right:0;top:100%;border:1px solid #fff;background:#101010;z-index:5;margin-top:4px}
+.drop[hidden]{display:none}
+.drop .opt{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #333;padding:10px 12px;font-size:14px;line-height:1.4}
+.drop .opt span{display:block;color:var(--mute);font-size:12px}
+.drop .opt[aria-selected=true]{background:#f2f2f2;color:#101010}
+.drop .opt[aria-selected=true] span{color:#333}
+.drop .head{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-bottom:1px solid #444}
+.drop .head button{padding:2px 8px;font-size:12px}
+.go{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.go [data-submit]{border-color:#fff;padding:11px 20px}
+.example{font-size:12px;color:var(--mute);margin:-18px 0 0}
+.shelf{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px}
+.shelf.n1{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{border:1px solid var(--line);padding:12px;display:flex;gap:12px;cursor:pointer;min-width:0}
+.card:hover{border-color:#fff}
+.card h3{margin:0;font-size:14px;line-height:1.35;font-weight:600}
+.card .meta{font-size:12px;color:var(--mute);display:flex;gap:12px;flex-wrap:wrap}
+.card.hero{flex-direction:column;padding:16px}
+.card.hero h3{font-size:20px}
+.card.small{display:grid;grid-template-columns:120px minmax(0,1fr);align-items:start}
+.card.small .body{display:flex;flex-direction:column;gap:6px}
+.card button{align-self:flex-start;padding:6px 12px;font-size:13px}
+.browse{border:1px dashed var(--line);padding:14px;text-align:left}
+.libmsg{border:1px dashed var(--line);padding:22px;font-size:14px;line-height:1.6;color:var(--mute)}
+@media(max-width:760px){.sentence{font-size:19px}.sentence input[data-field]{font-size:19px}.shelf,.shelf.n1{grid-template-columns:1fr}.card.small{grid-template-columns:1fr}}
+</style>
+<script src="../welcome-data.js"></script></head><body>
+<script>
+const NOTES=`<div><span class="label">Interaction hypothesis</span><p>The start reads as one sentence, "Teach me ___ for a Curious mind", so tone is a word in the sentence, not a separate control. Suggest 3 opens as a dropdown under the field, combobox style: arrow keys move, Enter fills, it never submits. The most recent subject is the spotlight; the other two and Browse all stack beside it.</p></div><div><span class="label">Try the hard cases</span><p>Suggest, then use ↑↓ and Enter in the field; "Suggest 3 more" replaces the set. Pick Custom… in the tone select: the free text breaks onto its own line. One subject: spotlight plus the Browse tile. Note it departs from WG-5's "3 large cards": two of the three are smaller here.</p></div>`;
+
+const D=window.WELCOME_DATA;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NOW=new Date(D.now);
+const st={scenario:'normal',tone:D.defaultTone,toneText:'',suggest:'idle',suggestSet:-1,failNext:false,draft:''};
+function scen(){return st.scenario}
+function cliReady(){return scen()!=='cli'}
+function libOk(){return scen()!=='library'}
+function subjects(){if(scen()==='first'||scen()==='library')return [];const all=[...D.subjects].sort((a,b)=>b.lastOpened.localeCompare(a.lastOpened));return scen()==='one'?all.slice(0,1):all}
+function recents(){return subjects().slice(0,3)}
+function rel(iso){const d=new Date(iso);const day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate());const n=Math.round((day(NOW)-day(d))/864e5);if(n<=0)return'today';if(n===1)return'yesterday';if(n<7)return n+' days ago';return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+function exact(iso){return new Date(iso).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})}
+function toneLabel(id){return (D.tones.find(t=>t.id===id)||{}).label||id}
+/* WG-40: static tree layout, depth columns, leaves on rows, 16:9 box */
+function thumb(s){
+  const ns=s.thumb,kids={};ns.forEach(n=>{if(n.p)(kids[n.p]=kids[n.p]||[]).push(n.id)});
+  const pos={};let row=0,maxD=0;
+  (function walk(id,d){maxD=Math.max(maxD,d);const k=kids[id]||[];if(!k.length){pos[id]={d,r:row++};return}k.forEach(c=>walk(c,d+1));const rs=k.map(c=>pos[c].r);pos[id]={d,r:(Math.min(...rs)+Math.max(...rs))/2}})('n1',0);
+  const W=160,H=90,px=10,py=8,cols=Math.max(1,maxD),rows=Math.max(1,row-1);
+  const rad=Math.max(1.6,Math.min(4.5,70/Math.max(row,maxD*2)));
+  const X=n=>maxD?px+pos[n].d/cols*(W-2*px):W/2,Y=n=>row>1?py+pos[n].r/rows*(H-2*py):H/2;
+  let e='',c='';
+  ns.forEach(n=>{if(n.p)e+=`<line x1="${X(n.p)}" y1="${Y(n.p)}" x2="${X(n.id)}" y2="${Y(n.id)}" stroke="#555" stroke-width=".6"/>`});
+  ns.forEach(n=>{const x=X(n.id),y=Y(n.id);
+    if(n.s==='understood')c+=`<circle cx="${x}" cy="${y}" r="${rad}" fill="#f2f2f2"/>`;
+    else if(n.s==='lit')c+=`<circle cx="${x}" cy="${y}" r="${rad+1.6}" fill="none" stroke="#888" stroke-width=".5"/><circle cx="${x}" cy="${y}" r="${rad}" fill="#101010" stroke="#f2f2f2" stroke-width=".9"/>`;
+    else c+=`<circle cx="${x}" cy="${y}" r="${rad}" fill="#101010" stroke="#aaa" stroke-width=".7" stroke-dasharray="1.2 1"/>`});
+  const more=s.thumbMore?`<text x="${W-4}" y="${H-4}" text-anchor="end">+${s.thumbMore}</text>`:'';
+  return `<svg class="thumb" viewBox="0 0 ${W} ${H}" role="img" aria-label="Graph of ${esc(s.title)}: ${s.understood} of ${s.total} understood">${e}${c}${more}</svg>`;
+}
+function progress(s){return `${s.understood} / ${s.total}`}
+function lastOpened(s){return `<span title="${esc(exact(s.lastOpened))}">${rel(s.lastOpened)}</span>`}
+/* Tone controls: segmented | list | select */
+const TONE_HINT={eli5:'Plain words, small steps',curious:'Friendly and concrete',student:'Course-like, with checks',engineer:'Mechanisms and trade-offs',expert:'Dense, assumes background',custom:'Your own instruction'};
+function toneControl(kind){
+  const custom=st.tone==='custom'?`<input class="custom-tone" data-tonetext maxlength="300" placeholder="Describe the tone, e.g. like a field linguist talking to an engineer" value="${esc(st.toneText)}">`:'';
+  if(kind==='select')return `<select data-toneselect aria-label="Tone">${D.tones.map(t=>`<option value="${t.id}" ${t.id===st.tone?'selected':''}>${t.label}${t.id==='custom'?'…':''}</option>`).join('')}</select>`;
+  if(kind==='list')return `<fieldset class="tonelist"><legend class="label">Tone</legend>${D.tones.map(t=>`<label><input type="radio" name="tone" value="${t.id}" ${t.id===st.tone?'checked':''}><span><b>${t.label}</b><small>${TONE_HINT[t.id]}</small></span></label>`).join('')}${custom}</fieldset>`;
+  return `<fieldset class="tones-wrap" style="border:0;padding:0;margin:0"><legend class="label" style="margin-bottom:6px">Tone</legend><div class="tones">${D.tones.map(t=>`<label title="${TONE_HINT[t.id]}"><input type="radio" name="tone" value="${t.id}" ${t.id===st.tone?'checked':''}>${t.label}</label>`).join('')}</div>${custom}</fieldset>`;
+}
+function suggestButton(cls=''){
+  const busy=st.suggest==='busy';
+  return `<button class="${cls}" data-suggest ${busy||!cliReady()||!libOk()?'disabled':''} ${!cliReady()?'title="Claude CLI not ready"':''}>${busy?'Thinking of subjects…':'Suggest 3 subjects'}</button>`;
+}
+function suggestOutput(){
+  if(st.suggest==='error')return `<p class="inline-msg" role="alert">Couldn’t get suggestions: the tutor did not answer. <button data-suggest>Retry</button></p>`;
+  if(st.suggestSet<0)return '';
+  return `<div class="chips" role="list" aria-label="Suggested subjects">${D.suggestions[st.suggestSet].map((c,i)=>`<button class="chipbtn" role="listitem" data-chip="${i}"><b>${esc(c.title)}</b><span>${esc(c.hook)}</span></button>`).join('')}</div>`;
+}
+function cliInline(){return cliReady()?'':`<p class="inline-msg" role="status">${esc(D.cliMessage).replace('Settings → Provider','<a href="#" data-settings>Settings → Provider</a>')}</p>`}
+function canSubmit(){return st.draft.trim().length>0&&cliReady()&&libOk()}
+function banners(){
+  if(scen()==='cli')return `<div class="banner" role="status"><span class="grow">Claude Code CLI is signed out. Run <code>claude</code> once in a terminal and sign in.</span><button data-noop>Check again</button><button data-settings>Open Settings → Provider</button><button aria-label="Dismiss" data-noop>×</button></div>`;
+  if(scen()==='library')return `<div class="banner" role="alert"><span class="grow">${esc(D.libraryMessage)}</span><button data-noop>Choose another folder</button><button data-noop>Retry</button><button data-noop>Create it</button><button aria-label="Dismiss" data-noop>×</button></div>`;
+  return '';
+}
+function appbar(){
+  const none=subjects().length===0;
+  return `<header class="appbar"><button class="mark" title="Welcome" data-noop>◇ Lantern</button><span class="chip">Learn</span>
+  <nav class="spaces" aria-label="Spaces"><button aria-current="page" title="Welcome · Ctrl+1">⌂</button><button title="Study · Ctrl+2" ${none?'disabled':''} data-go="Study">◎</button><button title="Gallery · Ctrl+3" ${none?'disabled':''} data-go="Gallery">▦</button></nav>
+  <button class="gear" title="Settings" data-settings>⚙</button></header>`;
+}
+function handoff(title,body){const h=document.querySelector('.handoff');h.innerHTML=`<div role="dialog" aria-modal="true" aria-label="Handoff"><span class="label">Prototype handoff</span><h2>${esc(title)}</h2><p>${body}</p><button data-close>Back to Welcome</button></div>`;h.hidden=false;h.querySelector('button').focus()}
+function submit(){if(!canSubmit())return;const t=st.draft.trim().slice(0,120);const tone=st.tone==='custom'?`custom (“${esc(st.toneText||'empty')}”)`:toneLabel(st.tone);handoff('→ Study: '+t,`Creates the subject with tone <b>${tone}</b>, writes its file, switches to Study and the root explanation streams in (WG-3).`)}
+function proto(){
+  return `<div class="proto" aria-label="Prototype controls"><span class="mono">PROTOTYPE</span><label>State <select data-scen>${D.states.map(s=>`<option value="${s.id}" ${s.id===scen()?'selected':''}>${s.label}</option>`).join('')}</select></label><label><input type="checkbox" data-fail ${st.failNext?'checked':''}> next Suggest fails</label><span>Esc clears the field · Enter submits</span><a href="../index.html">Back to proposals</a></div>`;
+}
+function mount(){
+  document.body.innerHTML=proto()+`<div class="frame">${appbar()}${banners()}<main class="space" aria-label="Welcome">${renderSpace()}</main></div><div class="notes">${NOTES}</div><div class="handoff" hidden></div>`;
+  const f=document.querySelector('[data-field]');if(f){f.value=st.draft}
+}
+function rerender(keepFocus=true){
+  const a=document.activeElement,sel=a&&a.matches('[data-field],[data-tonetext]')?(a.matches('[data-field]')?'[data-field]':'[data-tonetext]'):null,pos=sel?a.selectionStart:0;
+  mount();
+  if(sel&&keepFocus){const n=document.querySelector(sel);if(n){n.focus();n.setSelectionRange(pos,pos)}}
+}
+function refreshSubmit(){document.querySelectorAll('[data-submit]').forEach(b=>b.disabled=!canSubmit());if(typeof onDraft==='function')onDraft()}
+document.addEventListener('input',e=>{
+  if(e.target.matches('[data-field]')){st.draft=e.target.value;refreshSubmit()}
+  if(e.target.matches('[data-tonetext]'))st.toneText=e.target.value;
+});
+document.addEventListener('change',e=>{
+  if(e.target.matches('[data-scen]')){st.scenario=e.target.value;st.suggest='idle';st.suggestSet=-1;mount();document.querySelector('[data-field]')?.focus()}
+  if(e.target.matches('[data-fail]'))st.failNext=e.target.checked;
+  if(e.target.matches('input[name=tone]')){st.tone=e.target.value;rerender(false);document.querySelector(st.tone==='custom'?'[data-tonetext]':`input[name=tone][value=${st.tone}]`)?.focus()}
+  if(e.target.matches('[data-toneselect]')){st.tone=e.target.value;rerender(false);(st.tone==='custom'?document.querySelector('[data-tonetext]'):document.querySelector('[data-toneselect]'))?.focus()}
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('[data-field]')){
+    if(typeof onFieldKey==='function'&&onFieldKey(e))return;
+    if(e.key==='Escape'){st.draft='';e.target.value='';refreshSubmit()}
+    else if(e.key==='Enter'){e.preventDefault();submit()}
+  }
+  if(e.key==='Escape'&&!document.querySelector('.handoff').hidden){document.querySelector('.handoff').hidden=true;document.querySelector('[data-field]')?.focus()}
+});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,a,[data-card]');if(!t)return;
+  if(t.matches('[data-suggest]')){if(st.failNext){st.suggest='busy';rerender();setTimeout(()=>{st.suggest='error';st.failNext=false;rerender()},900);return}
+    st.suggest='busy';rerender();setTimeout(()=>{st.suggest='idle';st.suggestSet=(st.suggestSet+1)%D.suggestions.length;rerender();document.querySelector('[data-chip]')?.focus()},1100);return}
+  if(t.matches('[data-chip]')){st.draft=D.suggestions[st.suggestSet][+t.dataset.chip].title;rerender(false);const f=document.querySelector('[data-field]');f.focus();f.setSelectionRange(f.value.length,f.value.length);return}
+  if(t.matches('[data-submit]')){submit();return}
+  if(t.matches('[data-open]')||t.matches('[data-card]')&&!e.target.closest('button')){const s=D.subjects.find(x=>x.id===t.dataset.open||x.id===t.dataset.card);handoff('→ Study: '+s.title,`Opens the subject in Study with its last focus restored, and moves it to the front of the recents (WG-5, WG-6).`);return}
+  if(t.matches('[data-browse]')){handoff('→ Gallery',`Opens Gallery with all ${subjects().length} subjects (WG-7, same as Ctrl+3).`);return}
+  if(t.matches('[data-go]')){handoff('→ '+t.dataset.go,'Header space navigation (RS-20).');return}
+  if(t.matches('[data-settings]')){e.preventDefault();handoff('→ Settings','Settings → Provider (WG-13).');return}
+  if(t.matches('[data-close]')){document.querySelector('.handoff').hidden=true;document.querySelector('[data-field]')?.focus();return}
+});
+document.addEventListener('keydown',e=>{if(e.target.matches('[data-card]')&&(e.key==='Enter'||e.key===' ')&&e.target===document.activeElement){e.preventDefault();e.target.click()}});
+
+
+let dropOpen=false,active=0;
+function drop(){
+  if(st.suggest==='busy')return `<div class="drop" role="status"><div class="head"><span class="mono">Thinking of subjects…</span></div></div>`;
+  if(st.suggest==='error')return `<div class="drop">${suggestOutput()}</div>`;
+  if(!dropOpen||st.suggestSet<0)return '';
+  return `<div class="drop" role="listbox" id="sugg" aria-label="Suggested subjects"><div class="head"><span class="mono">↑↓ choose · Enter fills · Esc closes</span><button data-suggest>Suggest 3 more</button></div>${D.suggestions[st.suggestSet].map((c,i)=>`<button class="opt" role="option" aria-selected="${i===active}" data-chip="${i}">${esc(c.title)}<span>${esc(c.hook)}</span></button>`).join('')}</div>`;
+}
+function onFieldKey(e){
+  if(!dropOpen||st.suggestSet<0)return false;
+  const n=D.suggestions[st.suggestSet].length;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();active=(active+(e.key==='ArrowDown'?1:n-1))%n;rerender();return true}
+  if(e.key==='Enter'){e.preventDefault();st.draft=D.suggestions[st.suggestSet][active].title;dropOpen=false;rerender();return true}
+  if(e.key==='Escape'){dropOpen=false;rerender();return true}
+  return false;
+}
+document.addEventListener('click',e=>{if(e.target.closest('[data-suggest]')){dropOpen=true;active=0}else if(e.target.closest('[data-chip]')){dropOpen=false}else if(!e.target.closest('.drop')&&dropOpen){dropOpen=false;setTimeout(()=>rerender(),0)}},true);
+function renderSpace(){
+  const subs=subjects(),rec=recents(),first=scen()==='first';
+  const [hero,...rest]=rec;
+  const card=(s,kind)=>kind==='hero'
+    ?`<article class="card hero" data-card="${s.id}" tabindex="-1"><span class="label">Last time · ${rel(s.lastOpened)}</span>${thumb(s)}<h3 class="title-clamp" title="${esc(s.title)}">${esc(s.title)}</h3><div class="meta"><span>${progress(s)} understood</span><span>opened ${lastOpened(s)}</span></div><button data-open="${s.id}">Continue</button></article>`
+    :`<article class="card small" data-card="${s.id}" tabindex="-1">${thumb(s)}<div class="body"><h3 class="title-clamp" title="${esc(s.title)}">${esc(s.title)}</h3><div class="meta"><span>${progress(s)}</span>${lastOpened(s)}</div><button data-open="${s.id}">Continue</button></div></article>`;
+  return `<div class="wrap ${first?'first':''}">
+  ${first?`<p class="lede">${esc(D.welcomeLine)}</p>`:''}
+  <div class="sentence"><span>Teach me</span><span class="slot"><input data-field maxlength="120" placeholder="${esc(D.placeholder)}" aria-label="${esc(D.placeholder)}" ${libOk()?'':'disabled'} autocomplete="off" role="combobox" aria-expanded="${dropOpen}" aria-controls="sugg">${drop()}</span><span>for a</span>${toneControl('select')}<span>mind.</span></div>
+  <p class="example">${esc(D.example)}</p>
+  <div class="go"><button data-submit ${canSubmit()?'':'disabled'}>Carry the lantern in →</button>${suggestButton()}</div>
+  ${cliInline()}
+  ${!libOk()?`<div class="libmsg" role="status">${esc(D.libraryMessage)}</div>`:''}
+  ${hero?`<div class="shelf ${rec.length===1?'n1':''}">${card(hero,'hero')}<div class="side">${rest.map(s=>card(s,'small')).join('')}<button class="browse" data-browse><span class="label">Library</span><br>Browse all ${subs.length} →</button></div></div>`:''}
+  </div>`;
+}
+
+mount();document.querySelector('[data-field]')?.focus();
+</script></body></html>

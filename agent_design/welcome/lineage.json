@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "concept": "welcome",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-02T06:34:25.956627+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "welcome",
+        "revision": 1,
+        "saved_at": "2026-10-02T06:30:25.640283+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "Welcome space of the Learn room (spec welcome-gallery WG-1 to WG-14, header RS-12/RS-20). Content and behaviour are fixed by the spec; explore the structure: how the subject field, Suggest 3, tone picker, 3 recent cards and Browse all are arranged and navigated, plus the first-run, CLI-not-ready and library-unavailable states."
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-02T17:57:22.681254+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "welcome",
+        "revision": 2,
+        "saved_at": "2026-10-02T17:54:07.003503+00:00",
+        "based_on_round": 1,
+        "selected_ids": [
+          "r001-01"
+        ],
+        "next": {
+          "phase": "form",
+          "mode": "branch",
+          "prompt": "r001-01 only addition: add a model selector next to the tone then wireframe is done. include it in the next round"
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-02T18:19:35.194443+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "welcome",
+        "revision": 5,
+        "saved_at": "2026-10-02T18:19:10.336373+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r002-01",
+          "r001-01"
+        ],
+        "next": {
+          "phase": "type",
+          "mode": "combine",
+          "prompt": "spec WG-2 says the subject model comes from Settings. Adjust it so we can override the default model (defined in settings) from the welcome pannel for a new session default. "
+        }
+      },
+      "node_ids": [
+        "r003-01",
+        "r003-02",
+        "r003-03"
+      ]
+    },
+    {
+      "number": 4,
+      "created_at": "2026-10-02T18:29:30.905925+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "welcome",
+        "revision": 7,
+        "saved_at": "2026-10-02T18:26:53.530648+00:00",
+        "based_on_round": 3,
+        "selected_ids": [
+          "r002-01",
+          "r001-01",
+          "r003-01"
+        ],
+        "next": {
+          "phase": "color",
+          "mode": "combine",
+          "prompt": "The study (ctrl + 2) is not needed at the top (i forgot to tell in previous round) remove it for the next ones"
+        }
+      },
+      "node_ids": [
+        "r004-01",
+        "r004-02",
+        "r004-03"
+      ]
+    },
+    {
+      "number": 5,
+      "created_at": "2026-10-02T18:37:46.285076+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "welcome",
+        "revision": 8,
+        "saved_at": "2026-10-02T18:34:27.461430+00:00",
+        "based_on_round": 4,
+        "selected_ids": [
+          "r002-01",
+          "r001-01",
+          "r003-01",
+          "r004-01"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": ""
+        }
+      },
+      "node_ids": [
+        "r005-01",
+        "r005-02",
+        "r005-03"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "wireframe/welcome-wir-r001-01.html",
+      "title": "Threshold",
+      "direction": "One centred column: the field is the page, tone and Suggest on one line beneath, three equal recent cards on a shelf below, Browse all closing the row.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "wireframe/welcome-wir-r001-02.html",
+      "title": "Two doors",
+      "direction": "Split screen of equal weight: a start form on the left (field, suggestions, tone list with hints, button), a continue list of wide cards plus Browse all on the right; first run collapses to the left door centred.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "wireframe/welcome-wir-r001-03.html",
+      "title": "Sentence and spotlight",
+      "direction": "The start is a sentence (Teach me ___ for a [tone] mind) with Suggest 3 as a combobox dropdown; the most recent subject is a spotlight card, the other two and Browse all stacked beside it.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-01",
+      "parents": [
+        "r001-01"
+      ],
+      "file": "form/welcome-frm-r002-01.html",
+      "title": "Lantern hall",
+      "direction": "Sparse and centred with extreme scale contrast: a 36 px light field alone at the centre, tone pills, model and Suggest as quiet small controls, recents dimmed far below.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r002-02",
+      "parents": [
+        "r001-01"
+      ],
+      "file": "form/welcome-frm-r002-02.html",
+      "title": "Even keel",
+      "direction": "Balanced medium density on an 8 px rhythm: field and settings row as two surfaces, recents as full cards with large thumbnails and full-weight numbers; start and continue weigh the same.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r002-03",
+      "parents": [
+        "r001-01"
+      ],
+      "file": "form/welcome-frm-r002-03.html",
+      "title": "Ledger",
+      "direction": "Dense and top-left anchored: compact field, one thin settings row, recents as table rows with small thumbnails and aligned numeric columns; everything visible on a short window.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r002-01",
+        "r001-01"
+      ],
+      "file": "type/welcome-typ-r003-01.html",
+      "title": "Native",
+      "direction": "System Segoe UI Variable in its three optical sizes, the PoC's own face: Display semilight for the question, Text for the body, Small for labels; sentence case, no mono.",
+      "phase": "type",
+      "tag": "typ"
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r002-01",
+        "r001-01"
+      ],
+      "file": "type/welcome-typ-r003-02.html",
+      "title": "Reading lamp",
+      "direction": "Newsreader, an optical-size reading serif, for the question, card titles and the welcome line (italic placeholder); Segoe UI Variable Text for every control; small tracked capitals for labels.",
+      "phase": "type",
+      "tag": "typ"
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r002-01",
+        "r001-01"
+      ],
+      "file": "type/welcome-typ-r003-03.html",
+      "title": "Field notes",
+      "direction": "IBM Plex Sans light for the question and body, IBM Plex Mono for labels, counts, dates and the example line: a technical notebook voice, uppercase mono labels.",
+      "phase": "type",
+      "tag": "typ"
+    },
+    {
+      "id": "r004-01",
+      "parents": [
+        "r002-01",
+        "r001-01",
+        "r003-01"
+      ],
+      "file": "color/welcome-col-r004-01.html",
+      "title": "Lit question",
+      "direction": "Learn palette with the light on the start: glow behind the field, amber underline and caret, glowing primary; tone, model and recents stay muted until hovered.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r002-01",
+        "r001-01",
+        "r003-01"
+      ],
+      "file": "color/welcome-col-r004-02.html",
+      "title": "Lanterns on the shelf",
+      "direction": "Learn palette with the light on the subjects: a quiet ink-and-grey start, thumbnails glowing at full strength, amber understood counts and Continue links.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r002-01",
+        "r001-01",
+        "r003-01"
+      ],
+      "file": "color/welcome-col-r004-03.html",
+      "title": "Hearth",
+      "direction": "Learn palette with every actionable element warm: amber selected tone, model value, Suggest, Continue and Browse all; cards take the warm surface on hover.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r005-01",
+      "parents": [
+        "r002-01",
+        "r001-01",
+        "r003-01",
+        "r004-01"
+      ],
+      "file": "motion/welcome-mot-r005-01.html",
+      "title": "Still flame",
+      "direction": "Almost nothing moves: a 240 ms fade on arrival, 150-250 ms ease-out hover changes, chips fading in, a breathing Suggest label while thinking; no travel.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-02",
+      "parents": [
+        "r002-01",
+        "r001-01",
+        "r003-01",
+        "r004-01"
+      ],
+      "file": "motion/welcome-mot-r005-02.html",
+      "title": "Kindling",
+      "direction": "The glow answers you: it kindles on arrival with a staggered rise, grows with the length of the typed subject, and swells as the button flares on submit.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-03",
+      "parents": [
+        "r002-01",
+        "r001-01",
+        "r003-01",
+        "r004-01"
+      ],
+      "file": "motion/welcome-mot-r005-03.html",
+      "title": "Embers",
+      "direction": "The learning node's language: a light crosses the underline on arrival, runs into the button on submit and bursts, embers rise while Suggest thinks, a light runs through a hovered thumbnail.",
+      "phase": "motion",
+      "tag": "mot"
+    }
+  ]
+}

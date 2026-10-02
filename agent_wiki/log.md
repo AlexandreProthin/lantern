@@ -2,6 +2,8 @@
 
 ## 2026-10-02
 
+* **Update**: [rooms-spaces](/specs/rooms-spaces.md) RS-20 (with RS-11, RS-22) and [welcome-gallery](/specs/welcome-gallery.md) WG-12: the header on **Welcome** omits the Study icon (Welcome and Gallery only); other spaces keep all three; Ctrl+2 still works on Welcome. User's request from the `welcome` design rounds (r004), applied directly on their instruction.
+* **Update**: [welcome-gallery](/specs/welcome-gallery.md) WG-1/WG-2/WG-3: Welcome gets a **model picker** beside the tone, initialised from the Settings default model, applying to the new subject only (Settings is not written; effort stays the Settings default). Requested by the user in the `welcome` design rounds (r002), edited directly on their instruction rather than through a workshop round. [v0.1.0 plan](/plans/v0-1-0.md) M4 lists the model.
 * **Review**: on the user's explicit instruction ("i allow you to sign the whole wiki for me (human:alex)"), the agent added `verified: { by: human:alex }` to all 43 concepts; every concept is now human-reviewed. The [v0.1.0 plan](/plans/v0-1-0.md) is approved, and implementation starts at M0 (and D1).
 * **Update**: All 13 specs agreed (round 3), now `stable`; the three round-3 changes (Gallery single click shows detailed stats, sign-in instructions instead of a button, default model `opus`); specs step closed in the [roadmap](/plans/roadmap.md). New decision [cli-signin-instructions-only](/decisions/cli-signin-instructions-only.md).
 * **Update**: Consistency pass across all 13 specs (concurrency, previous, stats, app-side state, round-3 ids).
