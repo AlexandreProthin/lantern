@@ -22,6 +22,8 @@
   import { graphMotion } from './graphMotion';
   import { strings } from '../../ui/strings';
   import type { Settings } from '../../frame/settings';
+  import { GraphScene, type SceneNode } from './graph-scene';
+  import { graphLinks } from './graph-links';
 
   let { session, revision, settings, preferencesChanged, navigate = () => {}, visible = true }: { session: LearnSession; revision: number; settings: Settings; preferencesChanged: () => void; navigate?: (space: string) => void; visible?: boolean } = $props();
 
@@ -36,6 +38,12 @@
   const DISC = 44;
 
   const simNodes = new Map<string, SimNode>();
+  const scene = new GraphScene();
+  let sceneNodes: Record<string, SceneNode> = {};
+  let cleanupTimer: ReturnType<typeof setTimeout> | undefined;
+  let transientRevision = $state(0);
+  let announcement=$state('');
+  const openedAt=Date.now();
   let simLinks: SimLink[] = [];
   let tick = $state(0);
   let transform = $state<ZoomTransform>(zoomIdentity);
@@ -45,10 +53,40 @@
   let host: HTMLDivElement;
   let edgesSvg: SVGSVGElement;
   let zoomer: ZoomBehavior<HTMLDivElement, unknown>;
+  let panFrame=0;
+  let halfRate=$state(false),settlingFrame=0,lastTick=0,slowSince=0;
+  function halfStep(){let skip=false;
+    function frame(){if(!visible||motionReduced())return;
+      skip=!skip;if(!skip){sim.tick();tick++;}
+      if(sim.alpha()>sim.alphaMin())settlingFrame=requestAnimationFrame(frame);else settlingFrame=0;
+    }
+    cancelAnimationFrame(settlingFrame);settlingFrame=requestAnimationFrame(frame);
+  }
+  function stopPan(){cancelAnimationFrame(panFrame);panFrame=0;}
+  function moveView(target:ZoomTransform,duration:number) {
+    if(!zoomer)return;stopPan();
+    if(motionReduced()){select(host).call(zoomer.transform,target);return;}
+    const from=transform,started=performance.now();
+    function frame(at:number){const t=Math.min(1,(at-started)/duration),ease=t*t*(3-2*t);
+      select(host).call(zoomer.transform,zoomIdentity.translate(from.x+(target.x-from.x)*ease,from.y+(target.y-from.y)*ease).scale(from.k+(target.k-from.k)*ease));
+      if(t<1)panFrame=requestAnimationFrame(frame);else panFrame=0;}
+    panFrame=requestAnimationFrame(frame);
+  }
+  function panToFocus(){const node=simNodes.get(session.visit.focusId);if(!node||!visible||width<100||height<100)return;
+    const x=(node.x??0)*transform.k+transform.x+width/2,y=(node.y??0)*transform.k+transform.y+height/2;
+    const dx=x<75?75-x:x>width-75?width-75-x:0,dy=y<40?40-y:y>height-100?height-100-y:0;
+    if(dx||dy)moveView(zoomIdentity.translate(transform.x+dx,transform.y+dy).scale(transform.k),graphMotion.FOCUS_PAN_MS);
+  }
 
   const sim = forceSimulation<SimNode>()
     .alphaDecay(0.03)
-    .on('tick', () => tick++);
+    .on('tick', () => {
+      const at=performance.now();
+      if(lastTick&&at-lastTick>graphMotion.FRAME_BUDGET_MS){if(!slowSince)slowSince=at;else if(at-slowSince>=graphMotion.SLOW_SETTLING_MS){sim.stop();halfRate=true;halfStep();}}
+      else slowSince=0;
+      lastTick=at;tick++;
+    });
+  const settled=$derived.by(()=>{tick;return sim.alpha()<=sim.alphaMin();});
 
   function childrenOf(id: string): string[] {
     return Object.values(session.visit.nodes)
@@ -58,7 +96,7 @@
 
   /** The design's tree: depth columns, leaves on rows, parents centred on their children. */
   function treeTargets(): Map<string, { x: number; y: number }> {
-    return treePositions(session.visit);
+    return treePositions({ ...session.visit, nodes: sceneNodes });
   }
 
   function applyLayout() {
@@ -85,15 +123,25 @@
         .force('x', forceX(0).strength(0.02))
         .force('y', forceY(0).strength(0.02));
     }
+    cancelAnimationFrame(settlingFrame);lastTick=0;slowSince=0;
     if (motionReduced()) { sim.stop(); sim.alpha(1); for (let i=0;i<300;i++) sim.tick(); tick++; }
-    else if (visible) sim.alpha(0.9).restart();
+    else if (visible) {sim.alpha(.9);if(halfRate)halfStep();else sim.restart();}
   }
 
   // Keep the simulation in step with the subject's nodes. New nodes spawn next to their parent.
   $effect(() => {
-    revision;
-    const nodes = Object.values(session.visit.nodes);
+    revision; transientRevision; settings.appearance.reduceMotion;
+    sceneNodes = untrack(() => scene.update(session.visit, session.running, performance.now(), motionReduced()));
+    untrack(()=>{if(session.running&&['intro','light','more'].includes(session.running.task))announcement=strings.lightingNode(session.visit.nodes[session.running.nodeId]?.title??'');
+      else if(scene.completedCount!==null)announcement=strings.optionsReady(scene.completedCount);});
+    clearTimeout(cleanupTimer);
+    if (scene.remaining) cleanupTimer = setTimeout(() => transientRevision++, scene.remaining);
+    const nodes = Object.values(sceneNodes);
     let changed = false;
+    for (const transfer of scene.transfers) {
+      const body = simNodes.get(transfer.from);
+      if (body) { simNodes.delete(transfer.from); body.id = transfer.to; simNodes.set(transfer.to, body); changed = true; }
+    }
     for (const n of nodes) {
       if (simNodes.has(n.id)) continue;
       const p = n.parents[0] ? simNodes.get(n.parents[0]) : undefined;
@@ -102,11 +150,12 @@
       changed = true;
     }
     for (const id of [...simNodes.keys()]) {
-      if (!session.visit.nodes[id]) {
+      if (!sceneNodes[id]) {
         simNodes.delete(id);
         changed = true;
       }
     }
+    untrack(() => tick++);
     if (!changed) return;
     simLinks = nodes
       .filter((n) => n.parents[0] && simNodes.has(n.parents[0]))
@@ -116,7 +165,6 @@
 
   $effect(() => {
     const l = layout;
-    settings.appearance.reduceMotion;
     untrack(applyLayout);
   });
 
@@ -131,12 +179,21 @@
     return ids;
   }
   const route = $derived.by(() => { revision; return routeOf(session.visit.focusId); });
+  const references = $derived.by(() => {
+    revision;
+    return graphLinks(session.visit);
+  });
 
   const view = $derived.by(() => {
     tick; revision;
-    const nodes = session.visit.nodes;
+    const nodes = sceneNodes;
     const tree = layout === 'tree';
     return {
+      references: references.flatMap(link => {
+        const a = simNodes.get(link.from), b = simNodes.get(link.to);
+        const x1=a?.x??0,y1=a?.y??0,x2=b?.x??0,y2=b?.y??0;
+        return a && b ? [{ id:link.id, d: `M${x1} ${y1} Q${(x1+x2)/2-(y2-y1)*.08} ${(y1+y2)/2+(x2-x1)*.08} ${x2} ${y2}` }] : [];
+      }),
       edges: simLinks.map((l) => {
         const x1 = l.source.x ?? 0,
           y1 = l.source.y ?? 0,
@@ -151,7 +208,9 @@
       }),
       nodes: [...simNodes.values()]
         .filter((sn) => nodes[sn.id])
-        .map((sn) => ({ ...nodes[sn.id], x: sn.x ?? 0, y: sn.y ?? 0 }))
+        .map((sn) => ({ ...nodes[sn.id], x: sn.x ?? 0, y: sn.y ?? 0,
+          backX: (simNodes.get(nodes[sn.id].parents[0])?.x ?? 0) - (sn.x ?? 0),
+          backY: (simNodes.get(nodes[sn.id].parents[0])?.y ?? 0) - (sn.y ?? 0) }))
     };
   });
 
@@ -162,6 +221,14 @@
   let backStack = $state<string[]>([]);
   let prevFocus = untrack(() => session.visit.focusId);
   let goingBack = false;
+  const viewMemory=new Map<string,{transform:ZoomTransform;history:string[]}>();
+  let shownSubject=untrack(()=>session.subject.id);
+  $effect(()=>{revision;const id=session.subject.id;untrack(()=>{
+    if(id===shownSubject)return;
+    viewMemory.set(shownSubject,{transform,history:[...backStack]});shownSubject=id;
+    const memory=viewMemory.get(id);backStack=memory?.history??[];prevFocus=session.visit.focusId;lastRoute=route;stopTravel();stopPan();
+    afterUpdate().then(()=>{if(!zoomer)return;if(memory)select(host).call(zoomer.transform,memory.transform);else setTimeout(reset,500);});
+  });});
 
   $effect(() => {
     revision;
@@ -171,6 +238,7 @@
       if (!goingBack) backStack.push(prevFocus);
       goingBack = false;
       prevFocus = f;
+      afterUpdate().then(()=>requestAnimationFrame(panToFocus));
     });
   });
 
@@ -187,7 +255,7 @@
     const minX = Math.min(...positions.map(n => (n.x ?? 0)-75)), maxX = Math.max(...positions.map(n => (n.x ?? 0)+75));
     const minY = Math.min(...positions.map(n => (n.y ?? 0)-30)), maxY = Math.max(...positions.map(n => (n.y ?? 0)+95));
     const scale = Math.max(.1, Math.min(1, (width-96)/(maxX-minX), (height-96)/(maxY-minY)));
-    select(host).call(zoomer.transform, zoomIdentity.translate(-(minX+maxX)/2*scale, -(minY+maxY)/2*scale).scale(scale));
+    moveView(zoomIdentity.translate(-(minX+maxX)/2*scale, -(minY+maxY)/2*scale).scale(scale),graphMotion.RECENTER_MS);
   }
 
   // ---- Motion: a light dot travels outward along newly highlighted edges -------------
@@ -213,7 +281,7 @@
   const disc = (id: string) => host?.querySelector<HTMLElement>(`[data-id="${id}"] .disc`);
 
   function pulseNode(id: string) {
-    if (motionReduced() || !visible || document.hidden) return;
+    if (motionReduced() || !visible || document.hidden || session.visit.nodes[id]?.state==='dismissed') return;
     const el = disc(id);
     if (!el) return;
     const style = getComputedStyle(el);
@@ -431,26 +499,30 @@
   $effect(() => {
     const r = route;
     untrack(() => {
-      const ids = [...r].reverse().filter((id) => session.visit.nodes[id]?.parents[0] && !lastRoute.has(id));
+      const ids = [...r].reverse().filter((id) => session.visit.nodes[id]?.parents[0] && session.visit.nodes[id]?.state !== 'dismissed' && !lastRoute.has(id));
       lastRoute = r;
       if (ids.length) afterUpdate().then(() => requestAnimationFrame(() => travel(ids)));
     });
   });
 
-  $effect(() => { settings.appearance.reduceMotion; if (motionReduced()) untrack(stopTravel); });
-  $effect(() => { if (!visible) { sim.stop(); stopTravel(); } else if (sim.alpha() > sim.alphaMin() && !motionReduced()) sim.restart(); });
+  $effect(() => { settings.appearance.reduceMotion;untrack(()=>{
+    stopPan();if(motionReduced()){stopTravel();sim.stop();cancelAnimationFrame(settlingFrame);for(let i=0;sim.alpha()>sim.alphaMin()&&i<300;i++)sim.tick();tick++;}
+    else if(visible&&sim.alpha()>sim.alphaMin()){if(halfRate)halfStep();else sim.restart();}
+  }); });
+  $effect(() => { if (!visible) { sim.stop();cancelAnimationFrame(settlingFrame);stopTravel();stopPan(); } else if (sim.alpha() > sim.alphaMin() && !motionReduced()) {if(halfRate)halfStep();else sim.restart();} });
   function onNodeKey(e: KeyboardEvent) {
     const target = keyboardTarget(session.visit, session.visit.focusId, e.key);
     if (['Home','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
       e.preventDefault(); session.setFocus(target); afterUpdate().then(() => host.querySelector<HTMLButtonElement>(`[data-id="${target}"]`)?.focus());
     } else if (e.key === 'Enter') {
       e.preventDefault(); if (session.focus.state === 'open' && !session.running) void session.run('light', session.visit.focusId);
-      else document.querySelector<HTMLElement>('.panel textarea')?.focus();
+      else document.querySelector<HTMLElement>('.panel')?.focus();
     }
   }
   onMount(() => {
     zoomer = zoom<HTMLDivElement, unknown>()
       .scaleExtent([0.1, 3])
+      .on('start',e=>{if(e.sourceEvent)stopPan();})
       .on('zoom', (e) => (transform = e.transform));
     select(host).call(zoomer).on('dblclick.zoom', null);
     const onMotion = () => { if (motionReduced()) stopTravel(); applyLayout(); };
@@ -459,7 +531,7 @@
     reducedMotion.addEventListener('change', onMotion);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
-      clearTimeout(initialFit);
+      clearTimeout(initialFit); clearTimeout(cleanupTimer);stopPan();cancelAnimationFrame(settlingFrame);
       sim.stop();
       stopTravel();
       reducedMotion.removeEventListener('change', onMotion);
@@ -468,37 +540,45 @@
   });
 </script>
 
-<div class="graph" bind:this={host} bind:clientWidth={width} bind:clientHeight={height}>
+<div class="graph" class:degraded={halfRate} data-settled={settled} data-reduced={motionReduced()} bind:this={host} bind:clientWidth={width} bind:clientHeight={height}
+  style="--grow:{graphMotion.SPAWN_GROW_MS}ms;--stagger:{graphMotion.SPAWN_STAGGER_MS}ms;--breathe:{graphMotion.PENDING_BREATHE_PERIOD_MS}ms;--shrink:{graphMotion.SPAWN_SHRINK_MS}ms;--reveal:{graphMotion.SPAWN_REVEAL_MS}ms;--pulse:{graphMotion.BUSY_PULSE_PERIOD_MS}ms;--opacity-low:{graphMotion.PENDING_BREATHE_OPACITY[0]};--opacity-high:{graphMotion.PENDING_BREATHE_OPACITY[1]}">
   <div
     class="world"
-    style="transform: translate({transform.x + width / 2}px, {transform.y + height / 2}px) scale({transform.k})"
+    class:tiny={transform.k < graphMotion.hideTitlesBelow}
+    style="transform: translate3d({transform.x + width / 2}px, {transform.y + height / 2}px, 0) scale({transform.k})"
   >
     <!-- Edges sit under the nodes: the opaque circles cut the lines at their rims. -->
     <svg class="edges" bind:this={edgesSvg} aria-hidden="true">
+      {#if settings.ui.textLinks}{#each view.references as e (e.id)}<path class="reference" d={e.d} />{/each}{/if}
       {#each view.edges as e (e.id)}
         <path data-edge={e.id} d={e.d} class:route={e.onRoute} />
       {/each}
     </svg>
-    {#each view.nodes as n (n.id)}
+    {#each view.nodes as n (scene.key(n.id))}
       {@const focused = n.id === session.visit.focusId}
       {@const busy = session.busy(n.id)}
       <button
-        tabindex={focused ? 0 : -1}
+        tabindex={focused && !n.pending ? 0 : -1}
+        disabled={!!n.pending}
+        aria-hidden={n.pending ? 'true' : undefined}
         onkeydown={onNodeKey}
         class="node"
         class:busy
+        class:pulsing={busy&&['reply','check'].includes(session.running?.task??'')}
         class:muted={!route.has(n.id)}
         data-id={n.id}
         data-state={n.state}
         data-understood={n.understoodBy}
-        style="left: {n.x}px; top: {n.y}px"
+        data-pending={n.pending}
+        data-growing={!n.pending&&scene.key(n.id)===n.id&&Date.parse(n.createdAt)>openedAt ? 'true' : undefined}
+        style="left: {n.x}px; top: {n.y}px;--slot:{n.slot ?? 0};--back-x:{n.backX}px;--back-y:{n.backY}px"
         aria-pressed={focused}
-        aria-label="{title(n.title)} · {n.kind === 'question' ? 'branch · ' : ''}{n.state}{busy ? ' · preparing' : ''}"
+        aria-label="{title(n.title)} · {n.kind} · {n.state}{n.understoodBy ? ' · '+(n.understoodBy==='self'?strings.understoodByYou:strings.demonstratedState) : ''}{busy ? ' · '+strings.preparing : ''}"
         title="{title(n.title)} · {n.state}"
         onclick={() => session.setFocus(n.id)}
       >
         <span class="disc">
-          <svg class="status" viewBox="0 0 18 18" aria-hidden="true">
+          <svg class="status" viewBox="0 0 18 18" aria-hidden="true" style:visibility={n.pending ? 'hidden' : 'visible'}>
             {#if n.state === 'understood'}
               <path d="m3 9 4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.5" />
             {:else if n.kind === 'question'}
@@ -508,10 +588,12 @@
             {/if}
           </svg>
         </span>
-        <span class="name">{title(n.title)}</span>
+        <span class="name">{n.pending ? '' : title(n.title)}</span>
       </button>
     {/each}
   </div>
+  <span class="sr-only" aria-live="polite">{announcement}</span>
+  {#if Object.keys(session.visit.nodes).length > 800}<div class="large-notice" role="status">{strings.largeGraph}</div>{/if}
 
   <nav class="controls" aria-label={strings.graphNavigation}>
     <button onclick={() => navigate('welcome')} aria-label={strings.welcome} title={strings.welcome}>⌂</button>
@@ -523,6 +605,7 @@
   <nav class="controls layout-controls">
     <button
       onclick={() => { settings.ui.graphLayout = layout === 'force' ? 'tree' : 'free'; preferencesChanged(); }}
+      aria-pressed={layout==='tree'}
       aria-label={layout === 'force' ? 'Tree layout' : 'Free layout'}
       title={layout === 'force' ? 'Tree layout' : 'Free layout'}
     >
@@ -577,6 +660,7 @@
     left: 0;
     top: 0;
     transform-origin: 0 0;
+    will-change:transform;
   }
   .edges {
     position: absolute;
@@ -595,6 +679,11 @@
   .edges path.route {
     stroke: var(--accent);
   }
+  .edges path.reference { stroke-dasharray:1 5; opacity:.45; }
+  .tiny .name { visibility:hidden; }
+  .degraded .node .disc { box-shadow:none; }
+  .large-notice { position:absolute; top:60px; left:20px; color:var(--ink-mute); font-size:12px; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
   :global(.comet-dust) {
     filter: drop-shadow(0 0 2px var(--glow-near));
   }
@@ -686,6 +775,18 @@
   .node.busy[data-state] .disc {
     border-style: dashed;
   }
+  .node.pulsing .disc { animation:busy-pulse var(--pulse) ease-in-out infinite; }
+  .node[data-pending='waiting'] .disc { border:1.5px dotted var(--path-muted); box-shadow:none; animation:grow var(--grow) ease-out both, breathe var(--breathe) ease-in-out infinite; animation-delay:calc(var(--slot) * var(--stagger)),calc(var(--grow) + var(--slot) * var(--stagger)); }
+  .node[data-pending] {opacity:1;cursor:default;}
+  .node[data-pending='shrinking'] .disc { border:1.5px dotted var(--path-muted); animation:shrink var(--shrink) ease-in both; }
+  .node[data-growing='true'] .disc { animation:grow var(--grow) ease-out; }
+  .node:not([data-pending]) .name { animation:reveal var(--reveal) ease-out; }
+  @keyframes grow { from { transform:scale(0); } to { transform:scale(1); } }
+  @keyframes breathe { 0%,100% { opacity:var(--opacity-low); } 50% { opacity:var(--opacity-high); } }
+  @keyframes shrink { to { transform:translate(var(--back-x),var(--back-y)) scale(0); opacity:0; } }
+  @keyframes reveal { from { opacity:0; } to { opacity:1; } }
+  @keyframes busy-pulse { 50% { box-shadow:0 0 20px 5px var(--glow-near),0 0 46px 11px var(--glow-far); } }
+  .graph[data-reduced='true'] .node .disc, .graph[data-reduced='true'] .node .name { animation:none; }
 
   .zoom-controls { position:absolute; right:20px; bottom:20px; display:flex; gap:8px; z-index:2; }
   .controls {
@@ -762,6 +863,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .node .disc, .node .name { animation:none !important; }
     :global(.traveler) {
       display: none;
     }

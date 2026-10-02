@@ -2,6 +2,7 @@
   import { tick } from 'svelte';
   import Markdown from '../../ui/Markdown.svelte';
   import { strings } from '../../ui/strings';
+  import { modelLabel,durationLabel } from '../../ui/format';
   import { childrenOf, pathTo, addChild, deleteSubtree, editLabel, editText, revertText, setState, subtreeIds } from '../../core/graph';
   import type { GraphNode, Turn } from '../../core/model';
   import type { LearnSession } from './session';
@@ -22,16 +23,17 @@
   let adding = $state(false), ownTitle = $state(''), ownHook = $state(''), localError = $state('');
   let deleting = $state<string | null>(null), deleteDialog: HTMLDialogElement, compareDialog: HTMLDialogElement;
   let scroller: HTMLDivElement;
+  let nearBottom=$state(true);
   let composer = $state<HTMLTextAreaElement>();
   let selection = $state(''), selectionX = $state(0), selectionY = $state(0);
   const deleteIds = $derived(deleting ? subtreeIds(visit, deleting) : []);
-  const kindLabels: Record<string, string> = { subject: 'subject', axis: 'axis', deeper: 'go deeper', application: 'application', adjacent: 'adjacent idea', exercise: 'exercise', question: 'from a question', own: 'own' };
+  const kindLabels: Record<string, string> = strings.nodeKinds;
   const compact = (n: number) => n >= 1_000_000 ? `${(n/1_000_000).toFixed(1)}M` : n >= 1000 ? `${(n/1000).toFixed(1)}k` : String(n);
   function provenance(target: GraphNode | Turn): string {
     if (target.author?.kind === 'user') return strings.writtenBy(target.author.by);
     if (target.author?.kind !== 'model') return '';
     const author = target.author, generation = visit.log.find(g => g.id === author.generationId);
-    return [author.model, generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, `${Math.round(generation.durationMs/1000)} s`] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
+    return [modelLabel(author.model), generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
   }
   function perform(fn: () => void) { try { fn(); localError = ''; session.touch(); } catch (e) { localError = String(e); } }
   function beginEdit(field: string, target: GraphNode | Turn = node) {
@@ -67,7 +69,7 @@
   $effect(() => { node.id; selection = ''; adding = false; localError = ''; if (scroller) scroller.scrollTop = 0; });
   $effect(() => {
     running?.text;
-    if (scroller && busy && scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop < 48) tick().then(() => { scroller.scrollTop = scroller.scrollHeight; });
+    if (scroller && busy && nearBottom) tick().then(() => { scroller.scrollTop = scroller.scrollHeight; });
   });
   function selectText() {
     const selected = window.getSelection(); selection = '';
@@ -94,9 +96,9 @@
 </script>
 <svelte:window onkeydown={onGlobalKey} onmouseup={selectText} />
 <aside class="panel" tabindex="-1">
-  <div class="scroll" bind:this={scroller} onscroll={() => selection = ''}>
+  <div class="scroll" bind:this={scroller} onscroll={() => { selection = ''; nearBottom=scroller.scrollHeight-scroller.clientHeight-scroller.scrollTop<48; }}>
     <nav class="crumbs">{#each path.slice(0,-1) as parent (parent.id)}<button onclick={() => session.setFocus(parent.id)}>{parent.title}</button><span>›</span>{/each}</nav>
-    <div class="meta">{kindLabels[node.kind]} · {node.state}{node.understoodBy ? ` · ${node.understoodBy}` : ''}{node.content ? ` · ${provenance(node)}` : ''}</div>
+    <div class="meta">{kindLabels[node.kind]} · <span class="state-chip" data-state={node.state}>{node.understoodBy==='self'?strings.selfState:node.understoodBy==='demonstrated'?strings.demonstratedState:node.state}</span>{node.content ? ` · ${provenance(node)}` : ''}</div>
     {#if editors[node.id] === 'labels'}
       <input aria-label={strings.title} data-field="title" bind:value={editDrafts[node.id].title} onkeydown={editKey} maxlength="120" />
       <textarea aria-label={strings.hook} bind:value={editDrafts[node.id].hook} onkeydown={editKey} maxlength="200"></textarea>
@@ -153,6 +155,7 @@
       </section>
     {/if}
   </div>
+  {#if busy&&!nearBottom}<button class="jump-latest" onclick={()=>{scroller.scrollTop=scroller.scrollHeight;nearBottom=true;}}>{strings.jumpLatest}</button>{/if}
   {#if lit}<footer><textarea bind:this={composer} aria-label={strings.composer} value={drafts[node.id] ?? ''} oninput={e => drafts[node.id] = e.currentTarget.value} placeholder={strings.composer} rows="2" disabled={busy} onkeydown={e => { if(e.ctrlKey && e.key === 'Enter') { e.preventDefault(); send(); } }}></textarea>
     <div class="actions">{#if busy}<button onclick={() => session.cancel()}>{strings.cancel}</button>{:else}<button class="primary" disabled={!!running || !drafts[node.id]?.trim()} onclick={send}>{strings.send}</button>{/if}
     <button disabled={!!running} onclick={() => session.run('check',node.id)}>{strings.check}</button><button disabled={busy} onclick={() => perform(() => setState(visit,node.id,node.state === 'understood' ? 'lit' : 'understood',node.state === 'understood' ? null : 'self'))}>{node.state === 'understood' ? strings.notSure : strings.understood}</button></div>
@@ -163,6 +166,7 @@
 <dialog bind:this={compareDialog} oncancel={() => compare = null}><div class="compare">{#if compare}<section><h2>{strings.previous}</h2><Markdown text={compare.previous!} {visit} focus={id => session.setFocus(id)} /></section><section><h2>{strings.current}</h2><Markdown text={'text' in compare ? compare.text : compare.content} {visit} focus={id => session.setFocus(id)} /></section>{/if}</div><button disabled={busy} onclick={() => { perform(() => revertText(compare!)); compare = null; compareDialog.close(); }}>{strings.revert}</button><button onclick={() => { compare = null; compareDialog.close(); }}>{strings.keepCurrent}</button></dialog>
 <style>
   .panel { display:flex; flex-direction:column; height:100%; min-width:0; background:var(--surface); overflow:hidden; }
+  .state-chip { border:1px solid var(--line);border-radius:8px;padding:2px 6px; } .state-chip[data-state='understood'] {color:var(--node-understood);border-color:var(--node-understood);} .state-chip[data-state='lit'] {color:var(--node-lit);} .state-chip[data-state='dismissed'] {opacity:.35;}
   .scroll { padding:20px 28px 32px; flex:1; overflow:auto; }
   .crumbs { display:flex; flex-wrap:wrap; align-items:center; gap:5px; min-height:20px; }.crumbs button { font-size:12px; border:0; background:none; padding:2px; }
   .meta { font-size:11px; color:var(--ink-mute); margin-top:12px; } h1 { font-size:24px; font-weight:600; margin:12px 0; } h2 { font-size:13px; color:var(--ink-mute); font-weight:500; margin:20px 0 10px; }

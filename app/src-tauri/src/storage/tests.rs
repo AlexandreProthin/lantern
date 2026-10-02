@@ -18,6 +18,64 @@ fn paths_reject_traversal_and_windows_devices() {
     assert!(subject_path(Path::new("library"), "tides-k3f9").is_ok());
 }
 #[test]
+fn state_unknown_fields_legacy_backup_and_future_shapes_are_preserved() {
+    let config=tempfile::tempdir().unwrap();let path=config.path().join("state.json");
+    let legacy=br#"{"recents":[],"lastOpenedAt":{},"futureRoom":{"kept":true}}"#;fs::write(&path,legacy).unwrap();
+    assert_eq!(read_state(config.path()).unwrap().extra["futureRoom"]["kept"],true);
+    assert_eq!(fs::read(config.path().join("state.json.bak")).unwrap(),legacy);
+    record_open(config.path(),"tides-k3f9","2026-10-02T12:00:00Z").unwrap();assert_eq!(read_state(config.path()).unwrap().extra["futureRoom"]["kept"],true);
+    let future=br#"{"format":"lantern-state/2","recents":{"newShape":true},"futureRoom":1}"#;fs::write(&path,future).unwrap();
+    assert_eq!(read_state(config.path()).unwrap().format,"lantern-state/2");assert!(record_open(config.path(),"tides-k3f9","now").is_err());assert_eq!(fs::read(&path).unwrap(),future);
+    fs::write(&path,b"{bad").unwrap();assert!(read_state(config.path()).unwrap().recents.is_empty());assert!(fs::read_dir(config.path()).unwrap().any(|e|e.unwrap().file_name().to_string_lossy().starts_with("state.json.corrupt-")));
+}
+#[test]
+fn library_copy_preserves_originals_and_renames_collisions() {
+    let old=tempfile::tempdir().unwrap(); let new=tempfile::tempdir().unwrap(); let install=tempfile::tempdir().unwrap(); let config=tempfile::tempdir().unwrap();
+    let s=subject(3); save_subject(old.path(),&s,None,true).unwrap(); save_subject(new.path(),&s,None,true).unwrap();
+    let original=fs::read(subject_path(old.path(),"tides-k3f9").unwrap()).unwrap();
+    let result=crate::library::switch_library(old.path(),new.path(),install.path(),"copy",&config.path().join("settings.json"),&json!({"format":"lantern-settings/1","library":{"path":"old"},"future":{"kept":true}})).unwrap();
+    assert_eq!(result["transferred"],1); assert_eq!(result["collisions"].as_array().unwrap().len(),1);
+    assert_eq!(fs::read(subject_path(old.path(),"tides-k3f9").unwrap()).unwrap(),original);
+    assert_eq!(fs::read_dir(new.path().join("subjects")).unwrap().count(),2);
+    let moved_id=result["collisions"][0]["newId"].as_str().unwrap(); assert_eq!(load_subject(new.path(),moved_id).unwrap().subject["id"],moved_id);
+    let settings:Value=serde_json::from_slice(&fs::read(config.path().join("settings.json")).unwrap()).unwrap();assert_eq!(settings["future"]["kept"],true);
+}
+#[test]
+fn interrupted_library_move_recovers_originals_and_old_library_pointer() {
+    let old=tempfile::tempdir().unwrap();let destination=tempfile::tempdir().unwrap();let config=tempfile::tempdir().unwrap();
+    let old_root=fs::canonicalize(old.path()).unwrap();let dest_root=fs::canonicalize(destination.path()).unwrap();
+    let s=subject(3);save_subject(old.path(),&s,None,true).unwrap();
+    let original=fs::read(subject_path(old.path(),"tides-k3f9").unwrap()).unwrap();
+    let backup=old_root.join(".lantern-transfer-abc123");atomic_write(&subject_path(&backup,"tides-k3f9").unwrap(),&original).unwrap();
+    fs::remove_file(subject_path(old.path(),"tides-k3f9").unwrap()).unwrap();
+    let settings=config.path().join("settings.json");write_json(&settings,&json!({"format":"lantern-settings/1","library":{"path":dest_root},"futureRoom":{"kept":true}})).unwrap();
+    write_json(&config.path().join("library-transfer.json"),&json!({"format":"lantern-transfer/1","old":old_root,"destination":dest_root,"nonce":"abc123","committed":false,
+        "files":[{"id":"tides-k3f9","hash":format!("{:x}",Sha256::digest(&original))}]})).unwrap();
+    assert!(crate::library::recover_transfer(&settings).unwrap());assert_eq!(fs::read(subject_path(old.path(),"tides-k3f9").unwrap()).unwrap(),original);
+    let recovered:Value=serde_json::from_slice(&fs::read(&settings).unwrap()).unwrap();assert_eq!(recovered["library"]["path"],json!(old_root));assert_eq!(recovered["futureRoom"]["kept"],true);
+    assert!(!backup.exists());assert!(!config.path().join("library-transfer.json").exists());assert!(!crate::library::recover_transfer(&settings).unwrap());
+}
+#[test]
+fn library_move_restores_all_originals_if_settings_commit_fails() {
+    let old=tempfile::tempdir().unwrap(); let new=tempfile::tempdir().unwrap(); let install=tempfile::tempdir().unwrap(); let config=tempfile::tempdir().unwrap();
+    let s=subject(3); save_subject(old.path(),&s,None,true).unwrap();
+    let original=fs::read(subject_path(old.path(),"tides-k3f9").unwrap()).unwrap();
+    let document=json!({"format":"lantern-settings/1","library":{"path":"old"}});
+    assert!(crate::library::switch_library(old.path(),new.path(),install.path(),"move",config.path(),&document).is_err());
+    assert_eq!(fs::read(subject_path(old.path(),"tides-k3f9").unwrap()).unwrap(),original);
+    assert!(!subject_path(new.path(),"tides-k3f9").unwrap().exists());
+    crate::library::switch_library(old.path(),new.path(),install.path(),"move",&config.path().join("settings.json"),&document).unwrap();
+    assert!(!subject_path(old.path(),"tides-k3f9").unwrap().exists());assert_eq!(load_subject(new.path(),"tides-k3f9").unwrap().subject,s);
+}
+#[test]
+fn library_rejects_bad_source_before_removing_anything_and_install_destination() {
+    let old=tempfile::tempdir().unwrap(); let new=tempfile::tempdir().unwrap(); let install=tempfile::tempdir().unwrap();let config=tempfile::tempdir().unwrap();
+    save_subject(old.path(),&subject(3),None,true).unwrap(); fs::write(old.path().join("subjects/broken.json"),b"{bad").unwrap();
+    assert!(crate::library::switch_library(old.path(),new.path(),install.path(),"move",&config.path().join("settings.json"),&json!({"library":{"path":"old"}})).is_err());
+    assert!(subject_path(old.path(),"tides-k3f9").unwrap().exists()); assert_eq!(fs::read_dir(old.path().join("subjects")).unwrap().count(),2);
+    assert!(crate::library::validate_folder(&install.path().join("library"),install.path()).is_err());
+}
+#[test]
 fn round_trip_rename_and_recents_do_not_rewrite_subject() {
     let dir = tempfile::tempdir().unwrap(); let config = tempfile::tempdir().unwrap(); let mut s = subject(4);
     assert!(matches!(save_subject(dir.path(), &s, None, true).unwrap(), SaveResult::Saved { .. }));

@@ -105,9 +105,23 @@ fn state_path(config: &Path) -> PathBuf { config.join("state.json") }
 pub fn read_state(config: &Path) -> Result<AppState> {
     let path = state_path(config); if !path.exists() { return Ok(AppState::default()); }
     let bytes = fs::read(&path).map_err(io)?;
-    match serde_json::from_slice::<AppState>(&bytes) {
-        Ok(state) => Ok(state),
-        Err(_) => {
+    let raw=serde_json::from_slice::<Value>(&bytes).ok();
+    let major=raw.as_ref().and_then(|v|v["format"].as_str()).and_then(|f|f.strip_prefix("lantern-state/")).and_then(|f|f.parse::<u32>().ok());
+    if major.is_some_and(|n|n>1) {
+        // Future versions may also change known field shapes. Preserve the file;
+        // expose only compatible recents, and every mutation refuses its format.
+        let raw=raw.unwrap();let mut extra:HashMap<String,Value>=raw.as_object().unwrap().iter().map(|(k,v)|(k.clone(),v.clone())).collect();
+        extra.remove("format");extra.remove("recents");extra.remove("lastOpenedAt");
+        return Ok(AppState{format:raw["format"].as_str().unwrap().into(),recents:raw["recents"].as_array().map(|a|a.iter().filter_map(|v|v.as_str().map(String::from)).collect()).unwrap_or_default(),last_opened_at:HashMap::new(),extra});
+    }
+    let legacy=raw.as_ref().is_some_and(|v|v.is_object()&&v.get("format").is_none());
+    let parsed=if major==Some(1)||legacy {serde_json::from_slice::<AppState>(&bytes).ok()}else{None};
+    match parsed {
+        Some(state) => {
+            if legacy {atomic_write(&config.join("state.json.bak"),&bytes)?;write_json(&path,&serde_json::to_value(&state).map_err(io)?)?;}
+            Ok(state)
+        },
+        None => {
             let suffix = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_err(io)?.as_nanos();
             atomic_write(&config.join(format!("state.json.corrupt-{suffix}")), &bytes)?;
             write_json(&path, &serde_json::to_value(AppState::default()).map_err(io)?)?;
@@ -172,8 +186,10 @@ pub fn list_subjects(library: &Path, config: &Path) -> Result<Vec<Value>> {
 }
 pub fn delete_subject(library: &Path, config: &Path, id: &str) -> Result<()> {
     let path = subject_path(library, id)?; let key = fs::canonicalize(&path).map_err(io)?.to_string_lossy().to_string();
+    let mut state = read_state(config)?;
+    if state.format != state_format() {return Err("Newer app state is read-only".into());}
     crate::paths::recycle_file(&path)?;
-    let mut state = read_state(config)?; state.last_opened_at.remove(id); state.recents.retain(|s| s != id);
+    state.last_opened_at.remove(id); state.recents.retain(|s| s != id);
     write_json(&state_path(config), &serde_json::to_value(state).map_err(io)?)?;
     let mut cache = read_cache(config); cache.remove(&key);
     write_json(&config.join("summaries.json"), &serde_json::to_value(cache).map_err(io)?)

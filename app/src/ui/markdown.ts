@@ -73,22 +73,37 @@ md.renderer.rules.fence = (tokens, index, options, env, self) => {
   return `<div class="code-block"><button type="button" data-copy="true">${strings.copy}</button>${fence(tokens, index, options, env, self)}</div>`;
 };
 export function renderMarkdown(text: string, visit: RoomVisit): string {
-  return DOMPurify.sanitize(md.render(text, { visit }), { FORBID_TAGS: ['style', 'iframe', 'script'], FORBID_ATTR: ['style'], ADD_ATTR: ['data-node-id', 'data-copy', 'data-mermaid'] });
+  // Inline styles originate only in trusted KaTeX output (raw Markdown HTML is escaped,
+  // KaTeX trust is false). Retain its geometry; removing styles breaks fractions/matrices.
+  return DOMPurify.sanitize(md.render(text, { visit }), { FORBID_TAGS: ['style', 'iframe', 'script'], ADD_ATTR: ['data-node-id', 'data-copy', 'data-mermaid'] });
+}
+export function sanitizeDiagram(svg: string): string {
+  const safe = DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true, svgFilters: true },
+    FORBID_TAGS: ['foreignObject', 'script', 'image', 'animate', 'set'] });
+  const template = document.createElement('template'); template.innerHTML = safe;
+  // Preserve Mermaid's generated theme/geometry, but prevent CSS or SVG references
+  // from loading remote content. Diagram links are handled as text in strict mode.
+  for (const el of template.content.querySelectorAll('*')) {
+    if (el.tagName.toLowerCase() === 'style' && /url\s*\(|@import|expression\s*\(/i.test(el.textContent ?? '')) el.remove();
+    if (/url\s*\(|@import|expression\s*\(/i.test(el.getAttribute('style') ?? '')) el.removeAttribute('style');
+    for (const attr of ['href', 'xlink:href']) if (el.hasAttribute(attr) && !el.getAttribute(attr)!.startsWith('#')) el.removeAttribute(attr);
+  }
+  return template.innerHTML;
 }
 let diagramSequence = 0;
 export async function renderDiagrams(root: HTMLElement): Promise<void> {
   if (!root.querySelector('[data-mermaid]')) return;
   const { default: mermaid } = await import('mermaid');
-  mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'dark', themeVariables: {
+  mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'dark', htmlLabels: false, flowchart: { htmlLabels: false }, themeVariables: {
     primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim(),
     primaryTextColor: getComputedStyle(document.documentElement).getPropertyValue('--ink').trim(),
     lineColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
   } });
   for (const block of root.querySelectorAll<HTMLElement>('[data-mermaid]')) {
     if (block.dataset.rendered) continue; block.dataset.rendered = 'true';
-    const source = block.textContent ?? '';
+    const source = (block.textContent ?? '').replace(/%%\{[\s\S]*?\}%%/g, '');
     try { const { svg } = await mermaid.render(`lantern-diagram-${++diagramSequence}`, source);
-      if (block.isConnected) block.innerHTML = DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true, svgFilters: true }, FORBID_ATTR: ['style'], FORBID_TAGS: ['foreignObject', 'script', 'style'] });
+      if (block.isConnected) block.innerHTML = sanitizeDiagram(svg);
     } catch { block.title = strings.diagramFailed; }
   }
 }

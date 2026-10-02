@@ -7,6 +7,7 @@ export function treePositions(v: RoomVisit, column = 240, row = 96): Map<string,
   const children = new Map<string, string[]>();
   for (const n of Object.values(v.nodes)) children.set(n.id, []);
   for (const n of Object.values(v.nodes)) if (n.parents[0]) children.get(n.parents[0])?.push(n.id);
+  for (const ids of children.values()) ids.sort((a,b)=>v.nodes[a].createdAt.localeCompare(v.nodes[b].createdAt));
   let cursor = 0, maxDepth = 0;
   const seen = new Set<string>();
   while (stack.length) {

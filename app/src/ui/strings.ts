@@ -24,6 +24,7 @@ export const strings = {
   waitingDesign: 'Welcome design is in progress.', galleryStub: 'Gallery follows the Welcome design.',
   loading: 'Loading…', textLinks: 'Text links', legend: 'Legend', notes: 'Corrections',
   openState: 'open', litState: 'lit', demonstratedState: 'demonstrated', selfState: 'self-declared', dismissedState: 'dismissed', branchState: 'question',
+  lightingNode: (title: string) => `Lighting ${title}`, optionsReady: (count: number) => `${count} options ready`, largeGraph: 'Free layout is off for large graphs',
   askSelection: 'Ask about this', nodeSelection: 'Make it a node', copy: 'Copy code', copied: 'Copied',
   diagramFailed: 'Diagram could not be drawn', providerBusy: 'A generation is running',
   showTokens: 'Show token stats', displayName: 'Display name', appliesNext: 'Applies to your next message',
@@ -46,6 +47,16 @@ export const strings = {
   shortcuts: 'Keyboard shortcuts', close: 'Close', settingsRecovered: 'Unreadable settings were backed up and reset to defaults.',
   libraryUnavailable: 'Your library folder is unavailable.', openConflict: 'Open conflict copy',
   checkAgain: 'Check again', testProvider: 'Test', notTested: 'Not tested yet'
+  , changeLibrary:'Change…', revealLibrary:'Reveal library in Explorer', finishGeneration:'Finish or cancel the running generation first',
+  libraryChanged:(path:string)=>`Library switched to ${path}.`, collisionsRenamed:(count:number)=>`${count} colliding subject ids were renamed.`,
+  transferLibrary:'Bring your subjects to this library?', transferHint:'Move copies and verifies every file before removing originals. Copy keeps the originals. Leave them switches folders only.',
+  moveSubjects:'Move', copySubjects:'Copy', leaveSubjects:'Leave them', resetDefaults:'Reset to defaults', confirmReset:'Reset this section to its defaults?',
+  invalidName:'Use 1–40 characters.', invalidModel:'Use 1–100 letters, numbers, dots, underscores, colons or hyphens.', invalidBudget:'Use a whole number from 2000 to 100000.',
+  found:'Found', notFound:'Not found', signedIn:'Signed in', notSignedIn:'Not signed in'
+  , chooseModel:'Choose a model',copyDetails:'Copy details'
+  , understoodByYou:'understood by you',preparing:'preparing',jumpLatest:'Jump to latest'
+  , nodeKinds:{subject:'subject',axis:'axis',deeper:'go deeper',application:'application',adjacent:'adjacent idea',exercise:'exercise',question:'from a question',own:'own'}
+  , transferRecovered:'An interrupted library transfer was recovered. Your subjects are safe.'
   , installInstructions: 'Install Claude Code from the setup page, then return to Lantern and choose Check again.', installClaude: 'Install Claude Code',
   signinInstructions: 'Start Claude Code once outside Lantern and follow its browser sign-in with your Claude account. Then return here and choose Check again.',
   shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\nCtrl+1 / Ctrl+2 / Ctrl+3 — Welcome / Study / Gallery\nAlt+A / Alt+N with selected text — Ask / Make it a node\n? — show or hide shortcuts\nCtrl+, — Settings'

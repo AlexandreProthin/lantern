@@ -46,3 +46,35 @@ pub fn open_external(url: &str) -> Result<(), String> {
 }
 #[cfg(not(windows))]
 pub fn open_external(_: &str) -> Result<(), String> { Err("External link opening is only supported on Windows".into()) }
+
+#[cfg(windows)]
+pub fn pick_folder(caption:&str) -> Result<Option<PathBuf>, String> {
+    use windows_sys::Win32::{System::Com::{CoInitializeEx, CoUninitialize, CoTaskMemFree, COINIT_APARTMENTTHREADED}, UI::Shell::{SHBrowseForFolderW, SHGetPathFromIDListW, BROWSEINFOW, BIF_RETURNONLYFSDIRS, BIF_NEWDIALOGSTYLE}};
+    let initialized = unsafe { CoInitializeEx(std::ptr::null(), COINIT_APARTMENTTHREADED as u32) };
+    if initialized < 0 { return Err("Could not initialize folder picker".into()); }
+    let title: Vec<u16> = caption.encode_utf16().chain([0]).collect();
+    let mut display = [0u16;260];
+    let info = BROWSEINFOW { pszDisplayName:display.as_mut_ptr(), lpszTitle:title.as_ptr(), ulFlags:BIF_RETURNONLYFSDIRS|BIF_NEWDIALOGSTYLE, ..Default::default() };
+    let item = unsafe { SHBrowseForFolderW(&info) };
+    let result = if item.is_null() { Ok(None) } else {
+        let mut path = [0u16;32768]; let valid = unsafe { SHGetPathFromIDListW(item,path.as_mut_ptr()) };
+        unsafe { CoTaskMemFree(item as *const _) };
+        if valid == 0 { Err("Choose a filesystem folder".into()) } else { Ok(Some(PathBuf::from(String::from_utf16_lossy(&path[..path.iter().position(|&c|c==0).unwrap_or(path.len())])))) }
+    };
+    unsafe { CoUninitialize() }; result
+}
+#[cfg(not(windows))]
+pub fn pick_folder(_: &str) -> Result<Option<PathBuf>, String> { Err("Folder picker is only supported on Windows".into()) }
+#[cfg(windows)]
+pub fn reveal_folder(path: &Path) -> Result<(), String> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::UI::{Shell::ShellExecuteW,WindowsAndMessaging::SW_SHOWNORMAL};
+    let path=std::fs::canonicalize(path).map_err(|e|e.to_string())?;
+    if !path.is_dir() { return Err("Folder is unavailable".into()); }
+    let file: Vec<u16> = path.as_os_str().encode_wide().chain([0]).collect();
+    let op: Vec<u16> = "open".encode_utf16().chain([0]).collect();
+    let result=unsafe {ShellExecuteW(std::ptr::null_mut(),op.as_ptr(),file.as_ptr(),std::ptr::null(),std::ptr::null(),SW_SHOWNORMAL)};
+    if result as isize <= 32 { return Err("Could not reveal library".into()); } Ok(())
+}
+#[cfg(not(windows))]
+pub fn reveal_folder(_: &Path) -> Result<(), String> { Err("Explorer is only supported on Windows".into()) }

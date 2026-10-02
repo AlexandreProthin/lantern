@@ -3,7 +3,8 @@
   import { invoke } from '@tauri-apps/api/core';
   import { strings } from '../ui/strings';
   import { providerMode } from './provider-mode';
-  import { DesktopProvider } from './provider';
+  import { DesktopProvider, ObservedProvider, ProviderError } from './provider';
+  import type { Completion, ErrorKind } from './provider';
   import { FakeProvider } from '../rooms/learn/fake-provider';
   import { learnRoom } from '../rooms/learn/definition';
   import type { RoomSession } from './room';
@@ -15,11 +16,18 @@
   import SettingsPanel from './SettingsPanel.svelte';
   const desktop = '__TAURI_INTERNALS__' in window;
   const fake = providerMode(desktop, import.meta.env.VITE_PROVIDER) === 'fake';
-  const room = learnRoom, provider = fake ? new FakeProvider(Number(new URLSearchParams(location.search).get('delay') ?? 12)) : new DesktopProvider();
+  let health = $state<Completion | ProviderError | null>(null);
+  const fakeError=new URLSearchParams(location.search).get('error');
+  const room = learnRoom, provider = new ObservedProvider(fake ? new FakeProvider(Number(new URLSearchParams(location.search).get('delay') ?? 12),import.meta.env.DEV&&fakeError&&Object.hasOwn(strings.errorKinds,fakeError)?fakeError as ErrorKind:undefined) : new DesktopProvider(), value => health=value);
   const storage = desktop ? desktopStorage : browserStorage;
   let settings = $state(defaultSettings());
+  let defaults = $state(defaultSettings());
+  let switchingLibrary = $state(false);
+  let windowMemory: Awaited<ReturnType<typeof import('./window-memory').rememberWindow>>|undefined;
   let revision = $state(0), space = $state('welcome'), session = $state<RoomSession | null>(null);
   let settingsOpen = $state(false), shortcutsOpen = $state(false), subjectMenu = $state(false);
+  let settingsSection=$state('general'),checkingReady=$state(false);
+  let readyController:AbortController|undefined,readyPending:Promise<Completion>|undefined;
   let loading = $state(true), banner = $state(''), toast = $state(''), saveError = $state(''), conflictPath = $state('');
   let readonlyFile = $state<unknown>(null), settingsReadOnly = $state(false);
   let subjectCount = $state(0), recentIds: string[] = [], library = '';
@@ -29,9 +37,15 @@
   }, error => saveError = String(error));
   const summary = $derived.by(() => { revision; return session ? room.statsSummary(session.subject) : null; });
   const running = $derived.by(() => { revision; return session?.running ? {...session.running} : null; });
+  const anyRunning = $derived.by(() => { revision; return [...owned.values()].some(entry => !!entry.session.running); });
+  const unavailable=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
+  async function checkReady(){if(anyRunning||checkingReady)return;checkingReady=true;readyController=new AbortController();
+    try{if(desktop)await invoke('provider_status');readyPending=provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'haiku',effort:'low',cancel:readyController.signal},()=>{});await readyPending;}
+    catch(e){if(!(e instanceof ProviderError))banner=String(e);}finally{checkingReady=false;readyPending=undefined;}
+  }
   function preferencesChanged() {
     if (settingsReadOnly) return;
-    settings = validateSettings(settings,defaultSettings(library,settings.user.displayName));
+    settings = validateSettings(settings,defaults);
     writer.schedule(settings);
     document.documentElement.dataset.reduceMotion = settings.appearance.reduceMotion === 'on' ? 'on' : 'system';
     for (const entry of owned.values()) { entry.session.displayName = settings.user.displayName; entry.session.budgetTokens = settings.learn.contextBudget; }
@@ -80,14 +94,29 @@
   async function retrySaves() {
     try { for(const entry of owned.values()) await entry.persistence.flush(); await writer.flush(); saveError=''; } catch(e) {saveError=String(e);}
   }
+  async function switchLibrary(destination: string, mode: string) {
+    if (anyRunning) throw new Error(strings.finishGeneration);
+    switchingLibrary=true;
+    try {
+      for (const entry of owned.values()) await entry.persistence.flush(); await writer.flush();
+      const result=await invoke<{path:string;collisions:{oldId:string;newId:string}[]}>('switch_library',{old:library,destination,mode,document:settings});
+      for (const entry of owned.values()) await entry.persistence.close();
+      owned.clear(); session=null; readonlyFile=null; recentIds=[]; library=result.path; settings.library.path=result.path;
+      space='welcome'; banner='';
+      try {subjectCount=(await invoke<unknown[]>('list_subjects',{library})).length;}catch(e){subjectCount=0;banner=strings.libraryUnavailable+' '+String(e);}
+      toast=strings.libraryChanged(result.path)+(result.collisions.length ? ' '+strings.collisionsRenamed(result.collisions.length) : '');
+      revision++;
+    } finally {switchingLibrary=false;}
+  }
   async function flushClose(): Promise<void> {
+    readyController?.abort();if(readyPending)await readyPending.catch(()=>{});
     for(const entry of owned.values()) entry.session.cancel();
     while([...owned.values()].some(entry=>entry.session.running)) await new Promise(resolve=>setTimeout(resolve,10));
-    for(const entry of owned.values()) await entry.persistence.close(); await writer.flush();
+    for(const entry of owned.values()) await entry.persistence.close(); await writer.flush(); await windowMemory?.flush();
   }
   function key(e: KeyboardEvent) {
     if(e.ctrlKey && ['1','2','3'].includes(e.key)) {e.preventDefault(); void navigate(room.spaces[Number(e.key)-1].id);}
-    else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsOpen=true;}
+    else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsSection='general';settingsOpen=true;}
     else if(e.key==='Escape') {
       if(document.querySelector('dialog[open]')) return;
       if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(subjectMenu) subjectMenu=false; else session?.cancel();
@@ -98,16 +127,24 @@
     void (async()=> {
       try {
         if(desktop) {
-          const loaded=await invoke<{document:unknown;readOnly:boolean;recovered:boolean;defaultLibrary:string;defaultName:string}>('load_settings');
-          settings=validateSettings(loaded.document,defaultSettings(loaded.defaultLibrary,loaded.defaultName)); settingsReadOnly=loaded.readOnly;
+          const loaded=await invoke<{document:unknown;readOnly:boolean;recovered:boolean;transferRecovered?:boolean;defaultLibrary:string;defaultName:string}>('load_settings');
+          defaults=defaultSettings(loaded.defaultLibrary,loaded.defaultName);
+          settings=validateSettings(loaded.document,defaults); settingsReadOnly=loaded.readOnly;
           if(loaded.recovered) toast=strings.settingsRecovered; if(loaded.readOnly) banner=strings.readOnly;
+          if(loaded.transferRecovered)toast=strings.transferRecovered;
           library=settings.library.path;
+          if(!loaded.readOnly && !(loaded.document as {library?:{path?:string}})?.library?.path) {
+            try {library=await invoke<string>('validate_library',{path:library});settings.library.path=library;}catch(e){banner=strings.libraryUnavailable+' '+String(e);}
+          }
           await invoke('import_poc',{library});
           try {const subjects=await invoke<unknown[]>('list_subjects',{library});subjectCount=subjects.length;} catch(e) {banner=strings.libraryUnavailable+' '+library;}
-          try {recentIds=(await invoke<{recents:string[]}>('read_state')).recents;} catch(e) {toast=String(e);}
+          try {const state=await invoke<{recents:string[];window?:unknown}>('read_state');recentIds=state.recents;
+            windowMemory=await (await import('./window-memory')).rememberWindow(state.window,e=>saveError=String(e));
+          } catch(e) {toast=String(e);}
           const {getCurrentWindow}=await import('@tauri-apps/api/window'); const window=getCurrentWindow();
           unlisten=await window.onCloseRequested(async e=> {e.preventDefault();try {await flushClose();await window.destroy();}catch(error){saveError=String(error);}});
         } else {
+          defaults=defaultSettings('browser','Learner');
           try {settings=validateSettings(JSON.parse(localStorage.getItem('lantern.settings')??'{}'),defaultSettings('browser','Learner'));}catch{settings=defaultSettings('browser','Learner');}
           library='browser'; subjectCount=browserSubjects().length;
           try {recentIds=JSON.parse(localStorage.getItem('lantern.recents')??'[]');}catch{recentIds=[];}
@@ -118,12 +155,12 @@
         if(import.meta.env.DEV && query.has('study')) {
           if(query.has('resume') && recentIds[0]) await open(recentIds[0]); else await createStudyFixture(query.get('subject')||'Ocean tides');
         }
-        refresh=setInterval(()=> { for(const entry of owned.values()) entry.persistence.refresh().catch(e=>saveError=String(e)); },1000);
+        refresh=setInterval(()=> { if(!switchingLibrary) for(const entry of owned.values()) if(!entry.session.running) entry.persistence.refresh().catch(e=>saveError=String(e)); },1000);
       }catch(e){banner=String(e);}finally{loading=false;}
     })();
     const beforeUnload=()=> { for(const entry of owned.values()) {entry.session.cancel();void entry.persistence.flush();}void writer.flush(); };
     window.addEventListener('beforeunload',beforeUnload);
-    return ()=>{unlisten?.();clearInterval(refresh);window.removeEventListener('beforeunload',beforeUnload);};
+    return ()=>{unlisten?.();windowMemory?.dispose();clearInterval(refresh);window.removeEventListener('beforeunload',beforeUnload);};
   });
 </script>
 <svelte:window onkeydown={key} />
@@ -132,9 +169,10 @@
   <nav>{#each room.spaces as item}<button aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space===item.id?'page':undefined} disabled={item.id!=='welcome' && !subjectCount} onclick={()=>navigate(item.id)}>{item.icon}</button>{/each}</nav>
   {#if session}<button class="subject" onclick={()=>subjectMenu=!subjectMenu} title={session.subject.title}>{session.subject.title}{#if running}<span class="busy-dot">·</span>{/if}</button>{/if}
   {#if summary}<small title={settings.appearance.showTokenStats?summary.tooltip:undefined}>{summary.text}</small>{/if}
-  <button class="gear" aria-label={strings.settings} title={strings.settings} onclick={()=>settingsOpen=true}>⚙</button>
+  <button class="gear" aria-label={strings.settings} title={strings.settings} onclick={()=>{settingsSection='general';settingsOpen=true;}}>⚙</button>
 </header>
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
+{#if unavailable}<div class="banner provider-notice" role="alert"><div><strong>{strings.errorKinds[unavailable.kind]}</strong><p>{unavailable.kind==='not-installed'?strings.installInstructions:strings.signinInstructions}</p></div><button onclick={()=>{settingsSection='provider';settingsOpen=true;}}>{strings.settings}</button><button disabled={anyRunning||checkingReady} onclick={checkReady}>{strings.checkAgain}</button>{#if checkingReady}<button onclick={()=>readyController?.abort()}>{strings.cancel}</button>{/if}</div>{/if}
 {#if saveError}<div class="banner error" role="alert">{strings.saveFailed}<details><summary>{strings.details}</summary>{saveError}</details><button onclick={retrySaves}>{strings.retry}</button></div>{/if}
 {#if toast}<div class="toast" role="status">{toast}<button onclick={()=>toast=''}>{strings.close}</button></div>{/if}
 {#if subjectMenu && session}<div class="subject-menu">
@@ -145,13 +183,14 @@
   <label>{strings.defaultEffort}<select value={session.subject.rooms[room.id].effort} onchange={e=>{session!.subject.rooms[room.id].effort=e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label>
 </div>{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#each room.spaces as item}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} />{/each}{/if}</div>
-{#if settingsOpen}<SettingsPanel {settings} {room} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
+{#if settingsOpen}<SettingsPanel {settings} {defaults} {room} {health} {switchLibrary} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>
   :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; } header { height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid var(--line); background:var(--surface); }
+  :global(#app) {display:flex;flex-direction:column;} header {flex-shrink:0;} .banner {flex-shrink:0;}
   header button { background:none; padding:5px 9px; min-width:32px; }.mark { color:var(--accent); font-size:24px; }.room { color:var(--accent); font-size:13px; } nav { display:flex; gap:4px; } [aria-current='page'] { border-color:var(--accent); color:var(--accent); }
   .subject { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:35vw; border:0; } header small { color:var(--ink-mute); font-size:13px; margin-left:auto; }.gear { margin-left:auto; }
-  .spaces { height:calc(100% - 57px); }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
+  .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
   .subject-menu { position:fixed; left:230px; top:52px; z-index:12; display:grid; gap:12px; padding:20px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }.subject-menu label { display:grid; gap:5px; }
   .busy-dot { font-size:24px; color:var(--accent); animation:pulse 1.8s ease-in-out infinite; }.shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; }

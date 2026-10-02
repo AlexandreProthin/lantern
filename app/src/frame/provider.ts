@@ -8,6 +8,14 @@ export class ProviderError extends Error {
 }
 export const zeroUsage = (): Usage => ({ input: 0, output: 0, thinking: 0, cacheRead: 0, cacheWrite: 0 });
 export interface InferenceProvider { stream(request: Request, onText: (chunk: string) => void): Promise<Completion> }
+/** SE-42: explicit tests and ordinary calls share session health; cancellation is neutral. */
+export class ObservedProvider implements InferenceProvider {
+  constructor(private inner: InferenceProvider, private report: (health: Completion | ProviderError) => void) {}
+  async stream(request: Request, onText: (chunk: string) => void): Promise<Completion> {
+    try { const result=await this.inner.stream(request,onText); this.report(result); return result; }
+    catch(error) { if(error instanceof ProviderError && error.kind!=='cancelled') this.report(error); throw error; }
+  }
+}
 export class DesktopProvider implements InferenceProvider {
   async stream(request: Request, onText: (chunk: string) => void): Promise<Completion> {
     if (request.cancel.aborted) throw new ProviderError('cancelled', '');

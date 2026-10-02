@@ -5,4 +5,5 @@ export const graphMotion = {
   SPAWN_REVEAL_MS: 200, SPAWN_SHRINK_MS: 300, BUSY_PULSE_PERIOD_MS: 1800,
   route: { speed: 1250, pause: 15, glow: 180, lifeMin: 610, lifeMax: 690, emitEvery: 22, cap: 34, drift: 26 },
   BURST: 16, charge: -900, collide: 62, linkDistance: 130, hideTitlesBelow: 0.5
+  , FOCUS_PAN_MS:300, RECENTER_MS:400, FRAME_BUDGET_MS:20, SLOW_SETTLING_MS:1000
 } as const;

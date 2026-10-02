@@ -3,6 +3,7 @@
   import type { RoomVisit } from '../core/model';
   import { renderMarkdown, renderDiagrams } from './markdown';
   import { strings } from './strings';
+  import { invoke } from '@tauri-apps/api/core';
   import 'katex/dist/katex.min.css';
   let { text, visit, streaming = false, focus }: { text: string; visit: RoomVisit; streaming?: boolean; focus: (id: string) => void } = $props();
   let root: HTMLElement;
@@ -14,7 +15,7 @@
     const copy = element.closest<HTMLButtonElement>('[data-copy]');
     if (copy) { navigator.clipboard.writeText(copy.parentElement?.querySelector('code')?.textContent ?? '').then(() => { copy.textContent = strings.copied; }); return; }
     const external = element.closest<HTMLAnchorElement>('a[href]');
-    if (external && '__TAURI_INTERNALS__' in window) { e.preventDefault(); import('@tauri-apps/api/core').then(({ invoke }) => invoke('open_external', { url: external.href })); }
+    if (external && '__TAURI_INTERNALS__' in window) { e.preventDefault(); void invoke('open_external', { url: external.href }); }
   }
 </script>
 <!-- Generated buttons/links handle the keyboard's synthetic click events. -->
@@ -32,8 +33,10 @@
   .md :global(.code-block) { position:relative; }
   .md :global([data-copy]) { position:absolute; right:4px; top:4px; font-size:11px; }
   .md :global(.math-error) { color:var(--error-ink); }
+  .md :global(.hljs-keyword),.md :global(.hljs-title) {color:var(--accent);} .md :global(.hljs-string) {color:var(--node-understood);} .md :global(.hljs-number),.md :global(.hljs-literal) {color:var(--focus);} .md :global(.hljs-comment) {color:var(--ink-mute);font-style:italic;}
   .md :global(svg) { max-width:100%; height:auto; }
   .streaming::after { content:'▍'; color:var(--accent); animation:cursor 1s steps(2) infinite; }
   @keyframes cursor { to { opacity:0; } }
   @media(prefers-reduced-motion:reduce) { .streaming::after { animation:none; } }
+  :global(html[data-reduce-motion='on']) .streaming::after {animation:none;}
 </style>

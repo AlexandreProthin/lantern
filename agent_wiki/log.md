@@ -2,6 +2,8 @@
 
 ## 2026-10-02
 
+* **Motion and Settings**: [Study](/components/v010-study.md) now has transient in-place spawn bodies, both layouts, text relations, pan/recenter, busy/reduced motion, per-subject view memory and viewport fallbacks. Seven browser tests, 33 TS tests and 16 Rust tests pass. The isolated 500-node zoom sample passes at 16.7 ms median/33.4 ms p95; earlier failures and native limits remain recorded. [Settings](/components/v010-settings.md) add verified library transfer/rollback, validation/reset/provider health and window memory. D1 and manual acceptance remain open.
+
 * **Study slice**: [Frame and Study](/components/v010-study.md) now cover the fake tutor loop, editing, dismiss/restore, cancellation and restart persistence with three passing browser tests. Settings storage/rendering foundations are included. D1 remains parallel; M3/M5 are still in progress. Idle ST-50 medians pass at 63.24 ms save and 25.47 ms load.
 
 * **Eval gate**: [learn-1](/components/v010-learn-runtime.md) passed all three real Haiku/low runs: 24/24 each, 72/72 overall. Detailed replies/usage/timings are local, git-ignored; the lexical language check still requires prose review.
