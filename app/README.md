@@ -18,7 +18,15 @@ cargo test --manifest-path src-tauri/Cargo.toml --locked
 
 M0 supplies an empty shell and provider mode switch. The fake provider contract,
 real CLI and `npm run eval -- --model haiku --effort low` runner arrive in M2.
-M1 supplies the domain and persistence; M3 supplies the Study loop.
+M1 now supplies the domain, shared stats, Rust library storage and a debounced
+frame persistence controller. M3 supplies the Study loop and connects persistence
+errors, reload/conflict notices and window-close flushing to the UI.
+
+Storage tests use isolated temporary libraries and never modify real subjects.
+They cover round-trip, path safety, conflicts, cache invalidation, read-only newer
+formats and PoC backup/idempotence. `cargo test --manifest-path src-tauri/Cargo.toml
+--locked -- --nocapture` also prints the ST-50 timing for a generated 500-node file.
+No real PoC subjects were found locally for the remaining import exit check.
 
 Keep `src-tauri/Cargo.lock`: the Tauri runtime and macro family is aligned with
 the working PoC. Unconstrained transitive upgrades can produce incompatible

@@ -37,7 +37,8 @@ web build, 1 Playwright shell smoke test and 1 Rust scaffold test passed.
 The wiki validates with zero errors and warnings. The sandbox needs approved child-process access for esbuild,
 Chromium and Rust; this is an execution-environment constraint, not an app setting.
 
-M0 is complete. The user requested a pause after M0. Early M1/M2 work is set aside locally and
-does not belong to the M0 commit. M1 and M2 follow the [domain](/specs/domain-model.md), [storage](/specs/subject-storage.md),
+M0 is complete. Implementation resumed at the user's request on 2026-10-02, while
+the user works on D1. [M1 core and storage](/components/v010-core.md) now has committed
+domain work and persistence validation evidence. M1 and M2 follow the [domain](/specs/domain-model.md), [storage](/specs/subject-storage.md),
 [provider](/specs/inference-provider.md), [protocol](/specs/tutor-protocol.md) and
 [context](/specs/context-assembly.md) contracts.

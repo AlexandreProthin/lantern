@@ -2,6 +2,8 @@
 
 ## 2026-10-02
 
+* **Implementation**: [M1 persistence](/components/v010-core.md) adds atomic saves, conflict/reload rules, app-side state/cache, read-only future formats, Recycle Bin adapter, PoC backup/import and debounced writes. Seven Rust and four persistence tests pass; 500 nodes save in 69 ms and load in 19 ms. Real PoC import remains unverified because the default library has no files.
+
 * **Implementation resumed**: user works on D1 while the agent follows the plan independently. [M1 core](/components/v010-core.md) now has lantern/1 types, invariant validation, graph operations, edit/revert and shared stats; seven new domain tests passed.
 
 * **Implementation**: M0 [v0.1.0 foundation](/components/v010-foundation.md) completed in `app/`: 2 unit tests, 1 Rust test, 1 browser smoke test, type check and production web build passed. [Roadmap](/plans/roadmap.md) paused at the user's request before continuing M1/M2.

@@ -28,5 +28,24 @@ largest remainder rounding so they total 100; zero-output logs have no shares.
 
 2026-10-02: seven focused domain tests passed (nine units including M0), covering
 JSON round-trip, topology rejection, state transitions, duplicate titles, subtree
-deletion, edit/revert and statistics. Storage and PoC import are the next M1 work;
-M1 is not yet complete. See the [implementation plan](/plans/v0-1-0.md).
+deletion, edit/revert and statistics.
+
+Rust storage implements safe ids, atomic same-directory writes, hash/mtime/size
+receipts, clean reload and dirty conflict copies, higher-major read-only handling,
+app-side state and summary cache, Recycle Bin deletion and backed-up PoC import.
+Nanosecond receipt timestamps cross the JS bridge as strings to retain precision.
+Storage commands are serialized behind a mutex. The frame persistence controller
+debounces 300 ms, serializes in-flight edits, retains failed saves for retry and
+flushes explicitly on close; wiring its callbacks and close handler into the Study
+frame belongs to M3. Errors, reload toasts and conflict banners must remain visible.
+
+Seven Rust tests passed, including migration idempotence/backup preservation,
+conflict-copy exclusion and cache rebuild. Four frame persistence tests passed.
+ST-50 measured 500-node save 69.262 ms and load 18.747 ms in debug on this machine.
+Svelte/TypeScript check passed with zero errors/warnings before M2 work began.
+
+M1 exit evidence remains partial: no real PoC files are present in the default
+`Documents/Lantern/subjects` folder, so only generated representative files were
+imported. Actual Recycle Bin behaviour still needs a Windows integration check;
+the implementation has no permanent-delete fallback. See the
+[implementation plan](/plans/v0-1-0.md).
