@@ -27,7 +27,7 @@ is used otherwise.
 3. On any lit node, talk: ask a question, or press **Test me** to get a check question
    and answer it. When your answer shows you understand, the tutor marks the node
    **understood**. A question that opens a new direction can add a **branch** node
-   (blue outline).
+   (diamond mark).
 4. Everything is saved as you go, one JSON file per subject in
    `Documents/Lantern/subjects/`. Reopen it later from the home screen.
 
@@ -42,7 +42,7 @@ the chosen node, always exactly 3 distinct teasers).
 | `src-tauri/src/lib.rs` | Tauri commands: `infer` (streams `llm-chunk` events), subject list/save/delete |
 | `src/lib/prompts.ts` | Learn room system prompt, per-task prompts, parsing of `<options>`, `<branch>`, `<understood/>` |
 | `src/lib/session.svelte.ts` | Actions that turn tutor replies into graph changes |
-| `src/lib/Graph.svelte` | d3-force graph, pan/zoom |
+| `src/lib/Graph.svelte` | Graph in the final learning-node design: physics or tree layout, pan/zoom, route highlight, travelling light |
 | `src/lib/Panel.svelte` | Focused node: explanation, next options, dialogue |
 
 ## Context sent on each turn

@@ -145,8 +145,8 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--panel);
-    border-left: 1px solid var(--border);
+    background: var(--surface);
+    border-left: 1px solid var(--line);
     min-width: 0;
   }
   .scroll {
@@ -159,7 +159,7 @@
     flex-wrap: wrap;
     gap: 4px;
     font-size: 12px;
-    color: var(--muted);
+    color: var(--ink-mute);
     min-height: 16px;
   }
   .crumb {
@@ -167,7 +167,7 @@
     cursor: pointer;
   }
   .crumb:hover {
-    color: var(--text);
+    color: var(--ink);
     text-decoration: underline;
   }
   header {
@@ -181,22 +181,22 @@
     letter-spacing: 0.06em;
   }
   .kind {
-    color: var(--muted);
+    color: var(--ink-mute);
   }
   .state {
     padding: 1px 7px;
     border-radius: 9px;
-    border: 1px solid var(--border);
-    color: var(--muted);
+    border: 1px solid var(--line);
+    color: var(--ink-mute);
   }
   .state.lit {
-    color: var(--lantern);
-    border-color: var(--lantern);
+    color: var(--node-lit);
+    border-color: var(--node-lit);
   }
   .state.understood {
-    color: var(--wall);
-    background: var(--lantern-hot);
-    border-color: var(--lantern-hot);
+    color: var(--accent-ink);
+    background: var(--node-understood);
+    border-color: var(--node-understood);
   }
   h1 {
     font-size: 24px;
@@ -206,14 +206,14 @@
   }
   .hook {
     margin: 0;
-    color: var(--muted);
+    color: var(--ink-mute);
     font-style: italic;
   }
   h2 {
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--muted);
+    color: var(--ink-mute);
     margin: 28px 0 10px;
     font-weight: 600;
   }
@@ -237,19 +237,19 @@
     padding: 0;
   }
   .md :global(strong) {
-    color: var(--lantern-hot);
+    color: var(--focus);
   }
   .md :global(table) {
     border-collapse: collapse;
   }
   .md :global(th),
   .md :global(td) {
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     padding: 4px 8px;
   }
   .streaming :global(> :last-child::after) {
     content: '▍';
-    color: var(--lantern);
+    color: var(--accent);
     animation: blink 1s steps(2) infinite;
   }
   @keyframes blink {
@@ -259,10 +259,10 @@
   }
   .unlit {
     padding: 28px;
-    border: 1px dashed var(--border);
+    border: 1px dashed var(--line);
     border-radius: 10px;
     text-align: center;
-    color: var(--muted);
+    color: var(--ink-mute);
   }
   .option {
     all: unset;
@@ -273,20 +273,20 @@
     width: 100%;
     padding: 10px 14px;
     margin-bottom: 8px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-radius: 8px;
     cursor: pointer;
   }
   .option:hover {
-    border-color: var(--lantern);
-    background: var(--hover);
+    border-color: var(--accent);
+    background: var(--surface-2);
   }
   .option .t {
     font-weight: 600;
   }
   .option .h {
     grid-column: 1;
-    color: var(--muted);
+    color: var(--ink-mute);
     font-size: 13.5px;
   }
   .option .badge {
@@ -294,13 +294,13 @@
     grid-row: 1 / span 2;
     align-self: center;
     font-size: 11px;
-    color: var(--muted);
+    color: var(--ink-mute);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
   .option.lit .badge,
   .option.understood .badge {
-    color: var(--lantern);
+    color: var(--accent);
   }
   .turn {
     padding: 2px 14px;
@@ -309,11 +309,11 @@
     line-height: 1.55;
   }
   .turn.learner {
-    background: var(--hover);
+    background: var(--surface-2);
     margin-left: 40px;
   }
   .turn.tutor {
-    border-left: 2px solid var(--lantern);
+    border-left: 2px solid var(--accent);
     border-radius: 0;
   }
   .error {
@@ -329,23 +329,23 @@
     margin: 6px 0 0;
   }
   footer {
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line);
     padding: 12px 20px 14px;
   }
   textarea {
     width: 100%;
     box-sizing: border-box;
     resize: vertical;
-    background: var(--wall);
-    color: var(--text);
-    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--ink);
+    border: 1px solid var(--line);
     border-radius: 8px;
     padding: 9px 11px;
     font: inherit;
   }
   textarea:focus {
     outline: none;
-    border-color: var(--lantern);
+    border-color: var(--accent);
   }
   .actions {
     display: flex;

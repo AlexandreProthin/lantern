@@ -47,10 +47,10 @@
     <svg viewBox="0 0 40 40" width="44" height="44" aria-hidden="true">
       <circle cx="20" cy="22" r="17" fill="url(#hg)" />
       <defs>
-        <radialGradient id="hg"><stop offset="0%" stop-color="#ffc861" stop-opacity=".7" /><stop offset="100%" stop-color="#ffc861" stop-opacity="0" /></radialGradient>
+        <radialGradient id="hg"><stop offset="0%" stop-color="var(--accent)" stop-opacity=".7" /><stop offset="100%" stop-color="var(--accent)" stop-opacity="0" /></radialGradient>
       </defs>
-      <path d="M15 8h10M17 8v-3h6v3M13 11h14l-2 20H15z" fill="none" stroke="#ffd98a" stroke-width="1.6" stroke-linejoin="round" />
-      <path d="M20 17c2 3 2 6 0 8-2-2-2-5 0-8z" fill="#ffc861" />
+      <path d="M15 8h10M17 8v-3h6v3M13 11h14l-2 20H15z" fill="none" stroke="var(--node-lit)" stroke-width="1.6" stroke-linejoin="round" />
+      <path d="M20 17c2 3 2 6 0 8-2-2-2-5 0-8z" fill="var(--accent)" />
     </svg>
     <div>
       <h1>Lantern</h1>
@@ -115,23 +115,23 @@
   }
   .brand p {
     margin: 2px 0 0;
-    color: var(--muted);
+    color: var(--ink-mute);
   }
   .room {
     margin-top: 40px;
     padding: 24px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-radius: 14px;
-    background: var(--panel);
+    background: var(--surface);
   }
   .room-name {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--lantern);
+    color: var(--accent);
   }
   .room p {
-    color: var(--muted);
+    color: var(--ink-mute);
     margin: 6px 0 16px;
   }
   form {
@@ -140,16 +140,16 @@
   }
   input {
     flex: 1;
-    background: var(--wall);
-    border: 1px solid var(--border);
+    background: var(--bg);
+    border: 1px solid var(--line);
     border-radius: 8px;
-    color: var(--text);
+    color: var(--ink);
     padding: 10px 12px;
     font: inherit;
   }
   input:focus {
     outline: none;
-    border-color: var(--lantern);
+    border-color: var(--accent);
   }
   .suggest {
     margin-top: 12px;
@@ -161,28 +161,28 @@
   .link {
     all: unset;
     cursor: pointer;
-    color: var(--muted);
+    color: var(--ink-mute);
     font-size: 13px;
     text-decoration: underline dotted;
   }
   .link:hover {
-    color: var(--text);
+    color: var(--ink);
   }
   .chip {
     all: unset;
     cursor: pointer;
     padding: 7px 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-radius: 8px;
     display: flex;
     gap: 10px;
     align-items: baseline;
   }
   .chip:hover {
-    border-color: var(--lantern);
+    border-color: var(--accent);
   }
   .chip span {
-    color: var(--muted);
+    color: var(--ink-mute);
     font-size: 13px;
   }
   .err {
@@ -193,20 +193,20 @@
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--muted);
+    color: var(--ink-mute);
     margin: 36px 0 10px;
   }
   .card {
     display: flex;
     align-items: center;
     gap: 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-radius: 10px;
     margin-bottom: 8px;
     padding-right: 10px;
   }
   .card:hover {
-    border-color: var(--lantern);
+    border-color: var(--accent);
   }
   .open {
     all: unset;
@@ -219,13 +219,13 @@
   }
   .open span,
   .date {
-    color: var(--muted);
+    color: var(--ink-mute);
     font-size: 13px;
   }
   .del {
     all: unset;
     cursor: pointer;
-    color: var(--muted);
+    color: var(--ink-mute);
     font-size: 18px;
     padding: 0 6px;
   }
@@ -235,6 +235,6 @@
   .folder {
     margin-top: 40px;
     font-size: 12px;
-    color: var(--muted);
+    color: var(--ink-mute);
   }
 </style>

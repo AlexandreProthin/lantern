@@ -51,23 +51,23 @@
     align-items: center;
     gap: 14px;
     padding: 8px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
   }
   .back {
     all: unset;
     cursor: pointer;
-    color: var(--muted);
+    color: var(--ink-mute);
   }
   .back:hover {
-    color: var(--text);
+    color: var(--ink);
   }
   .room-name {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--lantern);
-    border: 1px solid var(--lantern);
+    color: var(--accent);
+    border: 1px solid var(--accent);
     border-radius: 9px;
     padding: 1px 8px;
   }
@@ -78,7 +78,7 @@
     text-overflow: ellipsis;
   }
   .stats {
-    color: var(--muted);
+    color: var(--ink-mute);
     font-size: 13px;
   }
   .split {
