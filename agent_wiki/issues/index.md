@@ -10,3 +10,5 @@ what fixed them; that record is why the next person does not reintroduce it.
 * [Subject on-disk format](subject-on-disk-format.md) - OKF bundle or custom format?
 * [Context does not scale with subject size](context-scaling.md) - The whole map is sent on every turn.
 * [LLM latency](llm-latency.md) - About 3 s overhead per call, about 25 s to light a node.
+
+* [Tutor prose quality](/issues/tutor-prose-quality.md) — automatic protocol success does not attest teaching quality.

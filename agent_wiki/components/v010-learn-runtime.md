@@ -49,5 +49,10 @@ configurable delays and typed injected failures.
   The gate is at least 95% on **each** run; the language check is lexical and still
   requires prose review. Results are local under `app/evals/results/`.
 
+Agent sampling of first-run English/French prose confirmed the requested languages
+but found internally inconsistent analogies. This is recorded separately as
+[tutor prose quality](/issues/tutor-prose-quality.md); the automatic percentage is
+a protocol score and does not sign off pedagogy. The approved prompt stays `learn-1`.
+
 Study rendering and motion tuning are M3; D1 remains the user's parallel track.
 See the [plan](/plans/v0-1-0.md) and [latency evidence](/issues/llm-latency.md).
