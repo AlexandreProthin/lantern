@@ -13,3 +13,5 @@ Use `type: Component`.
 * [Inference provider](inference-provider.md) - The Rust trait for completions and its Claude Code CLI implementation.
 * [Learn room prompts](learn-room-prompts.md) - Tutor system prompt, per-task prompts, context and reply parsing.
 * [Subject model and storage](subject-model.md) - The PoC's data model and how a subject is saved.
+
+- [v0.1.0 core and storage](/components/v010-core.md) — M1 domain contracts and persistence evidence.

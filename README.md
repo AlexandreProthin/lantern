@@ -73,8 +73,8 @@ subject        what you're working through ("how TCP congestion control works")
    project's working memory (decisions, architecture, open issues, roadmap).
 3. **Specs + v0.1.0 plan** ✔ 13 agreed specs in [`agent_wiki/specs/`](agent_wiki/specs/index.md),
    worked out in the [spec workshop](agent_design/tool/specs_work/README.md).
-4. **v0.1.0 implementation** ▶ [`app/`](app/README.md): M0 scaffold and local test tooling.
-   Follow the [plan](agent_wiki/plans/v0-1-0.md); pause after M0 requested, with M1 and M2 next.
+4. **v0.1.0 implementation** ▶ [`app/`](app/README.md): M0 scaffold complete; M1 core and storage in progress.
+   Follow the [plan](agent_wiki/plans/v0-1-0.md); implementation resumed, with D1 being designed in parallel by the user.
 
 ## Open work
 

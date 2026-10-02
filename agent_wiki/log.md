@@ -2,6 +2,8 @@
 
 ## 2026-10-02
 
+* **Implementation resumed**: user works on D1 while the agent follows the plan independently. [M1 core](/components/v010-core.md) now has lantern/1 types, invariant validation, graph operations, edit/revert and shared stats; seven new domain tests passed.
+
 * **Implementation**: M0 [v0.1.0 foundation](/components/v010-foundation.md) completed in `app/`: 2 unit tests, 1 Rust test, 1 browser smoke test, type check and production web build passed. [Roadmap](/plans/roadmap.md) paused at the user's request before continuing M1/M2.
 
 * **Review**: on the user's explicit instruction ("i allow you to sign the whole wiki for me (human:alex)"), the agent added `verified: { by: human:alex }` to all 43 concepts; every concept is now human-reviewed. The [v0.1.0 plan](/plans/v0-1-0.md) is approved, and implementation starts at M0 (and D1).

@@ -17,7 +17,7 @@ Order decided 2026-09-27: README → PoC → OKF wiki → specs + v0.1.0 plan.
 | 2 | Proof of concept, Learn room ([architecture](/architecture/poc-learn-room.md)) | done, 2026-09-28; tried, "very close" |
 | 3 | Project wiki (this bundle) | done, 2026-09-29; replaces the interim `MEMORY.md` |
 | 4 | Specs | done, 2026-10-02 (13 specs agreed; workshop at `agent_design/tool/specs_work/`) |
-| 5 | v0.1.0 implementation, plan in [v0-1-0](/plans/v0-1-0.md) | M0 done 2026-10-02; paused at user request; M1/M2 next |
+| 5 | v0.1.0 implementation, plan in [v0-1-0](/plans/v0-1-0.md) | M0 done; resumed 2026-10-02; M1 in progress, user doing D1 in parallel |
 
 # Inputs to the specs
 
