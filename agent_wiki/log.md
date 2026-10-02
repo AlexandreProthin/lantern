@@ -2,6 +2,8 @@
 
 ## 2026-10-02
 
+* **Implementation**: [M2 Learn runtime](/components/v010-learn-runtime.md) adds approved learn-1 prompts, parser, context, real/fake providers, cancellation and an atomic action coordinator. 28 TS tests, real Haiku stream/cancel and Windows child/grandchild termination passed; first eval run is 24/24. ST-50 is now a separate idle-machine gate because concurrent CLI work changes timings materially.
+
 * **Implementation**: [M1 persistence](/components/v010-core.md) adds atomic saves, conflict/reload rules, app-side state/cache, read-only future formats, Recycle Bin adapter, PoC backup/import and debounced writes. Seven Rust and four persistence tests pass; 500 nodes save in 69 ms and load in 19 ms. Real PoC import remains unverified because the default library has no files.
 
 * **Implementation resumed**: user works on D1 while the agent follows the plan independently. [M1 core](/components/v010-core.md) now has lantern/1 types, invariant validation, graph operations, edit/revert and shared stats; seven new domain tests passed.

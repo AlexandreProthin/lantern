@@ -71,6 +71,7 @@ pub enum SaveResult {
 }
 /// expected=None means create-only. A stale receipt cannot overwrite silently.
 pub fn save_subject(library: &Path, subject: &Value, expected: Option<&Stamp>, dirty: bool) -> Result<SaveResult> {
+    if !library.is_dir() { return Err("Library folder is unavailable".into()); }
     let id = subject["id"].as_str().ok_or("Missing id")?; validate_subject(subject, id)?;
     let path = subject_path(library, id)?;
     let disk = if path.exists() { Some(load_subject(library, id)?) } else { None };
@@ -86,7 +87,8 @@ pub fn save_subject(library: &Path, subject: &Value, expected: Option<&Stamp>, d
         };
     }
     if !dirty { return disk.map(|d| SaveResult::Saved { stamp: d.stamp }).ok_or("Nothing to save".into()); }
-    write_json(&path, subject)?; let bytes = fs::read(&path).map_err(io)?;
+    let bytes = serde_json::to_vec_pretty(subject).map_err(io)?;
+    atomic_write(&path, &bytes)?;
     Ok(SaveResult::Saved { stamp: stamp(&path, &bytes)? })
 }
 #[derive(Default, Debug, Serialize, Deserialize)]
@@ -125,6 +127,7 @@ pub fn summary(subject: &Value) -> Value {
         "input": input, "output": output, "tokens": input + output, "mainModel": main, "modelOutputs": models, "generations": log.len() })
 }
 pub fn list_subjects(library: &Path, config: &Path) -> Result<Vec<Value>> {
+    if !library.is_dir() { return Err("Library folder is unavailable".into()); }
     let folder = library.join("subjects"); reject_link(&folder)?;
     let mut cache = read_cache(config); let mut seen = HashSet::new(); let mut out = Vec::new();
     if !folder.exists() { fs::create_dir_all(&folder).map_err(io)?; }
@@ -136,7 +139,11 @@ pub fn list_subjects(library: &Path, config: &Path) -> Result<Vec<Value>> {
         let metadata = fs::metadata(&path).map_err(io)?;
         let modified_ns = metadata.modified().map_err(io)?.duration_since(std::time::UNIX_EPOCH).map_err(io)?.as_nanos();
         if cache.get(&key).is_none_or(|c| c.size != metadata.len() || c.modified_ns != modified_ns) {
-            let loaded = load_subject(library, id)?; let mut info = summary(&loaded.subject); info["readOnly"] = json!(loaded.read_only); info["path"] = json!(key);
+            let mut info = match load_subject(library, id) {
+                Ok(loaded) => { let mut info = summary(&loaded.subject); info["readOnly"] = json!(loaded.read_only); info },
+                Err(error) => json!({"id":id,"title":id,"unreadable":true,"error":error}),
+            };
+            info["path"] = json!(key);
             cache.insert(key.clone(), CacheEntry { size: metadata.len(), modified_ns, summary: info });
         }
         out.push(cache[&key].summary.clone());

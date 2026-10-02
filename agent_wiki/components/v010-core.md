@@ -42,6 +42,10 @@ frame belongs to M3. Errors, reload toasts and conflict banners must remain visi
 Seven Rust tests passed, including migration idempotence/backup preservation,
 conflict-copy exclusion and cache rebuild. Four frame persistence tests passed.
 ST-50 measured 500-node save 69.262 ms and load 18.747 ms in debug on this machine.
+After removing an unnecessary reread, five-sample medians were 26.356 ms save and
+32.703 ms load. Under simultaneous prompt evals/process-spawn tests, a later median
+save was 171 ms. The strict timing gate now runs separately (ignored in the normal
+unit suite); it has not been declared reliably passed under that loaded condition.
 Svelte/TypeScript check passed with zero errors/warnings before M2 work began.
 
 M1 exit evidence remains partial: no real PoC files are present in the default
