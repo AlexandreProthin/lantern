@@ -4,7 +4,7 @@ title: Welcome and Gallery
 description: The Learn room's two library spaces - Welcome (start or continue a subject) and Gallery (browse all subjects with stats) - and the progress definitions both share.
 tags: [welcome, gallery, library, progress, learn-room]
 status: stable
-generated: { by: claude-code/opus-5.5, at: 2026-10-02T18:55:00Z }
+generated: { by: Claude/Sonnet-5.5, at: 2026-10-02T21:30:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -70,8 +70,8 @@ motion are the component's final recipe, and no Welcome UI is built before that 
 
 - **WG-12** *First run, no subjects.* Welcome shows the field, *Suggest 3 subjects* and the tone
   picker, a one-sentence welcome (*Bring a subject. The tutor lights it one node at a time; you
-  choose where to go next.*), no recent cards and no *Browse all*. The header's Gallery
-  icon is disabled, and Welcome has no Study icon ([rooms-spaces](/specs/rooms-spaces.md) RS-11, RS-20).
+  choose where to go next.*), no recent cards and no *Browse all*. The header's Study and
+  Gallery icons are disabled ([rooms-spaces](/specs/rooms-spaces.md) RS-11).
 - **WG-13** *CLI not ready.* When the provider status is not ready, the field stays editable
   but submit and *Suggest 3* are disabled, with the inline text *The Claude Code CLI is not
   ready. Fix it in Settings → Provider.* and a link to that page; the frame banner (RS-40) is

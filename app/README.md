@@ -25,17 +25,32 @@ M1 now supplies the domain, shared stats, Rust library storage and a debounced
 frame persistence controller. M3 supplies the Study loop and connects persistence
 errors, reload/conflict notices and window-close flushing to the UI.
 
-M4's design-independent controllers are ready in `src/frame/catalogue.ts` and
-`src/rooms/learn/suggestions.ts`: summary-based sorting/filtering/selection and
-stats, plus unlogged cancellable subject suggestions. They have unit coverage
-but are not wired to screens yet. Welcome/Gallery remain stubs pending D1's recipe.
+M4 implements the accepted D1 Welcome recipe and Gallery: per-subject model/tone,
+suggestions, cached recents, selection/stats, rename, recycle, Explorer reveal,
+lazy bounded thumbnails and shared motion. `tests/library.spec.ts` covers their
+fake-provider flows, including deletion during generation and timer-driven handoff.
+The idle 50-subject browser gate is `LANTERN_PERF=1 npx playwright test tests/library-performance.spec.ts`
+(set the environment variable with `$env:LANTERN_PERF='1'` in PowerShell, then
+remove it after the run). Its native cached-list companion is
+`cargo test --manifest-path src-tauri/Cargo.toml --locked fifty_cached_summaries_meet_wg43 -- --ignored --nocapture`.
+
+Build the unsigned per-user Windows preview installer with `npm run installer:preview`.
+The result is under `src-tauri/target/release/bundle/nsis/`. This explicit preview
+configuration disables updater artifact signing; it does not introduce an update
+flow. The default release config wires `createUpdaterArtifacts` and the updater
+plugin, with no endpoints or UI. A future signed updater build needs the real
+public key in config and `TAURI_SIGNING_PRIVATE_KEY` supplied outside the repository.
+No signing key is generated or committed. Follow `ACCEPTANCE.md` before releasing.
 
 Storage tests use isolated temporary libraries and never modify real subjects.
 They cover round-trip, path safety, conflicts, cache invalidation, read-only newer
 formats and PoC backup/idempotence. Run the ST-50 performance gate separately on an
 idle machine: `cargo test --manifest-path src-tauri/Cargo.toml --locked five_hundred_nodes_meet_st50 -- --ignored --nocapture`.
 It prints five save/load samples and requires median save <100 ms and load <200 ms.
-No real PoC subjects were found locally for the remaining import exit check.
+Import copies of real PoC subjects (the originals are never touched) with
+`LANTERN_POC_DIR=<folder> cargo test --manifest-path src-tauri/Cargo.toml --locked real_poc_subjects_import_validate_and_round_trip -- --ignored --nocapture`.
+On Windows, `delete_subject_sends_file_to_real_recycle_bin -- --ignored` sends one
+disposable temp subject to the real Recycle Bin.
 
 Keep `src-tauri/Cargo.lock`: the Tauri runtime and macro family is aligned with
 the working PoC. Unconstrained transitive upgrades can produce incompatible

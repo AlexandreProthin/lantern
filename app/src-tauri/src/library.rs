@@ -40,7 +40,7 @@ pub fn recover_transfer(settings:&Path)->Result<bool,String>{
         }
         for (path,bytes) in restore{if !path.exists(){atomic_write(&path,&bytes)?;}}
         if let Ok(bytes)=fs::read(settings){if let Ok(mut current)=serde_json::from_slice::<Value>(&bytes){
-            if current["format"]=="lantern-settings/1"&&current["library"]["path"]==journal["destination"]{
+            if current["format"]=="lantern-settings/1"&&current["library"]["path"].as_str().map(crate::paths::plain_path)==journal["destination"].as_str().map(crate::paths::plain_path){
                 current["library"]["path"]=journal["old"].clone();write_json(settings,&current)?;
             }
         }}
@@ -51,8 +51,8 @@ pub fn validate_folder(path: &Path, install: &Path) -> Result<PathBuf, String> {
     if !path.is_absolute() { return Err("Library path must be absolute".into()); }
     reject_link(path)?;
     fs::create_dir_all(path).map_err(|e|e.to_string())?;
-    let canonical = fs::canonicalize(path).map_err(|e|e.to_string())?;
-    if let Ok(app) = fs::canonicalize(install) { if canonical.starts_with(app) { return Err("Library cannot be inside the app installation folder".into()); } }
+    let canonical = crate::paths::canonical(path).map_err(|e|e.to_string())?;
+    if let Ok(app) = crate::paths::canonical(install) { if canonical.starts_with(app) { return Err("Library cannot be inside the app installation folder".into()); } }
     reject_link(&canonical.join("subjects"))?;
     fs::read_dir(&canonical).map_err(|e|format!("Library cannot be read: {e}"))?;
     if canonical.join("subjects").exists(){fs::read_dir(canonical.join("subjects")).map_err(|e|format!("Subjects cannot be read: {e}"))?;}
@@ -62,7 +62,7 @@ pub fn validate_folder(path: &Path, install: &Path) -> Result<PathBuf, String> {
 pub fn switch_library(old: &Path, destination: &Path, install: &Path, mode: &str, settings_path: &Path, document: &Value) -> Result<Value, String> {
     if !["move","copy","leave"].contains(&mode) { return Err("Unknown library transfer mode".into()); }
     let destination = validate_folder(destination, install)?;
-    if let Ok(from) = fs::canonicalize(old) { if from == destination { return Err("Choose a different library folder".into()); } }
+    if let Ok(from) = crate::paths::canonical(old) { if from == destination { return Err("Choose a different library folder".into()); } }
     let mut originals: Vec<(PathBuf, Vec<u8>)> = vec![];
     let mut staged: Vec<(PathBuf, Vec<u8>)> = vec![];
     let mut collisions = vec![];
@@ -72,9 +72,8 @@ pub fn switch_library(old: &Path, destination: &Path, install: &Path, mode: &str
         for (index, entry) in fs::read_dir(old.join("subjects")).map_err(|e|e.to_string())?.enumerate() {
             let path = entry.map_err(|e|e.to_string())?.path();
             if path.extension().and_then(|s|s.to_str()) != Some("json") || path.file_name().unwrap_or_default().to_string_lossy().contains(".conflict-") { continue; }
+            let Some(id) = path.file_stem().and_then(|s|s.to_str()).filter(|id|crate::paths::is_subject_id(id)) else { continue; };
             reject_link(&path)?;
-            let id = path.file_stem().and_then(|s|s.to_str()).ok_or("Invalid subject filename")?;
-            subject_path(old, id)?;
             crate::storage::load_subject(old,id).map_err(|e|format!("{}: {e}",path.display()))?;
             let bytes = fs::read(&path).map_err(|e|format!("{}: {e}",path.display()))?;
             let mut subject: Value = serde_json::from_slice(&bytes).map_err(|e|format!("{}: {e}",path.display()))?;
@@ -110,7 +109,7 @@ pub fn switch_library(old: &Path, destination: &Path, install: &Path, mode: &str
             for (path,bytes) in &originals { if fs::read(path).map_err(|e|e.to_string())? != *bytes { return Err(format!("{} changed during transfer",path.display())); } }
             if !originals.is_empty(){
                 if journal_path(settings_path)?.exists(){return Err("A previous library transfer needs recovery".into());}
-                let canonical_old=fs::canonicalize(old).map_err(|e|e.to_string())?;
+                let canonical_old=crate::paths::canonical(old).map_err(|e|e.to_string())?;
                 let nonce=format!("{:x}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_err(|e|e.to_string())?.as_nanos());
                 let backup=backup_root(&canonical_old,&nonce)?;let mut files=vec![];
                 for (path,bytes) in &originals{let id=path.file_stem().and_then(|s|s.to_str()).ok_or("Invalid subject filename")?;

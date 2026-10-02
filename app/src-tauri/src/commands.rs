@@ -33,6 +33,14 @@ pub fn delete_subject(app: AppHandle, library: PathBuf, id: String, lock: State<
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::delete_subject(&library, &config(&app)?, &id)
 }
 #[tauri::command]
+pub fn subject_thumbnail(library: PathBuf, id: String, lock: State<StorageLock>) -> Result<Value, String> {
+    let _guard=lock.0.lock().map_err(|e|e.to_string())?; storage::thumbnail(&library,&id)
+}
+#[tauri::command]
+pub fn reveal_subject(library: PathBuf, id: String) -> Result<(), String> {
+    crate::paths::reveal_file(&crate::paths::subject_path(&library,&id)?)
+}
+#[tauri::command]
 pub fn import_poc(library: PathBuf, lock: State<StorageLock>) -> Result<Vec<String>, String> {
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::import_poc(&library)
 }
@@ -53,6 +61,8 @@ pub fn load_settings(app: AppHandle, lock: State<StorageLock>) -> Result<Value, 
             }
         }
     } else { serde_json::json!({"format":"lantern-settings/1"}) };
+    let mut document = document;
+    if let Some(stored) = document["library"]["path"].as_str().map(crate::paths::plain_path) { document["library"]["path"] = serde_json::json!(stored); }
     let read_only = document["format"] != "lantern-settings/1";
     Ok(serde_json::json!({"document":document,"readOnly":read_only,"recovered":recovered,"transferRecovered":transfer_recovered,
         "defaultLibrary":app.path().document_dir().map_err(|e|e.to_string())?.join("Lantern"),
@@ -82,7 +92,7 @@ pub fn save_window_state(app:AppHandle, bounds:Value, lock:State<StorageLock>) -
 }
 fn install_folder() -> Result<PathBuf,String> { std::env::current_exe().map_err(|e|e.to_string())?.parent().map(PathBuf::from).ok_or("App folder is unavailable".into()) }
 #[tauri::command]
-pub async fn pick_library(title:String) -> Result<Option<PathBuf>,String> { tauri::async_runtime::spawn_blocking(move||crate::paths::pick_folder(&title)).await.map_err(|e|e.to_string())? }
+pub async fn pick_library(title:String, start:Option<PathBuf>) -> Result<Option<PathBuf>,String> { tauri::async_runtime::spawn_blocking(move||crate::paths::pick_folder(&title,start.as_deref())).await.map_err(|e|e.to_string())? }
 #[tauri::command]
 pub fn validate_library(path:PathBuf) -> Result<PathBuf,String> { crate::library::validate_folder(&path,&install_folder()?) }
 #[tauri::command]

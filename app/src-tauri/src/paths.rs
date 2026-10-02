@@ -1,11 +1,21 @@
 //! OS-specific paths and file operations (PQ-2).
 use std::path::{Path, PathBuf};
 
-pub fn subject_path(library: &Path, id: &str) -> Result<PathBuf, String> {
+/// Disk paths shown to the user or stored in settings: canonical, without the Windows `\\?\` verbatim prefix.
+pub fn canonical(path: &Path) -> std::io::Result<PathBuf> { dunce::canonicalize(path) }
+/// Normalises an already-stored path string (heals `\\?\C:\...` values from earlier builds).
+pub fn plain_path(path: &str) -> String { dunce::simplified(Path::new(path)).to_string_lossy().into_owned() }
+/// Files in `subjects/` whose stem is not a valid subject id are foreign: left alone, never listed, never an error.
+pub fn is_subject_id(id: &str) -> bool { check_id(id).is_ok() }
+fn check_id(id: &str) -> Result<(), String> {
     if id.is_empty() || id.len() > 128 || !id.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
         || id.starts_with('-') || id.ends_with('-') || id.contains("--") { return Err("Invalid subject id".into()); }
     let upper = id.to_ascii_uppercase();
     if ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"].contains(&upper.as_str()) { return Err("Reserved subject id".into()); }
+    Ok(())
+}
+pub fn subject_path(library: &Path, id: &str) -> Result<PathBuf, String> {
+    check_id(id)?;
     let folder = library.join("subjects"); reject_link(&folder)?;
     let path = folder.join(format!("{id}.json")); reject_link(&path)?; Ok(path)
 }
@@ -23,7 +33,7 @@ pub fn reject_link(path: &Path) -> Result<(), String> {
 pub fn recycle_file(path: &Path) -> Result<(), String> {
     use std::os::windows::ffi::OsStrExt;
     use windows_sys::Win32::UI::Shell::{SHFileOperationW, SHFILEOPSTRUCTW, FO_DELETE, FOF_ALLOWUNDO, FOF_NOCONFIRMATION, FOF_NOERRORUI, FOF_SILENT};
-    let path = std::fs::canonicalize(path).map_err(|e| e.to_string())?;
+    let path = canonical(path).map_err(|e| e.to_string())?;
     let display = path.to_string_lossy().trim_start_matches(r"\\?\").to_string();
     let from: Vec<u16> = std::ffi::OsStr::new(&display).encode_wide().chain([0, 0]).collect();
     let mut op: SHFILEOPSTRUCTW = unsafe { std::mem::zeroed() };
@@ -48,28 +58,31 @@ pub fn open_external(url: &str) -> Result<(), String> {
 pub fn open_external(_: &str) -> Result<(), String> { Err("External link opening is only supported on Windows".into()) }
 
 #[cfg(windows)]
-pub fn pick_folder(caption:&str) -> Result<Option<PathBuf>, String> {
-    use windows_sys::Win32::{System::Com::{CoInitializeEx, CoUninitialize, CoTaskMemFree, COINIT_APARTMENTTHREADED}, UI::Shell::{SHBrowseForFolderW, SHGetPathFromIDListW, BROWSEINFOW, BIF_RETURNONLYFSDIRS, BIF_NEWDIALOGSTYLE}};
-    let initialized = unsafe { CoInitializeEx(std::ptr::null(), COINIT_APARTMENTTHREADED as u32) };
-    if initialized < 0 { return Err("Could not initialize folder picker".into()); }
-    let title: Vec<u16> = caption.encode_utf16().chain([0]).collect();
-    let mut display = [0u16;260];
-    let info = BROWSEINFOW { pszDisplayName:display.as_mut_ptr(), lpszTitle:title.as_ptr(), ulFlags:BIF_RETURNONLYFSDIRS|BIF_NEWDIALOGSTYLE, ..Default::default() };
-    let item = unsafe { SHBrowseForFolderW(&info) };
-    let result = if item.is_null() { Ok(None) } else {
-        let mut path = [0u16;32768]; let valid = unsafe { SHGetPathFromIDListW(item,path.as_mut_ptr()) };
-        unsafe { CoTaskMemFree(item as *const _) };
-        if valid == 0 { Err("Choose a filesystem folder".into()) } else { Ok(Some(PathBuf::from(String::from_utf16_lossy(&path[..path.iter().position(|&c|c==0).unwrap_or(path.len())])))) }
-    };
-    unsafe { CoUninitialize() }; result
+/// File Explorer-style folder picker (IFileOpenDialog + FOS_PICKFOLDERS), starting in `start` when it is a folder.
+pub fn pick_folder(caption:&str, start:Option<&Path>) -> Result<Option<PathBuf>, String> {
+    use windows::{core::{HSTRING,PCWSTR},Win32::{Foundation::ERROR_CANCELLED,System::Com::{CoCreateInstance,CoInitializeEx,CoTaskMemFree,CoUninitialize,CLSCTX_INPROC_SERVER,COINIT_APARTMENTTHREADED},UI::Shell::{FileOpenDialog,IFileOpenDialog,IShellItem,SHCreateItemFromParsingName,FOS_FORCEFILESYSTEM,FOS_PICKFOLDERS,SIGDN_FILESYSPATH}}};
+    let initialized = unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED) };
+    if initialized.is_err() { return Err("Could not initialize folder picker".into()); }
+    let result = (|| -> windows::core::Result<Option<PathBuf>> { unsafe {
+        let dialog: IFileOpenDialog = CoCreateInstance(&FileOpenDialog, None, CLSCTX_INPROC_SERVER)?;
+        dialog.SetOptions(dialog.GetOptions()? | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM)?;
+        dialog.SetTitle(&HSTRING::from(caption))?;
+        if let Some(folder) = start.filter(|p| p.is_dir()) {
+            if let Ok(item) = SHCreateItemFromParsingName::<_, _, IShellItem>(PCWSTR(HSTRING::from(folder.as_os_str()).as_ptr()), None) { let _ = dialog.SetFolder(&item); }
+        }
+        match dialog.Show(None) { Err(e) if e.code() == ERROR_CANCELLED.to_hresult() => return Ok(None), other => other? }
+        let item = dialog.GetResult()?; let name = item.GetDisplayName(SIGDN_FILESYSPATH)?;
+        let path = PathBuf::from(String::from_utf16_lossy(name.as_wide())); CoTaskMemFree(Some(name.0 as *const _)); Ok(Some(path))
+    } })();
+    unsafe { CoUninitialize() }; result.map_err(|e| e.message())
 }
 #[cfg(not(windows))]
-pub fn pick_folder(_: &str) -> Result<Option<PathBuf>, String> { Err("Folder picker is only supported on Windows".into()) }
+pub fn pick_folder(_: &str, _: Option<&Path>) -> Result<Option<PathBuf>, String> { Err("Folder picker is only supported on Windows".into()) }
 #[cfg(windows)]
 pub fn reveal_folder(path: &Path) -> Result<(), String> {
     use std::os::windows::ffi::OsStrExt;
     use windows_sys::Win32::UI::{Shell::ShellExecuteW,WindowsAndMessaging::SW_SHOWNORMAL};
-    let path=std::fs::canonicalize(path).map_err(|e|e.to_string())?;
+    let path=canonical(path).map_err(|e|e.to_string())?;
     if !path.is_dir() { return Err("Folder is unavailable".into()); }
     let file: Vec<u16> = path.as_os_str().encode_wide().chain([0]).collect();
     let op: Vec<u16> = "open".encode_utf16().chain([0]).collect();
@@ -78,3 +91,15 @@ pub fn reveal_folder(path: &Path) -> Result<(), String> {
 }
 #[cfg(not(windows))]
 pub fn reveal_folder(_: &Path) -> Result<(), String> { Err("Explorer is only supported on Windows".into()) }
+#[cfg(windows)]
+pub fn reveal_file(path: &Path) -> Result<(), String> {
+    use std::os::windows::process::CommandExt;
+    let path=canonical(path).map_err(|e|e.to_string())?;
+    if !path.is_file() {return Err("Subject file is unavailable".into());}
+    let path=path.to_string_lossy().trim_start_matches(r"\\?\").to_string();
+    std::process::Command::new("explorer.exe").raw_arg(format!("/select,\"{path}\""))
+        .creation_flags(0x08000000).spawn().map_err(|e|e.to_string())?;
+    Ok(())
+}
+#[cfg(not(windows))]
+pub fn reveal_file(_: &Path) -> Result<(), String> {Err("Explorer is only supported on Windows".into())}

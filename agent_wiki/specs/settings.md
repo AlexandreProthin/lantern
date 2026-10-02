@@ -72,7 +72,7 @@ The last-opened times and the recents list are **not** in this file: they live i
 
 Moving is offered, never forced.
 
-- **SE-30** *Change…* MUST open a folder picker. The chosen folder MUST be validated (SE catalogue) before anything else happens.
+- **SE-30** The *Library folder* field MUST be an editable path input (Enter or *Apply path* confirms) and *Browse…* MUST open the system folder picker (File Explorer style, starting in the current library); typed and picked paths follow the same flow. Paths shown or stored MUST be plain (no `\\?\` verbatim prefix). The chosen folder MUST be validated (SE catalogue) before anything else happens.
 - **SE-31** If any generation is in flight, the change MUST wait: the button is disabled with *Finish or cancel the running generation first*.
 - **SE-32** The app MUST flush pending saves and close the open subject's file handle state before switching.
 - **SE-33** If the old library holds subjects, the app MUST offer three choices: **Move** the subjects (copy with verification of each file, then remove the originals only after all copies verify), **Copy** them (originals stay), or **Leave them** and switch only.

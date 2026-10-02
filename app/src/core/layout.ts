@@ -1,8 +1,8 @@
 import { childrenOf, nodeOf } from './graph';
-import type { RoomVisit } from './model';
+import type { GraphNode, RoomVisit } from './model';
 export interface Point { x: number; y: number }
 /** GV-10: reusable tree layout for live graph and thumbnails; safe at deep nesting. */
-export function treePositions(v: RoomVisit, column = 240, row = 96): Map<string, Point> {
+export function treePositions(v: { rootId: string; nodes: Record<string, Pick<GraphNode, 'id' | 'parents' | 'createdAt'>> }, column = 240, row = 96): Map<string, Point> {
   const positions = new Map<string, Point>(), stack = [{ id: v.rootId, depth: 0, visited: false }];
   const children = new Map<string, string[]>();
   for (const n of Object.values(v.nodes)) children.set(n.id, []);
@@ -13,7 +13,8 @@ export function treePositions(v: RoomVisit, column = 240, row = 96): Map<string,
   while (stack.length) {
     const item = stack.pop()!, kids = children.get(item.id) ?? [];
     if (!item.visited) {
-      if (seen.has(item.id)) throw new Error('Cycle in graph'); seen.add(item.id); nodeOf(v, item.id);
+      if (seen.has(item.id)) throw new Error('Cycle in graph'); seen.add(item.id);
+      if (!Object.hasOwn(v.nodes, item.id)) throw new Error('Missing tree node');
       stack.push({ ...item, visited: true }, ...[...kids].reverse().map(id => ({ id, depth: item.depth + 1, visited: false })));
     } else {
       maxDepth = Math.max(maxDepth, item.depth);

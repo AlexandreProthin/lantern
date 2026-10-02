@@ -19,7 +19,7 @@ Selected on 2026-10-02 by explicit user instruction: “last pick: r005-03 it is
 | r001-01 — Threshold | wireframe | none | One centred column: the subject field, then tone and Suggest on one line, the suggestion chips, three equal recent cards on a shelf, *Browse all n* closing it. The alternatives (r001-02 two doors, r001-03 sentence and spotlight) were not kept. |
 | r002-01 — Lantern hall | form | r001-01 | Sparse, centred, extreme scale contrast: the field alone at the centre as a light underline, the primary button centred under it, tone pills, model and Suggest as small quiet controls, recents far below and dimmed until hovered. **Adds the model picker beside the tone** (user request). |
 | r003-01 — Native | type | r002-01, r001-01 | Segoe UI Variable in its three optical sizes (the PoC's own face); sentence-case labels; no mono, tabular figures for counts. |
-| r004-01 — Lit question | color | r002-01, r001-01, r003-01 | Binding Learn palette with the light on the start: glow behind the field, amber underline and caret, glowing primary; muted tone/model/Suggest; recents dim until hovered. **Header without the Study icon** (user request). |
+| r004-01 — Lit question | color | r002-01, r001-01, r003-01 | Binding Learn palette with the light on the start: glow behind the field, amber underline and caret, glowing primary; muted tone/model/Suggest; recents dim until hovered. Header without the Study icon (user request, later cancelled: see the note below). |
 | r005-03 — Embers | motion | r002-01, r001-01, r003-01, r004-01 | The learning node's motion language (see below). |
 
 Spec changes made during the rounds, at the user's request, directly in the wiki:
@@ -27,8 +27,9 @@ Spec changes made during the rounds, at the user's request, directly in the wiki
 - **WG-1/WG-2/WG-3**: Welcome has a **model picker** beside the tone (aliases opus, sonnet, haiku, or a free-text id).
   It starts on the Settings default model on every arrival; the choice applies to the new subject only and never
   writes Settings. Effort stays the Settings default.
-- **RS-20 (with RS-11, RS-22, WG-12)**: on **Welcome only**, the header has no Study icon (Welcome and Gallery);
-  every other space keeps all three. Ctrl+2 still works on Welcome.
+- **RS-20 Study-icon amendment: CANCELLED 2026-10-02** at the user's request (it was a mistake). The Welcome header
+  follows RS-20 with all three icons (Welcome, Study, Gallery); with no subject, Study and Gallery are disabled
+  (RS-11, WG-12). Ignore the "header without the Study icon" notes in this recipe and in r004-01.
 
 ## Verbatim inputs
 

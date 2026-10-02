@@ -5,7 +5,7 @@ description: The learn-1 parser, deterministic context, provider bridge, fake tu
 resource: /app/src/rooms/learn/session.ts
 tags: [learn, protocol, provider, context, evals, implementation]
 status: stable
-generated: { by: Codex/GPT-6, at: 2026-10-02T16:10:00Z }
+generated: { by: Codex/GPT-6, at: 2026-10-02T19:30:00Z }
 ---
 
 # Contracts
@@ -54,5 +54,10 @@ but found internally inconsistent analogies. This is recorded separately as
 [tutor prose quality](/issues/tutor-prose-quality.md); the automatic percentage is
 a protocol score and does not sign off pedagogy. The approved prompt stays `learn-1`.
 
-Study rendering and motion tuning are M3; D1 remains the user's parallel track.
+A final pre-acceptance Haiku/low run on 2026-10-02 also passed **24/24 (100%)**,
+with the unchanged `learn-1` prompt. The detailed local result is
+`app/evals/results/2026-10-02T19-29-25-855Z-haiku.json`. The same prose-quality
+limitation applies; this is not a pedagogy sign-off.
+
+Study rendering and motion tuning are M3; D1 is merged and M4 is implemented.
 See the [plan](/plans/v0-1-0.md) and [latency evidence](/issues/llm-latency.md).

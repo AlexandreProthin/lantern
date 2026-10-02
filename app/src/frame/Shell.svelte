@@ -10,7 +10,13 @@
   import type { RoomSession } from './room';
   import { desktopStorage, SubjectPersistence } from './persistence';
   import type { Loaded } from './persistence';
-  import { browserStorage, browserSubjects } from './browser-storage';
+  import { browserStorage, browserSummaries, browserLibraryState, browserRecordOpen, browserDelete } from './browser-storage';
+  import { Catalogue } from './catalogue';
+  import type { SubjectSummary, LibraryState } from './catalogue';
+  import { thumbnailGraph } from './library-spaces';
+  import type { LibrarySpaces, ThumbnailGraph } from './library-spaces';
+  import { checkedTitle } from '../core/model';
+  import type { Tone } from '../core/model';
   import { defaultSettings, validateSettings } from './settings';
   import { DebouncedWriter } from './debounced-writer';
   import SettingsPanel from './SettingsPanel.svelte';
@@ -31,6 +37,10 @@
   let loading = $state(true), banner = $state(''), toast = $state(''), saveError = $state(''), conflictPath = $state('');
   let readonlyFile = $state<unknown>(null), settingsReadOnly = $state(false);
   let subjectCount = $state(0), recentIds: string[] = [], library = '';
+  let libraryAvailable = $state(true);
+  const catalogue = new Catalogue(() => revision++);
+  const thumbnailCache = new Map<string, {stamp:string;value:Promise<ThumbnailGraph>}>();
+  const deleting = new Set<string>();
   const owned = new Map<string, { session: RoomSession; persistence: SubjectPersistence }>();
   const writer = new DebouncedWriter(async value => {
     if (desktop) await invoke('save_settings',{ document:value }); else localStorage.setItem('lantern.settings',JSON.stringify(value));
@@ -54,8 +64,10 @@
     if (next === room.defaultSpace && !session && recentIds[0]) await open(recentIds[0]);
     if (next === room.defaultSpace && !session) return;
     space = next; subjectMenu = false;
+    if (next !== room.defaultSpace) { readonlyFile=null; await refreshCatalogue(); }
   }
   async function open(id: string) {
+    if (deleting.has(id)) return;
     try {
       let entry = owned.get(id);
       if (!entry) {
@@ -66,7 +78,7 @@
       session = entry.session; readonlyFile = null; revision++; space=room.defaultSpace;
       const at = new Date().toISOString();
       if (desktop) { const state = await invoke<{ recents:string[] }>('record_open',{id,at}); recentIds=state.recents; }
-      else { recentIds=[id,...recentIds.filter(s=>s!==id)]; localStorage.setItem('lantern.recents',JSON.stringify(recentIds)); }
+      else { recentIds=browserRecordOpen(id,at).recents; }
     } catch (e) { banner=String(e); }
   }
   function own(loaded: Loaded) {
@@ -84,13 +96,66 @@
     controller=room.prompts.createSession(reactiveSubject,provider,()=> { persistence.schedule(controller.subject); revision++; },()=>revision++,settings);
     return {session:controller,persistence};
   }
-  async function createStudyFixture(title: string) {
-    const subject=room.newSubject(title,settings.learn.defaultTone,settings);
+  async function createSubject(title: string, tone: Tone, model: string) {
+    if (!libraryAvailable || unavailable) throw new Error(strings.cliNotReady);
+    if (!/^[A-Za-z0-9._:-]{1,100}$/.test(model)) throw new Error(strings.invalidModel);
+    const subject=room.newSubject(checkedTitle(title),tone,settings);
+    subject.rooms[room.id].model=model;
     const saved=await storage.save(library,subject,null,true);
-    if(saved.kind !== 'saved') throw new Error('Fixture id collision');
+    if(saved.kind !== 'saved') throw new Error('Subject id collision');
     const entry=own({subject,stamp:saved.stamp,readOnly:false}); owned.set(subject.id,entry); subjectCount++;
     await open(subject.id); void entry.session.initialize();
   }
+  async function refreshCatalogue() {
+    for (const [id, entry] of owned) if (!deleting.has(id)) {
+      try {await entry.persistence.flush();} catch(e) {saveError=String(e);}
+    }
+    try {
+      const summaries = desktop ? await invoke<SubjectSummary[]>('list_subjects',{library}) : browserSummaries();
+      const state = desktop ? await invoke<LibraryState>('read_state') : browserLibraryState();
+      catalogue.replace(summaries,state); subjectCount=summaries.length;
+      recentIds=catalogue.recent.map(s=>s.id); libraryAvailable=true;
+    } catch(e) {libraryAvailable=false;catalogue.replace([],{recents:[],lastOpenedAt:{}});subjectCount=0;banner=strings.libraryUnavailable+' '+String(e);}
+  }
+  async function renameSubject(id: string, title: string) {
+    title=checkedTitle(title); if(deleting.has(id))return;
+    let entry=owned.get(id);
+    if (!entry) { const loaded=await storage.load(library,id); if(loaded.readOnly)throw new Error(strings.readOnly); entry=own(loaded);owned.set(id,entry); }
+    await entry.persistence.refresh();
+    entry.session.subject.title=title; entry.session.touch(); await entry.persistence.flush(); await refreshCatalogue();
+  }
+  async function removeSubject(id: string) {
+    if(deleting.has(id))return;deleting.add(id);
+    const entry=owned.get(id);
+    try {
+      entry?.session.cancel();
+      while(entry?.session.running)await new Promise(resolve=>setTimeout(resolve,10));
+      await entry?.persistence.flush();
+      if(desktop)await invoke('delete_subject',{library,id});else browserDelete(id);
+      await entry?.persistence.close();owned.delete(id);
+      if(session?.subject.id===id)session=null;
+      readonlyFile=null;revision++;await refreshCatalogue();
+    } finally {deleting.delete(id);}
+  }
+  const librarySpaces: LibrarySpaces = {
+    catalogue,provider,get available(){return libraryAvailable;},get providerReady(){return !unavailable;},
+    create:createSubject,open,rename:renameSubject,remove:removeSubject,
+    async reveal(id){if(desktop)await invoke('reveal_subject',{library,id});else {await storage.load(library,id);throw new Error(strings.explorerDesktop);}},
+    thumbnail(summary){
+      const stamp=JSON.stringify([summary.modifiedNs,summary.size]);
+      let cached=thumbnailCache.get(summary.path);
+      if(cached?.stamp!==stamp){
+        const value=desktop?invoke<ThumbnailGraph>('subject_thumbnail',{library,id:summary.id}):storage.load(library,summary.id).then(({subject})=>thumbnailGraph(subject.rooms[room.id].rootId,subject.rooms[room.id].nodes));
+        cached={stamp,value};
+        if(thumbnailCache.size>=100)thumbnailCache.delete(thumbnailCache.keys().next().value!);
+        thumbnailCache.set(summary.path,cached);
+        value.catch(()=>{if(thumbnailCache.get(summary.path)?.value===value)thumbnailCache.delete(summary.path);});
+      }
+      return cached!.value;
+    },
+    isRunning:id=>!!owned.get(id)?.session.running,
+    settings(){settingsSection='provider';settingsOpen=true;},refresh:refreshCatalogue
+  };
   async function retrySaves() {
     try { for(const entry of owned.values()) await entry.persistence.flush(); await writer.flush(); saveError=''; } catch(e) {saveError=String(e);}
   }
@@ -102,8 +167,7 @@
       const result=await invoke<{path:string;collisions:{oldId:string;newId:string}[]}>('switch_library',{old:library,destination,mode,document:settings});
       for (const entry of owned.values()) await entry.persistence.close();
       owned.clear(); session=null; readonlyFile=null; recentIds=[]; library=result.path; settings.library.path=result.path;
-      space='welcome'; banner='';
-      try {subjectCount=(await invoke<unknown[]>('list_subjects',{library})).length;}catch(e){subjectCount=0;banner=strings.libraryUnavailable+' '+String(e);}
+      space='welcome'; banner='';thumbnailCache.clear();await refreshCatalogue();
       toast=strings.libraryChanged(result.path)+(result.collisions.length ? ' '+strings.collisionsRenamed(result.collisions.length) : '');
       revision++;
     } finally {switchingLibrary=false;}
@@ -119,7 +183,7 @@
     else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsSection='general';settingsOpen=true;}
     else if(e.key==='Escape') {
       if(document.querySelector('dialog[open]')) return;
-      if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(subjectMenu) subjectMenu=false; else session?.cancel();
+      if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(subjectMenu) subjectMenu=false; else if(space===room.defaultSpace)session?.cancel();
     } else if(e.key==='?' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) shortcutsOpen=!shortcutsOpen;
   }
   onMount(()=> {
@@ -137,7 +201,6 @@
             try {library=await invoke<string>('validate_library',{path:library});settings.library.path=library;}catch(e){banner=strings.libraryUnavailable+' '+String(e);}
           }
           await invoke('import_poc',{library});
-          try {const subjects=await invoke<unknown[]>('list_subjects',{library});subjectCount=subjects.length;} catch(e) {banner=strings.libraryUnavailable+' '+library;}
           try {const state=await invoke<{recents:string[];window?:unknown}>('read_state');recentIds=state.recents;
             windowMemory=await (await import('./window-memory')).rememberWindow(state.window,e=>saveError=String(e));
           } catch(e) {toast=String(e);}
@@ -146,29 +209,31 @@
         } else {
           defaults=defaultSettings('browser','Learner');
           try {settings=validateSettings(JSON.parse(localStorage.getItem('lantern.settings')??'{}'),defaultSettings('browser','Learner'));}catch{settings=defaultSettings('browser','Learner');}
-          library='browser'; subjectCount=browserSubjects().length;
+          library='browser';
           try {recentIds=JSON.parse(localStorage.getItem('lantern.recents')??'[]');}catch{recentIds=[];}
         }
+        await refreshCatalogue();
+        if(desktop){const status=await invoke<{kind:string}>('provider_status');if(status.kind==='not-installed')health=new ProviderError('not-installed','');}
         preferencesChanged();
         const query=new URLSearchParams(location.search);
-        // M3 development harness: no Welcome UI is built before the D1 recipe.
+        // Retained deterministic Study harness for focused graph/panel tests.
         if(import.meta.env.DEV && query.has('study')) {
-          if(query.has('resume') && recentIds[0]) await open(recentIds[0]); else await createStudyFixture(query.get('subject')||'Ocean tides');
+          if(query.has('resume') && recentIds[0]) await open(recentIds[0]); else await createSubject(query.get('subject')||'Ocean tides',settings.learn.defaultTone,settings.provider.defaultModel);
         }
-        refresh=setInterval(()=> { if(!switchingLibrary) for(const entry of owned.values()) if(!entry.session.running) entry.persistence.refresh().catch(e=>saveError=String(e)); },1000);
+        refresh=setInterval(()=> { if(!switchingLibrary) for(const [id,entry] of owned) if(!deleting.has(id)&&!entry.session.running) entry.persistence.refresh().catch(e=>saveError=String(e)); },1000);
       }catch(e){banner=String(e);}finally{loading=false;}
     })();
     const beforeUnload=()=> { for(const entry of owned.values()) {entry.session.cancel();void entry.persistence.flush();}void writer.flush(); };
     window.addEventListener('beforeunload',beforeUnload);
-    return ()=>{unlisten?.();windowMemory?.dispose();clearInterval(refresh);window.removeEventListener('beforeunload',beforeUnload);};
+    return ()=>{catalogue.dispose();unlisten?.();windowMemory?.dispose();clearInterval(refresh);window.removeEventListener('beforeunload',beforeUnload);};
   });
 </script>
 <svelte:window onkeydown={key} />
 <header>
   <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}>◈</button><span class="room">{room.name}</span>
   <nav>{#each room.spaces as item}<button aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space===item.id?'page':undefined} disabled={item.id!=='welcome' && !subjectCount} onclick={()=>navigate(item.id)}>{item.icon}</button>{/each}</nav>
-  {#if session}<button class="subject" onclick={()=>subjectMenu=!subjectMenu} title={session.subject.title}>{session.subject.title}{#if running}<span class="busy-dot">·</span>{/if}</button>{/if}
-  {#if summary}<small title={settings.appearance.showTokenStats?summary.tooltip:undefined}>{summary.text}</small>{/if}
+  {#if session && space!=='welcome'}<button class="subject" onclick={()=>subjectMenu=!subjectMenu} title={session.subject.title}>{session.subject.title}{#if running}<span class="busy-dot">·</span>{/if}</button>{/if}
+  {#if summary && space!=='welcome'}<small title={settings.appearance.showTokenStats?summary.tooltip:undefined}>{summary.text}</small>{/if}
   <button class="gear" aria-label={strings.settings} title={strings.settings} onclick={()=>{settingsSection='general';settingsOpen=true;}}>⚙</button>
 </header>
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
@@ -182,7 +247,7 @@
   <label>{strings.defaultModel}<input list="subject-models" value={session.subject.rooms[room.id].model} onblur={e=>{if(/^[A-Za-z0-9._:-]{1,100}$/.test(e.currentTarget.value)){session!.subject.rooms[room.id].model=e.currentTarget.value;session!.touch();toast=strings.appliesNext;}}} /></label><datalist id="subject-models"><option>opus</option><option>sonnet</option><option>haiku</option></datalist>
   <label>{strings.defaultEffort}<select value={session.subject.rooms[room.id].effort} onchange={e=>{session!.subject.rooms[room.id].effort=e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label>
 </div>{/if}
-<div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#each room.spaces as item}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} />{/each}{/if}</div>
+<div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#each room.spaces as item}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/if}</div>
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {room} {health} {switchLibrary} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>

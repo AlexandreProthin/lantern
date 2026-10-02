@@ -18,7 +18,7 @@ Content of the file: [domain-model](/specs/domain-model.md).
 ## Format and location
 
 - **ST-1** Each subject MUST be one JSON file with `"format": "lantern/1"`.
-- **ST-2** Subjects MUST live at `<library>/subjects/<id>.json`, where `<library>` is a folder the user chooses; the default is `Documents/Lantern`. This is the same place as the PoC, so the default library already contains PoC files.
+- **ST-2** Subjects MUST live at `<library>/subjects/<id>.json`, where `<library>` is a folder the user chooses; the default is `Documents/Lantern`. This is the same place as the PoC, so the default library already contains PoC files. Files in `subjects/` whose name is not a valid `<id>.json` (for example uppercase letters or reserved names) are foreign: the app MUST ignore them everywhere (listing, import, library transfer), neither listing nor modifying them, and MUST NOT report an error.
 - **ST-3** App settings and app state MUST be stored app-side (OS config directory) and MUST NOT be stored in the library.
 - **ST-4** A subject id MUST be the slug of its title plus 4 random characters, using only `[a-z0-9-]`, and MUST be validated before it becomes a path.
 - **ST-5** Renaming a subject MUST change the title only, never the id or the filename.

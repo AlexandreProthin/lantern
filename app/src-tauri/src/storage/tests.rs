@@ -43,7 +43,7 @@ fn library_copy_preserves_originals_and_renames_collisions() {
 #[test]
 fn interrupted_library_move_recovers_originals_and_old_library_pointer() {
     let old=tempfile::tempdir().unwrap();let destination=tempfile::tempdir().unwrap();let config=tempfile::tempdir().unwrap();
-    let old_root=fs::canonicalize(old.path()).unwrap();let dest_root=fs::canonicalize(destination.path()).unwrap();
+    let old_root=crate::paths::canonical(old.path()).unwrap();let dest_root=crate::paths::canonical(destination.path()).unwrap();
     let s=subject(3);save_subject(old.path(),&s,None,true).unwrap();
     let original=fs::read(subject_path(old.path(),"tides-k3f9").unwrap()).unwrap();
     let backup=old_root.join(".lantern-transfer-abc123");atomic_write(&subject_path(&backup,"tides-k3f9").unwrap(),&original).unwrap();
@@ -120,6 +120,28 @@ fn summary_cache_invalidates_and_can_be_rebuilt() {
     assert_eq!(list_subjects(dir.path(), config.path()).unwrap(), second);
 }
 #[test]
+fn thumbnail_is_bounded_and_excludes_dialogue_and_dismissed_nodes() {
+    let dir=tempfile::tempdir().unwrap();let mut s=subject(75);
+    s["rooms"]["learn"]["nodes"]["n1"]["state"]=json!("dismissed");
+    save_subject(dir.path(),&s,None,true).unwrap();
+    let graph=thumbnail(dir.path(),"tides-k3f9").unwrap();
+    assert_eq!(graph["nodes"].as_object().unwrap().len(),60);
+    assert_eq!(graph["omitted"],14);assert!(graph["nodes"].get("n1").is_none());
+    assert!(graph["nodes"].get("n0").is_some());
+    for node in graph["nodes"].as_object().unwrap().values(){assert!(node.get("dialogue").is_none());assert!(node.get("content").is_none());}
+}
+#[test]
+#[ignore = "WG-43 cached library timing: run on an idle machine"]
+fn fifty_cached_summaries_meet_wg43() {
+    let dir=tempfile::tempdir().unwrap();let config=tempfile::tempdir().unwrap();
+    for i in 0..50 {let mut s=subject(60);s["id"]=json!(format!("subject-{i}"));save_subject(dir.path(),&s,None,true).unwrap();}
+    assert_eq!(list_subjects(dir.path(),config.path()).unwrap().len(),50);
+    let start=std::time::Instant::now();let summaries=list_subjects(dir.path(),config.path()).unwrap();let elapsed=start.elapsed();
+    assert_eq!(summaries.len(),50);assert!(summaries.iter().all(|s|s["modifiedNs"].is_string()&&s["size"].is_number()));
+    println!("WG-43 native 50-subject cached list: {:.2} ms",elapsed.as_secs_f64()*1000.0);
+    assert!(elapsed.as_millis()<500,"{elapsed:?}");
+}
+#[test]
 fn poc_import_backup_idempotence_and_reopen() {
     let dir = tempfile::tempdir().unwrap(); let s = subject(3); let v = &s["rooms"]["learn"];
     let mut nodes = v["nodes"].as_object().unwrap().clone();
@@ -149,4 +171,80 @@ fn five_hundred_nodes_meet_st50() {
     saves.sort(); loads.sort();
     eprintln!("ST-50: 500-node save samples={saves:?}, load samples={loads:?}");
     assert!(saves[2].as_millis() < 100); assert!(loads[2].as_millis() < 200);
+}
+#[test]
+#[ignore = "ST-40..42 real PoC evidence: set LANTERN_POC_DIR to a folder of lantern-poc/1 *.json files (copied to a temp library; originals untouched)"]
+fn real_poc_subjects_import_validate_and_round_trip() {
+    let source = std::env::var("LANTERN_POC_DIR").expect("LANTERN_POC_DIR");
+    let library = tempfile::tempdir().unwrap(); let config = tempfile::tempdir().unwrap();
+    let folder = library.path().join("subjects"); fs::create_dir_all(&folder).unwrap();
+    let mut originals = HashMap::new();
+    for entry in fs::read_dir(&source).unwrap() {
+        let path = entry.unwrap().path(); if path.extension().is_none_or(|e| e != "json") { continue; }
+        let bytes = fs::read(&path).unwrap(); fs::write(folder.join(path.file_name().unwrap()), &bytes).unwrap();
+        let poc: Value = serde_json::from_slice(&bytes).unwrap();
+        originals.insert(path.file_stem().unwrap().to_string_lossy().to_string(), poc);
+    }
+    assert!(!originals.is_empty(), "no PoC files found in {source}");
+    let mut imported = import_poc(library.path()).unwrap(); imported.sort();
+    let mut expected: Vec<String> = originals.keys().cloned().collect(); expected.sort();
+    assert_eq!(imported, expected, "every PoC subject must import");
+    for (id, poc) in &originals {
+        let loaded = load_subject(library.path(), id).unwrap(); // runs validate_subject (invariants)
+        assert!(!loaded.read_only);
+        let visit = &loaded.subject["rooms"]["learn"];
+        let (poc_nodes, nodes) = (poc["nodes"].as_object().unwrap(), visit["nodes"].as_object().unwrap());
+        assert_eq!(poc_nodes.len(), nodes.len());
+        for (key, p) in poc_nodes {
+            for field in ["title", "hook", "kind", "state", "content", "createdAt"] { assert_eq!(p[field], nodes[key][field], "{id}/{key}/{field}"); }
+            assert_eq!(p["dialogue"].as_array().map(Vec::len), nodes[key]["dialogue"].as_array().map(Vec::len), "{id}/{key} dialogue turns");
+        }
+        assert_eq!(visit["rootId"], poc["rootId"]); assert_eq!(visit["focusId"], poc["focusId"]);
+        assert_eq!(fs::read(folder.join(".poc-backup").join(format!("{id}.json"))).unwrap(), fs::read(Path::new(&source).join(format!("{id}.json"))).unwrap(), "backup is byte-identical to the source");
+        // Save -> reload round trip must be identical.
+        let SaveResult::Saved { stamp } = save_subject(library.path(), &loaded.subject, Some(&loaded.stamp), true).unwrap() else { panic!("not saved") };
+        let again = load_subject(library.path(), id).unwrap();
+        assert_eq!(again.subject, loaded.subject, "{id} save->reload must be equal"); assert_eq!(again.stamp, stamp);
+        println!("PoC {id}: {} nodes, {} dialogue turns, round trip equal", nodes.len(), nodes.values().map(|n| n["dialogue"].as_array().map_or(0, Vec::len)).sum::<usize>());
+    }
+    assert!(import_poc(library.path()).unwrap().is_empty(), "second import is idempotent");
+    let list = list_subjects(library.path(), config.path()).unwrap();
+    assert_eq!(list.len(), originals.len()); assert!(list.iter().all(|s| s["unreadable"].is_null() && s["total"].as_u64().unwrap() > 0));
+    for s in &list { let t = thumbnail(library.path(), s["id"].as_str().unwrap()).unwrap(); assert!(t["nodes"].as_object().unwrap().len() > 0); }
+}
+#[cfg(windows)]
+#[test]
+#[ignore = "Really sends one disposable temp file to the Windows Recycle Bin (WG-47)"]
+fn delete_subject_sends_file_to_real_recycle_bin() {
+    let library = tempfile::tempdir().unwrap(); let config = tempfile::tempdir().unwrap();
+    let mut s = subject(3); s["id"] = json!("recycle-probe-9f3a"); save_subject(library.path(), &s, None, true).unwrap();
+    let path = subject_path(library.path(), "recycle-probe-9f3a").unwrap(); assert!(path.is_file());
+    record_open(config.path(), "recycle-probe-9f3a", "2026-10-02T12:00:00Z").unwrap();
+    delete_subject(library.path(), config.path(), "recycle-probe-9f3a").unwrap();
+    assert!(!path.exists(), "file must have left its original path");
+    let state = read_state(config.path()).unwrap(); assert!(state.recents.is_empty() && state.last_opened_at.is_empty());
+    println!("Recycle Bin: {} left its original path", path.display());
+}
+#[test]
+fn foreign_files_are_skipped_by_listing_poc_import_and_library_transfer() {
+    let old=tempfile::tempdir().unwrap(); let new=tempfile::tempdir().unwrap(); let install=tempfile::tempdir().unwrap(); let config=tempfile::tempdir().unwrap();
+    save_subject(old.path(),&subject(3),None,true).unwrap();
+    let foreign=old.path().join("subjects/2026-10-02T16-16-07-496Z-haiku.json"); fs::write(&foreign,b"{\"not\":\"a subject\"}").unwrap();
+    fs::write(old.path().join("subjects/CON.json"),b"{}").unwrap();
+    let listed=list_subjects(old.path(),config.path()).unwrap(); assert_eq!(listed.len(),1); assert_eq!(listed[0]["id"],"tides-k3f9");
+    assert!(import_poc(old.path()).unwrap().is_empty());
+    crate::library::switch_library(old.path(),new.path(),install.path(),"move",&config.path().join("settings.json"),&json!({"format":"lantern-settings/1","library":{"path":"old"}})).unwrap();
+    assert!(foreign.exists() && old.path().join("subjects/CON.json").exists());
+    assert!(!new.path().join("subjects/2026-10-02T16-16-07-496Z-haiku.json").exists());
+    assert_eq!(list_subjects(new.path(),config.path()).unwrap().len(),1);
+}
+#[test]
+fn disk_paths_never_carry_the_verbatim_prefix() {
+    let dir=tempfile::tempdir().unwrap(); let install=tempfile::tempdir().unwrap();
+    let canonical=crate::library::validate_folder(dir.path(),install.path()).unwrap();
+    assert!(!canonical.to_string_lossy().starts_with(r"\\?\"));
+    save_subject(dir.path(),&subject(2),None,true).unwrap(); let config=tempfile::tempdir().unwrap();
+    assert!(!list_subjects(dir.path(),config.path()).unwrap()[0]["path"].as_str().unwrap().starts_with(r"\\?\"));
+    assert_eq!(crate::paths::plain_path(r"\\?\C:\Users\alexp\Documents\Lantern"),if cfg!(windows){r"C:\Users\alexp\Documents\Lantern"}else{r"\\?\C:\Users\alexp\Documents\Lantern"});
+    assert_eq!(crate::paths::plain_path(r"C:\Users\alexp"),r"C:\Users\alexp");
 }

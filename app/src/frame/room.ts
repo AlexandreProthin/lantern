@@ -2,6 +2,7 @@ import type { Component } from 'svelte';
 import type { Subject, Tone } from '../core/model';
 import type { InferenceProvider } from './provider';
 import type { Settings } from './settings';
+import type { LibrarySpaces } from './library-spaces';
 export interface RoomSession {
   subject: Subject; running: { nodeId: string; task: string } | null;
   setFocus(id: string): void; cancel(): void; touch(): void; initialize(): Promise<void>;
@@ -10,6 +11,7 @@ export interface RoomSession {
 export interface SpaceProps {
   session: RoomSession | null; revision: number; visible: boolean; settings: Settings;
   navigate: (space: string) => void; preferencesChanged: () => void;
+  library: LibrarySpaces;
 }
 export interface RoomDefinition {
   id: string; name: string; accent: Record<string, string>;

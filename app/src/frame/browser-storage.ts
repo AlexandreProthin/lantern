@@ -1,6 +1,8 @@
 import type { Storage, Stamp, Loaded } from './persistence';
 import { parseSubject } from '../core/model';
 import type { Subject } from '../core/model';
+import { stats } from '../core/stats';
+import type { LibraryState, SubjectSummary } from './catalogue';
 const key = (id: string) => `lantern.subject.${id}`;
 const stamp = (text: string): Stamp => ({ size: text.length, modifiedNs: '0', hash: text });
 /** Browser app-side surrogate for fake-provider tests; never used for desktop library I/O. */
@@ -30,4 +32,29 @@ export function browserSubjects(): Subject[] {
     try { subjects.push(parseSubject(JSON.parse(localStorage.getItem(k)!))); } catch { /* unreadable entries stay on disk */ }
   }
   return subjects;
+}
+export function browserSummaries(): SubjectSummary[] {
+  return browserSubjects().map(subject => {
+    const s = stats(subject.rooms.learn), raw = localStorage.getItem(key(subject.id))!;
+    return { ...s, id: subject.id, title: subject.title, path: key(subject.id), createdAt: subject.createdAt,
+      tone: subject.rooms.learn.tone, modelOutputs: Object.fromEntries(s.models.map(m => [m.model, m.output])),
+      modifiedNs: raw, size: raw.length };
+  });
+}
+export function browserLibraryState(): LibraryState {
+  try { return { recents: JSON.parse(localStorage.getItem('lantern.recents') ?? '[]'),
+    lastOpenedAt: JSON.parse(localStorage.getItem('lantern.lastOpenedAt') ?? '{}') }; }
+  catch { return { recents: [], lastOpenedAt: {} }; }
+}
+export function browserRecordOpen(id: string, at: string): LibraryState {
+  const state = browserLibraryState(); state.recents = [id, ...state.recents.filter(s => s !== id)]; state.lastOpenedAt[id] = at;
+  localStorage.setItem('lantern.recents', JSON.stringify(state.recents));
+  localStorage.setItem('lantern.lastOpenedAt', JSON.stringify(state.lastOpenedAt)); return state;
+}
+export function browserDelete(id: string): void {
+  const raw = localStorage.getItem(key(id)); if (raw) localStorage.setItem(`lantern.recycled.${id}.${Date.now()}`, raw);
+  localStorage.removeItem(key(id)); const state = browserLibraryState();
+  state.recents = state.recents.filter(s => s !== id); delete state.lastOpenedAt[id];
+  localStorage.setItem('lantern.recents', JSON.stringify(state.recents));
+  localStorage.setItem('lantern.lastOpenedAt', JSON.stringify(state.lastOpenedAt));
 }

@@ -20,6 +20,7 @@
   import type { LearnSession } from './session';
   import { initialPosition, treePositions, keyboardTarget } from '../../core/layout';
   import { graphMotion } from './graphMotion';
+  import { travelDuration, emberFan, emberTrail } from './embers';
   import { strings } from '../../ui/strings';
   import type { Settings } from '../../frame/settings';
   import { GraphScene, type SceneNode } from './graph-scene';
@@ -348,7 +349,7 @@
       .filter((e): e is SVGPathElement => !!e && e.getTotalLength() > 0);
     if (!raw.length) return;
     const timeline: Segment[] = raw.map((edge, i) => {
-      const duration = Math.max(160, Math.min(650, (edge.getTotalLength() / comet.speed) * 1000));
+      const duration = travelDuration(edge.getTotalLength());
       const start = time;
       const end = start + duration;
       time = end + (i < raw.length - 1 ? comet.pause : 0);
@@ -407,16 +408,13 @@
       if (trail.length >= comet.cap) return;
       serial++;
       // Deterministic, sparse scatter keeps repeated runs consistent.
-      const scatter = Math.sin(serial * 2.39996);
-      const variation = (Math.sin(serial * 7.13) + 1) / 2;
+      const motion = emberTrail(serial, p.tx, p.ty);
       trail.push({
         el: particle(serial % 4 !== 0),
         x: p.x,
         y: p.y,
         born: elapsed,
-        life: comet.lifeMin + (comet.lifeMax - comet.lifeMin) * variation,
-        vx: -p.tx * 24 - p.ty * scatter * comet.drift,
-        vy: -p.ty * 24 + p.tx * scatter * comet.drift,
+        ...motion,
         bright: serial % 4 === 0 ? 0.65 : 0.4
       });
     }
@@ -429,17 +427,14 @@
       // Begin at the rim so the opaque circle does not hide the emission.
       const radius = DISC / 2 + 2;
       for (let i = 0; i < BURST; i++) {
-        const variation = (Math.sin((i + 1) * 7.13) + 1) / 2;
-        const angle = heading + (i / (BURST - 1) - 0.5) * Math.PI * 1.4;
-        const speed = 28 + variation * 38;
+        const motion = emberFan(i, BURST, heading);
+        const angle = motion.angle;
         embers.push({
           el: particle(i % 4 !== 0),
           x: (sn.x ?? 0) + Math.cos(angle) * radius,
           y: (sn.y ?? 0) + Math.sin(angle) * radius,
           born: elapsed,
-          life: comet.lifeMin + (comet.lifeMax - comet.lifeMin) * variation,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
+          ...motion,
           bright: i % 4 === 0 ? 0.65 : 0.4
         });
       }

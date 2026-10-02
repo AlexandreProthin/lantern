@@ -5,14 +5,14 @@ description: Room-contributed Study UI, graph and node panel, rendering, setting
 resource: /app/src/frame/Shell.svelte
 tags: [implementation, frame, study, graph, panel, settings]
 status: draft
-generated: { by: Codex/GPT-6, at: 2026-10-02T18:15:00Z }
+generated: { by: Claude/Sonnet-5.5, at: 2026-10-02T19:50:00Z }
 ---
 
 # Implemented slice
 
 The Frame consumes the [room interface](/specs/rooms-spaces.md), keeps subject
 controllers alive across space switches, flushes writes on close and displays
-reload/conflict/save-failure notices. Welcome and Gallery remain D1 stubs.
+reload/conflict/save-failure notices. Welcome and Gallery are implemented by M4 ([library spaces](/components/v010-library-spaces.md)).
 
 Study ports the accepted learning-node recipe and PoC travelling-light effect.
 It adds the lantern/1 graph, deterministic shared tree layout, keyboard navigation,

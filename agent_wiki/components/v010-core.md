@@ -5,7 +5,7 @@ description: Room-independent domain contracts, persistence safety, and M1 valid
 resource: /app/src/core/model.ts
 tags: [core, storage, implementation, v0.1.0]
 status: stable
-generated: { by: Codex/GPT-6, at: 2026-10-02T15:25:00Z }
+generated: { by: Claude/Sonnet-5.5, at: 2026-10-02T19:50:00Z }
 ---
 
 # Domain contract
@@ -48,8 +48,14 @@ save was 171 ms. The strict timing gate now runs separately (ignored in the norm
 unit suite); it has not been declared reliably passed under that loaded condition.
 Svelte/TypeScript check passed with zero errors/warnings before M2 work began.
 
-M1 exit evidence remains partial: no real PoC files are present in the default
-`Documents/Lantern/subjects` folder, so only generated representative files were
-imported. Actual Recycle Bin behaviour still needs a Windows integration check;
+M1 exit evidence is now complete. The two real PoC subjects now present in
+`Documents/Lantern/subjects` (`la-vanille-0b44`, 20 nodes; `peer-to-peer-over-the-internet-8eea`,
+10 nodes) were copied to a temp library and run through the real `import_poc` path by the
+ignored test `real_poc_subjects_import_validate_and_round_trip` (`LANTERN_POC_DIR=<copy dir>`):
+both import, pass `validate_subject`, keep all node fields and dialogue turns, have a
+byte-identical `.poc-backup`, save and reload equal, re-import is idempotent, and list and
+thumbnails work. The originals were verified unchanged by hash. Recycle Bin: the ignored test
+`delete_subject_sends_file_to_real_recycle_bin` sends a disposable subject through `delete_subject`
+to the real Windows Recycle Bin and confirms it left its path (the probe file stays in the bin);
 the implementation has no permanent-delete fallback. See the
 [implementation plan](/plans/v0-1-0.md).

@@ -7,6 +7,7 @@ export interface SubjectSummary {
   input?: number; output?: number; tokens?: number; generations?: number;
   mainModel?: string | null; modelOutputs?: Record<string, number>;
   readOnly?: boolean; unreadable?: boolean; error?: string;
+  modifiedNs?: string; size?: number;
 }
 export interface LibraryState { recents: string[]; lastOpenedAt: Record<string, string> }
 export type CatalogueSort = 'lastOpened' | 'created' | 'progress';

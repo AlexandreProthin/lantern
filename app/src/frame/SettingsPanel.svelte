@@ -13,7 +13,8 @@
   const desktop='__TAURI_INTERNALS__' in window;
   let dialog:HTMLDialogElement, section=$state('general'), testing=$state(false), status=$state(strings.notTested), details=$state(''), errorKind=$state('');
   let located=$state(''), version=$state(''), found=$state<boolean|null>(null), validation=$state(''), resetting=$state(false);
-  let destination=$state(''), transferring=$state(false);
+  let destination=$state(''), transferring=$state(false), typedPath=$state('');
+  $effect(()=>{typedPath=settings.library.path;});
   let abort:AbortController|undefined;
   $effect(()=>{
     if(!health)return;
@@ -33,7 +34,7 @@
   }
   async function choose(path?:string) {
     if(generating){validation=strings.finishGeneration;return;}
-    try {const selected=path??await invoke<string|null>('pick_library',{title:strings.libraryFolder});if(!selected)return;destination=await invoke<string>('validate_library',{path:selected});validation='';}catch(e){validation=String(e);}
+    try {const selected=path??await invoke<string|null>('pick_library',{title:strings.libraryFolder,start:settings.library.path});if(!selected)return;typedPath=selected;destination=await invoke<string>('validate_library',{path:selected});validation='';}catch(e){validation=String(e);}
   }
   async function transfer(mode:string) {transferring=true;try{await switchLibrary(destination,mode);destination='';validation='';}catch(e){validation=String(e);}finally{transferring=false;}}
   async function reset() {
@@ -58,8 +59,8 @@
     <section><fieldset disabled={readonly||transferring}>
     {#if section==='general'}
       <label>{strings.displayName}<input value={settings.user.displayName} onblur={e=>text(e,'name')} onkeydown={e=>{if(e.key==='Enter')text(e,'name');}} /></label><p>{strings.appliesNext}</p>
-      <label>{strings.libraryFolder}<input readonly value={settings.library.path} /></label>
-      <div class="actions"><button disabled={!desktop||generating} title={generating?strings.finishGeneration:undefined} onclick={()=>choose()}>{strings.changeLibrary}</button><button disabled={!desktop} onclick={()=>invoke('reveal_library',{path:settings.library.path}).catch(e=>validation=String(e))}>{strings.revealLibrary}</button></div>
+      <label>{strings.libraryFolder}<input bind:value={typedPath} disabled={!desktop} spellcheck="false" onkeydown={e=>{if(e.key==='Enter'){e.preventDefault();if(typedPath.trim()&&typedPath.trim()!==settings.library.path)void choose(typedPath.trim());}}} /></label>
+      <div class="actions"><button disabled={!desktop||generating||!typedPath.trim()||typedPath.trim()===settings.library.path} onclick={()=>choose(typedPath.trim())}>{strings.applyLibrary}</button><button disabled={!desktop||generating} title={generating?strings.finishGeneration:undefined} onclick={()=>choose()}>{strings.changeLibrary}</button><button disabled={!desktop} onclick={()=>invoke('reveal_library',{path:settings.library.path}).catch(e=>validation=String(e))}>{strings.revealLibrary}</button></div>
       {#if generating}<p>{strings.finishGeneration}</p>{/if}
     {:else if section==='provider'}
       <label>{strings.defaultModel}<input id="default-model" list="models" value={settings.provider.defaultModel} onblur={e=>text(e,'model')} onkeydown={e=>{if(e.key==='Enter')text(e,'model');}} /></label><datalist id="models"><option>opus</option><option>sonnet</option><option>haiku</option></datalist>

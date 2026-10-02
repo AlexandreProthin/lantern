@@ -18,7 +18,7 @@ Windows default. Ordinary generations and explicit tests share provider session
 health. Check again refreshes CLI detection before the tiny test; opening the panel
 never sends an inference call. Install/sign-in remain instructions, not automation.
 
-The native folder picker and Explorer adapter live in `paths.rs`. The library
+The native folder picker (`IFileOpenDialog` with `FOS_PICKFOLDERS`, the File Explorer dialog, opened in the current library) and Explorer adapter live in `paths.rs`; the Library folder field is an editable input sharing the picker's `choose(path)` validation flow. Disk paths go through `dunce` (no `\\?\` prefix) and stored verbatim values are normalised on settings load; non-subject files in `subjects/` are skipped, never an error. The library
 transaction in `library.rs` implements SE-30 to SE-36: absolute readable/writable
 destination outside the installation directory; generation guard; flush before
 switch; Move/Copy/Leave choices; preflight source files; no-clobber copies; byte

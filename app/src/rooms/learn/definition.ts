@@ -4,12 +4,13 @@ import { stats } from '../../core/stats';
 import { strings } from '../../ui/strings';
 import { LearnSession } from './session';
 import { promptVersion } from './prompts';
-import Stub from './Stub.svelte';
+import Welcome from './Welcome.svelte';
+import Gallery from './Gallery.svelte';
 import Study from './Study.svelte';
 import LearnSettings from './LearnSettings.svelte';
 export const learnRoom: RoomDefinition = {
   id:'learn', name:strings.learn, accent:{ '--accent':'#e8b66e' },
-  spaces:[{ id:'welcome',label:strings.welcome,icon:'⌂',shortcutIndex:1,component:Stub },{id:'study',label:strings.study,icon:'⌘',shortcutIndex:2,component:Study},{id:'gallery',label:strings.gallery,icon:'▦',shortcutIndex:3,component:Stub}],
+  spaces:[{ id:'welcome',label:strings.welcome,icon:'⌂',shortcutIndex:1,component:Welcome },{id:'study',label:strings.study,icon:'⌘',shortcutIndex:2,component:Study},{id:'gallery',label:strings.gallery,icon:'▦',shortcutIndex:3,component:Gallery}],
   defaultSpace:'study', settingsMenu:LearnSettings,
   prompts:{ version:promptVersion, createSession:(subject,provider,save,render,settings) => new LearnSession(subject,provider,save,render,settings.user.displayName,settings.learn.contextBudget) },
   nodeKinds:Object.fromEntries(['subject','axis','deeper','application','adjacent','exercise','question','own'].map(kind => [kind,{label:kind,glyph:kind === 'question' ? '◇' : '○'}])),

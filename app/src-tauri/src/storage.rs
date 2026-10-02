@@ -139,7 +139,7 @@ pub fn record_open(config: &Path, id: &str, at: &str) -> Result<AppState> {
 #[serde(rename_all = "camelCase")]
 pub struct CacheEntry { pub modified_ns: u128, pub size: u64, pub summary: Value }
 type Cache = HashMap<String, CacheEntry>;
-fn read_cache(config: &Path) -> Cache { fs::read(config.join("summaries.json")).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default() }
+fn read_cache(config: &Path) -> Cache { let mut cache: Cache = fs::read(config.join("summaries.json")).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default(); cache.retain(|key, _| !key.starts_with(r"\\?\")); cache }
 pub fn summary(subject: &Value) -> Value {
     let v = &subject["rooms"]["learn"];
     let nodes: Vec<&Value> = v["nodes"].as_object().map(|ns| ns.values().filter(|n| n["state"] != "dismissed").collect()).unwrap_or_default();
@@ -165,8 +165,8 @@ pub fn list_subjects(library: &Path, config: &Path) -> Result<Vec<Value>> {
     for entry in fs::read_dir(&folder).map_err(io)? {
         let path = entry.map_err(io)?.path(); if path.extension().is_none_or(|e| e != "json") { continue; }
         let Some(id) = path.file_stem().and_then(|s| s.to_str()) else { continue; };
-        if id.contains(".conflict-") { continue; } subject_path(library, id)?;
-        let key = fs::canonicalize(&path).map_err(io)?.to_string_lossy().to_string(); seen.insert(key.clone());
+        if id.contains(".conflict-") || !crate::paths::is_subject_id(id) { continue; }
+        let key = crate::paths::canonical(&path).map_err(io)?.to_string_lossy().to_string(); seen.insert(key.clone());
         let metadata = fs::metadata(&path).map_err(io)?;
         let modified_ns = metadata.modified().map_err(io)?.duration_since(std::time::UNIX_EPOCH).map_err(io)?.as_nanos();
         if cache.get(&key).is_none_or(|c| c.size != metadata.len() || c.modified_ns != modified_ns) {
@@ -177,15 +177,17 @@ pub fn list_subjects(library: &Path, config: &Path) -> Result<Vec<Value>> {
             info["path"] = json!(key);
             cache.insert(key.clone(), CacheEntry { size: metadata.len(), modified_ns, summary: info });
         }
-        out.push(cache[&key].summary.clone());
+        let mut item = cache[&key].summary.clone();
+        item["modifiedNs"] = json!(modified_ns.to_string()); item["size"] = json!(metadata.len());
+        out.push(item);
     }
-    let canonical_folder = folder.canonicalize().map_err(io)?;
+    let canonical_folder = crate::paths::canonical(&folder).map_err(io)?;
     cache.retain(|key, _| seen.contains(key) || !Path::new(key).starts_with(&canonical_folder));
     write_json(&config.join("summaries.json"), &serde_json::to_value(cache).map_err(io)?)?;
     out.sort_by(|a, b| a["title"].as_str().cmp(&b["title"].as_str())); Ok(out)
 }
 pub fn delete_subject(library: &Path, config: &Path, id: &str) -> Result<()> {
-    let path = subject_path(library, id)?; let key = fs::canonicalize(&path).map_err(io)?.to_string_lossy().to_string();
+    let path = subject_path(library, id)?; let key = crate::paths::canonical(&path).map_err(io)?.to_string_lossy().to_string();
     let mut state = read_state(config)?;
     if state.format != state_format() {return Err("Newer app state is read-only".into());}
     crate::paths::recycle_file(&path)?;
@@ -194,6 +196,31 @@ pub fn delete_subject(library: &Path, config: &Path, id: &str) -> Result<()> {
     let mut cache = read_cache(config); cache.remove(&key);
     write_json(&config.join("summaries.json"), &serde_json::to_value(cache).map_err(io)?)
 }
+/// WG-40..43: deserialize graph metadata only; skip content/dialogue/log allocation.
+pub fn thumbnail(library: &Path, id: &str) -> Result<Value> {
+    #[derive(Deserialize)] struct File { rooms: HashMap<String, Visit> }
+    #[derive(Deserialize)] #[serde(rename_all="camelCase")] struct Visit { root_id: String, nodes: HashMap<String, Node> }
+    #[derive(Clone, Serialize, Deserialize)] #[serde(rename_all="camelCase")]
+    struct Node { id: String, parents: Vec<String>, created_at: String, state: String }
+    let path = subject_path(library,id)?;
+    let file = fs::File::open(path).map_err(io)?;
+    let mut subject: File = serde_json::from_reader(std::io::BufReader::new(file)).map_err(io)?;
+    let visit = subject.rooms.remove("learn").ok_or("No Learn graph")?;
+    let mut children: HashMap<String, Vec<&Node>> = HashMap::new();
+    for node in visit.nodes.values() { if let Some(parent)=node.parents.first() { children.entry(parent.clone()).or_default().push(node); } }
+    for list in children.values_mut() { list.sort_by(|a,b|a.created_at.cmp(&b.created_at).then(a.id.cmp(&b.id))); }
+    let mut queue = std::collections::VecDeque::from([visit.root_id.clone()]);
+    let mut selected = HashMap::new();
+    while let Some(id)=queue.pop_front() {
+        if selected.len()>=60 {break;}
+        let Some(node)=visit.nodes.get(&id) else {continue};
+        if node.state=="dismissed" || selected.contains_key(&id) {continue;}
+        selected.insert(id.clone(),node.clone());
+        if let Some(list)=children.get(&id) {queue.extend(list.iter().map(|n|n.id.clone()));}
+    }
+    let count=visit.nodes.values().filter(|n|n.state!="dismissed").count();
+    Ok(json!({"rootId":visit.root_id,"omitted":count.saturating_sub(selected.len()),"nodes":selected}))
+}
 /// Forward migration of the PoC only; backup first, then replace (ST-40..42).
 pub fn import_poc(library: &Path) -> Result<Vec<String>> {
     let folder = library.join("subjects"); if !folder.exists() { return Ok(vec![]); } reject_link(&folder)?;
@@ -201,7 +228,7 @@ pub fn import_poc(library: &Path) -> Result<Vec<String>> {
     for entry in fs::read_dir(&folder).map_err(io)? {
         let path = entry.map_err(io)?.path(); if path.extension().is_none_or(|e| e != "json") { continue; }
         let Some(id) = path.file_stem().and_then(|s| s.to_str()) else { continue; };
-        if id.contains(".conflict-") { continue; } subject_path(library, id)?;
+        if id.contains(".conflict-") || !crate::paths::is_subject_id(id) { continue; }
         let bytes = fs::read(&path).map_err(io)?; let s: Value = serde_json::from_slice(&bytes).map_err(io)?;
         if s["format"] != "lantern-poc/1" { continue; } if s["id"] != id { return Err("PoC filename/id mismatch".into()); }
         let mut nodes = s["nodes"].as_object().ok_or("Missing PoC nodes")?.clone();
