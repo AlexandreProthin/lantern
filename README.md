@@ -71,7 +71,10 @@ subject        what you're working through ("how TCP congestion control works")
    job is to show the loop works and is worth building. See [`poc/`](poc/README.md).
 2. **Project wiki** ✔ [`agent_wiki/`](agent_wiki/index.md): an OKF bundle that is the
    project's working memory (decisions, architecture, open issues, roadmap).
-3. **Specs + v0.1.0 plan** ▶ next: the behavioural contract and the first release scope.
+3. **Specs + v0.1.0 plan** ✔ 13 agreed specs in [`agent_wiki/specs/`](agent_wiki/specs/index.md),
+   worked out in the [spec workshop](agent_design/tool/specs_work/README.md).
+4. **v0.1.0 implementation** ▶ next: follow the [plan](agent_wiki/plans/v0-1-0.md), starting
+   at M0 (scaffold) and the Welcome design track.
 
 ## Open work
 
