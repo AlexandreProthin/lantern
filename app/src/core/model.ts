@@ -26,6 +26,8 @@ export interface RoomVisit {
 }
 export interface Subject { format: 'lantern/1'; id: string; title: string; createdAt: string; rooms: Record<string, RoomVisit> }
 export const now = () => new Date().toISOString();
+/** Wire data is JSON; this also snapshots reactive UI proxies without a UI dependency. */
+export const cloneJson = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 export const newId = () => crypto.randomUUID().replaceAll('-', '').slice(0, 8);
 export const normalizeTitle = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').trim().replace(/\s+/g, ' ').toLowerCase();
 export function subjectId(title: string): string {

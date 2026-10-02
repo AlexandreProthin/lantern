@@ -2,6 +2,10 @@
 
 ## 2026-10-02
 
+* **Study slice**: [Frame and Study](/components/v010-study.md) now cover the fake tutor loop, editing, dismiss/restore, cancellation and restart persistence with three passing browser tests. Settings storage/rendering foundations are included. D1 remains parallel; M3/M5 are still in progress. Idle ST-50 medians pass at 63.24 ms save and 25.47 ms load.
+
+* **Eval gate**: [learn-1](/components/v010-learn-runtime.md) passed all three real Haiku/low runs: 24/24 each, 72/72 overall. Detailed replies/usage/timings are local, git-ignored; the lexical language check still requires prose review.
+
 * **Implementation**: [M2 Learn runtime](/components/v010-learn-runtime.md) adds approved learn-1 prompts, parser, context, real/fake providers, cancellation and an atomic action coordinator. 28 TS tests, real Haiku stream/cancel and Windows child/grandchild termination passed; first eval run is 24/24. ST-50 is now a separate idle-machine gate because concurrent CLI work changes timings materially.
 
 * **Implementation**: [M1 persistence](/components/v010-core.md) adds atomic saves, conflict/reload rules, app-side state/cache, read-only future formats, Recycle Bin adapter, PoC backup/import and debounced writes. Seven Rust and four persistence tests pass; 500 nodes save in 69 ms and load in 19 ms. Real PoC import remains unverified because the default library has no files.

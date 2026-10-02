@@ -58,7 +58,7 @@ fn summary_cache_invalidates_and_can_be_rebuilt() {
     let mut s = s; s["rooms"]["learn"]["nodes"]["n1"]["state"] = json!("dismissed");
     write_json(&subject_path(dir.path(), "tides-k3f9").unwrap(), &s).unwrap();
     let second = list_subjects(dir.path(), config.path()).unwrap(); assert_eq!(second[0]["total"], 3);
-    fs::write(config.path().join("summary-cache.json"), b"corrupt").unwrap();
+    fs::write(config.path().join("summaries.json"), b"corrupt").unwrap();
     assert_eq!(list_subjects(dir.path(), config.path()).unwrap(), second);
 }
 #[test]

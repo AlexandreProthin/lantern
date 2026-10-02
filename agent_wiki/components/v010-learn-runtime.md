@@ -45,7 +45,7 @@ configurable delays and typed injected failures.
 - The real Rust Haiku stream/cancel integration test passed in 4.37 seconds total.
 - A Windows job test started a hidden child and grandchild and confirmed zero active
   processes after cancellation.
-- First real `learn-1` Haiku/low eval run: 24/24 (100%). Runs 2 and 3 are in progress.
+- Three real `learn-1` Haiku/low eval runs: each 24/24 (100%), 72/72 overall.
   The gate is at least 95% on **each** run; the language check is lexical and still
   requires prose review. Results are local under `app/evals/results/`.
 

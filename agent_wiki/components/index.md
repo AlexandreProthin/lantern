@@ -16,3 +16,4 @@ Use `type: Component`.
 
 - [v0.1.0 core and storage](/components/v010-core.md) — M1 domain contracts and persistence evidence.
 - [v0.1.0 Learn runtime](/components/v010-learn-runtime.md) — M2 protocol, context, provider, coordinator and eval evidence.
+- [v0.1.0 Frame and Study](/components/v010-study.md) — M3 UI and Settings foundations, browser evidence and remaining gates.

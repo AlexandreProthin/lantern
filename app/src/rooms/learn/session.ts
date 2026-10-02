@@ -1,5 +1,5 @@
 import { addChild, nodeOf, setState } from '../../core/graph';
-import { newId, normalizeTitle, now } from '../../core/model';
+import { newId, normalizeTitle, now, cloneJson } from '../../core/model';
 import type { Generation, RoomVisit, Subject } from '../../core/model';
 import { ProviderError, zeroUsage } from '../../frame/provider';
 import type { InferenceProvider } from '../../frame/provider';
@@ -19,6 +19,8 @@ export class LearnSession {
   get focus() { return nodeOf(this.visit, this.visit.focusId); }
   setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.changed(); this.render(); }
   busy(id: string): boolean { return this.running?.nodeId === id; }
+  touch(): void { this.changed(); this.render(); }
+  initialize(): Promise<void> { return this.run('intro', this.visit.rootId); }
   cancel(): void { this.running?.controller.abort(); }
   async run(task: Exclude<Task, 'suggest'>, id: string, message?: string, retry = false, checkOverride?: boolean): Promise<void> {
     if (this.running) throw new Error('A generation is already running');
@@ -32,7 +34,7 @@ export class LearnSession {
       this.changed();
     }
     const check = checkOverride ?? pendingCheck(v, id);
-    const config = structuredClone({ tone: v.tone, model: v.model, effort: v.effort });
+    const config = cloneJson({ tone: v.tone, model: v.model, effort: v.effort });
     const prompts = taskPrompt(v, task, id, { budgetTokens: this.budgetTokens });
     const generationId = newId(), startedAt = now(), started = performance.now();
     const controller = new AbortController(); this.running = { nodeId: id, task, text: '', controller }; this.notice = null; this.render();
@@ -49,7 +51,7 @@ export class LearnSession {
       const parsed = parseReply(result.text, task, check);
       if (parsed.emptyError) throw new ProviderError('protocol', 'The tutor returned no usable text', result.model, result.usage, result.durationMs);
       // Apply against the graph now, not a stale snapshot. One swap includes all mutations and the log.
-      const next = structuredClone(this.visit), target = nodeOf(next, id);
+      const next = cloneJson(this.visit), target = nodeOf(next, id);
       const author = { kind: 'model' as const, model: result.model, effort: config.effort, generationId };
       if (task === 'intro' || task === 'light') { target.content = parsed.text; target.author = author; setState(next, id, 'lit'); }
       if (task === 'reply' || task === 'check') target.dialogue.push({ role: 'tutor', text: parsed.text, at: now(), author });

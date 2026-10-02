@@ -1,0 +1,38 @@
+import { test, expect } from '@playwright/test';
+test('PQ-22: Study fake loop, edits, dismiss/restore and restart persistence', async ({page}) => {
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/?study=1&subject=Ocean%20tides');
+  const panel=page.locator('.panel');
+  await expect(panel.getByRole('button',{name:'Mechanism 1',exact:false})).toBeVisible();
+  await panel.getByRole('button',{name:'Mechanism 1',exact:false}).click();
+  await expect(panel.getByText('This node is still dark.')).toBeVisible();
+  await panel.getByRole('button',{name:'Dismiss',exact:true}).click();
+  await expect(panel.getByText('Dismissed. It will not be proposed again.')).toBeVisible();
+  await panel.getByRole('button',{name:'Restore',exact:true}).click();
+  await panel.getByRole('button',{name:'Light it up',exact:true}).click();
+  await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  await panel.getByRole('button',{name:'Edit explanation',exact:true}).click();
+  await panel.getByRole('textbox',{name:'Edit explanation',exact:true}).fill('**Corrected by me.** The Moon stretches the oceans.');
+  await panel.getByRole('button',{name:'Save',exact:true}).click();
+  await expect(panel.getByText('edited by Learner',{exact:true})).toBeVisible();
+  await expect(panel.getByRole('button',{name:'Previous version',exact:true})).toBeVisible();
+  await panel.getByRole('button',{name:'Test me',exact:true}).click();
+  await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  const composer=panel.getByRole('textbox',{name:'Ask about this, or answer the tutor… (Ctrl+Enter to send)'});
+  await composer.fill('The near and far sides are stretched in opposite directions.');await composer.press('Control+Enter');
+  await expect(panel.locator('.meta')).toContainText('demonstrated');
+  await expect.poll(()=>page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('lantern.subject.')).map(k=>localStorage.getItem(k)).join(''))).toContain('demonstrated');
+  await page.goto('/?study=1&resume=1');
+  await expect(page.locator('.panel .meta')).toContainText('demonstrated');
+  await expect(page.locator('.panel').getByText('Corrected by me.',{exact:true})).toBeVisible();
+  await expect(page.locator('.panel').getByRole('button',{name:'Previous version',exact:true})).toBeVisible();
+  await page.screenshot({path:'test-results/study-flow.png',fullPage:true});expect(errors).toEqual([]);
+});
+test('PQ-22/LR-36: cancel discards the streamed root and logs cancellation', async ({page}) => {
+  await page.goto('/?study=1&subject=Cancellation&delay=500');
+  const panel=page.locator('.panel');
+  await expect(panel.getByRole('button',{name:'Cancel',exact:true})).toBeVisible();
+  await panel.getByRole('button',{name:'Cancel',exact:true}).click();
+  await expect(panel.getByRole('button',{name:'Light it up',exact:true})).toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('lantern.subject.')).map(k=>localStorage.getItem(k)).join(''))).toContain('cancelled');
+});

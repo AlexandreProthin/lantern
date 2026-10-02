@@ -21,6 +21,14 @@ new nodes only arrive at the end of the reply.
 
 # Levers
 
+The 2026-10-02 `learn-1` eval measured 12 calls per task, using the resolved model
+`claude-haiku-4-5-20251001`, low effort, three concurrent calls, English/French
+and 5/300-node contexts. Median end-to-end durations: intro 36.5 s, light 71.5 s,
+more 38.8 s, check 10.4 s, reply 14.3 s, check-answer 6.5 s. These measure the full
+CLI request, not first-token latency or isolated process overhead. They are not
+directly comparable with the PoC samples. All three runs passed 24/24 automatic
+checks; the replies and timings remain locally under `app/evals/results/`.
+
 - A provider that keeps a session or talks to the API removes the process overhead (see
   [pluggable-inference-provider](/decisions/pluggable-inference-provider.md)).
 - A smaller model via `LANTERN_MODEL` for cheap tasks.

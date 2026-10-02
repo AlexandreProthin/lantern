@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { parseSubject } from '../core/model';
+import { parseSubject, cloneJson } from '../core/model';
 import type { Subject } from '../core/model';
 export interface Stamp { size: number; modifiedNs: string; hash: string }
 export interface Loaded { subject: Subject; stamp: Stamp; readOnly: boolean }
@@ -31,7 +31,7 @@ export class SubjectPersistence {
   schedule(subject: Subject): void {
     if (this.closed || this.loaded?.readOnly) throw new Error('Subject is read-only');
     if (this.loaded && subject.id !== this.loaded.subject.id) throw new Error('Persistence controller belongs to another subject');
-    this.pending = structuredClone(parseSubject(subject)); this.revision++;
+    this.pending = cloneJson(parseSubject(subject)); this.revision++;
     clearTimeout(this.timer);
     this.timer = setTimeout(() => { this.flush().catch(this.onError); }, this.delay);
   }

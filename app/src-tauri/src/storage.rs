@@ -91,16 +91,33 @@ pub fn save_subject(library: &Path, subject: &Value, expected: Option<&Stamp>, d
     atomic_write(&path, &bytes)?;
     Ok(SaveResult::Saved { stamp: stamp(&path, &bytes)? })
 }
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AppState { pub last_opened_at: HashMap<String, String>, pub recents: Vec<String> }
+pub struct AppState {
+    #[serde(default = "state_format")] pub format: String,
+    #[serde(default)] pub last_opened_at: HashMap<String, String>,
+    #[serde(default)] pub recents: Vec<String>,
+    #[serde(flatten)] pub extra: HashMap<String, Value>,
+}
+fn state_format() -> String { "lantern-state/1".into() }
+impl Default for AppState { fn default() -> Self { Self { format:state_format(), last_opened_at:HashMap::new(), recents:vec![], extra:HashMap::new() } } }
 fn state_path(config: &Path) -> PathBuf { config.join("state.json") }
 pub fn read_state(config: &Path) -> Result<AppState> {
     let path = state_path(config); if !path.exists() { return Ok(AppState::default()); }
-    serde_json::from_slice(&fs::read(path).map_err(io)?).map_err(io)
+    let bytes = fs::read(&path).map_err(io)?;
+    match serde_json::from_slice::<AppState>(&bytes) {
+        Ok(state) => Ok(state),
+        Err(_) => {
+            let suffix = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_err(io)?.as_nanos();
+            atomic_write(&config.join(format!("state.json.corrupt-{suffix}")), &bytes)?;
+            write_json(&path, &serde_json::to_value(AppState::default()).map_err(io)?)?;
+            Ok(AppState::default())
+        }
+    }
 }
 pub fn record_open(config: &Path, id: &str, at: &str) -> Result<AppState> {
     subject_path(Path::new("."), id)?; let mut state = read_state(config)?;
+    if state.format != state_format() { return Err("Newer app state is read-only".into()); }
     state.last_opened_at.insert(id.into(), at.into()); state.recents.retain(|s| s != id); state.recents.insert(0, id.into());
     write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)?; Ok(state)
 }
@@ -108,7 +125,7 @@ pub fn record_open(config: &Path, id: &str, at: &str) -> Result<AppState> {
 #[serde(rename_all = "camelCase")]
 pub struct CacheEntry { pub modified_ns: u128, pub size: u64, pub summary: Value }
 type Cache = HashMap<String, CacheEntry>;
-fn read_cache(config: &Path) -> Cache { fs::read(config.join("summary-cache.json")).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default() }
+fn read_cache(config: &Path) -> Cache { fs::read(config.join("summaries.json")).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default() }
 pub fn summary(subject: &Value) -> Value {
     let v = &subject["rooms"]["learn"];
     let nodes: Vec<&Value> = v["nodes"].as_object().map(|ns| ns.values().filter(|n| n["state"] != "dismissed").collect()).unwrap_or_default();
@@ -150,7 +167,7 @@ pub fn list_subjects(library: &Path, config: &Path) -> Result<Vec<Value>> {
     }
     let canonical_folder = folder.canonicalize().map_err(io)?;
     cache.retain(|key, _| seen.contains(key) || !Path::new(key).starts_with(&canonical_folder));
-    write_json(&config.join("summary-cache.json"), &serde_json::to_value(cache).map_err(io)?)?;
+    write_json(&config.join("summaries.json"), &serde_json::to_value(cache).map_err(io)?)?;
     out.sort_by(|a, b| a["title"].as_str().cmp(&b["title"].as_str())); Ok(out)
 }
 pub fn delete_subject(library: &Path, config: &Path, id: &str) -> Result<()> {
@@ -159,7 +176,7 @@ pub fn delete_subject(library: &Path, config: &Path, id: &str) -> Result<()> {
     let mut state = read_state(config)?; state.last_opened_at.remove(id); state.recents.retain(|s| s != id);
     write_json(&state_path(config), &serde_json::to_value(state).map_err(io)?)?;
     let mut cache = read_cache(config); cache.remove(&key);
-    write_json(&config.join("summary-cache.json"), &serde_json::to_value(cache).map_err(io)?)
+    write_json(&config.join("summaries.json"), &serde_json::to_value(cache).map_err(io)?)
 }
 /// Forward migration of the PoC only; backup first, then replace (ST-40..42).
 pub fn import_poc(library: &Path) -> Result<Vec<String>> {

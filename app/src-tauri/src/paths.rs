@@ -35,3 +35,14 @@ pub fn recycle_file(path: &Path) -> Result<(), String> {
 }
 #[cfg(not(windows))]
 pub fn recycle_file(_: &Path) -> Result<(), String> { Err("Recycle Bin is only supported on Windows".into()) }
+
+#[cfg(windows)]
+pub fn open_external(url: &str) -> Result<(), String> {
+    use windows_sys::Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL};
+    if url.len() > 10000 || !["http://", "https://", "mailto:"].iter().any(|prefix| url.to_lowercase().starts_with(prefix)) { return Err("Unsupported link scheme".into()); }
+    let op: Vec<u16> = "open".encode_utf16().chain([0]).collect(); let file: Vec<u16> = url.encode_utf16().chain([0]).collect();
+    let result = unsafe { ShellExecuteW(std::ptr::null_mut(), op.as_ptr(), file.as_ptr(), std::ptr::null(), std::ptr::null(), SW_SHOWNORMAL) };
+    if result as isize <= 32 { return Err("Could not open external link".into()); } Ok(())
+}
+#[cfg(not(windows))]
+pub fn open_external(_: &str) -> Result<(), String> { Err("External link opening is only supported on Windows".into()) }
