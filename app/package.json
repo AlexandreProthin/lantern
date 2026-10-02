@@ -1,0 +1,13 @@
+{
+  "name": "lantern", "private": true, "version": "0.1.0", "type": "module",
+  "scripts": {
+    "dev": "vite", "build": "vite build", "tauri": "tauri",
+    "check": "svelte-check --tsconfig ./tsconfig.json", "test": "vitest run"
+  },
+  "dependencies": { "@tauri-apps/api": "2.8.0", "svelte": "^5.38.7" },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.1.0", "@tauri-apps/cli": "^2.9.3",
+    "@playwright/test": "^1.55.0", "@types/node": "^22.0.0", "svelte-check": "^4.1.7",
+    "typescript": "~5.8.3", "vite": "^6.3.5", "vitest": "^3.2.0", "tsx": "^4.20.0"
+  }
+}

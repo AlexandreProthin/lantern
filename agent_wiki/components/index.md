@@ -1,5 +1,7 @@
 # Components
 
+* [v0.1.0 foundation](/components/v010-foundation.md) — app boundaries and validation evidence.
+
 One concept per real module or subsystem, each bound to what it describes with
 a `resource` pointing at the path in the repository. This is the layer that
 goes stale fastest, so a component concept says what the module is *for* and

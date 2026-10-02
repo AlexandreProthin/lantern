@@ -2,6 +2,8 @@
 
 ## 2026-10-02
 
+* **Implementation**: M0 [v0.1.0 foundation](/components/v010-foundation.md) completed in `app/`: 2 unit tests, 1 Rust test, 1 browser smoke test, type check and production web build passed. [Roadmap](/plans/roadmap.md) paused at the user's request before continuing M1/M2.
+
 * **Review**: on the user's explicit instruction ("i allow you to sign the whole wiki for me (human:alex)"), the agent added `verified: { by: human:alex }` to all 43 concepts; every concept is now human-reviewed. The [v0.1.0 plan](/plans/v0-1-0.md) is approved, and implementation starts at M0 (and D1).
 * **Update**: All 13 specs agreed (round 3), now `stable`; the three round-3 changes (Gallery single click shows detailed stats, sign-in instructions instead of a button, default model `opus`); specs step closed in the [roadmap](/plans/roadmap.md). New decision [cli-signin-instructions-only](/decisions/cli-signin-instructions-only.md).
 * **Update**: Consistency pass across all 13 specs (concurrency, previous, stats, app-side state, round-3 ids).
