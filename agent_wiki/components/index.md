@@ -18,3 +18,4 @@ Use `type: Component`.
 - [v0.1.0 Learn runtime](/components/v010-learn-runtime.md) — M2 protocol, context, provider, coordinator and eval evidence.
 - [v0.1.0 Frame and Study](/components/v010-study.md) — M3 UI and Settings foundations, browser evidence and remaining gates.
 - [v0.1.0 Settings and library switching](/components/v010-settings.md) — M5 implementation and native acceptance boundaries.
+- [v0.1.0 library space controllers](/components/v010-library-spaces.md) — M4 catalogue and suggestions prepared independently of D1; UI integration remains.

@@ -2,6 +2,8 @@
 
 ## 2026-10-02
 
+* **D1-independent library groundwork**: [catalogue and suggestions](/components/v010-library-spaces.md) add summary-only sorting, debounced filtering, selection/navigation, token visibility and model shares, plus cancellable unlogged subject suggestions using `learn-1`. Nine new tests pass (43 total), with zero type-check errors/warnings. These controllers await D1 screen integration; M4 is not complete.
+
 * **Spawn tuning**: user clarified [graph motion](/specs/graph-view.md): branches draw one after another behind a glowing tip, pending nodes and the generating parent breathe with light, completed nodes settle and emit particles. [Study](/components/v010-study.md) implements this independently of focus-route motion, preserves stable scene bodies, and finishes growth for fast responses. Live reduction cancels tips, particles and arrival animations. Native motion acceptance remains open.
 
 * **Prose review**: first-run English/French eval samples match the requested language but contain internally inconsistent analogies. [Tutor prose quality](/issues/tutor-prose-quality.md) separates this concrete issue from the passing automatic protocol score; no approved prompt was changed.

@@ -25,6 +25,11 @@ M1 now supplies the domain, shared stats, Rust library storage and a debounced
 frame persistence controller. M3 supplies the Study loop and connects persistence
 errors, reload/conflict notices and window-close flushing to the UI.
 
+M4's design-independent controllers are ready in `src/frame/catalogue.ts` and
+`src/rooms/learn/suggestions.ts`: summary-based sorting/filtering/selection and
+stats, plus unlogged cancellable subject suggestions. They have unit coverage
+but are not wired to screens yet. Welcome/Gallery remain stubs pending D1's recipe.
+
 Storage tests use isolated temporary libraries and never modify real subjects.
 They cover round-trip, path safety, conflicts, cache invalidation, read-only newer
 formats and PoC backup/idempotence. Run the ST-50 performance gate separately on an
