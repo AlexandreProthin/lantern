@@ -5,7 +5,7 @@ description: The PoC's subject/node data model and how a subject is saved to dis
 tags: [subject, graph, persistence]
 status: draft
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
-resource: /poc/src/lib/subject.ts
+resource: /app/src/core/model.ts
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 

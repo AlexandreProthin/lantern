@@ -31,7 +31,5 @@ use, visual/motion acceptance, a dogfooding
 week. Real PoC import on copies and the Recycle Bin adapter already have automated
 evidence (see the [log](/log.md)); native Explorer reveal and installed-build checks remain manual. The known [prose quality issue](/issues/tutor-prose-quality.md) remains open.
 
-Build/test results are recorded in the [log](/log.md). No installer execution,
-release publication, tag, PoC removal or acceptance sign-off is implied by a
-successful build. The final release still requires the user's ship decision in
-the [plan](/plans/v0-1-0.md).
+Build/test results are recorded in the [log](/log.md). Acceptance was signed off by the user on 2026-10-04 and v0.1.0 shipped (see the
+[log](/log.md)); follow-up work is in [v0.1.1](/plans/v0-1-1.md).

@@ -1,5 +1,10 @@
 # Wiki Update Log
 
+## 2026-10-04
+
+* **v0.1.0 released**: the user ticked all 13 gates of `app/ACCEPTANCE.md` and approved the release. The tag `v0.1.0` and a GitHub release carry the unsigned per-user NSIS installer. The PoC directory was removed from the tree as the [plan](/plans/v0-1-0.md) specifies; the last commit that has it is tagged `poc-final`, and the PoC concepts ([architecture](/architecture/poc-learn-room.md), [provider](/components/inference-provider.md), [prompts](/components/learn-room-prompts.md), [subject model](/components/subject-model.md)) now point at their `app/` successors. Their bodies still describe the PoC as it was.
+* **Plan**: the user's notes at the end of `app/ACCEPTANCE.md` (7 bugs, 4 improvements, 5 feature requests) are collected in [v0.1.1](/plans/v0-1-1.md), which is the next session's goal. They are not v0.1.0 blockers.
+
 ## 2026-10-02
 
 * **RS-20 Welcome Study-icon amendment cancelled**: at the user's request (it was a mistake), the amendment that removed the Study icon from Welcome's header is reverted. [rooms-spaces](/specs/rooms-spaces.md) RS-11/RS-20/RS-22 and [welcome-gallery](/specs/welcome-gallery.md) WG-12 are restored: Welcome shows Welcome, Study and Gallery; Study and Gallery are disabled until a subject exists; Ctrl+2 unchanged. The Welcome model picker (WG-1/2/3) is kept. Code and browser tests updated to match. **User-reported on 2026-10-02 from their installed build**: Welcome and spawn look and motion approved; Gallery *Reveal in Explorer* works. 500-node native pan/zoom and the Windows Recycle Bin check remain unconfirmed by the user.

@@ -5,7 +5,7 @@ description: How the throwaway proof of concept in poc/ is wired end to end, and
 tags: [poc, learn-room, tauri, svelte]
 status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
-resource: /poc
+resource: /app/src/rooms/learn
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 

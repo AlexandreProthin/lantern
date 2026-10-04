@@ -5,7 +5,7 @@ description: The Rust trait the app calls for completions, and its Claude Code C
 tags: [llm, rust, provider]
 status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T10:00:00Z }
-resource: /poc/src-tauri/src/provider.rs
+resource: /app/src-tauri/src/provider.rs
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 

@@ -5,7 +5,7 @@ description: The tutor's system prompt, the per-task prompts, the context each o
 tags: [learn-room, prompts, context]
 status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
-resource: /poc/src/lib/prompts.ts
+resource: /app/src/rooms/learn/prompts.ts
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 

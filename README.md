@@ -64,11 +64,11 @@ subject        what you're working through ("how TCP congestion control works")
 
 ## State
 
-**v0.1.0 implementation started.** The PoC remains available as a reference.
+**v0.1.0 released** (2026-10-04). The next step is v0.1.1, see [`agent_wiki/plans/v0-1-1.md`](agent_wiki/plans/v0-1-1.md). The proof of concept was removed from the tree; it stays in git history at the `poc-final` tag.
 
-1. **Proof of concept** ✔ built, being tried. Use case: **learning**. A graph, a view
+1. **Proof of concept** ✔ built, replaced by v0.1.0. Use case: **learning**. A graph, a view
    panel, and one LLM provider (Claude Code CLI), wired end to end. Throwaway code whose
-   job is to show the loop works and is worth building. See [`poc/`](poc/README.md).
+   job is to show the loop works and is worth building. It is kept at the `poc-final` tag (`git show poc-final:poc/README.md`).
 2. **Project wiki** ✔ [`agent_wiki/`](agent_wiki/index.md): an OKF bundle that is the
    project's working memory (decisions, architecture, open issues, roadmap).
 3. **Specs + v0.1.0 plan** ✔ 13 agreed specs in [`agent_wiki/specs/`](agent_wiki/specs/index.md),
