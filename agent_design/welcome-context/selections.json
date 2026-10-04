@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "concept": "welcome-context",
+  "revision": 5,
+  "saved_at": "2026-10-04T17:35:10.531264+00:00",
+  "based_on_round": 3,
+  "selected_ids": [
+    "r002-02",
+    "r003-03"
+  ],
+  "next": {
+    "phase": "motion",
+    "mode": "combine",
+    "prompt": ""
+  }
+}

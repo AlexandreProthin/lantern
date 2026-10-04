@@ -4,7 +4,7 @@ title: Welcome and Gallery
 description: The Learn room's two library spaces - Welcome (start or continue a subject) and Gallery (browse all subjects with stats) - and the progress definitions both share.
 tags: [welcome, gallery, library, progress, learn-room]
 status: stable
-generated: { by: Claude/Sonnet-5.5, at: 2026-10-02T21:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-04T19:30:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -19,14 +19,18 @@ roles in one column.
 # Welcome
 
 **The visual design of Welcome comes from an `agent_design` component named `welcome`, designed
-before it is implemented** (final: `agent_design/welcome/RECIPE.md`). This spec fixes content and behaviour only; layout, type, colour and
+before it is implemented** (final: `agent_design/welcome/RECIPE.md`); the direction, the capsule and the button's
+behaviour come from the component `welcome-context` (final: `agent_design/welcome-context/RECIPE.md`, v0.1.1). This spec fixes content and behaviour only; layout, type, colour and
 motion are the component's final recipe, and no Welcome UI is built before that recipe exists.
 
 ## Contents
 
 - **WG-1** Welcome MUST contain, in reading order:
   1. **The subject field**: one single-line input, front and centre, placeholder *What do you
-     want to learn?* (a one-line example may follow), focused on arrival.
+     want to learn?*, focused on arrival. The one-line example under it ends with *Shift+Enter adds a
+     direction.* While the field is active it becomes a capsule that holds the primary button *Carry the lantern
+     in*, which is shown only while focus is in the subject, the direction or the button (WG-10).
+     **The direction** (WG-9) is an optional second part of the same field, opened with Shift+Enter.
   2. ***Suggest 3 subjects***: a secondary action beside or under the field.
   3. **The tone picker**: the tone applied to the new subject (ELI5, Curious, Student, Engineer,
      Expert, or Custom with a free-text field). Its initial value is the Learn room default
@@ -46,13 +50,14 @@ motion are the component's final recipe, and no Welcome UI is built before that 
 ## Behaviour
 
 - **WG-3** *Submit* (Enter in the field, or the primary button *Carry the lantern in*) with a
-  non-blank title MUST: create the subject with that title, the chosen tone and the chosen model; write its file;
+  non-blank title MUST: create the subject with that title, the chosen tone, the chosen model and the direction
+  (WG-9; empty when none was given); write its file;
   switch to Study; and start the intro generation so that the root node's explanation streams in
   ([node-panel](/specs/node-panel.md) NP-62). Titles are trimmed and limited to 120 characters.
   A blank field disables the button.
 - **WG-4** *Suggest 3 subjects* MUST run a `suggest` generation (**not logged** in v0.1.0: there is no
   subject yet, so its tokens are in no total) and show 3 chips (title, hook) under the field.
-  Choosing a chip fills the field, it does not submit. While running, the button reads *Thinking
+  Choosing a chip fills the subject field (never the direction, WG-11), it does not submit. While running, the button reads *Thinking
   of subjects…* and is disabled; on error, an inline message with *Retry* appears
   ([node-panel](/specs/node-panel.md) NP-90 style). The 3 chips are replaced on each new request.
 - **WG-5** A **recent card** MUST show exactly: **title**; **mini graph thumbnail** (WG-40);
@@ -64,7 +69,25 @@ motion are the component's final recipe, and no Welcome UI is built before that 
   to the front.
 - **WG-7** *Browse all* MUST open Gallery (same as Ctrl+3). It is hidden when there are no
   subjects.
-- **WG-8** The Escape key on Welcome clears the field; Tab order follows reading order (WG-1).
+- **WG-8** The Escape key in the subject clears it; Tab order follows reading order (WG-1), the direction coming
+  right after the subject when it is open. Enter submits from the subject or the direction. *Changed 2026-10-04
+  (v0.1.1, F5) with WG-9 to WG-11.*
+- **WG-9** *Direction.* Shift+Enter in the subject MUST open an optional multi-line **direction** under it, in the same
+  capsule (or move the cursor to it when open): the learner's words on where the subject should start, head, or what
+  to skip. Placeholder *Where should it start, or head? (optional)*; at most **500** characters, with a counter
+  `n / 500` from 400 characters; over 500 the submit is disabled and the reason is shown under the example line.
+  In the direction, Shift+Enter is a new line; Backspace in an empty direction, or Esc, clears and closes it and
+  returns to the subject; Arrow Up at its very start moves to the subject, Arrow Down from the subject moves to it.
+  When focus leaves Welcome's field with an empty direction, the direction closes. Without a direction, Welcome
+  behaves exactly as before (type a title, press Enter). It is stored on the new subject ([domain-model](/specs/domain-model.md)
+  DM-41), sent with every later generation ([context-assembly](/specs/context-assembly.md) CA-37) and changed later
+  from the subject menu ([rooms-spaces](/specs/rooms-spaces.md) RS-19).
+- **WG-10** *Carry the lantern in* MUST be shown only while focus is in the subject, the direction or the button
+  itself; it is docked at the right end of the capsule, or at the bottom right of the card when the direction is
+  open. Enter submits whether or not the button is in view. A blank subject keeps it disabled whatever the direction
+  holds, with *Add a subject to carry the lantern in; the direction alone is not enough.* under the example line.
+- **WG-11** *Suggest 3 subjects* chips fill the subject only (WG-4); the app never fills the direction. The look and
+  motion of WG-9/WG-10 are the `welcome-context` recipe.
 
 ## Empty and error states
 

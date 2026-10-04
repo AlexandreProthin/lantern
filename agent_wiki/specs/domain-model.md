@@ -4,7 +4,7 @@ title: Domain model
 description: The v0.1.0 data model - library, subject, room visit, tree graph, node fields, states, relations, generation log and invariants.
 tags: [domain-model, graph, nodes, provenance]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-04T19:30:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -55,6 +55,7 @@ Per room visit, one record per LLM call. Purpose: to know how many tokens it too
 
 # Settings in the visit
 
+- **DM-41** *(v0.1.1)* A room visit MAY hold `direction`: the learner's free text on where the subject should start, head, or what to skip, at most 500 characters, line breaks allowed ([welcome-gallery](/specs/welcome-gallery.md) WG-9). Absent and `""` both mean no direction, so v0.1.0 files need no migration and the format stays `lantern/1`. Like tone, it is set when the subject is created, changed in the subject menu for future generations only ([rooms-spaces](/specs/rooms-spaces.md) RS-19), and sent with every generation ([context-assembly](/specs/context-assembly.md) CA-37). The generation log does not copy the text; `promptVersion` tells whether the prompts could carry it.
 - **DM-40** A room visit MUST hold `tone`, `model` and `effort` (set per subject, defaulted from app settings, changeable at any time for future generations only) and `focusId`, the node in view. Each generation logs the tone, model and effort it used.
 
 # Invariants
@@ -79,6 +80,7 @@ The values are illustrative (this example uses a sonnet model); the app's defaul
   "rooms": {
     "learn": {
       "tone": "engineer",
+      "direction": "Start from the Moon, skip the history.",
       "model": "sonnet",
       "effort": "medium",
       "focusId": "n2",

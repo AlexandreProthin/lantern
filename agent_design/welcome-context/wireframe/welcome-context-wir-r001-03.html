@@ -1,0 +1,270 @@
+<!--
+  id:        r001-03
+  component: welcome-context
+  phase:     wireframe
+  parents:   none
+  direction: No new control: the subject field itself grows. Enter submits, Shift+Enter starts a second part; line one is the subject, the rest is the direction. Pasting a multi-line brief just works.
+  request:   revision 1
+  inputs:    Welcome: an optional way to give extra context about the graph direction or the initial hook, beside the subject field. Default behaviour unchanged (type a title, press Enter). Start from the final welcome recipe (agent_design/welcome/RECIPE.md) and the user's sketch in refs/. Explore structurally different mechanisms.
+-->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome context · One field, two lines</title>
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#101010;color:#f2f2f2;--line:#777;--mute:#a8a8a8}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column}
+button,input,select,textarea{font:inherit;color:inherit;background:#101010;border:1px solid var(--line);padding:9px 12px}
+button{cursor:pointer}button:hover:not(:disabled){background:#262626}
+button:disabled,input:disabled,textarea:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:2px solid #fff;outline-offset:3px}
+a{color:inherit}
+.mono,.label{font:11px ui-monospace,monospace;letter-spacing:.06em}
+.label{text-transform:uppercase;color:var(--mute)}
+.proto{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 20px;border-bottom:1px dashed #555;font-size:12px;color:var(--mute)}
+.proto select,.proto button{padding:4px 8px;font-size:12px}
+.proto label{display:flex;gap:6px;align-items:center}
+.appbar{display:flex;align-items:center;gap:14px;padding:8px 16px;border-bottom:1px solid var(--line);font-size:13px}
+.mark{border:0;padding:4px 6px;font-weight:600;letter-spacing:.04em}
+.chip{border:1px solid var(--line);padding:2px 8px;font:11px ui-monospace,monospace;text-transform:uppercase}
+.spaces{display:flex;gap:4px}
+.spaces button{padding:4px 9px;border-color:transparent;font-size:14px}
+.spaces button[aria-current=page]{border-color:#fff;border-width:0 0 2px}
+.gear{margin-left:auto;border-color:transparent;padding:4px 8px}
+.space{flex:1;min-height:0;overflow:auto}
+.wrap{max-width:880px;margin:0 auto;padding:9vh 24px 48px;display:flex;flex-direction:column;gap:18px}
+.wrap.first{padding-top:14vh}
+.lede{font-size:15px;line-height:1.6;color:var(--mute);margin:0;text-align:center}
+.ask{display:flex;border:1px solid #fff}
+.ask input,.ask textarea{flex:1;min-width:0;border:0;font-size:22px;padding:16px 18px;background:transparent}
+.ask button{border:0;border-left:1px solid #fff;padding:0 20px;white-space:nowrap}
+.example{font-size:12px;color:var(--mute);margin:-8px 0 0 2px}
+.row{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end}
+.row .spacer{flex:1}
+.tones{display:flex;flex-wrap:wrap}
+.tones label{border:1px solid var(--line);margin-left:-1px;padding:6px 10px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.tones input{margin:0}
+.tones label:has(input:checked){background:#f2f2f2;color:#101010}
+.tones label:has(input:focus-visible){outline:2px solid #fff;outline-offset:2px}
+.ctrl{display:flex;flex-direction:column;gap:6px}
+.ctrl select{padding:6px 10px;font-size:13px}
+.linkbtn{border:0;text-decoration:underline;padding:6px 2px;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chipbtn{text-align:left;display:flex;flex-direction:column;gap:3px;max-width:320px;padding:8px 11px}
+.chipbtn b{font-weight:600;font-size:13px}
+.chipbtn span{font-size:12px;color:var(--mute);line-height:1.4}
+.inline-msg{font-size:13px;line-height:1.5;color:var(--mute);margin:0}
+.inline-msg button{padding:2px 8px;font-size:12px;margin-left:6px}
+.ghost{border:1px dashed #555;padding:16px;font-size:12px;color:var(--mute);text-align:center;margin-top:14px}
+.ctx{display:flex;flex-direction:column;gap:6px}
+.ctx textarea{width:100%;resize:vertical;min-height:64px;font-size:15px;line-height:1.5;padding:10px 12px;border-color:#555}
+.ctx .meta{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--mute)}
+.over{color:#fff;text-decoration:underline wavy}
+.why{font-size:12px;color:var(--mute);margin:-8px 0 0 2px;min-height:1em}
+.notes{border-top:1px dashed #555;padding:14px 20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;font-size:12px;color:var(--mute);line-height:1.6}
+.notes p{margin:4px 0 0}
+.handoff{position:fixed;inset:0;background:rgba(0,0,0,.82);display:grid;place-items:center;padding:20px;z-index:10}
+.handoff[hidden]{display:none}
+.handoff>div{border:1px solid #fff;background:#101010;padding:24px;max-width:560px;width:100%}
+.handoff h2{margin:8px 0 10px;font-size:18px;overflow-wrap:anywhere}
+.handoff p,.handoff pre{font-size:13px;line-height:1.6;color:var(--mute);white-space:pre-wrap;overflow-wrap:anywhere}
+.handoff pre{border:1px solid #444;padding:10px;font-family:ui-monospace,monospace;font-size:12px;max-height:200px;overflow:auto}
+.panel{border:1px solid #555;padding:12px;display:flex;flex-direction:column;gap:8px}
+.panel[hidden]{display:none}
+.stubs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stubs button{padding:3px 9px;font-size:12px}
+.from{font-size:12px;color:var(--mute)}
+.split{border-top:1px solid #555;margin:0 18px;display:none}
+.ask.two .split{display:block}
+.askcol{flex:1;min-width:0;display:flex;flex-direction:column}
+.askcol .part{font:11px ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:6px 18px 0;display:none;justify-content:space-between}
+.ask.two .askcol .part{display:flex}
+.hint{font-size:12px;color:var(--mute);margin:-8px 0 0 2px}
+@media(max-width:860px){.notes{grid-template-columns:1fr}}
+@media(max-width:760px){.ask{flex-direction:column}.ask button{border-left:0;border-top:1px solid #fff;padding:12px}.ask input,.ask textarea{font-size:18px}}
+</style>
+<script src="../welcome-context-data.js"></script></head><body>
+<div id="app" style="display:flex;flex-direction:column;flex:1;min-height:0"></div>
+<div class="handoff" hidden></div>
+<div class="notes"><div><span class="label">Interaction hypothesis</span><p>The lightest possible chrome: Welcome is pixel-identical until the user presses Shift+Enter. The field becomes a two-part writing surface with a hairline between the subject and its direction, and the counters say which part is which. A hint under the field is the only discovery path, so it is the main risk of this one. A pasted paragraph is split at the first line break, which makes a long first line a hard case.</p></div><div><span class="label">Try the hard cases</span><p>Press Shift+Enter in the field. Paste a multi-line text (fill 'Paste a brief'). Make the first line longer than 120 characters and see the counter. Clear the first line but keep the rest: submit is disabled.</p></div><div><span class="label">Same in all three</span><p>Context is optional and empty by default. It is sent to the first generation and kept with the subject (to be agreed). Limit 500 characters (proposal). A blank subject keeps the button disabled whatever the direction holds. Tone and model pickers, Suggest and the recents shelf are the final Welcome behaviour, drawn here in wireframe only.</p></div></div>
+<script>
+const V=3;
+const D=window.WELCOMECONTEXT_DATA;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=(s,r=document)=>r.querySelector(s);
+const st={scen:'normal',tone:D.defaultTone,model:D.defaultModel,title:'',ctx:'',suggest:'idle',set:-1,failNext:false,open:false,fromChip:false};
+const cliReady=()=>st.scen!=='cli';
+const LIM=D.contextLimit,TL=D.titleLimit;
+const ctxLen=()=>st.ctx.length;
+const titleOk=()=>st.title.trim().length>0&&st.title.trim().length<=TL;
+const canSubmit=()=>titleOk()&&ctxLen()<=LIM&&cliReady();
+function why(){
+  if(!cliReady())return '';
+  if(!st.title.trim()&&st.ctx.trim())return 'Add a subject to carry the lantern in: the direction alone is not enough.';
+  if(st.title.trim().length>TL)return 'The subject is limited to '+TL+' characters.';
+  if(ctxLen()>LIM)return 'The direction is '+(ctxLen()-LIM)+' characters over the '+LIM+' limit.';
+  return '';
+}
+function appbar(){
+  const none=st.scen==='first';
+  return `<header class="appbar"><button class="mark" data-noop>◇ Lantern</button><span class="chip">Learn</span><nav class="spaces" aria-label="Spaces"><button aria-current="page" title="Welcome · Ctrl+1">⌂</button><button ${none?'disabled':''} title="Study · Ctrl+2">◎</button><button ${none?'disabled':''} title="Gallery · Ctrl+3">▦</button></nav><button class="gear" data-noop title="Settings">⚙</button></header>`;
+}
+function toneBlock(){
+  return `<fieldset style="border:0;padding:0;margin:0"><legend class="label" style="margin-bottom:6px">Tone</legend><div class="tones">${D.tones.map(t=>`<label><input type="radio" name="tone" value="${t.id}" ${t.id===st.tone?'checked':''}>${t.label}</label>`).join('')}</div></fieldset>`;
+}
+function modelBlock(){
+  return `<label class="ctrl"><span class="label">Model</span><select data-model>${D.models.map(m=>`<option value="${m.id}" ${m.id===st.model?'selected':''}>${m.label}</option>`).join('')}</select></label>`;
+}
+function suggestBtn(){const b=st.suggest==='busy';return `<button class="linkbtn" data-suggest ${b||!cliReady()?'disabled':''}>${b?'Thinking of subjects…':'Suggest 3 subjects'}</button>`}
+function chipsHtml(){
+  if(st.suggest==='error')return `<p class="inline-msg" role="alert">Couldn’t get suggestions: the tutor did not answer. <button data-suggest>Retry</button></p>`;
+  if(st.set<0)return '';
+  return `<div class="chips" role="list" aria-label="Suggested subjects">${D.suggestions[st.set].map((c,i)=>`<button class="chipbtn" role="listitem" data-chip="${i}"><b>${esc(c.title)}</b><span>${esc(c.hook)}</span></button>`).join('')}</div>`;
+}
+const counter=(n,l)=>`<span class="${n>l?'over':''}">${n} / ${l}</span>`;
+
+/* ---------- variant bodies ---------- */
+function body(){
+  const btn=`<button data-submit ${canSubmit()?'':'disabled'}>Carry the lantern in</button>`;
+  const ex=`<p class="example">${esc(D.example)}</p>`;
+  const cli=cliReady()?'':`<p class="inline-msg" role="status">${esc(D.cliMessage)}</p>`;
+  const first=st.scen==='first'?`<p class="lede">${esc(D.welcomeLine)}</p>`:'';
+  let main='';
+  if(V===1){
+    main=`${first}
+    <div class="ask"><input data-title maxlength="400" placeholder="${esc(D.placeholder)}" value="${esc(st.title)}" aria-label="Subject">${btn}</div>
+    ${ex}
+    <div class="ctx"><label class="label" for="ctx">Direction · optional</label>
+      <textarea id="ctx" data-ctx rows="2" placeholder="Where should it start or head? What do you already know? e.g. start from the physics, skip the history.">${esc(st.ctx)}</textarea>
+      <div class="meta"><span>Steers the first explanation and the branches the tutor offers. Leave empty for the default.</span><span data-count></span></div></div>
+    <p class="why" data-why role="status"></p>
+    <div class="row">${toneBlock()}${modelBlock()}<span class="spacer"></span>${suggestBtn()}</div>
+    <div data-chips>${chipsHtml()}</div>${cli}`;
+  }
+  if(V===2){
+    const set=st.ctx.trim().length>0;
+    main=`${first}
+    <div class="ask"><input data-title maxlength="400" placeholder="${esc(D.placeholder)}" value="${esc(st.title)}" aria-label="Subject">${btn}</div>
+    ${ex}
+    <div class="panel" data-panel ${st.open?'':'hidden'}>
+      <div class="stubs"><span class="label">Direction · optional</span>${D.contextPrompts.map(p=>`<button data-stub="${p.id}">${esc(p.label)}</button>`).join('')}<span class="spacer" style="flex:1"></span><button data-close style="border-color:transparent">Hide ▲</button></div>
+      <textarea data-ctx rows="3" placeholder="Where should it start or head? Anything it should skip?" aria-label="Direction">${esc(st.ctx)}</textarea>
+      <div class="meta" style="display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--mute)"><span data-from>${st.fromChip?'Hook from the chosen suggestion, edit freely.':'Esc hides this panel and keeps the text.'}</span><span data-count></span></div>
+    </div>
+    <p class="why" data-why role="status"></p>
+    <div class="row">${toneBlock()}${modelBlock()}
+      <button class="linkbtn" data-toggle aria-expanded="${st.open}">${set?'Direction set ✓ ('+ctxLen()+')':'Add direction'}</button>
+      <span class="spacer"></span>${suggestBtn()}</div>
+    <div data-chips>${chipsHtml()}</div>${cli}`;
+  }
+  if(V===3){
+    const val=st.title+(st.ctx||st.two?'\n'+st.ctx:'');
+    main=`${first}
+    <div class="ask ${st.two?'two':''}" data-ask>
+      <div class="askcol">
+        <span class="part"><span>Subject</span><span data-tcount></span></span>
+        <textarea data-field rows="1" maxlength="1400" placeholder="${esc(D.placeholder)}" aria-label="Subject, Shift+Enter for a direction" style="resize:none;overflow:hidden">${esc(val)}</textarea>
+        <span class="part" style="padding-bottom:6px"><span>Direction · below the first line</span><span data-count></span></span>
+      </div>${btn}
+    </div>
+    ${ex}
+    <p class="hint" data-hint>${st.two?'The first line is the subject; everything below it steers the tutor. Delete the line break to go back.':'Shift+Enter adds a direction under the subject. Enter carries the lantern in.'}</p>
+    <p class="why" data-why role="status"></p>
+    <div class="row">${toneBlock()}${modelBlock()}<span class="spacer"></span>${suggestBtn()}</div>
+    <div data-chips>${chipsHtml()}</div>${cli}`;
+  }
+  return `<div class="wrap ${st.scen==='first'?'first':''}">${main}<div class="ghost">Recent subjects and Browse all: unchanged from the final Welcome design</div></div>`;
+}
+function proto(){
+  const samples=D.samples.map(s=>`<button data-sample="${s.id}">${esc(s.label)}</button>`).join('');
+  const paste=V===3?`<button data-sample="paste">Paste a brief</button><button data-sample="longfirst">Long first line</button>`:'';
+  return `<div class="proto"><span class="mono">PROTOTYPE</span><label>State <select data-scen>${D.states.map(s=>`<option value="${s.id}" ${s.id===st.scen?'selected':''}>${s.label}</option>`).join('')}</select></label><span>Fill context:</span>${samples}${paste}<label><input type="checkbox" data-fail ${st.failNext?'checked':''}> next Suggest fails</label><a href="../index.html">Back to proposals</a></div>`;
+}
+function render(focus){
+  $('#app').innerHTML=proto()+appbar()+`<div class="space">${body()}</div>`;
+  update();autosize();
+  if(focus){const el=$(focus);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}}
+}
+function autosize(){const f=$('[data-field]');if(f){f.style.height='auto';f.style.height=f.scrollHeight+'px'}}
+function update(){
+  const sub=$('[data-submit]');if(sub)sub.disabled=!canSubmit();
+  const w=$('[data-why]');if(w)w.textContent=why();
+  const c=$('[data-count]');if(c)c.innerHTML=counter(ctxLen(),LIM);
+  const t=$('[data-tcount]');if(t)t.innerHTML=counter(st.title.length,TL);
+  const tg=$('[data-toggle]');if(tg)tg.textContent=st.ctx.trim()?'Direction set ✓ ('+ctxLen()+')':'Add direction';
+}
+function setFromField(v){
+  const i=v.indexOf('\n');
+  if(i<0){st.title=v;st.ctx='';st.two=false}else{st.title=v.slice(0,i);st.ctx=v.slice(i+1);st.two=true}
+}
+function submit(){
+  if(!canSubmit())return;
+  const tone=D.tones.find(t=>t.id===st.tone).label,model=D.models.find(m=>m.id===st.model).label;
+  const ctx=st.ctx.trim();
+  const h=$('.handoff');
+  h.innerHTML=`<div role="dialog" aria-modal="true"><span class="label">Prototype handoff</span><h2>→ Study: ${esc(st.title.trim())}</h2><p>Creates the subject with tone <b>${esc(tone)}</b>, model <b>${esc(model)}</b>, writes its file and switches to Study (WG-3).</p><span class="label">Context sent to the first generation</span><pre>${ctx?esc(ctx):'(none: default behaviour)'}</pre><button data-closeh>Back to Welcome</button></div>`;
+  h.hidden=false;$('[data-closeh]').focus();
+}
+function runSuggest(){
+  if(st.suggest==='busy'||!cliReady())return;
+  st.suggest='busy';render();
+  setTimeout(()=>{if(st.failNext){st.failNext=false;st.suggest='error'}else{st.suggest='idle';st.set=(st.set+1)%D.suggestions.length}render()},900);
+}
+function pickChip(i){
+  const c=D.suggestions[st.set][i];
+  st.title=c.title.slice(0,TL);
+  if(V===2){st.ctx=c.hook;st.open=true;st.fromChip=true;st.two=false;render('[data-ctx]');return}
+  if(V===3){st.two=!!st.ctx;render('[data-field]');return}
+  render('[data-title]');
+}
+function sample(id){
+  if(id==='paste'){setFromField('Granular synthesis\nI am a sound designer, no maths past school level.\nHead toward building my own granular synth; skip the history.');render();return}
+  if(id==='longfirst'){setFromField('Why do some languages mark evidentiality grammatically while others leave it to context, and what does that tell us about the way speakers handle certainty in everyday conversation and in writing\nStart from Quechua.');render();return}
+  const s=D.samples.find(x=>x.id===id);
+  if(V===3){const t=st.title;setFromField(s.text?(t+'\n'+s.text):t);if(!s.text){st.two=false}}
+  else{st.ctx=s.text;if(V===2){st.open=!!s.text;st.fromChip=false}}
+  render();
+}
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.matches('[data-title]')){st.title=t.value;update()}
+  else if(t.matches('[data-ctx]')){st.ctx=t.value;if(V===2)st.fromChip=false;update()}
+  else if(t.matches('[data-field]')){setFromField(t.value);const was=$('[data-ask]').classList.contains('two');if(was!==st.two){$('[data-ask]').classList.toggle('two',st.two);$('[data-hint]').textContent=st.two?'The first line is the subject; everything below it steers the tutor. Delete the line break to go back.':'Shift+Enter adds a direction under the subject. Enter carries the lantern in.'}autosize();update()}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.name==='tone')st.tone=t.value;
+  if(t.matches('[data-model]'))st.model=t.value;
+  if(t.matches('[data-scen]')){st.scen=t.value;render()}
+  if(t.matches('[data-fail]'))st.failNext=t.checked;
+});
+document.addEventListener('keydown',e=>{
+  const t=e.target;
+  if(t.matches('[data-title]')){
+    if(e.key==='Enter'){e.preventDefault();submit()}
+    if(e.key==='Escape'){st.title='';t.value='';update()}
+  }
+  if(t.matches('[data-ctx]')){
+    if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();submit()}
+    if(e.key==='Escape'){
+      if(V===2){st.open=false;render('[data-toggle]')}
+      else{st.ctx='';t.value='';update()}
+    }
+  }
+  if(t.matches('[data-field]')){
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit()}
+    if(e.key==='Escape'){setFromField('');t.value='';$('[data-ask]').classList.remove('two');autosize();update()}
+  }
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.matches('[data-submit]'))submit();
+  else if(b.matches('[data-suggest]'))runSuggest();
+  else if(b.matches('[data-chip]'))pickChip(+b.dataset.chip);
+  else if(b.matches('[data-sample]'))sample(b.dataset.sample);
+  else if(b.matches('[data-closeh]'))$('.handoff').hidden=true;
+  else if(b.matches('[data-toggle]')){st.open=!st.open;render(st.open?'[data-ctx]':'[data-toggle]')}
+  else if(b.matches('[data-close]')){st.open=false;render('[data-toggle]')}
+  else if(b.matches('[data-stub]')){const p=D.contextPrompts.find(x=>x.id===b.dataset.stub);st.ctx=(st.ctx&&!st.ctx.endsWith('\n')?st.ctx+'\n':st.ctx)+p.text;st.fromChip=false;render('[data-ctx]')}
+});
+render(V===3?'[data-field]':'[data-title]');
+</script></body></html>

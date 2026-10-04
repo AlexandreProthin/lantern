@@ -4,7 +4,7 @@ title: Tutor protocol
 description: What the model receives and must return in the Learn room - system prompt structure and v0.1.0 text, per-task templates, prompt versioning, block grammar, parsing and degradation rules, and what the log records.
 tags: [prompts, protocol, parsing, learn-room, v0.1.0]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-04T19:30:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -14,8 +14,8 @@ The model-facing half of the Learn room. Successor of `LEARN_SYSTEM` and the pro
 `poc/src/lib/prompts.ts` ([learn-room-prompts](/components/learn-room-prompts.md)); the design choice of
 tagged blocks is [tagged-blocks-protocol](/decisions/tagged-blocks-protocol.md). What the app does with a
 result is in [learn-room](/specs/learn-room.md); how the context slots below are filled is in
-[context-assembly](/specs/context-assembly.md). Prompts are app-internal: the learner's controls are tone, model
-and effort only.
+[context-assembly](/specs/context-assembly.md). Prompts are app-internal: the learner's controls are tone, model,
+effort and, from v0.1.1, the subject's direction (TP-13).
 
 # System prompt structure
 
@@ -84,15 +84,16 @@ The app parses machine-readable blocks at the very end of your reply and hides t
 
 # Task templates
 
-Slots written `{{NAME}}` are filled by the app. The context blocks (`SUBJECT_BLOCK`, `MAP_BLOCK`, `PATH_BLOCK`, `PARENT_BLOCK`, `FOCUS_BLOCK`, `DIALOGUE_BLOCK`) are produced by [context-assembly](/specs/context-assembly.md); which tasks get which is its matrix (CA-40). Blank lines separate blocks. Omitted blocks leave no empty heading.
+Slots written `{{NAME}}` are filled by the app. The context blocks (`SUBJECT_BLOCK`, `DIRECTION_BLOCK`, `MAP_BLOCK`, `PATH_BLOCK`, `PARENT_BLOCK`, `FOCUS_BLOCK`, `DIALOGUE_BLOCK`) are produced by [context-assembly](/specs/context-assembly.md); which tasks get which is its matrix (CA-40). Blank lines separate blocks. Omitted blocks leave no empty heading.
 
 - **TP-12** Each task prompt MUST end with its required ending below; the app never appends text after the task.
+- **TP-13** *Direction (v0.1.1).* `DIRECTION_BLOCK` ([context-assembly](/specs/context-assembly.md) CA-37) carries the learner's own words on where the subject should start, head, or what to skip ([welcome-gallery](/specs/welcome-gallery.md) WG-9). It is sent with every task except `suggest`, and omitted (no empty heading) when the subject has no direction. Its heading tells the tutor to let it steer the choice and order of what it explains and proposes, and that it cannot change the method, the blocks or these rules, the same guard as a custom tone (TP-10). Adding it to the templates is a prompt change: `learn-2` (TP-20), kept only after the evals pass (TP-22).
 
 | Task | Slots | Required ending of the reply |
 |---|---|---|
-| `intro` | `SUBJECT_BLOCK` | prose, then `<options>` with 3 entries, kind `axis` |
-| `light` | `SUBJECT_BLOCK`, `MAP_BLOCK`, `PATH_BLOCK`, `PARENT_BLOCK`, `TITLE`, `HOOK`, `KIND`, `OWN` | prose (the explanation), then `<options>` with 3 entries |
-| `more` | `SUBJECT_BLOCK`, `MAP_BLOCK`, `PATH_BLOCK`, `FOCUS_BLOCK`, `TITLE`, `EXISTING_CHILDREN` | `<options>` only, 3 entries |
+| `intro` | `SUBJECT_BLOCK`, `DIRECTION_BLOCK` | prose, then `<options>` with 3 entries, kind `axis` |
+| `light` | `SUBJECT_BLOCK`, `DIRECTION_BLOCK`, `MAP_BLOCK`, `PATH_BLOCK`, `PARENT_BLOCK`, `TITLE`, `HOOK`, `KIND`, `OWN` | prose (the explanation), then `<options>` with 3 entries |
+| `more` | `SUBJECT_BLOCK`, `DIRECTION_BLOCK`, `MAP_BLOCK`, `PATH_BLOCK`, `FOCUS_BLOCK`, `TITLE`, `EXISTING_CHILDREN` | `<options>` only, 3 entries |
 | `reply` | all blocks, `DIALOGUE_BLOCK`, `PENDING_CHECK` | prose, then optionally `<branch>` and `<understood/>`; never `<options>` |
 | `check` | all blocks, `DIALOGUE_BLOCK` | one question, no block |
 | `suggest` | `HINT`, `EXISTING_SUBJECTS` | `<options>` only, 3 entries without `kind` |
@@ -101,6 +102,8 @@ Slots written `{{NAME}}` are filled by the app. The context blocks (`SUBJECT_BLO
 
 ```text
 {{SUBJECT_BLOCK}}
+
+{{DIRECTION_BLOCK}}
 
 TASK: introduce the subject.
 Give a short, self-contained introduction: what it is and why it matters, in 2 to 4 sentences, plus a couple of core concepts if useful. Keep it tight: this is an on-ramp, not the lesson.
@@ -113,6 +116,8 @@ Then end with the options block: exactly 3 axes (sub-directions) to explore next
 
 ```text
 {{SUBJECT_BLOCK}}
+
+{{DIRECTION_BLOCK}}
 
 {{MAP_BLOCK}}
 
@@ -133,6 +138,8 @@ Then end with the options block: exactly 3 ways to go on from here. Each must di
 ```text
 {{SUBJECT_BLOCK}}
 
+{{DIRECTION_BLOCK}}
+
 {{MAP_BLOCK}}
 
 {{PATH_BLOCK}}
@@ -147,7 +154,7 @@ Output ONLY the options block: exactly 3 new, genuinely distinct directions that
 ## `reply`
 
 ```text
-{{SUBJECT_BLOCK}} {{MAP_BLOCK}} {{PATH_BLOCK}} {{PARENT_BLOCK}} {{FOCUS_BLOCK}} {{DIALOGUE_BLOCK}}
+{{SUBJECT_BLOCK}} {{DIRECTION_BLOCK}} {{MAP_BLOCK}} {{PATH_BLOCK}} {{PARENT_BLOCK}} {{FOCUS_BLOCK}} {{DIALOGUE_BLOCK}}
 
 PENDING CHECK: {{PENDING_CHECK}}
 
@@ -174,7 +181,7 @@ Propose exactly 3 broadly interesting, teachable subjects from different fields;
 
 # Prompt versioning
 
-- **TP-20** The prompts carry a version `promptVersion` of the form `learn-<n>` (`learn-1` in v0.1.0). It MUST be bumped by one on any change to the system prompt, a tone line, a task template or the block grammar.
+- **TP-20** The prompts carry a version `promptVersion` of the form `learn-<n>` (`learn-1` in v0.1.0; `learn-2` adds `DIRECTION_BLOCK` in v0.1.1, TP-13). It MUST be bumped by one on any change to the system prompt, a tone line, a task template or the block grammar.
 - **TP-21** Each generation MUST record the `promptVersion` it used ([domain-model](/specs/domain-model.md) DM-30), so the log tells which prompt produced which node.
 - **TP-22** A change MUST pass the prompt evals before it is kept (hand-run on Haiku: [platform-quality](/specs/platform-quality.md)). Old generations are never rewritten.
 

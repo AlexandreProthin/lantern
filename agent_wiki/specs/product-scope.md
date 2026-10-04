@@ -4,7 +4,7 @@ title: v0.1.0 product scope
 description: What Lantern v0.1.0 is, what is in and out, what must be kept from the PoC, and the acceptance scenarios.
 tags: [scope, v0.1.0, acceptance]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-04T19:30:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -42,7 +42,7 @@ components are a requirement, not a nicety.
 - **PS-18** Windows installer ([platform-quality](/specs/platform-quality.md)).
 - **PS-19** Keyboard navigation of the graph and panel, with one canonical shortcut table ([graph-view](/specs/graph-view.md) GV-76).
 - **PS-20** A settings panel with General, Provider, Learn room (submenu) and Appearance sections ([settings](/specs/settings.md)). Its contents are known: library folder, display name, provider status and test, default model and effort, default tone, context budget, reduce-motion override, show token stats.
-- **PS-21** Selectable tutor tone (ELI5, Curious, Student, Engineer, Expert, or custom text), per subject, with a room default.
+- **PS-21** Selectable tutor tone (ELI5, Curious, Student, Engineer, Expert, or custom text), per subject, with a room default. From v0.1.1 a subject also has an optional **direction**, the learner's words on where it should start or head, given on Welcome and changed in the subject menu ([welcome-gallery](/specs/welcome-gallery.md) WG-9).
 - **PS-22** ~~Ctrl+click several nodes to merge them into a new node.~~ Withdrawn from v0.1.0: merge is Later ([decision](/decisions/merge-deferred.md)). v0.1.0 is a tree with text links.
 - **PS-23** Node provenance (model and effort that wrote it, edited-by marks) and per-generation usage (tokens, time, cost) recorded in the generation log; the UI shows tokens and time, no currency.
 - **PS-24** Resizable reading panel: draggable divider, double-click resets to 44%, either side collapsible, remembered app-wide.
@@ -50,7 +50,7 @@ components are a requirement, not a nicety.
 - **PS-26** Select text in an explanation or dialogue to *Ask about this* or *Make it a node*.
 - **PS-27** A mandatory legend overlay in the graph (collapsible, never removable).
 - **PS-28** Welcome is a **design task**: its look is designed in `agent_design` as a component before it is implemented; the spec fixes behaviour and content only.
-- **PS-29** Prompts are app-internal and versioned ([decision](/decisions/prompts-internal-versioned.md)); the user-facing controls are tone, model and effort.
+- **PS-29** Prompts are app-internal and versioned ([decision](/decisions/prompts-internal-versioned.md)); the user-facing controls are tone, model, effort and (v0.1.1) the subject's direction.
 
 ## Later (not in v0.1.0)
 

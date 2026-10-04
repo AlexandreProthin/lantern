@@ -4,7 +4,7 @@ title: Learn room behaviour contract
 description: Every learner action in the Learn room - trigger, preconditions, task sent, what the tutor returns, and how graph and log change on success, cancel and error; plus the node state machine, concurrency and edge cases.
 tags: [learn-room, behaviour, state-machine, actions, v0.1.0]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-04T19:30:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -41,7 +41,7 @@ the actions of Welcome and Study; Gallery actions (rename, delete subject, revea
 
 - **LR-17** *Light up* on the root MUST send `intro` and force the kind of its children to `axis`; on any other node children use the kinds the tutor returned (fallback `deeper`).
 - **LR-18** While *Light up* or *More options* runs, 3 pending placeholders SHOULD grow from the parent (120 ms stagger, 500 ms ease-out, breathe at 0.5↔0.8 opacity over 2.4 s; on a parsed block each becomes the real node in place, surplus ones shrink back over 300 ms; on cancel or error all shrink over 300 ms; replies and checks add no placeholders, the node itself pulses softly; reduced motion: no growth, no breathing).
-- **LR-19** The settings in force when the call starts (tone, model, effort) are the ones logged and used, even if the learner changes them while it runs.
+- **LR-19** The settings in force when the call starts (tone, direction, model, effort) are the ones logged and used, even if the learner changes them while it runs.
 
 # Actions without a call
 
@@ -59,6 +59,7 @@ the actions of Welcome and Study; Gallery actions (rename, delete subject, revea
 | LR-29 | **Select text → Ask about this** (popover) | Selection inside an explanation or a dialogue turn | The quote is put into the dialogue box as `> quote` and the box is focused. Sending is subject to LR-13 |
 | LR-30 | **Select text → Make it a node** (same popover) | Current node is `lit` or `understood`, not busy | Open `own` child of the current node. Title = selection, trimmed, at most 80 chars. A longer selection becomes the hook (cut at 200 chars) and the learner is asked for a title. Duplicate sibling title: asked again |
 | LR-31 | **Change tone** (subject menu, opened by clicking the subject title in the header) | Always | Sets the subject's tone: preset or custom text (at most 300 chars). Affects new generations only; nothing is regenerated |
+| LR-44 | **Change direction** (the same subject menu, v0.1.1) | Always | Sets the subject's direction: free text, at most 500 chars, empty for none ([rooms-spaces](/specs/rooms-spaces.md) RS-19). Affects new generations only (every task but `suggest`, [context-assembly](/specs/context-assembly.md) CA-37); nothing is regenerated |
 | LR-32 | **Change model / effort** (the same subject menu) | Always | Sets the subject's model (alias opus, sonnet, haiku, or a free-text id) and effort (low, medium, high, xhigh, max) for future generations |
 
 - **LR-33** A *Test me* question stays **pending until the learner's next message, which is treated as the answer** to it; a pending check does not expire. It is pending when the turn just before the learner's message is a tutor turn whose generation has task `check`, evaluated when the message is sent (so *Try again* of the same reply keeps it). `<understood/>` MUST be accepted only in that reply, on a node that is `lit` or `understood`; on a node `understood` by `self`, a confirmed check upgrades `understoodBy` to `demonstrated`. In any other reply the tag is stripped and ignored. Once answered, the check is closed whatever the reply says.

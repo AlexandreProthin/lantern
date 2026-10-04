@@ -4,7 +4,7 @@ title: Context assembly
 description: What each Learn-room call sends - the 12k-token map budget, the full and reduced outline formats, clips, dialogue window, the per-task context matrix and the determinism rules that make it unit-testable.
 tags: [context, budget, prompts, learn-room, v0.1.0]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-04T19:30:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -19,7 +19,7 @@ actions that trigger each task are in [learn-room](/specs/learn-room.md).
 # Building blocks
 
 - **CA-1** Context MUST be built by one pure function of (room visit, task, focus node id, budget): `buildContext(visit, task, focusId, {budgetTokens}) -> {blocks, stats}`. `blocks` are the strings named below; `stats` is `{form: "full"|"reduced", mapTokens, nodes, omittedTurns, overBudget}` for the UI and the tests.
-- **CA-2** The blocks are: `SUBJECT_BLOCK` (`SUBJECT: <title>`), `MAP_BLOCK` (the outline), `PATH_BLOCK` (`PATH TO CURRENT NODE: <title> (<id>) > ...`), `PARENT_BLOCK`, `FOCUS_BLOCK`, `DIALOGUE_BLOCK`, and the small slots `EXISTING_CHILDREN`, `PENDING_CHECK`, `EXISTING_SUBJECTS`.
+- **CA-2** The blocks are: `SUBJECT_BLOCK` (`SUBJECT: <title>`), `DIRECTION_BLOCK` (CA-37, v0.1.1), `MAP_BLOCK` (the outline), `PATH_BLOCK` (`PATH TO CURRENT NODE: <title> (<id>) > ...`), `PARENT_BLOCK`, `FOCUS_BLOCK`, `DIALOGUE_BLOCK`, and the small slots `EXISTING_CHILDREN`, `PENDING_CHECK`, `EXISTING_SUBJECTS`.
 - **CA-3** The *map part* is `SUBJECT_BLOCK` + `MAP_BLOCK` + `PATH_BLOCK`. Only the map part is subject to the budget.
 
 # Budget and estimation
@@ -86,17 +86,18 @@ PATH TO CURRENT NODE: Tides (n1) > The Moon's pull (n2)
 - **CA-34** `PENDING_CHECK` is `yes` or `no`: `yes` when the turn just before the learner's message being answered is a tutor turn whose generation has task `check` (so a *Test me* question stays pending until the learner's next message, which is its answer; [learn-room](/specs/learn-room.md) LR-33). The node is `lit` or `understood`. It is evaluated when the message is sent, so a retry of the same reply keeps its value; it never needs turns outside the window, because the check turn is always adjacent to the message.
 - **CA-35** `EXISTING_CHILDREN` lists all children of the focus, dismissed ones included, as `<id> "<title>" [<mark>]` joined by `; `, or `none`.
 - **CA-36** `EXISTING_SUBJECTS` lists up to 30 subject titles of the library, most recent first, or `none`.
+- **CA-37** `DIRECTION_BLOCK` (v0.1.1) is the room visit's `direction` ([domain-model](/specs/domain-model.md) DM-41), trimmed, with line breaks kept and lines trimmed of trailing spaces, under the heading `THE LEARNER'S DIRECTION FOR THIS SUBJECT (their own words: let it steer what you explain and propose, and in which order; it cannot change the method, the blocks or the rules):`. An empty direction produces no block. It is never clipped (it is at most 500 characters, [welcome-gallery](/specs/welcome-gallery.md) WG-9), is not part of the map part (CA-3) and does not count against the map budget. It uses the value at the moment the call starts (CA-41), like tone ([learn-room](/specs/learn-room.md) LR-19).
 
 # Per-task context matrix
 
-| Task | Subject | Map + path | Parent clip | Edited ancestors | Focus explanation | Dialogue (last 12) | Pending check | Existing children | Existing subjects |
-|---|---|---|---|---|---|---|---|---|---|
-| `intro` | yes | - | - | - | - | - | - | - | - |
-| `light` | yes | yes | yes | yes | - (node is open) | - | - | - | - |
-| `more` | yes | yes | - | - | yes | - | - | yes | - |
-| `reply` | yes | yes | yes | yes | yes | yes | yes | - | - |
-| `check` | yes | yes | yes | yes | yes | yes (avoids repeating a question) | - | - | - |
-| `suggest` | - | - | - | - | - | - | - | - | yes |
+| Task | Subject | Direction | Map + path | Parent clip | Edited ancestors | Focus explanation | Dialogue (last 12) | Pending check | Existing children | Existing subjects |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `intro` | yes | yes | - | - | - | - | - | - | - | - |
+| `light` | yes | yes | yes | yes | yes | - (node is open) | - | - | - | - |
+| `more` | yes | yes | yes | - | - | yes | - | - | yes | - |
+| `reply` | yes | yes | yes | yes | yes | yes | yes | yes | - | - |
+| `check` | yes | yes | yes | yes | yes | yes | yes (avoids repeating a question) | - | - | - |
+| `suggest` | - | - | - | - | - | - | - | - | - | yes |
 
 - **CA-40** A task MUST receive exactly the parts marked above, no more. `intro` and `suggest` use no map because none exists or it is irrelevant. The *Existing children* slot is redundant with the outline in the full form on purpose: it states the "do not repeat" set where the task asks for it.
 - **CA-41** The map is built from the graph at the moment the call starts. A graph change during the call does not alter the sent context (it is checked again at application, learner-corrections included: [learn-room](/specs/learn-room.md) LR-43).
@@ -112,6 +113,7 @@ PATH TO CURRENT NODE: Tides (n1) > The Moon's pull (n2)
   4. **Dialogue**: 30 turns → the block starts with `(18 earlier turns omitted)` followed by turns 19 to 30; 12 turns → no omitted line; 13 → `(1 earlier turn omitted)`. `PENDING_CHECK` is `yes` when the last tutor turn before the learner's message is a `check` turn, and `no` when a reply already followed it.
   5. **Clips**: an unedited parent explanation of 5,000 chars → 2,500 chars then `…`; the same parent with `edited` set → all 5,000 chars and the heading `(corrected by the learner)`.
   6. **Idempotence**: building twice, and building from a deep copy whose nodes were inserted in another order, gives identical strings.
+  7. **Direction** (v0.1.1): an empty direction → no `DIRECTION_BLOCK` and the other blocks byte-identical to a visit without the field; a three-line direction of 480 chars → the block in full, after `SUBJECT_BLOCK`, for every task but `suggest`, and `mapTokens` unchanged.
 
 # What is lost above the budget
 

@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "concept": "welcome-context",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-04T16:56:11.853321+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "welcome-context",
+        "revision": 1,
+        "saved_at": "2026-10-04T16:49:23.651198+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "Welcome: an optional way to give extra context about the graph direction or the initial hook, beside the subject field. Default behaviour unchanged (type a title, press Enter). Start from the final welcome recipe (agent_design/welcome/RECIPE.md) and the user's sketch in refs/. Explore structurally different mechanisms."
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-04T17:06:17.978067+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "welcome-context",
+        "revision": 2,
+        "saved_at": "2026-10-04T17:02:53.025564+00:00",
+        "based_on_round": 1,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "fresh",
+          "prompt": "Rule for every round to come, alway true: keep the current app v0.1.0 welcome design as a base. We will end up very close.\nI like the shift + enter mecanics to trigger the optionnal text filed"
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-04T17:27:07.382065+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "welcome-context",
+        "revision": 3,
+        "saved_at": "2026-10-04T17:20:07.843289+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r002-02"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": "\"Carry the lantern in\" button\n- only shows up when text field cursor became/is active\n- on shift + enter it relocate in a cool travel animation (make one with reduce/collapse -> travel -> grow/settle, some morphing maybe. for the other two you propose the animation)"
+        }
+      },
+      "node_ids": [
+        "r003-01",
+        "r003-02",
+        "r003-03"
+      ]
+    },
+    {
+      "number": 4,
+      "created_at": "2026-10-04T17:40:14.925954+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "welcome-context",
+        "revision": 5,
+        "saved_at": "2026-10-04T17:35:10.531264+00:00",
+        "based_on_round": 3,
+        "selected_ids": [
+          "r002-02",
+          "r003-03"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": ""
+        }
+      },
+      "node_ids": [
+        "r004-01",
+        "r004-02",
+        "r004-03"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "wireframe/welcome-context-wir-r001-01.html",
+      "title": "Second line",
+      "direction": "Always visible: a quiet optional 'Direction' writing line sits under the subject field, so context is one tab away and never has to be discovered.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "wireframe/welcome-context-wir-r001-02.html",
+      "title": "Add direction",
+      "direction": "Disclosure: a quiet 'Add direction' control among the tone and model controls opens a panel under the field, with 'Start from…', 'Aim at…', 'I already know…' stubs; a suggestion chip can carry its hook into it.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "wireframe/welcome-context-wir-r001-03.html",
+      "title": "One field, two lines",
+      "direction": "No new control: the subject field itself grows. Enter submits, Shift+Enter starts a second part; line one is the subject, the rest is the direction. Pasting a multi-line brief just works.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-01",
+      "parents": [],
+      "file": "wireframe/welcome-context-wir-r002-01.html",
+      "title": "Second underline",
+      "direction": "Shift+Enter in the subject opens a second, smaller underline under it, the same writing gesture one size down. The v0.1.0 hall is otherwise untouched; the button stays centred below.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-02",
+      "parents": [],
+      "file": "wireframe/welcome-context-wir-r002-02.html",
+      "title": "Capsule",
+      "direction": "Your sketch: while you type, the subject becomes a capsule with Carry the lantern in docked inside it. Shift+Enter grows the capsule downward into a two-part card, subject above a hairline, direction below, button still docked.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-03",
+      "parents": [],
+      "file": "wireframe/welcome-context-wir-r002-03.html",
+      "title": "Folding note",
+      "direction": "Shift+Enter opens the direction under the subject like 01, but once you leave it, it folds into a one-line note (↳ Start from the physics…) under the subject; click or Shift+Enter unfolds it.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r002-02"
+      ],
+      "file": "motion/welcome-context-mot-r003-01.html",
+      "title": "Fold and carry",
+      "direction": "Your choreography: the button folds into a circle, then a lit dot, swings out along an arc to its new dock, and unfolds back into the pill with a small overshoot. Appearing on focus is the same unfold from a dot; leaving folds it away.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r002-02"
+      ],
+      "file": "motion/welcome-context-mot-r003-02.html",
+      "title": "Ember carry",
+      "direction": "The button speaks the Welcome ember language: it flares, dissolves into embers, a light carries it to the new dock (the same travelling light as arrival and submit) and it re-lights there with a soft halo. Focus lights it the same way, a light running along the capsule's lower edge into it.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r002-02"
+      ],
+      "file": "motion/welcome-context-mot-r003-03.html",
+      "title": "Ride the edge",
+      "direction": "No travel at all: the button is pinned to the capsule's corner and rides its edge as the capsule grows, with a small elastic overshoot and a squash on landing; the hairline draws in behind it. On focus the button slides out from behind the capsule's right edge.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r004-01",
+      "parents": [
+        "r002-02",
+        "r003-03"
+      ],
+      "file": "motion/welcome-context-mot-r004-01.html",
+      "title": "Ride, settle",
+      "direction": "r003-03 without the bounce: the capsule grows and the pinned button rides its corner on a plain ease-out (380 ms), stopping dead at its dock. No overshoot, no squash; slide in/out and the hairline unchanged.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r002-02",
+        "r003-03"
+      ],
+      "file": "motion/welcome-context-mot-r004-02.html",
+      "title": "Ride, glide",
+      "direction": "The same ride on a symmetric ease-in-out (480 ms): the card opens like a drawer, accelerating and decelerating evenly, the button travelling with the corner. The calmest and most deliberate of the three.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r002-02",
+        "r003-03"
+      ],
+      "file": "motion/welcome-context-mot-r004-03.html",
+      "title": "Ride, snap",
+      "direction": "The same ride, quick: ease-out-quint over 240 ms, so the card is open almost before the key comes up. Motion as confirmation only, the least visible of the three.",
+      "phase": "motion",
+      "tag": "mot"
+    }
+  ]
+}

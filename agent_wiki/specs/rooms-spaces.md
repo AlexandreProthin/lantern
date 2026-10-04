@@ -4,7 +4,7 @@ title: Rooms, spaces and the app frame
 description: The frame every room lives in - Room definitions, startup, header, space navigation, room accent theming, the mandatory legend, frame-level error states and window rules.
 tags: [frame, rooms, spaces, header, navigation, legend, theming]
 status: stable
-generated: { by: Claude/Sonnet-5.5, at: 2026-10-02T21:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-04T19:30:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -75,13 +75,18 @@ the open subject; it is rarely touched. The stats stay secondary.
   token total MUST be omitted when "Show token stats" is off (Appearance setting).
 - **RS-15** *Subject menu.* Clicking the title MUST open a compact menu
   next to it holding, for the open subject: **Rename**; **Tone** (ELI5, Curious, Student,
-  Engineer, Expert, Custom… with a free-text field); **Model** (opus, sonnet, haiku, or a free-text
+  Engineer, Expert, Custom… with a free-text field); **Direction** (v0.1.1, RS-19); **Model** (opus, sonnet, haiku, or a free-text
   id); **Effort** (low, medium, high, xhigh, max). The menu is a pop-over anchored under the title,
   closed by Esc, a click outside or choosing Rename (which turns the title into an input;
   Enter saves, Esc cancels, an empty title is rejected).
-- **RS-16** Changing tone, model or effort in the menu MUST affect new generations only and MUST
+- **RS-16** Changing tone, direction, model or effort in the menu MUST affect new generations only and MUST
   show a toast *Applies to your next message* once per session. It MUST NOT trigger a
   generation. The values are stored on the room visit (`tone`, `model`, effort; DM-40).
+- **RS-19** *(v0.1.1)* **Direction** in the subject menu MUST be a multi-line text field holding the subject's
+  direction ([domain-model](/specs/domain-model.md) DM-41), with the Welcome placeholder *Where should it start, or
+  head? (optional)* and the 500-character limit and counter of [welcome-gallery](/specs/welcome-gallery.md) WG-9.
+  It is saved when the field loses focus (an over-limit value is not saved and shows the reason); emptying it
+  removes the direction. RS-16 and RS-17 apply.
 - **RS-17** While a generation runs, the menu MUST stay usable; the running call keeps the values
   it started with.
 - **RS-18** Narrow-width collapse order (window ≥ 1024 px): stats lose the token hover first,

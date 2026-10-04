@@ -1,0 +1,35 @@
+{
+  "selection_revision": 5,
+  "proposals": [
+    {
+      "id": "r004-01",
+      "parents": [
+        "r002-02",
+        "r003-03"
+      ],
+      "file": "motion/welcome-context-mot-r004-01.html",
+      "title": "Ride, settle",
+      "direction": "r003-03 without the bounce: the capsule grows and the pinned button rides its corner on a plain ease-out (380 ms), stopping dead at its dock. No overshoot, no squash; slide in/out and the hairline unchanged."
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r002-02",
+        "r003-03"
+      ],
+      "file": "motion/welcome-context-mot-r004-02.html",
+      "title": "Ride, glide",
+      "direction": "The same ride on a symmetric ease-in-out (480 ms): the card opens like a drawer, accelerating and decelerating evenly, the button travelling with the corner. The calmest and most deliberate of the three."
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r002-02",
+        "r003-03"
+      ],
+      "file": "motion/welcome-context-mot-r004-03.html",
+      "title": "Ride, snap",
+      "direction": "The same ride, quick: ease-out-quint over 240 ms, so the card is open almost before the key comes up. Motion as confirmation only, the least visible of the three."
+    }
+  ]
+}
