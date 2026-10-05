@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-10-06
+
+* **v0.1.1 version**: the app is versioned 0.1.1 (`package.json`, `Cargo.toml`, `tauri.conf.json`) and every item of the [v0.1.1 plan](/plans/v0-1-1.md) is merged to `master`; the preview installer is built for the user's installed-build checks (motion of the direction, *Open* and copy path, `model-unknown` messages, the model list). Not yet tagged or published.
+
 ## 2026-10-05
 
 * **v0.1.1 F5 and B6**: the Welcome **direction** is implemented as specified on 2026-10-04 ([welcome-gallery](/specs/welcome-gallery.md) WG-9 to WG-11, [rooms-spaces](/specs/rooms-spaces.md) RS-19, [domain-model](/specs/domain-model.md) DM-41, [context-assembly](/specs/context-assembly.md) CA-37, [tutor-protocol](/specs/tutor-protocol.md) TP-13): Shift+Enter opens it inside the capsule of the `welcome-context` recipe (`app/src/rooms/learn/capsule.ts`), it is stored on the room visit (validated in TS and Rust), sent as `DIRECTION_BLOCK` and editable in the subject menu. B6 was the focused field's `box-shadow`, whose blurred box showed over the glow; the capsule has none. **Eval gate (TP-22, PQ-33): `learn-2` passed 24/24 in each of 3 real Haiku/low runs (72/72)**; the small fixtures now carry a direction, and an informational check found 14 of 18 intro/light/more replies picking up its theme (harbours and sailing). `learn-2` is kept. Pedagogy and motion still need the user's review in the installed build.
