@@ -101,6 +101,13 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   force simulation.
 - **GV-43** Clicking a text-link line does nothing; the links are followed from the panel
   ([node-panel](/specs/node-panel.md) NP-71).
+- **GV-44** *Link preview (v0.1.1 F3).* Hovering (or keyboard-focusing) a node link in the panel's
+  text MUST play one subtle light travelling from the node being read to the link's target, to
+  show where a click lands, then a soft glow on the target. It follows the tree edge when the
+  target is the parent or a child, otherwise a faint temporary curve shaped like the text-link
+  line (drawn for the preview even when *Text links* is off). It is not part of the route
+  (GV-42 still holds), replays on each new hover, stops when the pointer leaves the link, and does
+  not run under reduced motion, while Study is hidden, or for a link to the node itself.
 
 # Controls
 
@@ -113,8 +120,24 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   Recenter is its own control and no longer changes focus (the PoC reset also jumped to the
   root).
 - **GV-52** The legend is bottom-left ([rooms-spaces](/specs/rooms-spaces.md) RS-35).
+- **GV-56** *Open (v0.1.1 F2).* An **Open** button sits directly above the *Legend* button, the
+  same size. Click opens the folder that holds the subject's file in Explorer, with the file
+  selected (as Gallery's *Reveal in Explorer*, [welcome-gallery](/specs/welcome-gallery.md) WG-64);
+  right-click copies the full path of that `.json` file to the clipboard. Both give visible
+  feedback beside the button (*Path copied* or the error) for about 2.5 s; its tooltip names both
+  gestures. In the browser preview, where there is no file, both report that Explorer needs the
+  desktop app.
 - **GV-53** The **layout toggle** sits at the top-right of the graph, shows the layout it will
   switch to (tooltip *Tree layout* / *Free layout*), and is a toggle button with `aria-pressed`.
+- **GV-55** *Node menu (v0.1.1 F1).* Right-click on a node (or the context-menu key / Shift+F10 on
+  the focused node) MUST focus it and open a menu beside it with **the same actions, in the same
+  order and with the same enabled state, as the end of the node panel** (one shared definition):
+  open node: *Light it up*, *Dismiss*, *Delete*; lit or understood node: *More options*, *Add my
+  own node*, *Delete*; dismissed node: *Restore*, *Delete*; the root never offers *Delete*
+  ([learn-room](/specs/learn-room.md) LR-10 to LR-23). *Add my own node* and *Delete* open the
+  panel's own form and confirmation dialog for that node (the panel is uncollapsed if needed).
+  The menu follows the node while the view pans; Esc, a press outside it or choosing an action
+  closes it and returns focus to the node; arrow keys move between items.
 - **GV-54** Every control MUST be at least 32 px, have a tooltip and an accessible name, and not
   overlap nodes' hit areas except where the overlay sits.
 

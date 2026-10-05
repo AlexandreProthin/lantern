@@ -40,6 +40,11 @@ pub fn subject_thumbnail(library: PathBuf, id: String, lock: State<StorageLock>)
 pub fn reveal_subject(library: PathBuf, id: String) -> Result<(), String> {
     crate::paths::reveal_file(&crate::paths::subject_path(&library,&id)?)
 }
+/// GV-56: the plain path of a subject's file, for *Copy path*.
+#[tauri::command]
+pub fn subject_file(library: PathBuf, id: String) -> Result<String, String> {
+    Ok(crate::paths::plain_path(&crate::paths::subject_path(&library,&id)?.to_string_lossy()))
+}
 #[tauri::command]
 pub fn import_poc(library: PathBuf, lock: State<StorageLock>) -> Result<Vec<String>, String> {
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::import_poc(&library)

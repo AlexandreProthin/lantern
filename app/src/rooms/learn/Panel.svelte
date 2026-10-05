@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import Markdown from '../../ui/Markdown.svelte';
   import { strings } from '../../ui/strings';
   import { modelLabel,durationLabel } from '../../ui/format';
   import { childrenOf, pathTo, addChild, deleteSubtree, editLabel, editText, revertText, setState, subtreeIds } from '../../core/graph';
   import type { GraphNode, Turn } from '../../core/model';
   import type { LearnSession } from './session';
-  let { session, revision, showTokens = true }: { session: LearnSession; revision: number; showTokens?: boolean } = $props();
+  import { nodeActions, runNodeAction, type NodeActionId, type PanelRequest } from './actions';
+  let { session, revision, showTokens = true, request = null, preview }: { session: LearnSession; revision: number; showTokens?: boolean; request?: PanelRequest | null; preview?: (id: string | null) => void } = $props();
   const visit = $derived.by(() => { revision; return session.visit; });
   const node = $derived(visit.nodes[visit.focusId]);
   const path = $derived(pathTo(visit, node.id));
@@ -67,6 +68,19 @@
   $effect(() => { if (deleting && deleteDialog) { deleteDialog.showModal(); tick().then(() => deleteDialog.querySelector<HTMLButtonElement>('button')?.focus()); } });
   $effect(() => { if (compare && compareDialog) compareDialog.showModal(); });
   $effect(() => { node.id; selection = ''; adding = false; localError = ''; if (scroller) scroller.scrollTop = 0; });
+  // GV-55: the graph's node menu opens this panel's form or dialog; declared after the reset above.
+  let handledRequest = 0;
+  $effect(() => {
+    const r = request; if (!r || r.seq <= handledRequest || r.nodeId !== node.id) return;
+    handledRequest = r.seq;
+    untrack(() => { if (r.kind === 'delete') deleting = r.nodeId; else { adding = true; tick().then(() => scroller?.querySelector<HTMLInputElement>('form input')?.focus()); } });
+  });
+  function act(id: NodeActionId) {
+    if (id === 'own') adding = !adding;
+    else if (id === 'delete') deleting = node.id;
+    else if (id === 'light' || id === 'more') runNodeAction(session, id, node.id);
+    else perform(() => runNodeAction(session, id, node.id));
+  }
   $effect(() => {
     running?.text;
     if (scroller && busy && nearBottom) tick().then(() => { scroller.scrollTop = scroller.scrollHeight; });
@@ -110,7 +124,7 @@
     {#if node.state === 'dismissed'}
       <p>{strings.dismissedNotice}</p><button onclick={() => perform(() => setState(visit,node.id,'open'))}>{strings.restore}</button>
     {:else if busy && ['intro','light'].includes(running!.task)}
-      <Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} />
+      <Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} {preview} />
       <button onclick={() => session.cancel()}>{strings.cancel}</button>
     {:else if node.state === 'open'}
       <p>{strings.darkNode}</p><button class="primary" disabled={!!running} onclick={() => session.run('light',node.id)}>{strings.lightUp}</button>
@@ -118,7 +132,7 @@
       <textarea class="markdown-edit" aria-label={strings.editExplanation} bind:value={editDrafts[node.id].text} onkeydown={editKey} rows="12"></textarea>
       <button onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button>
     {:else}
-      <Markdown text={node.content} {visit} focus={id => session.setFocus(id)} />
+      <Markdown text={node.content} {visit} focus={id => session.setFocus(id)} {preview} />
       <button class="quiet" disabled={readOnly} onclick={() => beginEdit('content')}>{strings.editExplanation}</button>
       {#if node.edited}<small>{strings.editedBy(node.edited.by)}</small>{/if}
       {#if node.previous !== undefined}<button class="quiet" onclick={() => compare = node}>{strings.previousVersion}</button>{/if}
@@ -135,9 +149,8 @@
       </details>
     {/if}
     <div class="actions">
-      {#if lit}<button disabled={!!running} onclick={() => session.run('more',node.id)}>{strings.moreOptions}</button><button disabled={busy} onclick={() => adding = !adding}>{strings.ownNode}</button>{/if}
-      {#if node.state === 'open'}<button disabled={busy || running?.nodeId === node.parents[0]} onclick={() => perform(() => setState(visit,node.id,'dismissed'))}>{strings.dismiss}</button>{/if}
-      {#if node.id !== visit.rootId}<button onclick={() => deleting = node.id}>{strings.delete}</button>{/if}
+      <!-- Light it up and Restore are shown with the dark and dismissed notices above. -->
+      {#each nodeActions(visit, node, running).filter(a => a.id !== 'light' && a.id !== 'restore') as action (action.id)}<button disabled={action.disabled} onclick={() => act(action.id)}>{action.label}</button>{/each}
     </div>
     {#if adding}<form onsubmit={e => { e.preventDefault(); addOwn(); }}><input aria-label={strings.title} bind:value={ownTitle} placeholder={strings.title} maxlength="120" required /><input aria-label={strings.hook} bind:value={ownHook} placeholder={strings.hook} maxlength="200" /><button type="submit">{strings.add}</button><button type="button" onclick={() => adding = false}>{strings.cancel}</button></form>{/if}
     {#if localError}<p class="error" role="alert">{localError}</p>{/if}
@@ -149,9 +162,9 @@
       <section><h2>{strings.dialogue}</h2>{#each node.dialogue as turn, i (i)}
         <div class="turn {turn.role}" title={provenance(turn)}>
           {#if editors[node.id] === `turn:${i}`}<textarea class="markdown-edit" aria-label={strings.edit} bind:value={editDrafts[node.id].text} onkeydown={editKey}></textarea><button onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button>
-          {:else}<Markdown text={turn.text} {visit} focus={id => session.setFocus(id)} />{#if turn.role === 'tutor'}<button class="quiet" disabled={busy} onclick={() => beginEdit(`turn:${i}`,turn)}>{strings.edit}</button>{/if}{#if turn.edited}<small>{strings.editedBy(turn.edited.by)}</small>{/if}{#if turn.previous !== undefined}<button class="quiet" onclick={() => compare = turn}>{strings.previousVersion}</button>{/if}{/if}
+          {:else}<Markdown text={turn.text} {visit} focus={id => session.setFocus(id)} {preview} />{#if turn.role === 'tutor'}<button class="quiet" disabled={busy} onclick={() => beginEdit(`turn:${i}`,turn)}>{strings.edit}</button>{/if}{#if turn.edited}<small>{strings.editedBy(turn.edited.by)}</small>{/if}{#if turn.previous !== undefined}<button class="quiet" onclick={() => compare = turn}>{strings.previousVersion}</button>{/if}{/if}
         </div>{/each}
-        {#if busy && ['reply','check'].includes(running!.task)}<div class="turn tutor"><Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} /></div>{/if}
+        {#if busy && ['reply','check'].includes(running!.task)}<div class="turn tutor"><Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>{/if}
       </section>
     {/if}
   </div>
@@ -163,7 +176,7 @@
 </aside>
 {#if selection}<div class="selection" style:left={`${selectionX}px`} style:top={`${selectionY}px`}><button disabled={!!running} onclick={askSelection}>{strings.askSelection}</button><button disabled={busy || !lit} onclick={makeSelection}>{strings.nodeSelection}</button></div>{/if}
 <dialog bind:this={deleteDialog} oncancel={() => deleting = null}><h2>{strings.deleteNode}</h2>{#if deleting}<p>{strings.deleteDescription(visit.nodes[deleting].title,deleteIds.length)}</p>{#if deleteIds.some(id => visit.nodes[id].state === 'understood')}<p>{strings.understoodLost(deleteIds.filter(id => visit.nodes[id].state === 'understood').length)}</p>{/if}{#if running && deleteIds.includes(running.nodeId)}<p>{strings.generationCancelled}</p>{/if}{/if}<p>{strings.deleteHistory}</p><button onclick={() => { deleting = null; deleteDialog.close(); }}>{strings.cancel}</button><button onclick={remove}>{strings.delete}</button></dialog>
-<dialog bind:this={compareDialog} oncancel={() => compare = null}><div class="compare">{#if compare}<section><h2>{strings.previous}</h2><Markdown text={compare.previous!} {visit} focus={id => session.setFocus(id)} /></section><section><h2>{strings.current}</h2><Markdown text={'text' in compare ? compare.text : compare.content} {visit} focus={id => session.setFocus(id)} /></section>{/if}</div><button disabled={busy} onclick={() => { perform(() => revertText(compare!)); compare = null; compareDialog.close(); }}>{strings.revert}</button><button onclick={() => { compare = null; compareDialog.close(); }}>{strings.keepCurrent}</button></dialog>
+<dialog bind:this={compareDialog} oncancel={() => compare = null}><div class="compare">{#if compare}<section><h2>{strings.previous}</h2><Markdown text={compare.previous!} {visit} focus={id => session.setFocus(id)} {preview} /></section><section><h2>{strings.current}</h2><Markdown text={'text' in compare ? compare.text : compare.content} {visit} focus={id => session.setFocus(id)} {preview} /></section>{/if}</div><button disabled={busy} onclick={() => { perform(() => revertText(compare!)); compare = null; compareDialog.close(); }}>{strings.revert}</button><button onclick={() => { compare = null; compareDialog.close(); }}>{strings.keepCurrent}</button></dialog>
 <style>
   .panel { display:flex; flex-direction:column; height:100%; min-width:0; background:var(--surface); overflow:hidden; }
   .state-chip { border:1px solid var(--line);border-radius:8px;padding:2px 6px; } .state-chip[data-state='understood'] {color:var(--node-understood);border-color:var(--node-understood);} .state-chip[data-state='lit'] {color:var(--node-lit);} .state-chip[data-state='dismissed'] {opacity:.35;}

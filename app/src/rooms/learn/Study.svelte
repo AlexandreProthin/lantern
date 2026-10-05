@@ -4,10 +4,17 @@
   import Graph from './Graph.svelte';
   import Panel from './Panel.svelte';
   import { strings } from '../../ui/strings';
-  let { session, revision, visible, settings, navigate, preferencesChanged }: SpaceProps = $props();
+  import type { PanelRequest } from './actions';
+  let { session, revision, visible, settings, navigate, preferencesChanged, library }: SpaceProps = $props();
   const learn = $derived(session as LearnSession | null);
   let body: HTMLDivElement;
   let width = $state(1000), dragging = $state(false);
+  let panelRequest = $state<PanelRequest | null>(null), linkPreview = $state<string | null>(null);
+  /** GV-55: the node menu hands *Add my own node* and *Delete* to the panel. */
+  function openInPanel(kind: PanelRequest['kind'], nodeId: string) {
+    if (settings.ui.studyCollapsed === 'panel') { settings.ui.studyCollapsed = 'none'; preferencesChanged(); }
+    panelRequest = { kind, nodeId, seq: (panelRequest?.seq ?? 0) + 1 };
+  }
   const graphPercent = $derived(Math.max(320/width*100, Math.min(100-380/width*100, 100-settings.ui.studySplitPercent)));
   function move(e: PointerEvent) {
     if (!dragging) return;
@@ -31,7 +38,7 @@
     <div class="graph-side" class:collapsed={settings.ui.studyCollapsed === 'graph'} style:width={settings.ui.studyCollapsed === 'graph' ? '28px' : settings.ui.studyCollapsed === 'panel' ? 'calc(100% - 36px)' : `calc(${graphPercent}% - 4px)`}>
       {#if settings.ui.studyCollapsed === 'graph'}<button class="rail" aria-label={strings.restoreGraph} onclick={() => { settings.ui.studyCollapsed='none'; preferencesChanged(); }}>›</button>
       {/if}
-      <div class:hidden={settings.ui.studyCollapsed === 'graph'} class="kept-space"><Graph session={learn} {revision} {navigate} {settings} {preferencesChanged} visible={visible && settings.ui.studyCollapsed !== 'graph'} /></div>
+      <div class:hidden={settings.ui.studyCollapsed === 'graph'} class="kept-space"><Graph session={learn} {revision} {navigate} {settings} {preferencesChanged} {openInPanel} {library} {linkPreview} visible={visible && settings.ui.studyCollapsed !== 'graph'} /></div>
     </div>
     <!-- This focusable separator implements the keyboard contract of GV-85. -->
     <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
@@ -42,7 +49,7 @@
     <div class="panel-side" class:collapsed={settings.ui.studyCollapsed === 'panel'}>
       {#if settings.ui.studyCollapsed === 'panel'}<button class="rail" aria-label={strings.restorePanel} onclick={() => { settings.ui.studyCollapsed='none'; preferencesChanged(); }}>‹{learn.running ? '·' : ''}</button>
       {/if}
-      <div class:hidden={settings.ui.studyCollapsed === 'panel'} class="kept-space"><Panel session={learn} {revision} showTokens={settings.appearance.showTokenStats} /></div>
+      <div class:hidden={settings.ui.studyCollapsed === 'panel'} class="kept-space"><Panel session={learn} {revision} showTokens={settings.appearance.showTokenStats} request={panelRequest} preview={id => linkPreview = id} /></div>
     </div>
   {/if}
 </div>

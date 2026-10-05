@@ -143,6 +143,7 @@
     catalogue,provider,get available(){return libraryAvailable;},get providerReady(){return !unavailable;},
     create:createSubject,open,rename:renameSubject,remove:removeSubject,
     async reveal(id){if(desktop)await invoke('reveal_subject',{library,id});else {await storage.load(library,id);throw new Error(strings.explorerDesktop);}},
+    async filePath(id){if(desktop)return invoke<string>('subject_file',{library,id});throw new Error(strings.explorerDesktop);},
     thumbnail(summary){
       const stamp=JSON.stringify([summary.modifiedNs,summary.size]);
       let cached=thumbnailCache.get(summary.path);

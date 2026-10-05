@@ -23,11 +23,13 @@
   import { travelDuration, emberFan, emberTrail } from './embers';
   import { strings } from '../../ui/strings';
   import type { Settings } from '../../frame/settings';
+  import type { LibrarySpaces } from '../../frame/library-spaces';
   import { GraphScene, type SceneNode } from './graph-scene';
   import { graphLinks } from './graph-links';
   import { SpawnMotion } from './spawn-motion';
+  import { nodeActions, runNodeAction, type NodeAction, type PanelRequest } from './actions';
 
-  let { session, revision, settings, preferencesChanged, navigate = () => {}, visible = true }: { session: LearnSession; revision: number; settings: Settings; preferencesChanged: () => void; navigate?: (space: string) => void; visible?: boolean } = $props();
+  let { session, revision, settings, preferencesChanged, navigate = () => {}, visible = true, openInPanel = () => {}, library, linkPreview = null }: { library?: LibrarySpaces; linkPreview?: string | null; session: LearnSession; revision: number; settings: Settings; preferencesChanged: () => void; navigate?: (space: string) => void; visible?: boolean; openInPanel?: (kind: PanelRequest['kind'], nodeId: string) => void } = $props();
 
   interface SimNode extends SimulationNodeDatum {
     id: string;
@@ -224,6 +226,91 @@
   });
 
   const title = (t: string) => t || strings.untitledQuestion;
+
+  // ---- Node menu (GV-55) ---------------------------------------------------------------
+
+  let menu = $state<string | null>(null), menuEl = $state<HTMLDivElement>(), menuHeight = $state(0);
+  const menuNode = $derived(menu ? view.nodes.find(n => n.id === menu && !n.pending) : undefined);
+  const menuActions = $derived.by(() => { revision; const node = menu ? session.visit.nodes[menu] : undefined; return node ? nodeActions(session.visit, node, session.running) : []; });
+  // Anchored to the node, so it follows the pan that focusing starts.
+  const menuAt = $derived(menuNode ? {
+    x: Math.max(8, Math.min(width - 200, transform.x + width / 2 + menuNode.x * transform.k + 18)),
+    y: Math.max(8, Math.min(height - menuHeight - 8, transform.y + height / 2 + menuNode.y * transform.k - 12)) } : null);
+  $effect(() => { if (menu && (!menuNode || !visible)) untrack(() => closeMenu(false)); });
+  function openMenu(e: MouseEvent, id: string) {
+    e.preventDefault(); session.setFocus(id); menu = id;
+    afterUpdate().then(() => menuEl?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus());
+  }
+  function closeMenu(refocus: boolean) {
+    const id = menu; menu = null;
+    if (refocus && id) afterUpdate().then(() => host.querySelector<HTMLButtonElement>(`[data-id="${id}"]`)?.focus());
+  }
+  function chooseAction(action: NodeAction) {
+    const id = menu!; closeMenu(action.id !== 'own' && action.id !== 'delete');
+    if (action.id === 'own' || action.id === 'delete') openInPanel(action.id, id); else runNodeAction(session, action.id, id);
+  }
+  function menuKey(e: KeyboardEvent) {
+    const items = [...menuEl!.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')], at = items.indexOf(document.activeElement as HTMLButtonElement);
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeMenu(true); }
+    else if (e.key === 'Tab') closeMenu(false);
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); items[(at + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus(); }
+    else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); items[e.key === 'Home' ? 0 : items.length - 1]?.focus(); }
+  }
+  function menuOutside(e: PointerEvent) { if (menu && !(e.target instanceof Element && e.target.closest('.node-menu'))) closeMenu(false); }
+
+  // ---- Link preview (GV-44) ---------------------------------------------------------------
+
+  let previewFrame = 0, previewLayer: SVGGElement | null = null;
+  function stopPreview() { cancelAnimationFrame(previewFrame); previewFrame = 0; previewLayer?.remove(); previewLayer = null; }
+  $effect(() => { const to = linkPreview; untrack(() => { stopPreview(); if (to) playPreview(session.visit.focusId, to); }); });
+  $effect(() => { if (!visible) untrack(stopPreview); });
+  // Same curve and orientation (sorted ids) as the text-link line, so the light rides on it when shown.
+  function linkCurve(a: SimNode, b: SimNode) {
+    const x1 = a.x ?? 0, y1 = a.y ?? 0, x2 = b.x ?? 0, y2 = b.y ?? 0;
+    return `M${x1} ${y1} Q${(x1+x2)/2-(y2-y1)*.08} ${(y1+y2)/2+(x2-x1)*.08} ${x2} ${y2}`;
+  }
+  function playPreview(from: string, to: string) {
+    const nodes = session.visit.nodes;
+    if (from === to || !nodes[from] || !nodes[to] || motionReduced() || !visible || document.hidden || !edgesSvg) return;
+    const toChild = nodes[to].parents[0] === from, toParent = nodes[from].parents[0] === to;
+    const [first, second] = [from, to].sort();
+    const tree = toChild || toParent ? edgesSvg.querySelector<SVGPathElement>(`[data-edge="${toChild ? to : from}"]`) : null;
+    if ((toChild || toParent) && !tree) return;
+    const layer = document.createElementNS(ns, 'g'); layer.setAttribute('class', 'link-preview'); layer.setAttribute('aria-hidden', 'true');
+    let path = tree;
+    if (!path) { path = document.createElementNS(ns, 'path'); path.setAttribute('class', 'preview-curve'); layer.append(path); }
+    const head = document.createElementNS(ns, 'circle'); head.setAttribute('r', '3'); layer.append(head);
+    edgesSvg.append(layer); previewLayer = layer;
+    // A tree edge runs parent -> child; a text-link curve runs from the smaller id.
+    const reverse = tree ? toParent : from !== first;
+    const reshape = () => { const a = simNodes.get(first), b = simNodes.get(second); if (a && b && !tree) path!.setAttribute('d', linkCurve(a, b)); };
+    reshape();
+    const duration = travelDuration(path.getTotalLength()) * 1.6, start = performance.now();
+    const step = (now: number) => {
+      if (!previewLayer || previewLayer !== layer) return;
+      reshape();
+      const t = Math.min(1, (now - start) / duration), eased = 1 - (1 - t) ** 2;
+      const p = pointAt(path!, reverse ? 1 - eased : eased);
+      head.setAttribute('cx', String(p.x)); head.setAttribute('cy', String(p.y));
+      layer.style.opacity = String(Math.min(1, t / .15, (1 - t) / .2 + .25));
+      if (t < 1) previewFrame = requestAnimationFrame(step);
+      else { pulseNode(to); stopPreview(); }
+    };
+    previewFrame = requestAnimationFrame(step);
+  }
+
+  // ---- Open / copy path (GV-56) ----------------------------------------------------------
+
+  let fileNote = $state(''), fileNoteTimer: ReturnType<typeof setTimeout> | undefined;
+  function noteFile(text: string) { fileNote = text; clearTimeout(fileNoteTimer); fileNoteTimer = setTimeout(() => fileNote = '', 2500); }
+  const message = (e: unknown) => e instanceof Error ? e.message : String(e);
+  async function openFile() {
+    try { if (!library) throw new Error(strings.explorerDesktop); await library.reveal(session.subject.id); noteFile(strings.folderOpened); } catch (e) { noteFile(message(e)); }
+  }
+  async function copyFilePath(e: MouseEvent) {
+    e.preventDefault();
+    try { if (!library) throw new Error(strings.explorerDesktop); await navigator.clipboard.writeText(await library.filePath(session.subject.id)); noteFile(strings.pathCopied); } catch (err) { noteFile(message(err)); }
+  }
 
   // ---- View memory / reset ------------------------------------------------------------
 
@@ -533,6 +620,7 @@
   });
 </script>
 
+<svelte:window onpointerdowncapture={menuOutside} />
 <div class="graph" class:degraded={halfRate} data-settled={settled} data-reduced={motionReduced()} bind:this={host} bind:clientWidth={width} bind:clientHeight={height}
   style="--grow:{graphMotion.SPAWN_GROW_MS}ms;--stagger:{graphMotion.SPAWN_STAGGER_MS}ms;--breathe:{graphMotion.PENDING_BREATHE_PERIOD_MS}ms;--shrink:{graphMotion.SPAWN_SHRINK_MS}ms;--reveal:{graphMotion.SPAWN_REVEAL_MS}ms;--pulse:{graphMotion.BUSY_PULSE_PERIOD_MS}ms;--opacity-low:{graphMotion.PENDING_BREATHE_OPACITY[0]};--opacity-high:{graphMotion.PENDING_BREATHE_OPACITY[1]}">
   <div
@@ -570,6 +658,8 @@
         aria-label="{title(n.title)} · {n.kind} · {n.state}{n.understoodBy ? ' · '+(n.understoodBy==='self'?strings.understoodByYou:strings.demonstratedState) : ''}{busy ? ' · '+strings.preparing : ''}"
         title="{title(n.title)} · {n.state}"
         onclick={() => session.setFocus(n.id)}
+        oncontextmenu={(e) => { if (!n.pending) openMenu(e, n.id); }}
+        aria-haspopup="menu"
       >
         <span class="disc">
           <svg class="status" viewBox="0 0 18 18" aria-hidden="true" style:visibility={n.pending ? 'hidden' : 'visible'}>
@@ -587,6 +677,12 @@
     {/each}
   </div>
   <span class="sr-only" aria-live="polite">{announcement}</span>
+  {#if menu && menuAt}
+    <div class="node-menu" role="menu" tabindex="-1" aria-label={strings.nodeActions(title(session.visit.nodes[menu]?.title ?? ''))} bind:this={menuEl} bind:offsetHeight={menuHeight}
+      style="left:{menuAt.x}px;top:{menuAt.y}px" onkeydown={menuKey}>
+      {#each menuActions as action (action.id)}<button role="menuitem" disabled={action.disabled} onclick={() => chooseAction(action)}>{action.label}</button>{/each}
+    </div>
+  {/if}
   {#if Object.keys(session.visit.nodes).length > 800}<div class="large-notice" role="status">{strings.largeGraph}</div>{/if}
 
   <nav class="controls layout-controls">
@@ -615,6 +711,11 @@
     <button onclick={reset} aria-label={strings.recenter} title={strings.recenter}>⌖</button>
     <button onclick={() => select(host).call(zoomer.scaleBy, 1.2)} aria-label={strings.zoomIn} title={strings.zoomIn}>+</button>
   </nav>
+  <div class="corner">
+  <div class="file-row">
+    <button class="open-file" title={strings.openFileHint} onclick={openFile} oncontextmenu={copyFilePath}>{strings.openFile}</button>
+    {#if fileNote}<span class="file-note" role="status">{fileNote}</span>{/if}
+  </div>
   <div class="legend">
     <button aria-expanded={!settings.ui.legendCollapsed} onclick={() => { settings.ui.legendCollapsed = !settings.ui.legendCollapsed; preferencesChanged(); }}>{strings.legend}</button>
     {#if !settings.ui.legendCollapsed}
@@ -626,6 +727,7 @@
       <span><i class="key branch"></i>{strings.branchState}</span>
       <label><input type="checkbox" bind:checked={settings.ui.textLinks} onchange={preferencesChanged} />{strings.textLinks}</label>
     {/if}
+  </div>
   </div>
 </div>
 
@@ -667,6 +769,9 @@
     stroke: var(--accent);
   }
   .edges path.reference { stroke-dasharray:1 5; opacity:.45; }
+  .edges :global(.link-preview) { pointer-events:none; }
+  .edges :global(.link-preview .preview-curve) { stroke:var(--node-lit); stroke-dasharray:1 5; opacity:.5; }
+  .edges :global(.link-preview circle) { fill:var(--node-lit); filter:drop-shadow(0 0 4px var(--glow-near)); }
   .edges path[data-spawn-pending] { stroke-dasharray:1; stroke-dashoffset:1; }
   .graph[data-reduced='true'] .edges path[data-spawn-pending] { stroke-dashoffset:0; }
   .tiny .name { visibility:hidden; }
@@ -782,6 +887,9 @@
   @keyframes busy-pulse { 50% { box-shadow:0 0 20px 5px var(--glow-near),0 0 46px 11px var(--glow-far); } }
   .graph[data-reduced='true'] .node .disc, .graph[data-reduced='true'] .node .name { animation:none; }
 
+  .node-menu { position:absolute; z-index:4; display:flex; flex-direction:column; min-width:170px; padding:4px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.35); }
+  .node-menu button { text-align:left; border:0; background:none; padding:7px 10px; font-size:13px; border-radius:5px; }
+  .node-menu button:hover:not(:disabled), .node-menu button:focus-visible { background:var(--surface-2); outline:none; color:var(--accent); }
   .zoom-controls { position:absolute; right:20px; bottom:20px; display:flex; gap:8px; z-index:2; }
   .controls {
     position: absolute;
@@ -813,15 +921,15 @@
     height: 14px;
   }
 
+  .corner { position:absolute; left:16px; bottom:12px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; max-width:calc(100% - 170px); }
+  .file-row { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--ink-mute); }
+  .file-note { color:var(--accent); }
   .legend {
-    position: absolute;
-    left: 16px;
-    bottom: 12px;
     display: flex;
     gap: 14px;
     font-size: 12px;
     color: var(--ink-mute);
-    pointer-events: auto; flex-wrap:wrap; max-width:calc(100% - 170px); align-items:center;
+    pointer-events: auto; flex-wrap:wrap; align-items:center;
   }
   .key {
     display: inline-block;
@@ -846,7 +954,7 @@
   }
   .key.self { border:2px solid var(--node-understood); }
   .key.dismissed { opacity:.35; border-style:dotted; }
-  .legend button { padding:3px 8px; font-size:12px; }
+  .legend button, .open-file { padding:3px 8px; font-size:12px; }
   .legend label { display:flex; align-items:center; gap:4px; }
   .key.branch {
     width: 7px;
@@ -858,7 +966,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .node .disc, .node .name { animation:none !important; }
-    :global(.traveler) {
+    :global(.traveler), :global(.link-preview) {
       display: none;
     }
   }

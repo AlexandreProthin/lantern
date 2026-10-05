@@ -12,7 +12,7 @@ export const strings = {
   ascending: 'Ascending', descending: 'Descending', clearFilter: 'Clear filter',
   noMatches: (text: string) => `No subject matches “${text}”`, noSubjects: 'No subjects yet', startOne: 'Start one',
   subjectCount: (n: number) => `${n} subject${n === 1 ? '' : 's'}`, rename: 'Rename', openSubject: 'Open',
-  revealSubject: 'Reveal in Explorer', explorerDesktop: 'Explorer is available in the desktop app.',
+  revealSubject: 'Reveal in Explorer', openFile: 'Open', openFileHint: 'Open the folder in Explorer · right-click: copy the file path', pathCopied: 'Path copied', folderOpened: 'Opened in Explorer', explorerDesktop: 'Explorer is available in the desktop app.',
   deleteSubject: (title: string) => `Delete “${title}”?`,
   deleteSubjectHistory: (nodes: number, tokens: string | null) => `${nodes} nodes${tokens ? `, ${tokens} tokens of history` : ''}. The file goes to the Recycle Bin.`,
   understoodCount: 'Understood', tokensSpent: 'Tokens spent',
@@ -29,7 +29,7 @@ export const strings = {
   conflict: 'A local copy was saved because the subject also changed on disk.',
   readOnly: 'This file was created by a newer Lantern version and is read-only.'
   , welcome: 'Welcome', study: 'Study', gallery: 'Gallery', learn: 'Learn', settings: 'Settings',
-  graphNavigation: 'Graph navigation', previousView: 'Previous view', recenter: 'Recenter',
+  graphNavigation: 'Graph navigation', nodeActions: (title: string) => `Actions for ${title}`, previousView: 'Previous view', recenter: 'Recenter',
   treeLayout: 'Tree layout', freeLayout: 'Free layout', zoomIn: 'Zoom in', zoomOut: 'Zoom out', untitledQuestion: 'Untitled question',
   darkNode: 'This node is still dark.', lightUp: 'Light it up', lighting: 'Lighting…',
   dismissedNotice: 'Dismissed. It will not be proposed again.', restore: 'Restore', dismiss: 'Dismiss',

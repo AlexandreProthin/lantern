@@ -8,7 +8,7 @@ export interface LibrarySpaces {
   catalogue: Catalogue; provider: InferenceProvider; available: boolean; providerReady: boolean;
   create(title: string, tone: Tone, model: string): Promise<void>;
   open(id: string): Promise<void>; rename(id: string, title: string): Promise<void>;
-  remove(id: string): Promise<void>; reveal(id: string): Promise<void>;
+  remove(id: string): Promise<void>; reveal(id: string): Promise<void>; filePath(id: string): Promise<string>;
   thumbnail(summary: SubjectSummary): Promise<ThumbnailGraph>;
   isRunning(id: string): boolean; settings(): void; refresh(): Promise<void>;
 }

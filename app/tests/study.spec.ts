@@ -109,6 +109,80 @@ test('NP-55: math geometry, Mermaid labels, code and escaped untrusted HTML', as
   expect(await page.evaluate(()=>(window as any).__lanternXss)).toBeUndefined();
   expect(errors).toEqual([]);
 });
+test('GV-55: node menu offers the panel actions, runs them or hands them to the panel', async ({page}) => {
+  await page.goto('/?study=1&subject=Node%20menu');
+  const panel=page.locator('.panel'), menu=page.locator('.node-menu');
+  await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  const items=()=>menu.getByRole('menuitem').evaluateAll(b=>b.map(x=>x.textContent));
+  // Open node: same actions as the panel, focus moves to the node and into the menu.
+  const dark=page.locator('.graph .node[data-state="open"]').first();
+  await dark.click({button:'right'});
+  expect(await items()).toEqual(['Light it up','Dismiss','Delete']);
+  await expect(menu.getByRole('menuitem',{name:'Light it up'})).toBeFocused();
+  await expect(panel.getByText('This node is still dark.')).toBeVisible();
+  await page.keyboard.press('ArrowDown');await expect(menu.getByRole('menuitem',{name:'Dismiss'})).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveCount(0);await expect(dark).toBeFocused();
+  await expect(panel.getByRole('button',{name:'Cancel',exact:true})).toHaveCount(0);
+  // Dismiss runs directly; Restore is then offered.
+  await dark.click({button:'right'});await menu.getByRole('menuitem',{name:'Dismiss'}).click();
+  await expect(page.locator('.graph .node[data-state="dismissed"]')).toHaveCount(1);
+  await page.locator('.graph .node[data-state="dismissed"]').click({button:'right'});
+  expect(await items()).toEqual(['Restore','Delete']);
+  // Delete opens the panel's confirmation dialog.
+  await menu.getByRole('menuitem',{name:'Delete'}).click();
+  await expect(page.getByRole('dialog')).toContainText('Delete');
+  await page.getByRole('dialog').getByRole('button',{name:'Cancel',exact:true}).click();
+  // Root: no Delete; Add my own node opens the panel form.
+  await page.locator('.graph .node[data-state="lit"]').first().click({button:'right'});
+  expect(await items()).toEqual(['More options','Add my own node']);
+  await menu.getByRole('menuitem',{name:'Add my own node'}).click();
+  await expect(panel.getByRole('textbox',{name:'Title',exact:true})).toBeFocused();
+  // A press outside closes it.
+  await page.locator('.graph .node[data-state="lit"]').first().click({button:'right'});
+  await page.locator('.graph').click({position:{x:30,y:300}});
+  await expect(menu).toHaveCount(0);
+});
+test('GV-44/56: hovering a node link previews the connection; Open reports in the browser', async ({page}) => {
+  await page.goto('/?study=1&subject=Link%20preview');
+  const panel=page.locator('.panel');
+  await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  // Light a child so a grandchild exists: the root's link to it is not a tree edge.
+  const child=await page.locator('.graph .node[data-state="open"]').first().getAttribute('data-id');
+  await page.locator(`.graph .node[data-id="${child}"]`).click();
+  await panel.getByRole('button',{name:'Light it up',exact:true}).click();
+  await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  let grandchild='';
+  await expect.poll(async()=>grandchild=await page.evaluate(id=>{
+    for(const key of Object.keys(localStorage).filter(k=>k.startsWith('lantern.subject.'))){
+      const nodes=JSON.parse(localStorage.getItem(key)!).rooms.learn.nodes as Record<string,{parents:string[]}>;
+      const found=Object.entries(nodes).find(([,n])=>n.parents[0]===id);if(found)return found[0];
+    }
+    return '';
+  },child)).not.toBe('');
+  await page.locator('.graph .node[data-state="lit"]').first().click();
+  const root=await page.locator('.graph .node[aria-pressed="true"]').getAttribute('data-id');
+  expect(root).not.toBe(child);
+  await panel.getByRole('button',{name:'Edit explanation',exact:true}).click();
+  await panel.getByRole('textbox',{name:'Edit explanation',exact:true}).fill(`See [the child](node:${child}) and [further](node:${grandchild}).`);
+  await panel.getByRole('button',{name:'Save',exact:true}).click();
+  // Child: the light rides the tree edge (no temporary curve), then goes away.
+  await panel.locator('.node-link',{hasText:'the child'}).hover();
+  await expect(page.locator('.edges .link-preview circle')).toHaveCount(1);
+  await expect(page.locator('.edges .link-preview .preview-curve')).toHaveCount(0);
+  await expect(page.locator('.edges .link-preview')).toHaveCount(0,{timeout:3000});
+  // Grandchild (not adjacent): a temporary curve; leaving the link stops it.
+  await panel.locator('.node-link',{hasText:'further'}).hover();
+  await expect(page.locator('.edges .link-preview .preview-curve')).toHaveCount(1);
+  await panel.locator('h1, h2').first().hover();
+  await expect(page.locator('.edges .link-preview')).toHaveCount(0);
+  // GV-56: Open above the legend; in the browser both gestures explain that Explorer needs the desktop app.
+  const open=page.locator('.graph').getByRole('button',{name:'Open',exact:true});
+  await open.click();await expect(page.locator('.file-note')).toContainText('desktop app');
+  await open.click({button:'right'});await expect(page.locator('.file-note')).toContainText('desktop app');
+  const [o,l]=await Promise.all([open.boundingBox(),page.locator('.graph').getByRole('button',{name:'Legend',exact:true}).boundingBox()]);
+  expect(o!.y+o!.height).toBeLessThanOrEqual(l!.y);expect(Math.abs(o!.height-l!.height)).toBeLessThan(1);
+});
 test('v0.1.1 B4/I1/I2: subject menu closes outside, offers the model list; graph controls', async ({page}) => {
   await page.goto('/?study=1&subject=Menu%20check');
   await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();

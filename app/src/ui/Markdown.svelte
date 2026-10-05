@@ -5,10 +5,17 @@
   import { strings } from './strings';
   import { invoke } from '@tauri-apps/api/core';
   import 'katex/dist/katex.min.css';
-  let { text, visit, streaming = false, focus }: { text: string; visit: RoomVisit; streaming?: boolean; focus: (id: string) => void } = $props();
+  let { text, visit, streaming = false, focus, preview }: { text: string; visit: RoomVisit; streaming?: boolean; focus: (id: string) => void; preview?: (id: string | null) => void } = $props();
   let root: HTMLElement;
   const html = $derived(renderMarkdown(text, visit));
   $effect(() => { html; if (!streaming && root) tick().then(() => renderDiagrams(root)); });
+  // GV-44: tell the graph which node link is under the pointer or keyboard focus.
+  let previewing: string | null = null;
+  function hover(e: Event) {
+    const id = (e.target as HTMLElement).closest<HTMLElement>('[data-node-id]')?.dataset.nodeId ?? null;
+    if (id !== previewing) { previewing = id; preview?.(id); }
+  }
+  function leave() { if (previewing) { previewing = null; preview?.(null); } }
   function click(e: MouseEvent) {
     const element = e.target as HTMLElement, link = element.closest<HTMLButtonElement>('[data-node-id]');
     if (link?.dataset.nodeId) { focus(link.dataset.nodeId); return; }
@@ -19,8 +26,8 @@
   }
 </script>
 <!-- Generated buttons/links handle the keyboard's synthetic click events. -->
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events -->
-<article class="md" class:streaming bind:this={root} onclick={click}>{@html html}</article>
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events, a11y_mouse_events_have_key_events -->
+<article class="md" class:streaming bind:this={root} onclick={click} onmouseover={hover} onfocusin={hover} onmouseleave={leave} onfocusout={leave}>{@html html}</article>
 <style>
   .md { max-width:75ch; overflow-wrap:anywhere; line-height:1.65; }
   .md :global(strong) { color:var(--focus); }
