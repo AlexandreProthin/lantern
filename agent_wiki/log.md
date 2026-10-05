@@ -2,6 +2,7 @@
 
 ## 2026-10-05
 
+* **v0.1.1 B1**: the graph rendering issue was every Mermaid diagram drawing black (shapes and labels): the diagram sanitiser removed Mermaid's whole stylesheet because it contains a same-document `url(#gradient)`. [node-panel](/specs/node-panel.md) NP-72 now says which CSS is neutralised; the NP-55 browser test checks the stylesheet and label colour.
 * **v0.1.1 slices 1 and 2** (branch `worktree-v0-1-1`): [plan](/plans/v0-1-1.md) B2, B3, B4, B5, B7, I1 to I4 and F4 are done. Specs changed first: [settings](/specs/settings.md) SE-48 (the static model list, validated by the user) and the `opus` alias note, [welcome-gallery](/specs/welcome-gallery.md) WG-2/WG-52, [rooms-spaces](/specs/rooms-spaces.md) RS-15/RS-21 (removed), [learn-room](/specs/learn-room.md) LR-32, [graph-view](/specs/graph-view.md) GV-50 (removed)/GV-51, [node-panel](/specs/node-panel.md) NP-70 (Pandoc math delimiters). Found with the user's CLI 2.1.274: `opus` resolves to Opus 5, Opus 5.5 needs CLI 2.1.280+, Fable 5.1 needs usage credits; these errors are now `model-unknown`. Verified: 46 TS tests, `npm run check` 0/0, Playwright 15 passed (2 idle perf skipped), Rust provider tests pass.
 
 ## 2026-10-04

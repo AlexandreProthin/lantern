@@ -171,7 +171,9 @@ corrections as truth.
 - **NP-72** Safety: the output MUST be sanitised (an allow-list sanitiser such as DOMPurify) after rendering;
   raw HTML in markdown is **not** executed and appears as escaped text; no scripts, event handlers, iframes
   or `style` attributes. KaTeX runs with `trust: false`; Mermaid runs with `securityLevel: strict`
-  and its SVG is sanitised. Remote images MUST NOT be loaded (alt text and a link are shown),
+  and its SVG is sanitised: Mermaid's own stylesheet MUST be kept (without it every shape and label
+  draws black, v0.1.1 B1), and only CSS that could reach outside the document is neutralised
+  (`url()` other than a same-document `#fragment`, `@import`, `expression(`, CSS escapes). Remote images MUST NOT be loaded (alt text and a link are shown),
   (privacy).
 - **NP-73** Mermaid diagrams render only once their fence is closed and the stream has ended; they
   take the room tokens for colours; a syntax error shows the source with *Diagram could not be

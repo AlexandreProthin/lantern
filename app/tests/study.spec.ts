@@ -90,13 +90,19 @@ test('NP-55: math geometry, Mermaid labels, code and escaped untrusted HTML', as
   const panel=page.locator('.panel');
   await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
   await panel.getByRole('button',{name:'Edit explanation',exact:true}).click();
-  await panel.getByRole('textbox',{name:'Edit explanation',exact:true}).fill('A fraction: $\\frac{a}{b}$.\n\n```mermaid\nflowchart LR\nA[Moon] --> B[Ocean]\n```\n\n```javascript\nconst tide = 1;\n```\n\n<img src="https://example.invalid/leak" onerror="window.__lanternXss=1">\n\n[unsafe](javascript:alert(1))');
+  await panel.getByRole('textbox',{name:'Edit explanation',exact:true}).fill('A fraction: $\\frac{a}{b}$, a law $1/r^2$, prices $5 and $10.\n\n```mermaid\nflowchart LR\nA[Moon] --> B[Ocean]\n```\n\n```javascript\nconst tide = 1;\n```\n\n<img src="https://example.invalid/leak" onerror="window.__lanternXss=1">\n\n[unsafe](javascript:alert(1))');
   await panel.getByRole('button',{name:'Save',exact:true}).click();
   await expect(panel.locator('.katex .vlist').first()).toBeVisible();
   expect(await panel.locator('.katex [style]').count()).toBeGreaterThan(0);
   await expect(panel.locator('[data-mermaid] svg')).toBeVisible();
   await expect(panel.locator('[data-mermaid]')).toContainText('Moon');
   await expect(panel.locator('[data-mermaid] foreignObject')).toHaveCount(0);
+  // B1: Mermaid's stylesheet (with its url(#gradient)) survives sanitising, so labels stay readable.
+  await expect(panel.locator('[data-mermaid] svg style')).toHaveCount(1);
+  expect(await panel.locator('[data-mermaid] svg text').first().evaluate(t=>getComputedStyle(t).fill)).not.toBe('rgb(0, 0, 0)');
+  // B5: a digit after `$` opens math; prices stay text.
+  await expect(panel.locator('.katex')).toHaveCount(2);
+  await expect(panel.locator('.md').first()).toContainText('prices $5 and $10');
   await expect(panel.locator('.hljs-keyword')).toContainText('const');
   await expect(panel.locator('img')).toHaveCount(0);
   await expect(panel.locator('a[href^="javascript:"]')).toHaveCount(0);

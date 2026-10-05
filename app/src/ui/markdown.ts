@@ -79,15 +79,23 @@ export function renderMarkdown(text: string, visit: RoomVisit): string {
   // KaTeX trust is false). Retain its geometry; removing styles breaks fractions/matrices.
   return DOMPurify.sanitize(md.render(text, { visit }), { FORBID_TAGS: ['style', 'iframe', 'script'], ADD_ATTR: ['data-node-id', 'data-copy', 'data-mermaid'] });
 }
+function safeCss(css: string): string {
+  // Backslashes go first so a CSS escape cannot spell `url` or `@import` past the checks.
+  return css.replace(/\\/g, '').replace(/@import[^;]*;?/gi, '').replace(/expression\s*\(/gi, 'none(')
+    .replace(/url\s*\((?!\s*['"]?#)[^)]*\)/gi, 'none');
+}
 export function sanitizeDiagram(svg: string): string {
   const safe = DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true, svgFilters: true },
     FORBID_TAGS: ['foreignObject', 'script', 'image', 'animate', 'set'] });
   const template = document.createElement('template'); template.innerHTML = safe;
   // Preserve Mermaid's generated theme/geometry, but prevent CSS or SVG references
   // from loading remote content. Diagram links are handled as text in strict mode.
+  // Mermaid's own stylesheet uses same-document `url(#id-gradient)`, so only non-fragment
+  // urls are neutralised; dropping the whole block left every shape black (v0.1.1 B1).
   for (const el of template.content.querySelectorAll('*')) {
-    if (el.tagName.toLowerCase() === 'style' && /url\s*\(|@import|expression\s*\(/i.test(el.textContent ?? '')) el.remove();
-    if (/url\s*\(|@import|expression\s*\(/i.test(el.getAttribute('style') ?? '')) el.removeAttribute('style');
+    if (el.tagName.toLowerCase() === 'style') el.textContent = safeCss(el.textContent ?? '');
+    const style = el.getAttribute('style');
+    if (style !== null) el.setAttribute('style', safeCss(style));
     for (const attr of ['href', 'xlink:href']) if (el.hasAttribute(attr) && !el.getAttribute(attr)!.startsWith('#')) el.removeAttribute(attr);
   }
   return template.innerHTML;
