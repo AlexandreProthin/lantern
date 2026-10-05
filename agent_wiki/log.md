@@ -2,7 +2,7 @@
 
 ## 2026-10-06
 
-* **v0.1.1 version**: the app is versioned 0.1.1 (`package.json`, `Cargo.toml`, `tauri.conf.json`) and every item of the [v0.1.1 plan](/plans/v0-1-1.md) is merged to `master`; the preview installer is built for the user's installed-build checks (motion of the direction, *Open* and copy path, `model-unknown` messages, the model list). Not yet tagged or published.
+* **v0.1.1 version**: the app is versioned 0.1.1 (`package.json`, `Cargo.toml`, `tauri.conf.json`) and every item of the [v0.1.1 plan](/plans/v0-1-1.md) is merged to `master`; the preview installer is built for the user's installed-build checks (motion of the direction, *Open* and copy path, `model-unknown` messages, the model list). **Released** on the user's instruction: `master` pushed, tag `v0.1.1`, and a GitHub release with the unsigned per-user NSIS installer `Lantern_0.1.1_x64-setup.exe`.
 
 ## 2026-10-05
 
