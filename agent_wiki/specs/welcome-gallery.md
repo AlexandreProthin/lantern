@@ -38,9 +38,9 @@ motion are the component's final recipe, and no Welcome UI is built before that 
   4. **The model picker**, beside the tone picker: the model of the new subject (WG-2).
   5. **The 3 most recent subjects** as large cards (WG-5).
   6. ***Browse all***: opens Gallery; shows the total count (*Browse all 14*).
-- **WG-2** The **model** of the new subject MUST be chosen with the model picker: the aliases
-  *opus*, *sonnet*, *haiku*, or a free-text id (validated like `provider.defaultModel`,
-  [settings](/specs/settings.md)). Its initial value on every arrival on Welcome is the default
+- **WG-2** The **model** of the new subject MUST be chosen with the model picker: an entry of the
+  model list ([settings](/specs/settings.md) SE-48), or a free-text id (validated like
+  `provider.defaultModel`). *Model list since 2026-10-05 (v0.1.1 B3); previously the three aliases only.* Its initial value on every arrival on Welcome is the default
   model from Settings → Provider; the choice applies to the subject being created only and MUST
   NOT change that default (the same rule as the tone). The **effort** of the new subject is the
   Settings default and is not chosen on Welcome. Both are changed later from the subject menu
@@ -112,7 +112,10 @@ motion are the component's final recipe, and no Welcome UI is built before that 
   **lit**; **understood** with its split (*4 · 3 demonstrated / 1 self*); **tokens spent**
   (WG-31, omitted when "Show token stats" is off); **time span** (*created 12 Sep → last opened
   2 days ago*); and **main model** (WG-32). Understood/total progress is drawn as a thin bar
-  under the title using `--node-understood`.
+  under the title using `--node-understood`. Every card that is not selected MUST have the same
+  size: the title, the time span and the model each take one line, and a longer text is trimmed
+  with an ellipsis (the full title shows on hover) until the card is selected, when the title wraps
+  in full. *Added 2026-10-05 (v0.1.1 I3/I4).*
 - **WG-53** Sorting: **last opened** (default, newest first), **created** (newest first),
   **progress** (understood / total, highest first). A direction toggle reverses the order. Ties
   fall back to title, A to Z.

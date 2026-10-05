@@ -13,6 +13,17 @@
       "port": 1430
     },
     {
+      "name": "lantern-app-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "app",
+        "run",
+        "dev"
+      ],
+      "port": 1431
+    },
+    {
       "name": "specs-workshop",
       "runtimeExecutable": "python",
       "runtimeArgs": [

@@ -33,7 +33,13 @@
   .md :global(.code-block) { position:relative; }
   .md :global([data-copy]) { position:absolute; right:4px; top:4px; font-size:11px; }
   .md :global(.math-error) { color:var(--error-ink); }
-  .md :global(.hljs-keyword),.md :global(.hljs-title) {color:var(--accent);} .md :global(.hljs-string) {color:var(--node-understood);} .md :global(.hljs-number),.md :global(.hljs-literal) {color:var(--focus);} .md :global(.hljs-comment) {color:var(--ink-mute);font-style:italic;}
+  .md :global(.hljs-keyword),.md :global(.hljs-selector-tag),.md :global(.hljs-meta .hljs-keyword) {color:var(--code-keyword);}
+  .md :global(.hljs-string),.md :global(.hljs-regexp),.md :global(.hljs-symbol),.md :global(.hljs-template-tag),.md :global(.hljs-addition) {color:var(--code-string);}
+  .md :global(.hljs-number),.md :global(.hljs-literal),.md :global(.hljs-variable.constant_) {color:var(--code-number);}
+  .md :global(.hljs-title),.md :global(.hljs-title.function_),.md :global(.hljs-section) {color:var(--code-function);}
+  .md :global(.hljs-built_in),.md :global(.hljs-type),.md :global(.hljs-title.class_),.md :global(.hljs-name),.md :global(.hljs-selector-class) {color:var(--code-type);}
+  .md :global(.hljs-attr),.md :global(.hljs-attribute),.md :global(.hljs-property),.md :global(.hljs-params),.md :global(.hljs-variable),.md :global(.hljs-template-variable),.md :global(.hljs-meta) {color:var(--code-attr);}
+  .md :global(.hljs-comment),.md :global(.hljs-quote),.md :global(.hljs-deletion) {color:var(--code-comment);font-style:italic;}
   .md :global(svg) { max-width:100%; height:auto; }
   .streaming::after { content:'▍'; color:var(--accent); animation:cursor 1s steps(2) infinite; }
   @keyframes cursor { to { opacity:0; } }

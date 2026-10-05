@@ -157,7 +157,9 @@ corrections as truth.
 # Markdown rendering
 
 - **NP-70** The renderer MUST support, in explanations and dialogue: **KaTeX** inline `$…$` and
-  block `$$…$$` (a `$` before a digit or space is not a delimiter, so prices are safe; render
+  block `$$…$$` (Pandoc's rule: an opening `$` is followed by a non-space, a closing `$` follows a
+  non-space and is not followed by a digit, so `$1/r^2$` is math and *between $5 and $10* stays
+  text; changed in v0.1.1 B5, previously a `$` before any digit was refused; render
   errors show the source in `--error` with the message in the tooltip); **Mermaid** diagrams from
   ```` ```mermaid ```` fences; **syntax highlighting** of fenced code by its language tag (and a
   copy button on hover); **tables**; and the usual headings, lists, emphasis (bold in `--focus`),

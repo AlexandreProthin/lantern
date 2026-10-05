@@ -6,6 +6,7 @@
   import type { Completion, InferenceProvider } from './provider';
   import { ProviderError } from './provider';
   import { strings } from '../ui/strings';
+  import ModelPicker from '../ui/ModelPicker.svelte';
   let { settings, defaults, room, provider, health=null, initialSection='general', changed, close, switchLibrary, generating=false, readonly=false }: {
     settings:Settings; defaults:Settings; room:RoomDefinition; provider:InferenceProvider; health?:Completion|ProviderError|null;
     changed:()=>void;close:()=>void;switchLibrary:(destination:string,mode:string)=>Promise<void>;initialSection?:string;generating?:boolean;readonly?:boolean
@@ -44,10 +45,9 @@
     else {settings.appearance={...settings.appearance,...defaults.appearance};changed();}
     resetting=false;
   }
-  function text(e:Event,field:'name'|'model') {
+  function text(e:Event,field:'name') {
     const value=(e.currentTarget as HTMLInputElement).value.trim();
-    if(field==='name'){if(value.length>40){validation=strings.invalidName;return;}settings.user.displayName=value||defaults.user.displayName;}
-    else {if(!/^[A-Za-z0-9._:-]{1,100}$/.test(value)){validation=strings.invalidModel;return;}settings.provider.defaultModel=value;}
+    if(value.length>40){validation=strings.invalidName;return;}settings.user.displayName=value||defaults.user.displayName;
     validation='';changed();
   }
   async function install(e:MouseEvent) {if(desktop){e.preventDefault();try{await invoke('open_external',{url:'https://code.claude.com/docs/en/setup'});}catch(error){details=String(error);}}}
@@ -63,7 +63,7 @@
       <div class="actions"><button disabled={!desktop||generating||!typedPath.trim()||typedPath.trim()===settings.library.path} onclick={()=>choose(typedPath.trim())}>{strings.applyLibrary}</button><button disabled={!desktop||generating} title={generating?strings.finishGeneration:undefined} onclick={()=>choose()}>{strings.changeLibrary}</button><button disabled={!desktop} onclick={()=>invoke('reveal_library',{path:settings.library.path}).catch(e=>validation=String(e))}>{strings.revealLibrary}</button></div>
       {#if generating}<p>{strings.finishGeneration}</p>{/if}
     {:else if section==='provider'}
-      <label>{strings.defaultModel}<input id="default-model" list="models" value={settings.provider.defaultModel} onblur={e=>text(e,'model')} onkeydown={e=>{if(e.key==='Enter')text(e,'model');}} /></label><datalist id="models"><option>opus</option><option>sonnet</option><option>haiku</option></datalist>
+      <div class="field"><label for="default-model">{strings.defaultModel}</label><ModelPicker id="default-model" value={settings.provider.defaultModel} label={strings.defaultModel} commit={model=>{settings.provider.defaultModel=model;validation='';changed();}} /></div>
       <label>{strings.defaultEffort}<select bind:value={settings.provider.defaultEffort} onchange={changed}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label><p>{strings.newSubjectsHint}</p>
       {#if found!==null}<p>{found?strings.found:strings.notFound} · {located} · {version}</p>{/if}
       <p role="status">{status}</p><button disabled={testing||generating} onclick={test}>{strings.testProvider}</button>
@@ -86,5 +86,5 @@
   .settings { position:fixed; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:12px; width:min(800px,85vw); padding:0; }
   .settings::backdrop { background:var(--code); opacity:.7; } header { display:flex; justify-content:space-between; align-items:center; padding:12px 24px; border-bottom:1px solid var(--line); } h2 {font-size:18px;}
   .body { display:grid; grid-template-columns:160px 1fr; min-height:400px; } nav {display:flex;flex-direction:column;gap:8px;padding:20px;border-right:1px solid var(--line);} nav button {text-align:left;} [aria-current='page'] {color:var(--accent);border-color:var(--accent);}
-  section { padding:24px; overflow:auto; max-height:65vh; } fieldset {padding:0;border:0;display:grid;gap:16px;} label {display:grid;gap:8px;} p {color:var(--ink-mute);font-size:13px;} pre {white-space:pre-wrap;} a {color:var(--accent);} .actions {display:flex;gap:8px;flex-wrap:wrap;} .confirmation {border:1px solid var(--line);padding:12px;} .invalid {color:var(--focus);}
+  section { padding:24px; overflow:auto; max-height:65vh; } fieldset {padding:0;border:0;display:grid;gap:16px;} label,.field {display:grid;gap:8px;} p {color:var(--ink-mute);font-size:13px;} pre {white-space:pre-wrap;} a {color:var(--accent);} .actions {display:flex;gap:8px;flex-wrap:wrap;} .confirmation {border:1px solid var(--line);padding:12px;} .invalid {color:var(--focus);}
 </style>

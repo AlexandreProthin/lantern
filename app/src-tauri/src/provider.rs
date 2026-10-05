@@ -43,7 +43,7 @@ pub fn classify(details: &str) -> ErrorKind {
     let t = details.to_lowercase();
     if ["/login", "not logged", "not signed", "authentication", "unauthorized", "401", "please log in", "please login"].iter().any(|p| t.contains(p)) { ErrorKind::NotLoggedIn }
     else if ["rate limit", "usage limit", "quota", "overloaded", "429", "limit reached", "hit your limit"].iter().any(|p| t.contains(p)) { ErrorKind::UsageLimit }
-    else if t.contains("model") && ["unknown", "invalid", "not found", "unavailable", "not available", "does not exist", "may not exist", "not have access"].iter().any(|p| t.contains(p)) { ErrorKind::ModelUnknown }
+    else if t.contains("model") && ["unknown", "invalid", "not found", "unavailable", "not available", "does not exist", "may not exist", "not have access", "does not support this model", "requires usage credits"].iter().any(|p| t.contains(p)) { ErrorKind::ModelUnknown }
     else if ["connection", "timeout", "dns", "fetch failed", "network", "econn", "enotfound"].iter().any(|p| t.contains(p)) { ErrorKind::Network }
     else { ErrorKind::ProcessCrashed }
 }

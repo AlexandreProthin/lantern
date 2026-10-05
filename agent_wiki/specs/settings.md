@@ -20,7 +20,7 @@ the settings below only supply their **defaults**.
 |---|---|---|---|---|---|
 | General | `library.path` | absolute path | `Documents/Lantern` | must exist or be creatable, writable; not inside the app install dir | via the change flow (SE-30 to SE-36) |
 | General | `user.displayName` | string | Windows user name | trimmed, 1–40 chars; empty resets to the default | new edits and turns only; stored names on existing content are not rewritten |
-| Provider | `provider.defaultModel` | string | `opus` | alias `opus`/`sonnet`/`haiku` or free-text id, 1–100 chars, `[A-Za-z0-9._:-]` | new subjects; existing subjects keep their own model |
+| Provider | `provider.defaultModel` | string | `opus` | an entry of the model list (SE-48) or free-text id, 1–100 chars, `[A-Za-z0-9._:-]` | new subjects; existing subjects keep their own model |
 | Provider | `provider.defaultEffort` | enum | `medium` | `low`/`medium`/`high`/`xhigh`/`max` | new subjects; existing subjects keep their own effort |
 | Learn room | `learn.defaultTone` | enum or text | `curious` | preset (`eli5`, `curious`, `student`, `engineer`, `expert`) or custom text up to 300 chars | new subjects; a subject's tone is changed in its subject menu (opened from the title in the header; [rooms-spaces](/specs/rooms-spaces.md) RS-15) |
 | Learn room | `learn.contextBudget` | integer (advanced) | 12000 | 2000–100000 tokens | next generation (the map part only; the CLI's own ~13k baseline is extra) |
@@ -38,7 +38,7 @@ file but has no settings control:
 | `ui.lastRoom` | string | `learn` | the room whose Welcome opens at launch |
 | `ui.graphLayout` | `free`/`tree` | `free` | graph layout toggle |
 
-The defaults of the catalogue are model `opus`, effort `medium`, tone `curious`, layout `free`, context budget 12000 within 2000 to 100000. `opus` is the alias for the latest Opus, currently Opus 5.5 (`claude-opus-5-5`); the default is not `sonnet`.
+The defaults of the catalogue are model `opus`, effort `medium`, tone `curious`, layout `free`, context budget 12000 within 2000 to 100000. `opus` is the alias for the latest Opus **that the installed Claude Code CLI knows**: on 2026-10-05 the user's CLI 2.1.274 resolved it to Opus 5 (`claude-opus-5`), and Opus 5.5 (`claude-opus-5-5`) needs CLI 2.1.280 or newer. The default is not `sonnet`. A pinned id the CLI or the account cannot use (too old a CLI, or a model that needs usage credits such as Fable 5.1) fails as `model-unknown` (SE-43).
 
 The last-opened times and the recents list are **not** in this file: they live in the app state file of SE-50.
 
@@ -102,7 +102,8 @@ The status area in **Provider** shows what the Claude Code CLI provider ([infere
 - **SE-44** *Details* MUST show the raw output locally and a *Copy* button; nothing is sent anywhere.
 - **SE-45** The same fix-it messages MUST be used when a generation fails in the Learn room (a banner on the node), so the user sees one vocabulary.
 - **SE-47** v0.1.0 does **not** open the sign-in for the user ([decision](/decisions/cli-signin-instructions-only.md)). When the CLI is not installed or not signed in, Settings → Provider and the frame banner ([inference-provider](/specs/inference-provider.md) IP-44) MUST show clear **step-by-step instructions** with a *Check again* button: for *not installed*, a link to the Claude Code install page and the install steps; for *not signed in*, how to sign in to Claude Code (start Claude Code once, follow its browser sign-in, come back). *Check again* runs the *Test* call. There MUST be no *Sign in to Claude Code* button in v0.1.0 (Later: Lantern opens the sign-in for you). The one-time sign-in is the only step that leaves the UI (AC-6).
-- **SE-46** The default model field MUST offer the aliases as choices and accept free text; changing it never triggers a call.
+- **SE-46** The default model field MUST offer the model list (SE-48) as choices and accept free text; changing it never triggers a call.
+- **SE-48** The **model list** is static, kept in one place in the code and shared by every model picker (Settings → Provider, Welcome WG-2, the subject menu RS-15). It holds, in this order: the aliases `opus`, `sonnet`, `haiku` (shown as *Opus (latest)*, *Sonnet (latest)*, *Haiku (latest)*), then `claude-fable-5-1`, `claude-opus-5-5`, `claude-opus-5`, `claude-opus-4-8`, `claude-sonnet-5-5`, `claude-sonnet-5`, `claude-haiku-4-5` (shown as *Fable 5.1*, *Opus 5.5*, …). The value stored and sent to the CLI is the alias or id itself. A model that is not in the list stays reachable as free text, so a new model needs no release. *Added 2026-10-05 (v0.1.1 B3), list validated by the user.*
 
 # App state
 

@@ -225,17 +225,15 @@
 
   const title = (t: string) => t || strings.untitledQuestion;
 
-  // ---- Back / reset -------------------------------------------------------------------
+  // ---- View memory / reset ------------------------------------------------------------
 
-  let backStack = $state<string[]>([]);
   let prevFocus = untrack(() => session.visit.focusId);
-  let goingBack = false;
-  const viewMemory=new Map<string,{transform:ZoomTransform;history:string[]}>();
+  const viewMemory=new Map<string,{transform:ZoomTransform}>();
   let shownSubject=untrack(()=>session.subject.id);
   $effect(()=>{revision;const id=session.subject.id;untrack(()=>{
     if(id===shownSubject)return;
-    viewMemory.set(shownSubject,{transform,history:[...backStack]});shownSubject=id;
-    const memory=viewMemory.get(id);backStack=memory?.history??[];prevFocus=session.visit.focusId;lastRoute=route;stopTravel();stopPan();
+    viewMemory.set(shownSubject,{transform});shownSubject=id;
+    const memory=viewMemory.get(id);prevFocus=session.visit.focusId;lastRoute=route;stopTravel();stopPan();
     afterUpdate().then(()=>{if(!zoomer)return;if(memory)select(host).call(zoomer.transform,memory.transform);else setTimeout(reset,500);});
   });});
 
@@ -244,20 +242,11 @@
     const f = session.visit.focusId;
     untrack(() => {
       if (f === prevFocus) return;
-      if (!goingBack) backStack.push(prevFocus);
-      goingBack = false;
       prevFocus = f;
       afterUpdate().then(()=>requestAnimationFrame(panToFocus));
     });
   });
 
-  function back() {
-    let id: string | undefined;
-    while ((id = backStack.pop()) && !session.visit.nodes[id]);
-    if (!id || id === session.visit.focusId) return;
-    goingBack = true;
-    session.setFocus(id);
-  }
 
   function reset() {
     const positions = [...simNodes.values()]; if (!positions.length || !zoomer || width < 100 || height < 100) return;
@@ -600,13 +589,6 @@
   <span class="sr-only" aria-live="polite">{announcement}</span>
   {#if Object.keys(session.visit.nodes).length > 800}<div class="large-notice" role="status">{strings.largeGraph}</div>{/if}
 
-  <nav class="controls" aria-label={strings.graphNavigation}>
-    <button onclick={() => navigate('welcome')} aria-label={strings.welcome} title={strings.welcome}>⌂</button>
-    <button onclick={() => navigate('gallery')} aria-label={strings.gallery} title={strings.gallery}>▦</button>
-    <button onclick={back} disabled={!backStack.length} aria-label={strings.previousView} title={strings.previousView}>
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true"><path d="m7 3-5 5 5 5M2 8h12" /></svg>
-    </button>
-  </nav>
   <nav class="controls layout-controls">
     <button
       onclick={() => { settings.ui.graphLayout = layout === 'force' ? 'tree' : 'free'; preferencesChanged(); }}
@@ -629,9 +611,9 @@
   </nav>
 
   <nav class="zoom-controls">
+    <button onclick={() => select(host).call(zoomer.scaleBy, 1/1.2)} aria-label={strings.zoomOut} title={strings.zoomOut}>−</button>
     <button onclick={reset} aria-label={strings.recenter} title={strings.recenter}>⌖</button>
     <button onclick={() => select(host).call(zoomer.scaleBy, 1.2)} aria-label={strings.zoomIn} title={strings.zoomIn}>+</button>
-    <button onclick={() => select(host).call(zoomer.scaleBy, 1/1.2)} aria-label={strings.zoomOut} title={strings.zoomOut}>−</button>
   </nav>
   <div class="legend">
     <button aria-expanded={!settings.ui.legendCollapsed} onclick={() => { settings.ui.legendCollapsed = !settings.ui.legendCollapsed; preferencesChanged(); }}>{strings.legend}</button>

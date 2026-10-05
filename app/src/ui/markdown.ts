@@ -42,9 +42,11 @@ function math(source: string, displayMode: boolean): string {
 }
 md.inline.ruler.before('escape', 'lantern-math', (state, silent) => {
   const pos = state.pos;
-  if (state.src[pos] !== '$' || /[\d\s$]/.test(state.src[pos + 1] ?? '') || state.src[pos - 1] === '\\') return false;
+  // Pandoc's rule: the opener is followed by non-space, the closer follows non-space and is not
+  // followed by a digit. `$1/r^2$` is math; "between $5 and $10" stays text.
+  if (state.src[pos] !== '$' || /[\s$]/.test(state.src[pos + 1] ?? ' ') || state.src[pos - 1] === '\\') return false;
   let end = pos + 1;
-  while ((end = state.src.indexOf('$', end)) !== -1 && state.src[end - 1] === '\\') end++;
+  while ((end = state.src.indexOf('$', end)) !== -1 && (/[\s\\]/.test(state.src[end - 1]) || /\d/.test(state.src[end + 1] ?? ''))) end++;
   if (end === -1) return false;
   if (!silent) { const token = state.push('lantern_math', '', 0); token.content = state.src.slice(pos + 1, end); }
   state.pos = end + 1; return true;

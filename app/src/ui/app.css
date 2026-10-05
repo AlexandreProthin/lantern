@@ -69,4 +69,6 @@ button.primary:hover:not(:disabled) {
 }
 
 :root[data-room="learn"] { --error:#d86a5a; --error-ink:#f0a598; }
+/* Code tokens (NP-70): distinct hues on --code, at least 9:1 (comments 5:1, deliberately quieter). */
+:root[data-room="learn"] { --code-keyword:#e8b66e; --code-string:#a6d189; --code-number:#d4a5e8; --code-function:#8cc4ec; --code-type:#7fd4c8; --code-attr:#f2a97f; --code-comment:#7d8698; }
 input, textarea, select { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px; }

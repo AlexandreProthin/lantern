@@ -103,3 +103,22 @@ test('NP-55: math geometry, Mermaid labels, code and escaped untrusted HTML', as
   expect(await page.evaluate(()=>(window as any).__lanternXss)).toBeUndefined();
   expect(errors).toEqual([]);
 });
+test('v0.1.1 B4/I1/I2: subject menu closes outside, offers the model list; graph controls', async ({page}) => {
+  await page.goto('/?study=1&subject=Menu%20check');
+  await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  // I1: the graph repeats neither Welcome nor Gallery; I2: zoom out, recenter, zoom in.
+  await expect(page.locator('.graph').getByRole('button',{name:'Welcome',exact:true})).toHaveCount(0);
+  await expect(page.locator('.graph').getByRole('button',{name:'Gallery',exact:true})).toHaveCount(0);
+  expect(await page.locator('.zoom-controls button').evaluateAll(b=>b.map(x=>x.getAttribute('aria-label')))).toEqual(['Zoom out','Recenter','Zoom in']);
+  // B4 and SE-48 in the subject menu.
+  await page.locator('header .subject').click();
+  const menu=page.locator('.subject-menu');
+  await expect(menu.locator('#subject-model option')).toHaveCount(11);
+  await menu.locator('#subject-model').selectOption('claude-haiku-4-5');
+  await expect.poll(()=>page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('lantern.subject.')).map(k=>localStorage.getItem(k)).join(''))).toContain('claude-haiku-4-5');
+  await page.locator('.graph').click({position:{x:40,y:300}});
+  await expect(menu).toHaveCount(0);
+  await page.locator('header .subject').click();await expect(menu).toBeVisible();
+  await page.locator('.panel').click({position:{x:20,y:20}});
+  await expect(menu).toHaveCount(0);
+});

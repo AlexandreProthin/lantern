@@ -1,4 +1,5 @@
 import { strings } from '../ui/strings';
+import { modelName as baseModelName } from '../core/models';
 export const tokens = (n = 0) => n >= 1e6 ? `${(n/1e6).toFixed(1)}M` : n >= 1e3 ? `${(n/1e3).toFixed(1)}k` : String(n);
 export const exactDate = (at?: string) => at ? new Date(at).toLocaleString() : strings.neverOpened;
 export function relativeDate(at?: string, now = new Date()): string {
@@ -10,6 +11,5 @@ export function relativeDate(at?: string, now = new Date()): string {
   return days === 0 ? strings.today : days === 1 ? strings.yesterday : days > 1 && days < 7 ? strings.daysAgo(days) : date.toLocaleDateString();
 }
 export function modelName(id: string | null | undefined) {
-  if(!id)return strings.noneYet;
-  return id.replace(/^claude-/, '').replace(/-(\d{8})$/, '').replace(/(opus|sonnet|haiku)/i, s=>s[0].toUpperCase()+s.slice(1)).replace(/-(\d)/g,' $1').replace(/(\d) (\d)/g,'$1.$2');
+  return id ? baseModelName(id) : strings.noneYet;
 }

@@ -104,11 +104,12 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
 
 # Controls
 
-- **GV-50** A **navigation cluster** at the **top-left**: *Welcome* icon (the place of the PoC's
-  "reset graph" icon), *Gallery* icon next to it, then *Previous view* (steps back through the
-  focus history, as in the PoC). The first two behave exactly like the header icons
-  ([rooms-spaces](/specs/rooms-spaces.md) RS-21).
-- **GV-51** A **zoom cluster** at the **bottom-right**: zoom in, zoom out, **recenter** (fit all).
+- **GV-50** *Removed 2026-10-05 (v0.1.1 I1).* The graph has no navigation cluster: the *Welcome*
+  and *Gallery* icons duplicated the header ([rooms-spaces](/specs/rooms-spaces.md) RS-21), and
+  *Previous view* (which sat hidden under the layout toggle) went with them. The layout toggle
+  (GV-53) is the only control at the top of the graph.
+- **GV-51** A **zoom cluster** at the **bottom-right**, in this order: zoom out, **recenter** (fit
+  all), zoom in (order since v0.1.1 I2).
   Recenter is its own control and no longer changes focus (the PoC reset also jumped to the
   root).
 - **GV-52** The legend is bottom-left ([rooms-spaces](/specs/rooms-spaces.md) RS-35).

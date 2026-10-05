@@ -7,11 +7,17 @@ test('SE-6/14/16/42: validation, scoped reset, provider health and live reduced 
   await dialog.getByRole('button',{name:'Provider',exact:true}).click();
   await expect(dialog.getByRole('status')).toContainText('Signed in · fake-tutor');
   const model=dialog.getByRole('combobox',{name:'Default model'});
-  await model.fill('not valid');await model.press('Enter');
+  // SE-48: the whole list is offered, whatever the current value.
+  await expect(model.locator('option')).toHaveCount(11);
+  await model.selectOption('other');
+  const custom=dialog.getByRole('textbox',{name:'Default model'});
+  await custom.fill('not valid');await custom.press('Enter');
   await expect(dialog.getByRole('alert')).toContainText('1–100');
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')!).provider.defaultModel)).toBe('opus');
-  await model.fill('sonnet');await model.press('Enter');
-  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')!).provider.defaultModel)).toBe('sonnet');
+  await custom.fill('claude-opus-4-7');await custom.press('Enter');
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')!).provider.defaultModel)).toBe('claude-opus-4-7');
+  await model.selectOption('claude-sonnet-5-5');
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')!).provider.defaultModel)).toBe('claude-sonnet-5-5');
   await dialog.getByRole('button',{name:'Reset to defaults',exact:true}).click();
   await expect(dialog.getByText('Reset this section to its defaults?')).toBeVisible();
   await dialog.getByRole('button',{name:'Reset to defaults',exact:true}).click();

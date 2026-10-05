@@ -75,7 +75,7 @@ the open subject; it is rarely touched. The stats stay secondary.
   token total MUST be omitted when "Show token stats" is off (Appearance setting).
 - **RS-15** *Subject menu.* Clicking the title MUST open a compact menu
   next to it holding, for the open subject: **Rename**; **Tone** (ELI5, Curious, Student,
-  Engineer, Expert, Custom… with a free-text field); **Direction** (v0.1.1, RS-19); **Model** (opus, sonnet, haiku, or a free-text
+  Engineer, Expert, Custom… with a free-text field); **Direction** (v0.1.1, RS-19); **Model** (the model list of [settings](/specs/settings.md) SE-48, or a free-text
   id); **Effort** (low, medium, high, xhigh, max). The menu is a pop-over anchored under the title,
   closed by Esc, a click outside or choosing Rename (which turns the title into an input;
   Enter saves, Esc cancels, an empty title is rejected).
@@ -100,13 +100,12 @@ Space navigation is not necessarily tabs; it must be intuitive.
 - **RS-20** Header navigation MUST show one icon button per space: Welcome (lantern/home glyph),
   Study (graph glyph), Gallery (grid glyph). Each has a tooltip with its name and shortcut. The
   current space is marked with the room accent and `aria-current="page"`.
-- **RS-21** Study MUST also hold, at the **top-left of the graph view**, a Welcome icon (taking
-  the place of the PoC's "reset graph" icon) and, next to it, a Gallery icon
-  ([graph-view](/specs/graph-view.md) GV-50). These are shortcuts to the same spaces; they MUST
-  behave exactly like the header icons.
+- **RS-21** *Removed 2026-10-05 (v0.1.1 I1).* The graph view no longer repeats the Welcome and
+  Gallery icons ([graph-view](/specs/graph-view.md) GV-50); the header icons (RS-20) are the
+  only ones.
 - **RS-22** Reachability: Welcome → Gallery via *Browse all*; Welcome → Study by submitting a
   subject or choosing a recent card; Gallery → Study by double-click or Enter on a card (a single click only selects it and shows its actions and detailed stats, [welcome-gallery](/specs/welcome-gallery.md) WG-60, WG-68); Study →
-  Welcome and Gallery by the icons; Gallery → Welcome by the header icon or the Lantern mark.
+  Welcome and Gallery by the header icons; Gallery → Welcome by the header icon or the Lantern mark.
   Every space MUST be reachable from every other in at most one action.
 - **RS-23** Space shortcuts (Ctrl+1 Welcome, Ctrl+2 Study, Ctrl+3 Gallery) are listed in the
   canonical shortcut table of [graph-view](/specs/graph-view.md) GV-76, which this spec does not

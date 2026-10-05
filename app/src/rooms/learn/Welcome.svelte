@@ -4,13 +4,15 @@
   import type { Tone } from '../../core/model';
   import { cloneJson } from '../../core/model';
   import { strings } from '../../ui/strings';
-  import { exactDate, relativeDate, modelName } from '../../frame/library-format';
+  import { exactDate, relativeDate } from '../../frame/library-format';
+  import { isValidModel } from '../../core/models';
+  import ModelPicker from '../../ui/ModelPicker.svelte';
   import { SubjectSuggestions } from './suggestions';
   import { WelcomeEmbers } from './embers';
   import Thumbnail from './Thumbnail.svelte';
   let { visible, settings, library, revision, navigate }: SpaceProps = $props();
   let arriving=$state(true);
-  let title=$state(''),tone=$state<Tone>('curious'),model=$state('opus'),other=$state(false),busy=$state(false),error=$state('');
+  let title=$state(''),tone=$state<Tone>('curious'),model=$state('opus'),busy=$state(false),error=$state('');
   let suggestionRevision=$state(0),field:HTMLInputElement,button:HTMLButtonElement,suggestButton:HTMLButtonElement,canvas:HTMLCanvasElement;
   let motion:WelcomeEmbers|undefined,arrived=false,osReduced=$state(false);
   const suggestions=new SubjectSuggestions(untrack(()=>library.provider),()=>suggestionRevision++);
@@ -21,10 +23,10 @@
   const total=$derived.by(()=>{revision;return library.catalogue.summaries.length;});
   const available=$derived.by(()=>{revision;return library.available;});
   const ready=$derived.by(()=>{revision;return library.providerReady;});
-  const validModel=$derived(/^[A-Za-z0-9._:-]{1,100}$/.test(model));
+  const validModel=$derived(isValidModel(model));
   const reduced=$derived(osReduced||settings.appearance.reduceMotion==='on');
   $effect(()=>{
-    if(visible){untrack(()=>{tone=cloneJson(settings.learn.defaultTone);model=settings.provider.defaultModel;other=!['opus','sonnet','haiku'].includes(model);});
+    if(visible){untrack(()=>{tone=cloneJson(settings.learn.defaultTone);model=settings.provider.defaultModel;});
       void tick().then(()=>{field?.focus();if(!arrived){motion?.arrival(field);arrived=true;}});
     }else{suggestions.cancel();motion?.clear();}
   });
@@ -60,14 +62,9 @@
           {#each Object.entries(strings.tones) as [value,label]}<label><input type="radio" name="welcome-tone" value={value} checked={(typeof tone==='string'?tone:'custom')===value}
             onchange={()=>tone=value==='custom'?{custom:''}:value as Tone} />{label}</label>{/each}
         </fieldset>
-        <div class="model"><label for="welcome-model">{strings.newSubjectModel}</label><select id="welcome-model" value={other?'other':model} title={strings.thisSubjectOnly}
-          onchange={e=>{other=e.currentTarget.value==='other';model=other?'':e.currentTarget.value;}}>
-          {#each ['opus','sonnet','haiku'] as alias}<option value={alias}>{modelName(alias)}{settings.provider.defaultModel===alias?` (${strings.defaultLabel})`:''}</option>{/each}
-          <option value="other">{strings.otherModel}</option>
-        </select></div>
+        <div class="model"><label for="welcome-model">{strings.newSubjectModel}</label><ModelPicker id="welcome-model" value={model} commit={next=>model=next} label={strings.newSubjectModel} live defaultModel={settings.provider.defaultModel} title={strings.thisSubjectOnly} /></div>
       </div>
       {#if typeof tone==='object'}<textarea aria-label={strings.customTone} maxlength="300" bind:value={tone.custom}></textarea>{/if}
-      {#if other}<input class="custom-model" aria-label={strings.newSubjectModel} bind:value={model} maxlength="100" placeholder={strings.thisSubjectOnly}/>{#if !validModel}<p class="inline-msg" role="alert">{strings.invalidModel}</p>{/if}{/if}
       <button class="suggest" bind:this={suggestButton} disabled={thinking||!ready||!available||!validModel||busy} onclick={suggest}>{thinking?strings.thinkingSubjects:strings.suggestSubjects}</button>
     </div>
     {#if options.length}<div class="chips">{#each options as option,i}<button class="chipbtn" style={`--delay:${i*50}ms`} onclick={()=>{title=option.title;field.focus();}}><b>{option.title}</b><span>{option.hook}</span></button>{/each}</div>{/if}
@@ -93,7 +90,7 @@
   .ask input:focus{outline:none;border-bottom-color:var(--accent);box-shadow:0 6px 15px -10px var(--glow-near)}.ask input::placeholder{color:var(--ink-faint)}
   .primary{align-self:center;padding:12px 28px;border-radius:999px;font-size:14px;font-weight:600;background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);box-shadow:0 0 26px var(--glow-far)}.primary:hover:not(:disabled){background:var(--focus)}.primary:disabled{background:var(--surface-2);color:var(--ink-faint);border-color:var(--line);box-shadow:none;opacity:1}
   .example{margin:-8px 0 0;text-align:center;font-size:12px;color:var(--ink-faint);font-family:'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif}.row{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6px}.pickers{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px}.tones{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:0}.tones label{position:relative;padding:5px 10px;font-size:12px;color:var(--ink-mute);border-radius:999px;cursor:pointer}.tones input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.tones label:has(input:checked){background:var(--surface-2);color:var(--node-lit)}.tones label:has(input:focus-visible){outline:2px solid var(--focus)}
-  .model{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-mute)}.model select{border:0;background:transparent;color:var(--ink-mute);font-size:12px;padding:5px 6px}.model option{background:var(--surface)}.custom-model,textarea{width:min(400px,100%)}.suggest,.browse{border:0;background:transparent;font-size:12px;color:var(--ink-mute);padding:2px}.suggest{text-decoration:underline;text-underline-offset:3px}.suggest:hover:not(:disabled),.browse:hover{color:var(--accent)}
+  .model{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;font-size:11px;color:var(--ink-mute)}.model :global(select){border:0;background:transparent;color:var(--ink-mute);font-size:12px;padding:5px 6px}.model :global(option){background:var(--surface)}textarea{width:min(400px,100%)}.suggest,.browse{border:0;background:transparent;font-size:12px;color:var(--ink-mute);padding:2px}.suggest{text-decoration:underline;text-underline-offset:3px}.suggest:hover:not(:disabled),.browse:hover{color:var(--accent)}
   .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.chipbtn{text-align:left;display:flex;flex-direction:column;gap:3px;max-width:220px;padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface);animation:appear 200ms both;animation-delay:var(--delay)}.chipbtn b{font-size:14px;font-weight:600}.chipbtn span{font-size:12px;color:var(--ink-mute);line-height:1.4}.inline-msg{text-align:center;font-size:12px;color:var(--ink-mute)}.inline-msg button{margin-left:8px;font-size:12px}.libmsg{padding:24px;text-align:center;border:1px dashed var(--line);color:var(--ink-mute)}
   .shelf{margin-top:15vh;display:flex;flex-direction:column;gap:18px}.shelf h2{margin:0;text-align:center;font-size:11px;font-weight:600;color:var(--ink-faint)}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}.card{display:flex;flex-direction:column;gap:10px;padding:0;border:0;background:transparent;text-align:left;opacity:.7}.card:hover,.card:focus-visible{opacity:1}.card:hover :global(.thumbnail){filter:drop-shadow(0 0 12px var(--glow-far))}.card h3{font-size:16px;font-weight:600;margin:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.meta{display:flex;justify-content:space-between;gap:8px;width:100%;font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums}.meta b{font-weight:400;color:var(--ink-mute)}.cont{font-size:12px;color:var(--ink-mute);text-decoration:underline;text-underline-offset:3px}.browse{align-self:center;padding:6px}
   button,input{transition:color 180ms ease-out,opacity 180ms ease-out,box-shadow 180ms ease-out,background 180ms ease-out}.embers{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}

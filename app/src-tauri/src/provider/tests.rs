@@ -18,7 +18,7 @@ fn no_delta_fallback_and_result_errors_even_with_exit_zero() {
     let no_delta = raw.lines().filter(|l| !l.contains("text_delta")).collect::<Vec<_>>().join("\n");
     let (parser, chunks) = parse(&no_delta); assert!(chunks.is_empty()); let mut emitted = String::new();
     let result = parser.finish(true, String::new(), None, Duration::ZERO, &mut |t| emitted.push_str(t)).unwrap(); assert_eq!(result.text, emitted); assert!(!emitted.is_empty());
-    for (text, kind) in [("Please /login", ErrorKind::NotLoggedIn), ("Usage limit reached", ErrorKind::UsageLimit), ("Unknown model", ErrorKind::ModelUnknown), ("fetch failed", ErrorKind::Network), ("Unexpected failure", ErrorKind::ProcessCrashed)] {
+    for (text, kind) in [("Please /login", ErrorKind::NotLoggedIn), ("Usage limit reached", ErrorKind::UsageLimit), ("Unknown model", ErrorKind::ModelUnknown), ("API Error: 400 Claude Code 2.1.274 does not support this model; version 2.1.280 or newer is required.", ErrorKind::ModelUnknown), ("Fable 5.1 requires usage credits. Switch to another model, or manage usage credits at claude.ai/settings/usage?from=cc_cli_limit_message, to continue.", ErrorKind::ModelUnknown), ("fetch failed", ErrorKind::Network), ("Unexpected failure", ErrorKind::ProcessCrashed)] {
         let mut parser = StreamParser::default(); parser.consume(&serde_json::json!({"type":"result", "is_error":true,"result":text,"usage":{"input_tokens":20},"duration_ms":10}).to_string(), &mut |_| {});
         let err = parser.finish(true, String::new(), None, Duration::ZERO, &mut |_| {}).unwrap_err();
         assert_eq!(std::mem::discriminant(&err.kind), std::mem::discriminant(&kind)); assert_eq!(err.usage.input, 20); assert_eq!(err.duration_ms, 10);

@@ -20,6 +20,8 @@
   import { defaultSettings, validateSettings } from './settings';
   import { DebouncedWriter } from './debounced-writer';
   import SettingsPanel from './SettingsPanel.svelte';
+  import ModelPicker from '../ui/ModelPicker.svelte';
+  import { isValidModel } from '../core/models';
   const desktop = '__TAURI_INTERNALS__' in window;
   const fake = providerMode(desktop, import.meta.env.VITE_PROVIDER) === 'fake';
   let health = $state<Completion | ProviderError | null>(null);
@@ -98,7 +100,7 @@
   }
   async function createSubject(title: string, tone: Tone, model: string) {
     if (!libraryAvailable || unavailable) throw new Error(strings.cliNotReady);
-    if (!/^[A-Za-z0-9._:-]{1,100}$/.test(model)) throw new Error(strings.invalidModel);
+    if (!isValidModel(model)) throw new Error(strings.invalidModel);
     const subject=room.newSubject(checkedTitle(title),tone,settings);
     subject.rooms[room.id].model=model;
     const saved=await storage.save(library,subject,null,true);
@@ -178,6 +180,11 @@
     while([...owned.values()].some(entry=>entry.session.running)) await new Promise(resolve=>setTimeout(resolve,10));
     for(const entry of owned.values()) await entry.persistence.close(); await writer.flush(); await windowMemory?.flush();
   }
+  // RS-15: a press anywhere outside the menu (graph, read view, header) closes it; capture
+  // phase, because d3-zoom stops propagation inside the graph.
+  function outside(e: PointerEvent) {
+    if(subjectMenu && e.target instanceof Element && !e.target.closest('.subject-menu, header .subject')) subjectMenu=false;
+  }
   function key(e: KeyboardEvent) {
     if(e.ctrlKey && ['1','2','3'].includes(e.key)) {e.preventDefault(); void navigate(room.spaces[Number(e.key)-1].id);}
     else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsSection='general';settingsOpen=true;}
@@ -228,7 +235,7 @@
     return ()=>{catalogue.dispose();unlisten?.();windowMemory?.dispose();clearInterval(refresh);window.removeEventListener('beforeunload',beforeUnload);};
   });
 </script>
-<svelte:window onkeydown={key} />
+<svelte:window onkeydown={key} onpointerdowncapture={outside} />
 <header>
   <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}>◈</button><span class="room">{room.name}</span>
   <nav>{#each room.spaces as item}<button aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space===item.id?'page':undefined} disabled={item.id!=='welcome' && !subjectCount} onclick={()=>navigate(item.id)}>{item.icon}</button>{/each}</nav>
@@ -244,7 +251,7 @@
   <input aria-label={strings.title} value={session.subject.title} maxlength="120" onkeydown={e=>{if(e.key==='Enter' && e.currentTarget.value.trim()){session!.subject.title=e.currentTarget.value.trim();session!.touch();subjectMenu=false;}}} />
   <label>{strings.tone}<select value={typeof session.subject.rooms[room.id].tone==='string'?session.subject.rooms[room.id].tone:'custom'} onchange={e=>{session!.subject.rooms[room.id].tone=e.currentTarget.value==='custom'?{custom:''}:e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['eli5','curious','student','engineer','expert','custom'] as tone}<option>{tone}</option>{/each}</select></label>
   {#if typeof session.subject.rooms[room.id].tone==='object'}<textarea aria-label={strings.customTone} maxlength="300" value={(session.subject.rooms[room.id].tone as {custom:string}).custom} onblur={e=>{session!.subject.rooms[room.id].tone={custom:e.currentTarget.value};session!.touch();}}></textarea>{/if}
-  <label>{strings.defaultModel}<input list="subject-models" value={session.subject.rooms[room.id].model} onblur={e=>{if(/^[A-Za-z0-9._:-]{1,100}$/.test(e.currentTarget.value)){session!.subject.rooms[room.id].model=e.currentTarget.value;session!.touch();toast=strings.appliesNext;}}} /></label><datalist id="subject-models"><option>opus</option><option>sonnet</option><option>haiku</option></datalist>
+  <div class="field"><label for="subject-model">{strings.defaultModel}</label><ModelPicker id="subject-model" value={session.subject.rooms[room.id].model} label={strings.defaultModel} commit={model=>{session!.subject.rooms[room.id].model=model;session!.touch();toast=strings.appliesNext;}} /></div>
   <label>{strings.defaultEffort}<select value={session.subject.rooms[room.id].effort} onchange={e=>{session!.subject.rooms[room.id].effort=e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label>
 </div>{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#each room.spaces as item}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/if}</div>
@@ -257,7 +264,7 @@
   .subject { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:35vw; border:0; } header small { color:var(--ink-mute); font-size:13px; margin-left:auto; }.gear { margin-left:auto; }
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
-  .subject-menu { position:fixed; left:230px; top:52px; z-index:12; display:grid; gap:12px; padding:20px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }.subject-menu label { display:grid; gap:5px; }
+  .subject-menu { position:fixed; left:230px; top:52px; z-index:12; display:grid; gap:12px; padding:20px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }.subject-menu label,.subject-menu .field { display:grid; gap:5px; }
   .busy-dot { font-size:24px; color:var(--accent); animation:pulse 1.8s ease-in-out infinite; }.shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; }
   @keyframes pulse { 50% {opacity:.4;} } @media(max-width:1100px) { header small {display:none;} }
   @media(prefers-reduced-motion:reduce) { .busy-dot {animation:none;} }
