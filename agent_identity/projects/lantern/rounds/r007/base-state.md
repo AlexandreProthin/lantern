@@ -1,0 +1,17 @@
+# Current checkpoint — Lantern
+State revision 15; 2026-10-05 Europe/Paris; harness 1.0.
+Phase 2 / Round 2; active attempt r006; selected refinement, 16px validation pending.
+Request 12 consumed by r006 selection; contract 2/rubric 1 accepted.
+Human selected r006-c01 (D0013) in reply "ok" to explicit recommendation.
+Parent r005-c03 (D0012), ancestor r004-c02 (D0010), r003-c08/r003-c03.
+r006-c02 preserved/nonselected; no human rejection rationale.
+Source rounds/r006/sources/r006-c01.svg; selection rounds/r006/selection.md.
+Working rules rounds/r006/responsive-rules-v1.md; evidence rounds/r006/evidence/.
+Completed: SVG-native tests and human loop selection; no new geometry from this feedback.
+Invariants: frame, asymmetric central flame, base and loop; neutral no-eye silhouette.
+24–256 selected geometry baseline; 16 loop still fragile, no unconditional pass.
+Open: 16px simplification rule, perceptual recognition/centering checks. Earlier r005 PNG/SVG discrepancy preserved in critique/method; SVG comparison is current evidence.
+Next exact action: resolve 16px static test using selected c01 parent; reserve r007/new IDs and request revision before geometry mutation, then record responsive rules and present evidence before phase-2 closure.
+Permission boundary: static phase 2 only; no animation, later phase or release.
+Latest E0021/D0013; next E0022/D0014; next attempt r007.
+Checkpoint rounds/r006/checkpoints/c003.md; manifest A0377–A0385; next A0386.

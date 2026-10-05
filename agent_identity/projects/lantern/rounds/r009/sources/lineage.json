@@ -1,0 +1,75 @@
+[
+  {
+    "id": "r009-c01",
+    "parent": "r008-c01",
+    "title": "Repos sans visage",
+    "caption": "Présence minimale",
+    "face": "",
+    "pose": "",
+    "extra": ""
+  },
+  {
+    "id": "r009-c02",
+    "parent": "r008-c02",
+    "title": "Repos attentif",
+    "caption": "Regard discret dans la flamme",
+    "face": "<ellipse cx=\"44\" cy=\"74\" rx=\"2.2\" ry=\"3.2\"/><ellipse cx=\"55\" cy=\"73\" rx=\"2.2\" ry=\"3.2\"/>",
+    "pose": "",
+    "extra": ""
+  },
+  {
+    "id": "r009-c03",
+    "parent": "r008-c03",
+    "title": "Curiosité",
+    "caption": "Inclinaison et regard latéral",
+    "face": "<ellipse cx=\"47\" cy=\"73\" rx=\"2.2\" ry=\"3.2\"/><ellipse cx=\"58\" cy=\"72\" rx=\"2.2\" ry=\"3.2\"/>",
+    "pose": "rotate(7 50 94)",
+    "extra": ""
+  },
+  {
+    "id": "r009-c04",
+    "parent": "r008-c04",
+    "title": "Calme",
+    "caption": "Paupières, structure au repos",
+    "face": "<path d=\"M41 74 Q44 71 47 74 M52 74 Q55 71 58 74\" fill=\"none\" stroke=\"black\" stroke-width=\"2.3\" stroke-linecap=\"round\"/>",
+    "pose": "",
+    "extra": ""
+  },
+  {
+    "id": "r009-c05",
+    "parent": "r008-c05",
+    "title": "Appui sur les pieds",
+    "caption": "Base relevée, deux appuis",
+    "face": "<ellipse cx=\"44\" cy=\"74\" rx=\"2.2\" ry=\"3.2\"/><ellipse cx=\"55\" cy=\"73\" rx=\"2.2\" ry=\"3.2\"/>",
+    "pose": "translate(0 -8)",
+    "extra": "<path d=\"M35 96 V107 H28 M65 96 V107 H72\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+  },
+  {
+    "id": "r009-c06",
+    "parent": "r008-c06",
+    "title": "Suspension",
+    "caption": "Pivot sur la boucle, pieds absents",
+    "face": "<ellipse cx=\"44\" cy=\"74\" rx=\"2.2\" ry=\"3.2\"/><ellipse cx=\"55\" cy=\"73\" rx=\"2.2\" ry=\"3.2\"/>",
+    "pose": "rotate(-8 50 4)",
+    "extra": "",
+    "support": "<path d=\"M50 -9 V4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"/>"
+  },
+  {
+    "id": "r009-c07",
+    "parent": "r008-c02",
+    "title": "Profil / hypothèse",
+    "caption": "Projection étroite, un seul œil",
+    "face": "<ellipse cx=\"56\" cy=\"73\" rx=\"3\" ry=\"3.2\"/>",
+    "pose": "translate(50 0) scale(.55 1) translate(-50 0)",
+    "extra": ""
+  },
+  {
+    "id": "r009-c08",
+    "parent": "r008-c01",
+    "title": "Dos / hypothèse",
+    "caption": "Flamme visible, aucun visage",
+    "face": "",
+    "pose": "translate(100 0) scale(-1 1)",
+    "extra": ""
+  }
+]

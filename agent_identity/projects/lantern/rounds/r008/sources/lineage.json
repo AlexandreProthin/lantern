@@ -1,0 +1,38 @@
+[
+  {
+    "id": "r008-c01",
+    "parent": "r006-c01",
+    "title": "Attention sans visage",
+    "mutation": "Posture seule; aucune anatomie ajoutée."
+  },
+  {
+    "id": "r008-c02",
+    "parent": "r006-c01",
+    "title": "Regard discret",
+    "mutation": "Deux contreformes verticales; structure exactement héritée."
+  },
+  {
+    "id": "r008-c03",
+    "parent": "r006-c01",
+    "title": "Curiosité latérale",
+    "mutation": "Regard décalé et légère inclinaison; comparaison combinée, effet non isolé."
+  },
+  {
+    "id": "r008-c04",
+    "parent": "r006-c01",
+    "title": "Calme attentif",
+    "mutation": "Paupières en arcs; possibilité calme ou somnolente à départager."
+  },
+  {
+    "id": "r008-c05",
+    "parent": "r006-c01",
+    "title": "Prêt à explorer",
+    "mutation": "Pieds optionnels attachés sous assise, étude posée; aucune marche animée."
+  },
+  {
+    "id": "r008-c06",
+    "parent": "r006-c01",
+    "title": "Suspendu, réceptif",
+    "mutation": "Suspension par boucle, pieds rétractés; pose fixe, aucun balancement validé."
+  }
+]

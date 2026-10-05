@@ -1,12 +1,6 @@
 # Saved work request
-Revision: 1; source: user setup request, 2026-10-04 Europe/Paris
-Based on state revision: 1; phase: setup before phase 0; mode: scaffold
-Selected parents: []; expected visual proposals: 0
-Consumed by: initialization E0001 (no design attempt)
-Verbatim boundary: "Do not design or propose the Lantern icon yet."
-Verbatim requirement: "Ensure the harness is self-explanatory to another agent without
-relying on this chat."
-Authorized work: inspect agent_design; create generic workflow, persistent log,
-checkpoint, templates, rubric and asset directories; record established Lantern inputs.
-Next: await user initiation of phase 0; capture that request as revision 2.
-This consumed setup request does not authorize visual generation.
+Revision 21; 2026-10-06 Europe/Paris; base state 23; phase 4 paused for later review.
+Verbatim user input: "commit i will continue later".
+Scope: commit identity-workshop progress and preserve resume checkpoint; no further design, motion acceptance or phase transition.
+Consumed by pause/commit documentation for r010. Last design request 20 remains preserved in rounds/r010/request.md.
+Resume: review six movement studies, supply pace/amplitude/gesture feedback before refinements or grammar acceptance.

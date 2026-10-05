@@ -1,0 +1,56 @@
+[
+  {
+    "id": "r010-c01",
+    "name": "Repos disponible",
+    "parent": "r008-c02",
+    "duration": 2400,
+    "meaning": "Présence attentive",
+    "trigger": "Disponibilité — repos sans boucle",
+    "fallback": "Regard neutre"
+  },
+  {
+    "id": "r010-c02",
+    "name": "Curiosité",
+    "parent": "r008-c03",
+    "duration": 1800,
+    "meaning": "Une piste attire l’attention",
+    "trigger": "Réaction ponctuelle demandée",
+    "fallback": "Inclinaison légère, regard latéral"
+  },
+  {
+    "id": "r010-c03",
+    "name": "Quelques pas",
+    "parent": "r009-c05",
+    "duration": 3200,
+    "meaning": "Déplacement court",
+    "trigger": "Destination choisie par l’utilisateur",
+    "fallback": "Pieds posés à destination"
+  },
+  {
+    "id": "r010-c04",
+    "name": "Suspension",
+    "parent": "r008-c06",
+    "duration": 3600,
+    "meaning": "Stabilisation après accrochage",
+    "trigger": "Attache choisie à la boucle",
+    "fallback": "Suspendu immobile"
+  },
+  {
+    "id": "r010-c05",
+    "name": "Chauffe et envol",
+    "parent": "r008-c02",
+    "duration": 3200,
+    "meaning": "Élévation douce",
+    "trigger": "Flottement explicitement demandé",
+    "fallback": "Flottant immobile"
+  },
+  {
+    "id": "r010-c06",
+    "name": "Descente et pose",
+    "parent": "r009-c05",
+    "duration": 3000,
+    "meaning": "Retour à un appui stable",
+    "trigger": "Retour au sol demandé",
+    "fallback": "Pieds posés"
+  }
+]

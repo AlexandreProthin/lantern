@@ -1,0 +1,20 @@
+{
+  "browser": "153.0.8010.12",
+  "checks": [
+    "static-on-load",
+    "play",
+    "pause-freezes",
+    "resume",
+    "interrupt-settles",
+    "reduced-no-spatial-motion",
+    "hide-removes-actors",
+    "show-does-not-replay",
+    "scrub",
+    "64px-light",
+    "finite-end",
+    "360px-no-overflow",
+    "system-reduced-motion",
+    "finite-model-values"
+  ],
+  "errors": []
+}

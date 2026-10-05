@@ -1,0 +1,72 @@
+[
+  {
+    "id": "r002-c01",
+    "name": "Le veilleur",
+    "metaphor": "Un objet-guide habité : porter une présence et une lumière.",
+    "shape": "Corps trapu encadré par une anse ouverte ; centre creux.",
+    "geometry": "Arcs structurés, symétrie assouplie et masses larges.",
+    "personality": "Compagnon serviable, rassurant et un peu espiègle.",
+    "motion": "Inclinaison attentive, léger tassement, anse expressive ; repos parfaitement immobile.",
+    "strength": "Lien immédiat au nom et potentiel de marque structurée.",
+    "risk": "Lanterne générique, pictogramme de camping ou personnage trop mécanique.",
+    "favicon": "Anse et corps pourraient survivre ; vide intérieur à simplifier. Non testé.",
+    "prompt": "A compact inhabited lantern-object guide: a squat rounded rectangular frame, a broad open arch handle, one bold hollow inner chamber as its visual signature. It feels like a thoughtful helpful portable object becoming a playful companion. Express using whole-body tilts and the handle; minimal optional facial cue only inside the chamber. No flame-shaped body, no insect, no generic round robot head.",
+    "full_prompt": "Use case: logo-brand. Asset type: early visual territory exploration sheet for Lantern, a desktop workspace for learning and thinking with AI. This is a rough concept study, NOT a finished logo or polished mascot. Values: curiosity, rigor, open-mindedness; friendly, cute, intelligent, expressive/playful but calm when attention is required. One sheet devoted exclusively to ONE design family described below. Landscape composition on plain off-white: large neutral main study on the left; two smaller gesture studies on the right (one calm, one playful); one small solid silhouette thumbnail along the bottom. Equal charcoal grayscale flat sketch finish throughout, no color, no glow, no gradients, no rendering texture, no room scenes, no decorative stars, no accessories, no marketing mockups. The main study must be clearly visible and occupy about half the sheet. Preserve the same family invariants across poses. Leave generous whitespace. No text, no labels, no logos, no watermark. The tiny thumbnail is only a rough reduction, not proof of a working favicon.\nTerritory: A compact inhabited lantern-object guide: a squat rounded rectangular frame, a broad open arch handle, one bold hollow inner chamber as its visual signature. It feels like a thoughtful helpful portable object becoming a playful companion. Express using whole-body tilts and the handle; minimal optional facial cue only inside the chamber. No flame-shaped body, no insect, no generic round robot head."
+  },
+  {
+    "id": "r002-c02",
+    "name": "Le déplieur",
+    "metaphor": "La pensée qui s’ouvre et se développe.",
+    "shape": "Une forme compacte à deux lobes repliés qui peut s’ouvrir autour d’un noyau.",
+    "geometry": "Plis doux et surfaces simples, enveloppe asymétrique.",
+    "personality": "Curieux, réceptif, joueur et patient.",
+    "motion": "Ouverture, repli, inclinaison ; les plis servent de gestes.",
+    "strength": "Ouverture d’esprit exprimée par la structure même.",
+    "risk": "Ressembler à une feuille, un livre ou un logo écologique ; plis trop fins.",
+    "favicon": "Deux lobes et encoche centrale à préserver en masse. Non testé.",
+    "prompt": "A small unfolding companion, a single compact folded form with two broad soft lobes embracing one simple inner core, like an idea opening rather than a literal plant or book. Make opening and closing the two lobes its defining expression. Asymmetric rounded folded geometry, clear central notch, no stem, no flower, no lantern handle, no limbs required. Its intelligent attentiveness is conveyed by orientation and folding rather than a standard pair of cartoon eyes.",
+    "full_prompt": "Use case: logo-brand. Asset type: early visual territory exploration sheet for Lantern, a desktop workspace for learning and thinking with AI. This is a rough concept study, NOT a finished logo or polished mascot. Values: curiosity, rigor, open-mindedness; friendly, cute, intelligent, expressive/playful but calm when attention is required. One sheet devoted exclusively to ONE design family described below. Landscape composition on plain off-white: large neutral main study on the left; two smaller gesture studies on the right (one calm, one playful); one small solid silhouette thumbnail along the bottom. Equal charcoal grayscale flat sketch finish throughout, no color, no glow, no gradients, no rendering texture, no room scenes, no decorative stars, no accessories, no marketing mockups. The main study must be clearly visible and occupy about half the sheet. Preserve the same family invariants across poses. Leave generous whitespace. No text, no labels, no logos, no watermark. The tiny thumbnail is only a rough reduction, not proof of a working favicon.\nTerritory: A small unfolding companion, a single compact folded form with two broad soft lobes embracing one simple inner core, like an idea opening rather than a literal plant or book. Make opening and closing the two lobes its defining expression. Asymmetric rounded folded geometry, clear central notch, no stem, no flower, no lantern handle, no limbs required. Its intelligent attentiveness is conveyed by orientation and folding rather than a standard pair of cartoon eyes."
+  },
+  {
+    "id": "r002-c03",
+    "name": "La luciole",
+    "metaphor": "Une petite présence vivante qui accompagne l’exploration.",
+    "shape": "Corps en haricot, tête distincte et petite paire d’antennes courtes.",
+    "geometry": "Volumes organiques peu nombreux, appendices épais et rares.",
+    "personality": "Vive, attachante, observatrice ; capable de se poser calmement.",
+    "motion": "Orientation des antennes, envol court puis pose ; immobilité lisible.",
+    "strength": "Fort potentiel de compagnie et d’expression.",
+    "risk": "Insecte repoussant pour certains, mascotte enfantine ou détails qui disparaissent.",
+    "favicon": "Compactage du corps et suppression des appendices secondaires probable. Non testé.",
+    "prompt": "A friendly intelligent firefly-like companion with a compact bean-shaped abdomen, small distinct head, two short thick antennae and at most two extremely simplified tucked wing shapes. Endearing and playful but composed, not a realistic insect, no hairy legs, no huge baby eyes, no fairy sparkle effects. Give it a distinctive side-leaning silhouette. Show calm grounded pose as prominently as expressive pose. Light is suggested by a flat value patch, no glowing rendering.",
+    "full_prompt": "Use case: logo-brand. Asset type: early visual territory exploration sheet for Lantern, a desktop workspace for learning and thinking with AI. This is a rough concept study, NOT a finished logo or polished mascot. Values: curiosity, rigor, open-mindedness; friendly, cute, intelligent, expressive/playful but calm when attention is required. One sheet devoted exclusively to ONE design family described below. Landscape composition on plain off-white: large neutral main study on the left; two smaller gesture studies on the right (one calm, one playful); one small solid silhouette thumbnail along the bottom. Equal charcoal grayscale flat sketch finish throughout, no color, no glow, no gradients, no rendering texture, no room scenes, no decorative stars, no accessories, no marketing mockups. The main study must be clearly visible and occupy about half the sheet. Preserve the same family invariants across poses. Leave generous whitespace. No text, no labels, no logos, no watermark. The tiny thumbnail is only a rough reduction, not proof of a working favicon.\nTerritory: A friendly intelligent firefly-like companion with a compact bean-shaped abdomen, small distinct head, two short thick antennae and at most two extremely simplified tucked wing shapes. Endearing and playful but composed, not a realistic insect, no hairy legs, no huge baby eyes, no fairy sparkle effects. Give it a distinctive side-leaning silhouette. Show calm grounded pose as prominently as expressive pose. Light is suggested by a flat value patch, no glowing rendering."
+  },
+  {
+    "id": "r002-c04",
+    "name": "Le galet ouvert",
+    "metaphor": "Un petit volume attentif, dont l’ouverture suggère le regard et la curiosité.",
+    "shape": "Galet asymétrique debout, traversé par une grande ouverture décentrée.",
+    "geometry": "Une masse sculpturale souple et un vide franc.",
+    "personality": "Calme, accessible, attentif ; jeu par posture.",
+    "motion": "Bascule, rotation et compression légère ; l’ouverture se réoriente.",
+    "strength": "Silhouette compacte, réserve de simplicité pour la petite taille.",
+    "risk": "Trop abstrait, proche d’un œil/caméra, expression insuffisante.",
+    "favicon": "Une masse et un vide : bonne hypothèse structurelle, pas encore validée.",
+    "prompt": "A calm sculptural pebble companion: one asymmetric upright soft stone-like mass with one large off-center open aperture through it. This negative space is its identity and attention cue, NOT an eyeball or a camera lens. No standard face, no limbs, no handle. Show playful curiosity through leaning, rotating and subtle squashing, while preserving the same chunky aperture-bearing shape. Flat sketch values, absolutely no polished stone material or 3D shading.",
+    "full_prompt": "Use case: logo-brand. Asset type: early visual territory exploration sheet for Lantern, a desktop workspace for learning and thinking with AI. This is a rough concept study, NOT a finished logo or polished mascot. Values: curiosity, rigor, open-mindedness; friendly, cute, intelligent, expressive/playful but calm when attention is required. One sheet devoted exclusively to ONE design family described below. Landscape composition on plain off-white: large neutral main study on the left; two smaller gesture studies on the right (one calm, one playful); one small solid silhouette thumbnail along the bottom. Equal charcoal grayscale flat sketch finish throughout, no color, no glow, no gradients, no rendering texture, no room scenes, no decorative stars, no accessories, no marketing mockups. The main study must be clearly visible and occupy about half the sheet. Preserve the same family invariants across poses. Leave generous whitespace. No text, no labels, no logos, no watermark. The tiny thumbnail is only a rough reduction, not proof of a working favicon.\nTerritory: A calm sculptural pebble companion: one asymmetric upright soft stone-like mass with one large off-center open aperture through it. This negative space is its identity and attention cue, NOT an eyeball or a camera lens. No standard face, no limbs, no handle. Show playful curiosity through leaning, rotating and subtle squashing, while preserving the same chunky aperture-bearing shape. Flat sketch values, absolutely no polished stone material or 3D shading."
+  },
+  {
+    "id": "r002-c05",
+    "name": "Le lien vivant",
+    "metaphor": "Un fil de pensée qui relie et accompagne.",
+    "shape": "Une bande épaisse continue formant une boucle ouverte avec un bout libre.",
+    "geometry": "Courbes tendues, épaisseur généreuse, un seul chevauchement maximum.",
+    "personality": "Agile, curieux et joueur ; intelligence suggérée par le geste.",
+    "motion": "Nœud lâche, ouverture, inclinaison du bout libre ; pose stable au repos.",
+    "strength": "Lien au graphe d’idées sans dessiner un réseau de nœuds.",
+    "risk": "Logo abstrait, serpent, symbole infini ou enchevêtrement illisible.",
+    "favicon": "Boucle et bout libre à maintenir sans entrelacs. Non testé.",
+    "prompt": "An abstract living ribbon companion: one single thick continuous band curled into a compact OPEN loop with one short free end acting as an attentive gesture. At most one broad crossing. Do not make an infinity sign, letter, snake, knot tangle, or standard smiling blob. Its personality comes from the posture of the ribbon, without a face. Simple flat front-facing readable form with no thin ends. Show one calm settled loop and one inquisitive slightly opened posture.",
+    "full_prompt": "Use case: logo-brand. Asset type: early visual territory exploration sheet for Lantern, a desktop workspace for learning and thinking with AI. This is a rough concept study, NOT a finished logo or polished mascot. Values: curiosity, rigor, open-mindedness; friendly, cute, intelligent, expressive/playful but calm when attention is required. One sheet devoted exclusively to ONE design family described below. Landscape composition on plain off-white: large neutral main study on the left; two smaller gesture studies on the right (one calm, one playful); one small solid silhouette thumbnail along the bottom. Equal charcoal grayscale flat sketch finish throughout, no color, no glow, no gradients, no rendering texture, no room scenes, no decorative stars, no accessories, no marketing mockups. The main study must be clearly visible and occupy about half the sheet. Preserve the same family invariants across poses. Leave generous whitespace. No text, no labels, no logos, no watermark. The tiny thumbnail is only a rough reduction, not proof of a working favicon.\nTerritory: An abstract living ribbon companion: one single thick continuous band curled into a compact OPEN loop with one short free end acting as an attentive gesture. At most one broad crossing. Do not make an infinity sign, letter, snake, knot tangle, or standard smiling blob. Its personality comes from the posture of the ribbon, without a face. Simple flat front-facing readable form with no thin ends. Show one calm settled loop and one inquisitive slightly opened posture."
+  }
+]

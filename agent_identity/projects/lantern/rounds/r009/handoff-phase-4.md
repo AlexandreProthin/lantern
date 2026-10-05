@@ -1,0 +1,9 @@
+# Lantern — character-stage handoff
+2026-10-05 Europe/Paris. Accepted static character vocabulary documented; phase 4 has not begun.
+Read AGENTS/RESUME then STATE/REQUEST/LOG, contract 2/rubric 1. D0015 "tout me convient" accepts r008-c01..c06; D0016 "oui" accepts r009-c05/c07/c08 only, after a scoped question. No exclusive master inferred.
+Rules: rounds/r009/character-rules-accepted-v2.md. Review: rounds/r008/sheet.png and rounds/r009/sheet.png. Sources/parents: each candidates/ record and sources/lineage.json. Accepted-source hashes: rounds/r009/accepted-source-manifest.json.
+Neutral favicon: r007-c01-16.svg at 16, r006-c01.svg at 24–256, responsive rule r007/responsive-rules-v2-accepted.md. Preserve frame, asymmetric flame, base and loop. Face optional in companion, confined to flame. Feet can emerge under base, suspension uses loop; approved planted feet/profile/rear conventions as shown.
+Evidence: r009/evidence/matrix.png, anchors.png, method.md, critique.md; r008 equivalents. Small-size details fragile, profile is affine compression, back convention not physically modeled. Actual product size/context/perceptual recognition still untested; acceptance does not turn these into passes.
+Next proposed phase: motion grammar, only after explicit user initiation. Define triggers, meaning, duration, interruption, transitions and static/reduced-motion fallback before converging. User potentials historically include emerging feet, suspension/balancing/falling, heating for floating; none is a validated animation grammar. Do not import arbitrary state counts from other products.
+No animation, palette, release or product installation completed. Changed anchor geometry requires recorded test invalidation and phase-2 retests. Documented transition readiness is not implicit authorization to animate.
+Point of reprise: STATE 22, REQUEST 19 consumed, r009/checkpoints/c002.md. Next attempt r010, next E0032/D0017; new generation needs a new request.

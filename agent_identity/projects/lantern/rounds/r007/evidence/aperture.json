@@ -1,0 +1,50 @@
+[
+  {
+    "id": "parent",
+    "polarity": "light",
+    "loop_roi_background_pixels": 4,
+    "roi": [
+      7,
+      1,
+      8,
+      2
+    ],
+    "threshold": 136
+  },
+  {
+    "id": "parent",
+    "polarity": "dark",
+    "loop_roi_background_pixels": 2,
+    "roi": [
+      7,
+      1,
+      8,
+      2
+    ],
+    "threshold": 136
+  },
+  {
+    "id": "c01",
+    "polarity": "light",
+    "loop_roi_background_pixels": 4,
+    "roi": [
+      7,
+      1,
+      8,
+      2
+    ],
+    "threshold": 136
+  },
+  {
+    "id": "c01",
+    "polarity": "dark",
+    "loop_roi_background_pixels": 4,
+    "roi": [
+      7,
+      1,
+      8,
+      2
+    ],
+    "threshold": 136
+  }
+]

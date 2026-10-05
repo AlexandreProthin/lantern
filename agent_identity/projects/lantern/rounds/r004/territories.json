@@ -1,0 +1,66 @@
+[
+  {
+    "id": "r004-c01",
+    "number": "01",
+    "name": "Contour vivant",
+    "parents": [
+      "r003-c08"
+    ],
+    "idea": "Contour continu de goutte, fin mais lisible, flamme ample et base plate.",
+    "drawing": "A continuous bold dark graphic teardrop outline, broad rounded shoulders, a short centered closed suspension loop, and a flattened bottom which can rest on a surface. The hollow is filled by a generous pale living flame with a gently bent tip. Pure frontal view, no eyes in this variant. This is the closest simple graphical translation of reference 08."
+  },
+  {
+    "id": "r004-c02",
+    "number": "02",
+    "name": "Flamme articulée",
+    "parents": [
+      "r003-c08",
+      "r003-c03"
+    ],
+    "idea": "Deux montants souples distincts, cadre ouvert et assise compacte ; cœur expressif.",
+    "drawing": "Two separate tapered dark protective side strokes arching from a simple shallow base to a compact oval suspension loop. Inner flame large and slightly asymmetric with two TINY dark vertical eye marks. The outer structure is open and supple like a drawn character shape, not metal rails. One frontal resting pose, no limbs."
+  },
+  {
+    "id": "r004-c03",
+    "number": "03",
+    "name": "Facettes adoucies",
+    "parents": [
+      "r003-c08",
+      "r003-c02"
+    ],
+    "idea": "Silhouette hexagonale compacte avec coins souples et flamme centrale presque entière.",
+    "drawing": "A squat softly angular HEXAGONAL dark outline with rounded corners, a flat integrated lower edge and a small top suspension ring. One bright broad flame almost filling the interior. No roof or panels, no glass, no perspective, no face outside. Solid, gentle geometric identity, gaze suggested only by flame tilt."
+  },
+  {
+    "id": "r004-c04",
+    "number": "04",
+    "name": "Arche légère",
+    "parents": [
+      "r003-c08",
+      "r003-c03"
+    ],
+    "idea": "Arche haute ouverte, peu de matière apparente, flamme lisible sans grande cage.",
+    "drawing": "A TALL open rounded arch with slim but bold dark sides, short flat base and a small hook-like CLOSED loop centered above. The flame inside is shorter and wide, leaning slightly toward one side with two tiny understated eyes. Keep the frame high and spacious, much lighter than a cage, yet visibly a portable lantern. Frontal plane only."
+  },
+  {
+    "id": "r004-c05",
+    "number": "05",
+    "name": "Écrin souple",
+    "parents": [
+      "r003-c08"
+    ],
+    "idea": "Enveloppe arrondie basse, bord continu épais ; se tasse sans perdre sa silhouette.",
+    "drawing": "A LOW wide rounded-pearl lantern contour, charcoal on outside and large pale central cutout, a centered short loop above. Its body gently compresses at the flat resting base like a soft graphic envelope. Internal flame smallish but still dominant, curling inquisitively; no face, no legs. NOT a bag: outer body is open contour, no fabric surfaces or handles arching wide."
+  },
+  {
+    "id": "r004-c06",
+    "number": "06",
+    "name": "Berceau de lumière",
+    "parents": [
+      "r003-c08",
+      "r003-c03"
+    ],
+    "idea": "Deux bandes dessinent un berceau et une ouverture haute, base stable, cœur attentif.",
+    "drawing": "Two dark sweeping graphic bands form a clean narrow teardrop cage and a broad U-shaped cradle base, converging at one small top suspension loop. One band is subtly thinner, creating gentle asymmetry. Large pale central living flame, two tiny slanted attentive eye marks, no smile. A seated stable configuration, no visible feet. Bands have NO twists or 3D thickness, just flat curves."
+  }
+]

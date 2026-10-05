@@ -1,0 +1,14 @@
+# Current checkpoint — Lantern
+State revision 19; 2026-10-05 Europe/Paris; harness 1.0.
+Phase 3 active, attempt r008, first divergence/critique complete, awaiting user review.
+Request 16 consumed by r008; user verbatim "go"; contract 2/rubric 1 accepted.
+Six hypotheses r008-c01..c06, parent r006-c01, sources rounds/r008/sources/. No new selection; D0014 remains latest human decision.
+Accepted favicon anchors unchanged: r007-c01 at 16, r006-c01 at 24–256. Character eyes/feet/suspension are optional proposals, not accepted anatomy.
+Completed: one common sheet with one illustration per hypothesis, 48 native character PNGs, visual review, critique and source hash manifest. Main review rounds/r008/sheet.png; tests rounds/r008/evidence/matrix.png.
+Agent recommendation c02; minimal reference c01; expression options c03/c04, attachment options c05/c06. No human rejection.
+Limits: details weak at 32, actual product size/perception/front-profile-back/full pose range untested. No phase closure, animation, palette or release.
+Next exact action: receive numbered feedback; record verbatim new request before controlled refinement. Do not regenerate published candidates. Mutation needs new IDs; phase-2 reopening only if neutral anchor altered.
+Latest E0027; next E0028/D0015; next unused candidate r008-c07; next attempt r009 only when new attempt justified. Next artifact A0547.
+Checkpoint rounds/r008/checkpoints/c001.md; commit manifest E0026/E0027, request 16, A0460–A0546.
+
+

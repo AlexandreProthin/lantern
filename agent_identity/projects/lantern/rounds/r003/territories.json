@@ -1,0 +1,84 @@
+[
+  {
+    "id": "r003-c01",
+    "number": "01",
+    "name": "Lanterne à chambre vive",
+    "parents": [
+      "r002-c01"
+    ],
+    "direction": "Une chambre carrée compacte, cadre structuré et anse triangulaire basse ; flamme autonome au centre.",
+    "geometry": "A compact geometric lantern with a clearly square luminous inner chamber, thick beveled charcoal corner frame and a LOW triangular carry loop distinct from a handbag arch. One sizeable living white flame inside, leaning inquisitively; internal flame is the focal presence, no face painted on the outside. Stable base, no feet."
+  },
+  {
+    "id": "r003-c02",
+    "number": "02",
+    "name": "Lanterne hexagonale",
+    "parents": [
+      "r002-c01"
+    ],
+    "direction": "Un volume hexagonal fermé autour d’une flamme inclinée ; anse angulaire intégrée.",
+    "geometry": "A squat HEXAGONAL lantern housing with angular integrated small handle and a generous luminous interior; the charcoal housing is visibly six-sided, not square or circular. A bold gently hooked white flame fills the center as the living presence. Slight attentive tilt. No feet, no external eyes."
+  },
+  {
+    "id": "r003-c03",
+    "number": "03",
+    "name": "Lanterne ouverte",
+    "parents": [
+      "r002-c01"
+    ],
+    "direction": "Une flamme centrale protégée par deux montants, sans vitrage ni boîte creuse.",
+    "geometry": "An OPEN architectural lantern: low solid base, just two thick slanted upright protective rails and a short angular top bridge/handle. A large substantial living white flame is fully visible between the rails. Slender upright proportions, no rectangular enclosure, no glass box, no camping kerosene apparatus. The flame subtly curls toward the viewer."
+  },
+  {
+    "id": "r003-c04",
+    "number": "04",
+    "name": "Lampion plissé",
+    "parents": [
+      "r002-c01"
+    ],
+    "direction": "Un lampion rond compact, plis lisibles et flamme diffuse contenue.",
+    "geometry": "A ROUND PAPER LANTERN companion with a compact ribbed folded sphere, flat small top and bottom caps, a tiny angular hanging loop. Four or five broad structural folds maximum, translucent pale body and a clearly visible living charcoal/white flame core. No face outside, no feet, no red festival decoration, no tassel. Tilt the entire body gently for attention."
+  },
+  {
+    "id": "r003-c05",
+    "number": "05",
+    "name": "Lampion facetté",
+    "parents": [
+      "r002-c01"
+    ],
+    "direction": "Une enveloppe de papier à facettes autour d’une présence lumineuse ; plus géométrique que festive.",
+    "geometry": "A FACETED PAPER LANTERN, diamond-octagonal folded envelope with two broad crisp side planes, small open top loop and a softly alive flame inside. This is a portable welcoming light entity, not an origami bird or gem. Neutral pale folded shell, charcoal edge structure, no tassels or face. Wide compact faceted silhouette, distinguish from the round paper lantern."
+  },
+  {
+    "id": "r003-c06",
+    "number": "06",
+    "name": "Lampion coussin",
+    "parents": [
+      "r002-c01"
+    ],
+    "direction": "Un lampion oblong bas, chaleureux, qui peut se tasser légèrement au repos.",
+    "geometry": "A LOW WIDE oblong paper-lantern companion, cushion-shaped ribbed enclosure with thick side end-caps, no handle arch, small top hook only. Pale translucent shell, one clearly contained living flame core with an upright tip. Three broad bands/folds, not a bag or speaker grille. Shape is about twice as wide as tall. Gentle resting posture without legs."
+  },
+  {
+    "id": "r003-c07",
+    "number": "07",
+    "name": "Lanterne-luciole",
+    "parents": [
+      "r002-c01",
+      "r002-c03"
+    ],
+    "direction": "Le corps lumineux de la luciole devient la chambre de la lanterne ; très peu d’indices d’insecte.",
+    "geometry": "A lantern-firefly bridge: compact pear-shaped translucent luminous abdomen framed by two charcoal protective side arcs, small angular carry loop functioning like two short joined antennae. One living white flame clearly contained within the body. The lantern structure must dominate, insect lineage only in a gently poised organic tilt. No wings, no segmented legs, no baby face."
+  },
+  {
+    "id": "r003-c08",
+    "number": "08",
+    "name": "Flamme en suspension",
+    "parents": [
+      "r002-c01",
+      "r002-c03"
+    ],
+    "direction": "Une entité lumineuse contenue dans un cadre polygonal suspendu, expressive par la flamme.",
+    "geometry": "A living flame suspended inside a SINGLE thick polygonal teardrop protective lantern cage, with a short top carry stem and open bottom cradle. Housing and internal flame clearly separate; a buoyant slightly off-center flame with two tiny subtle negative-space eye slits, no smiling mouth. Frame rests in a calm floating pose. No limbs, no bug anatomy, no generic glowing blob without a lantern cage."
+  }
+]

@@ -1,0 +1,16 @@
+# Current checkpoint — Lantern
+State revision 13; 2026-10-05 Europe/Paris; harness 1.0.
+Phase 2 / Round 2 active; attempt r005; silhouette selected, static validation pending.
+Request 10 consumed by r005 selection; contract 2/rubric 1 accepted.
+Selected silhouette r005-c03 (D0012), parent r004-c02 (D0010), ancestors r003-c08/r003-c03.
+Other r005 candidates preserved/nonselected; no explicit human rejection.
+Source rounds/r005/sources/r005-c03.svg; selection rounds/r005/selection.md.
+Evidence rounds/r005/evidence/; method.md and critique.md retain observations/limitations.
+Locks: selected familial frame, central flame, base and suspension loop; neutral silhouette without eyes. Later character detail remains undecided.
+Open: loop readability at 16, optical centering, confusable recognition, SVG/raster consistency. Selection is not empirical test acceptance.
+Completed: static review packet and human silhouette selection; no new sources generated after feedback.
+Next exact action: refine/validate c03 in phase 2; record new request revision and IDs before any geometry mutation; retest 16/24/32/48 light/dark and app sizes. No responsive c02 split inferred.
+Permission boundary: static phase 2; no animation, later phase or release.
+Latest event/decision E0018/D0012; checkpoint rounds/r005/checkpoints/c003.md.
+Next event/decision E0019/D0013; next attempt r006 if new iteration.
+Artifact manifest A0293–A0300; next artifact A0301.

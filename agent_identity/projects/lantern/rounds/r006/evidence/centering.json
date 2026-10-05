@@ -1,0 +1,86 @@
+[
+  {
+    "id": "parent",
+    "size": 16,
+    "ink_centroid_x": 7.869106658731735,
+    "ink_centroid_y": 10.570819281888525,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "parent",
+    "size": 24,
+    "ink_centroid_x": 11.814611326474102,
+    "ink_centroid_y": 15.93341397301,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "parent",
+    "size": 32,
+    "ink_centroid_x": 15.745822958983117,
+    "ink_centroid_y": 21.24580657843012,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "parent",
+    "size": 48,
+    "ink_centroid_x": 23.6206168972418,
+    "ink_centroid_y": 31.90774819455325,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "c01",
+    "size": 16,
+    "ink_centroid_x": 7.870760081040456,
+    "ink_centroid_y": 10.471635840794727,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "c01",
+    "size": 24,
+    "ink_centroid_x": 11.816854515580408,
+    "ink_centroid_y": 15.789988757891098,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "c01",
+    "size": 32,
+    "ink_centroid_x": 15.749008081102545,
+    "ink_centroid_y": 21.05024372864341,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "c01",
+    "size": 48,
+    "ink_centroid_x": 23.62591558371818,
+    "ink_centroid_y": 31.58362868291988,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "c02",
+    "size": 16,
+    "ink_centroid_x": 7.8710560625814905,
+    "ink_centroid_y": 10.452151238591922,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "c02",
+    "size": 24,
+    "ink_centroid_x": 11.817948276356956,
+    "ink_centroid_y": 15.73858319699188,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "c02",
+    "size": 32,
+    "ink_centroid_x": 15.75025798129638,
+    "ink_centroid_y": 20.979071267333154,
+    "note": "ink centroid, not perceptual centering"
+  },
+  {
+    "id": "c02",
+    "size": 48,
+    "ink_centroid_x": 23.627762691811522,
+    "ink_centroid_y": 31.47198999337172,
+    "note": "ink centroid, not perceptual centering"
+  }
+]

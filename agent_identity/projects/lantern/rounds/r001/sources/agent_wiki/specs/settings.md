@@ -1,0 +1,121 @@
+---
+type: Spec
+title: Settings
+description: Every v0.1.0 setting with type, default, validation and effect; the app-side settings file; the panel structure; the library folder change flow; the provider status UI.
+tags: [settings, config, provider, library]
+status: stable
+generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
+---
+
+Source: spec workshop rounds 1–3 (2026-10-01/02). Agreed with the user 2026-10-02 (q-r3-review).
+
+Settings are app-wide and stored app-side, never in the library ([subject-storage](/specs/subject-storage.md), ST-3).
+Per-subject choices (tone, model, effort) live in the subject ([domain-model](/specs/domain-model.md));
+the settings below only supply their **defaults**.
+
+# Settings catalogue
+
+| Section | Key | Type | Default | Validation | Effect |
+|---|---|---|---|---|---|
+| General | `library.path` | absolute path | `Documents/Lantern` | must exist or be creatable, writable; not inside the app install dir | via the change flow (SE-30 to SE-36) |
+| General | `user.displayName` | string | Windows user name | trimmed, 1–40 chars; empty resets to the default | new edits and turns only; stored names on existing content are not rewritten |
+| Provider | `provider.defaultModel` | string | `opus` | alias `opus`/`sonnet`/`haiku` or free-text id, 1–100 chars, `[A-Za-z0-9._:-]` | new subjects; existing subjects keep their own model |
+| Provider | `provider.defaultEffort` | enum | `medium` | `low`/`medium`/`high`/`xhigh`/`max` | new subjects; existing subjects keep their own effort |
+| Learn room | `learn.defaultTone` | enum or text | `curious` | preset (`eli5`, `curious`, `student`, `engineer`, `expert`) or custom text up to 300 chars | new subjects; a subject's tone is changed in its subject menu (opened from the title in the header; [rooms-spaces](/specs/rooms-spaces.md) RS-15) |
+| Learn room | `learn.contextBudget` | integer (advanced) | 12000 | 2000–100000 tokens | next generation (the map part only; the CLI's own ~13k baseline is extra) |
+| Appearance | `appearance.reduceMotion` | enum | `system` | `system`/`on`/`off` | immediate; `system` follows the OS |
+| Appearance | `appearance.showTokenStats` | boolean | true | — | immediate; hides every token and time figure (node meta line, stats hover, Gallery cards) |
+
+Everything is stored under the keys above, except the following **UI memory**, which is stored in the same
+file but has no settings control:
+
+| Key | Type | Default | Meaning |
+|---|---|---|---|
+| `ui.studySplitPercent` | number 20–80 | 44 | Study split position, app-wide; double-click on the divider resets it |
+| `ui.studyCollapsed` | `none`/`graph`/`panel` | `none` | collapsed side, app-wide |
+| `ui.legendCollapsed` | boolean | false | legend state |
+| `ui.lastRoom` | string | `learn` | the room whose Welcome opens at launch |
+| `ui.graphLayout` | `free`/`tree` | `free` | graph layout toggle |
+
+The defaults of the catalogue are model `opus`, effort `medium`, tone `curious`, layout `free`, context budget 12000 within 2000 to 100000. `opus` is the alias for the latest Opus, currently Opus 5.5 (`claude-opus-5-5`); the default is not `sonnet`.
+
+The last-opened times and the recents list are **not** in this file: they live in the app state file of SE-50.
+
+# Storage
+
+- **SE-1** Settings MUST be one JSON file at `%APPDATA%/Lantern/settings.json` (the OS config directory as given by the platform), with `"format": "lantern-settings/1"`.
+- **SE-2** Writes MUST be atomic (temp file in the same directory, then rename) and debounced (about 300 ms), flushing on window close.
+- **SE-3** The file MUST be versioned; migrations are forward-only with a backup (`settings.json.bak`), like subjects (ST-31). A higher major version MUST open read-only with a message.
+- **SE-4** Unknown keys MUST be preserved on read and write, so a newer or other-room settings section is never lost.
+- **SE-5** A missing, empty or corrupt file MUST yield defaults, keep the corrupt file as `settings.json.corrupt-<timestamp>`, and show a toast; the app MUST always start.
+- **SE-6** Each value MUST be validated on read and on change; an invalid stored value falls back to its default without discarding the others.
+- **SE-7** The file MUST NOT contain secrets (API keys are Later and get their own spec: [inference-provider](/specs/inference-provider.md), IP-63).
+
+# Panel
+
+- **SE-10** The panel MUST open from the **gear in the header** and from **Ctrl+,** (table: [graph-view](/specs/graph-view.md) GV-76); Esc closes it. It is an overlay, so the current space stays visible underneath.
+- **SE-11** The panel MUST have sections **General**, **Provider**, **Learn room** and **Appearance**, in that order, as a left list with the content on the right.
+- **SE-12** **Learn room** is the *room submenu*. Settings sections MUST be contributed by the room definition (id, label, fields with the shape of the catalogue above), so a future room adds its own submenu without changing the panel code ([rooms-spaces](/specs/rooms-spaces.md)).
+- **SE-13** Advanced settings (context budget) MUST sit under an *Advanced* fold inside their section.
+- **SE-14** Changes MUST apply **on change**, with no Save button. A text field applies on blur or Enter (debounced while typing); an invalid value shows an inline message and is not applied.
+- **SE-15** Each setting that only affects future work MUST say so in a one-line hint (for example *Applies to new generations*).
+- **SE-16** Each section MUST offer *Reset to defaults* for its own keys, after a confirmation.
+- **SE-17** All labels and hints MUST live in the strings module (PQ-4).
+
+# General
+
+- **SE-20** The display name default MUST be the Windows user name (`USERNAME`), read at first run and stored; the user can change it. It is the author name on learner turns and edits ([domain-model](/specs/domain-model.md)).
+- **SE-21** *Reveal library in Explorer* MUST open the library folder.
+
+# Library folder change flow
+
+Moving is offered, never forced.
+
+- **SE-30** The *Library folder* field MUST be an editable path input (Enter or *Apply path* confirms) and *Browse…* MUST open the system folder picker (File Explorer style, starting in the current library); typed and picked paths follow the same flow. Paths shown or stored MUST be plain (no `\\?\` verbatim prefix). The chosen folder MUST be validated (SE catalogue) before anything else happens.
+- **SE-31** If any generation is in flight, the change MUST wait: the button is disabled with *Finish or cancel the running generation first*.
+- **SE-32** The app MUST flush pending saves and close the open subject's file handle state before switching.
+- **SE-33** If the old library holds subjects, the app MUST offer three choices: **Move** the subjects (copy with verification of each file, then remove the originals only after all copies verify), **Copy** them (originals stay), or **Leave them** and switch only.
+- **SE-34** If the chosen folder already contains `subjects/*.json`, they MUST be listed in the new library as they are; subject ids that collide with a moved one MUST NOT be overwritten: the moved file gets a new id suffix and the user is told.
+- **SE-35** After the switch the app MUST return to the current room's Welcome, reload the subject list from the new library and show a toast naming the folder. Settings are written only after the folder switch succeeded.
+- **SE-36** A failed move MUST leave the old library active and every original file in place, and report which files failed. Nothing is ever deleted unless all copies verified.
+
+# Provider status
+
+The status area in **Provider** shows what the Claude Code CLI provider ([inference-provider](/specs/inference-provider.md)) can do now.
+
+- **SE-40** The section MUST show: *Found / Not found* with the located path, the version, and *Signed in / Not signed in / Not tested yet*.
+- **SE-41** The *Test* button MUST run the tiny haiku call of IP-41 and show the result: resolved model, duration, or the typed error with its fix-it message. There MUST be no automatic call at startup.
+- **SE-42** Until a test or a real generation has run in the session, the login status MUST read *Not tested yet*; a successful or failed generation updates it.
+- **SE-43** A failure MUST show a fix-it message and a single action; the user MUST never need a terminal to understand it. Signing in is never done by Lantern in v0.1.0: the user follows step-by-step instructions (SE-47).
+
+| Error type (IP taxonomy) | Fix-it message | Action |
+|---|---|---|
+| `not-installed` | "Claude Code is not installed. Lantern uses it to talk to Claude with your subscription." | the install instructions of SE-47 (with the install link), *Check again* |
+| `not-logged-in` | "Claude Code is installed but not signed in. Sign in with your Claude account." | the sign-in instructions of SE-47, *Check again* |
+| `rate-limited` / `usage-limit` | "Your Claude usage limit was reached. It resets at <time if known>." | *Try again* |
+| `model-unknown` | "The model '<id>' is not available to your account." | *Choose a model* (focuses the default model field) |
+| `network` | "Could not reach Claude. Check your internet connection." | *Try again* |
+| `process-crashed` | "Claude Code stopped unexpectedly." | *Details*, *Try again* |
+| `protocol` | "Claude Code gave an answer Lantern could not read. Updating Claude Code may help." | *Details*, *Try again* |
+
+- **SE-44** *Details* MUST show the raw output locally and a *Copy* button; nothing is sent anywhere.
+- **SE-45** The same fix-it messages MUST be used when a generation fails in the Learn room (a banner on the node), so the user sees one vocabulary.
+- **SE-47** v0.1.0 does **not** open the sign-in for the user ([decision](/decisions/cli-signin-instructions-only.md)). When the CLI is not installed or not signed in, Settings → Provider and the frame banner ([inference-provider](/specs/inference-provider.md) IP-44) MUST show clear **step-by-step instructions** with a *Check again* button: for *not installed*, a link to the Claude Code install page and the install steps; for *not signed in*, how to sign in to Claude Code (start Claude Code once, follow its browser sign-in, come back). *Check again* runs the *Test* call. There MUST be no *Sign in to Claude Code* button in v0.1.0 (Later: Lantern opens the sign-in for you). The one-time sign-in is the only step that leaves the UI (AC-6).
+- **SE-46** The default model field MUST offer the aliases as choices and accept free text; changing it never triggers a call.
+
+# App state
+
+- **SE-50** App state MUST be kept in a file **separate from `settings.json`**: `%APPDATA%/Lantern/state.json`, with `"format": "lantern-state/1"`. It holds the last-opened time of each subject and the recents list, **keyed by subject id**; opening a subject updates this file and MUST NOT modify the subject's own file ([subject-storage](/specs/subject-storage.md) ST-6). The same rules as SE-2 to SE-6 apply (atomic debounced writes, versioned, unknown keys kept, a missing or corrupt file yields empty state and never blocks startup).
+- **SE-51** The **summary cache** ([subject-storage](/specs/subject-storage.md) ST-7) lives in the same folder (`%APPDATA%/Lantern/summaries.json`). It is keyed by file path, invalidated by mtime and size, and holds title, counts, tokens, main model, `createdAt`, tone, output tokens per resolved model and the generation count (the figures of the Gallery's detailed card stats, [welcome-gallery](/specs/welcome-gallery.md) WG-68). It is derived data and MAY be deleted at any time.
+- **SE-52** Neither file is user-editable settings: no panel control changes them.
+
+# Acceptance
+
+AC-7 in [product-scope](/specs/product-scope.md): tone, model and library folder change in the panel and take effect without reinstalling.
+
+# Open
+
+None for v0.1.0.
+
+Related: [inference-provider](/specs/inference-provider.md), [subject-storage](/specs/subject-storage.md), [learn-room](/specs/learn-room.md), [rooms-spaces](/specs/rooms-spaces.md), [product-scope](/specs/product-scope.md).

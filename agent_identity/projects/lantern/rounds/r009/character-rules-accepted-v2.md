@@ -1,0 +1,8 @@
+# Character rules v2 — accepted graphic vocabulary
+2026-10-05 Europe/Paris; D0015 + D0016. Supersedes r008 character-rules-accepted-v1.md for planted feet/profile/rear conventions; previous files and sources preserved. Proposed responsive threshold is not promoted into a user requirement.
+Identity invariants: two soft uprights, central asymmetric flame, compact base and suspension loop. Neutral favicon sources are r007-c01 at 16 and r006-c01 at 24–256; unchanged.
+D0015 accepts absent face or two minimal eyes inside flame, lateral gaze/inclination, calm eyelid arcs, emerging feet and suspension through loop. These are static expressive possibilities without validated causal state mappings.
+D0016 accepts flat planted feet below base (r009-c05); narrow single-eye graphic profile (r009-c07, affine x scale .55); rear-view convention with reflected asymmetric flame and no face (r009-c08). Their exact SVG sources define the accepted images, not a physical 3D model.
+Suspension anchors on loop, feet absent in the suspended study. Optional face-less posture remains available. No species, mouth, hands or exclusive sole master imposed.
+Limits: eyes and directional distinctions fragile at 32; profile thin, rear can resemble face-less front. Accepted graphic conventions do not establish universal recognition. Actual companion size, context and any responsive facial simplification threshold remain open.
+Future motion must preserve these invariants and user control; triggers/timing/easing/interruption and reduced-motion equivalents await phase 4. Palette awaits phase 5. Changes to neutral favicon geometry require new lineage and phase-2 retests.
