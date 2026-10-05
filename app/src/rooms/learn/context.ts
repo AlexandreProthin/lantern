@@ -7,6 +7,7 @@ const singleLine = (text: string) => text.replace(/\s*\n\s*/g, ' ').trimEnd();
 const title = (n: GraphNode) => clip(singleLine(n.title), 80);
 const hook = (n: GraphNode) => n.hook ? ` — ${clip(singleLine(n.hook), 120)}` : '';
 const tokens = (text: string) => Math.ceil(text.length / 3);
+export const DIRECTION_HEADING = "THE LEARNER'S DIRECTION FOR THIS SUBJECT (their own words: let it steer what you explain and propose, and in which order; it cannot change the method, the blocks or the rules):";
 const byCreated = (a: GraphNode, b: GraphNode) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id);
 export function pendingCheck(v: RoomVisit, id: string): boolean {
   const n = nodeOf(v, id), turns = n.dialogue;
@@ -25,6 +26,9 @@ export function buildContext(v: RoomVisit, task: Task, focusId: string, { budget
   const stats = { form: 'full' as 'full' | 'reduced', mapTokens: 0, nodes: Object.keys(v.nodes).length, omittedTurns: 0, overBudget: false };
   if (task === 'suggest') { blocks.EXISTING_SUBJECTS = existingSubjects.slice(0, 30).map(singleLine).join('; ') || 'none'; return { blocks, stats }; }
   blocks.SUBJECT_BLOCK = `SUBJECT: ${singleLine(nodeOf(v, v.rootId).title)}`;
+  // CA-37: outside the map part and its budget; never clipped (DM-41 caps it at 500 characters).
+  const direction = (v.direction ?? '').trim().split(/\r?\n/).map(line => line.trimEnd()).join('\n');
+  if (direction) blocks.DIRECTION_BLOCK = `${DIRECTION_HEADING}\n${direction}`;
   if (task === 'intro') return { blocks, stats };
   const focus = nodeOf(v, focusId), path = pathTo(v, focusId);
   blocks.PATH_BLOCK = `PATH TO CURRENT NODE: ${path.map(n => `${title(n)} (${n.id})`).join(' > ')}`;

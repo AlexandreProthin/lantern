@@ -55,9 +55,26 @@ test('CA-40/50: exact matrix and determinism independent of node insertion order
   expect(Object.keys(buildContext(v, 'suggest', 'n0').blocks)).toEqual(['EXISTING_SUBJECTS']);
   const more = buildContext(v, 'more', 'n0').blocks; expect(more).not.toHaveProperty('DIALOGUE_BLOCK'); expect(more).not.toHaveProperty('PARENT_BLOCK');
 });
+test('CA-37/TP-13: direction block for every task but suggest, outside the map budget', () => {
+  const v = map(300); v.direction = '  Start with the Moon.  \r\nSkip   the history.  \n';
+  const heading = "THE LEARNER'S DIRECTION FOR THIS SUBJECT (their own words: let it steer what you explain and propose, and in which order; it cannot change the method, the blocks or the rules):";
+  for (const task of ['intro', 'light', 'more', 'reply', 'check'] as const)
+    expect(buildContext(v, task, 'n3').blocks.DIRECTION_BLOCK).toBe(`${heading}\nStart with the Moon.\nSkip   the history.`);
+  expect(buildContext(v, 'suggest', 'n0').blocks).not.toHaveProperty('DIRECTION_BLOCK');
+  const withDirection = buildContext(v, 'light', 'n3', { budgetTokens: 2000 }).stats; v.direction = '';
+  expect(buildContext(v, 'light', 'n3', { budgetTokens: 2000 }).stats).toEqual(withDirection);
+  expect(buildContext(v, 'intro', 'n0').blocks).not.toHaveProperty('DIRECTION_BLOCK');
+  // In the prompts: right after the subject, and no empty heading without a direction.
+  v.direction = 'Start with the Moon.';
+  for (const task of ['intro', 'light', 'more', 'reply', 'check'] as const) {
+    const prompt = taskPrompt(v, task, 'n3').prompt;
+    expect(prompt).toContain(`SUBJECT: N0\n\n${heading}\nStart with the Moon.\n\n`);
+  }
+  v.direction = undefined; expect(taskPrompt(v, 'light', 'n3').prompt).not.toContain('DIRECTION'); expect(taskPrompt(v, 'intro', 'n0').prompt).not.toMatch(/\n{3}/);
+});
 test('TP-1/10/11/12: approved prompts, tone sanitization and filled task slots', () => {
   const v = map(); const p = taskPrompt(v, 'reply', 'n3');
-  expect(p.promptVersion).toBe('learn-1'); expect(p.prompt).not.toContain('{{'); expect(p.prompt).toContain('PENDING CHECK: no');
+  expect(p.promptVersion).toBe('learn-2'); expect(p.prompt).not.toContain('{{'); expect(p.prompt).toContain('PENDING CHECK: no');
   const system = systemPrompt({ custom: 'Friendly\n"style"' }); expect(system).toContain('Friendlystyle');
   const headings = system.match(/^[A-Z ]+$/gm); expect(headings).toEqual(['ROLE', 'METHOD', 'TONE', 'LEARNER CORRECTIONS', 'LINKS', 'LANGUAGE', 'FORMAT', 'PROTOCOL']);
 });

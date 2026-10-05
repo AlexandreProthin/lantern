@@ -46,6 +46,8 @@ configurable delays and typed injected failures.
 - A Windows job test started a hidden child and grandchild and confirmed zero active
   processes after cancellation.
 - Three real `learn-1` Haiku/low eval runs: each 24/24 (100%), 72/72 overall.
+- v0.1.1: `learn-2` (adds `DIRECTION_BLOCK`, TP-13) passed three real Haiku/low runs on 2026-10-05, each 24/24
+  (72/72), with the small fixtures carrying a direction. The shipped prompt is now `learn-2`.
   The gate is at least 95% on **each** run; the language check is lexical and still
   requires prose review. Results are local under `app/evals/results/`.
 

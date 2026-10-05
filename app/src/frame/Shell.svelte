@@ -15,7 +15,7 @@
   import type { SubjectSummary, LibraryState } from './catalogue';
   import { thumbnailGraph } from './library-spaces';
   import type { LibrarySpaces, ThumbnailGraph } from './library-spaces';
-  import { checkedTitle } from '../core/model';
+  import { checkedTitle, checkedDirection, DIRECTION_LIMIT } from '../core/model';
   import type { Tone } from '../core/model';
   import { defaultSettings, validateSettings } from './settings';
   import { DebouncedWriter } from './debounced-writer';
@@ -34,7 +34,7 @@
   let windowMemory: Awaited<ReturnType<typeof import('./window-memory').rememberWindow>>|undefined;
   let revision = $state(0), space = $state('welcome'), session = $state<RoomSession | null>(null);
   let settingsOpen = $state(false), shortcutsOpen = $state(false), subjectMenu = $state(false);
-  let settingsSection=$state('general'),checkingReady=$state(false);
+  let settingsSection=$state('general'),checkingReady=$state(false),directionDraft=$state('');
   let readyController:AbortController|undefined,readyPending:Promise<Completion>|undefined;
   let loading = $state(true), banner = $state(''), toast = $state(''), saveError = $state(''), conflictPath = $state('');
   let readonlyFile = $state<unknown>(null), settingsReadOnly = $state(false);
@@ -49,6 +49,8 @@
   }, error => saveError = String(error));
   const summary = $derived.by(() => { revision; return session ? room.statsSummary(session.subject) : null; });
   const running = $derived.by(() => { revision; return session?.running ? {...session.running} : null; });
+  /** RS-19: the open subject's direction, as stored. */
+  const savedDirection = $derived.by(() => { revision; return session?.subject.rooms[room.id].direction ?? ''; });
   const anyRunning = $derived.by(() => { revision; return [...owned.values()].some(entry => !!entry.session.running); });
   const unavailable=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
   async function checkReady(){if(anyRunning||checkingReady)return;checkingReady=true;readyController=new AbortController();
@@ -98,11 +100,12 @@
     controller=room.prompts.createSession(reactiveSubject,provider,()=> { persistence.schedule(controller.subject); revision++; },()=>revision++,settings);
     return {session:controller,persistence};
   }
-  async function createSubject(title: string, tone: Tone, model: string) {
+  async function createSubject(title: string, tone: Tone, model: string, direction = '') {
     if (!libraryAvailable || unavailable) throw new Error(strings.cliNotReady);
     if (!isValidModel(model)) throw new Error(strings.invalidModel);
     const subject=room.newSubject(checkedTitle(title),tone,settings);
     subject.rooms[room.id].model=model;
+    const given=checkedDirection(direction); if(given) subject.rooms[room.id].direction=given;
     const saved=await storage.save(library,subject,null,true);
     if(saved.kind !== 'saved') throw new Error('Subject id collision');
     const entry=own({subject,stamp:saved.stamp,readOnly:false}); owned.set(subject.id,entry); subjectCount++;
@@ -252,6 +255,10 @@
   <input aria-label={strings.title} value={session.subject.title} maxlength="120" onkeydown={e=>{if(e.key==='Enter' && e.currentTarget.value.trim()){session!.subject.title=e.currentTarget.value.trim();session!.touch();subjectMenu=false;}}} />
   <label>{strings.tone}<select value={typeof session.subject.rooms[room.id].tone==='string'?session.subject.rooms[room.id].tone:'custom'} onchange={e=>{session!.subject.rooms[room.id].tone=e.currentTarget.value==='custom'?{custom:''}:e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['eli5','curious','student','engineer','expert','custom'] as tone}<option>{tone}</option>{/each}</select></label>
   {#if typeof session.subject.rooms[room.id].tone==='object'}<textarea aria-label={strings.customTone} maxlength="300" value={(session.subject.rooms[room.id].tone as {custom:string}).custom} onblur={e=>{session!.subject.rooms[room.id].tone={custom:e.currentTarget.value};session!.touch();}}></textarea>{/if}
+  <label>{strings.direction}<textarea class="direction" rows="3" placeholder={strings.directionPlaceholder} value={savedDirection}
+    oninput={e=>directionDraft=e.currentTarget.value} onfocus={e=>directionDraft=e.currentTarget.value}
+    onblur={e=>{const value=e.currentTarget.value;if([...value].length>DIRECTION_LIMIT)return;const next=checkedDirection(value);if(next===savedDirection)return;if(next)session!.subject.rooms[room.id].direction=next;else delete session!.subject.rooms[room.id].direction;session!.touch();toast=strings.appliesNext;}}></textarea></label>
+  {#if [...directionDraft].length>=400}<small class="direction-count" class:over={[...directionDraft].length>DIRECTION_LIMIT} role="status">{[...directionDraft].length} / {DIRECTION_LIMIT}{[...directionDraft].length>DIRECTION_LIMIT?' · '+strings.directionOver([...directionDraft].length-DIRECTION_LIMIT,DIRECTION_LIMIT):''}</small>{/if}
   <div class="field"><label for="subject-model">{strings.defaultModel}</label><ModelPicker id="subject-model" value={session.subject.rooms[room.id].model} label={strings.defaultModel} commit={model=>{session!.subject.rooms[room.id].model=model;session!.touch();toast=strings.appliesNext;}} /></div>
   <label>{strings.defaultEffort}<select value={session.subject.rooms[room.id].effort} onchange={e=>{session!.subject.rooms[room.id].effort=e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label>
 </div>{/if}
@@ -265,7 +272,7 @@
   .subject { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:35vw; border:0; } header small { color:var(--ink-mute); font-size:13px; margin-left:auto; }.gear { margin-left:auto; }
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
-  .subject-menu { position:fixed; left:230px; top:52px; z-index:12; display:grid; gap:12px; padding:20px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }.subject-menu label,.subject-menu .field { display:grid; gap:5px; }
+  .subject-menu { position:fixed; left:230px; top:52px; z-index:12; display:grid; gap:12px; padding:20px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }.subject-menu label,.subject-menu .field { display:grid; gap:5px; }.subject-menu .direction { width:min(360px,70vw); resize:vertical; }.direction-count { color:var(--ink-mute); font-size:12px; }.direction-count.over { color:var(--error-ink); }
   .busy-dot { font-size:24px; color:var(--accent); animation:pulse 1.8s ease-in-out infinite; }.shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; }
   @keyframes pulse { 50% {opacity:.4;} } @media(max-width:1100px) { header small {display:none;} }
   @media(prefers-reduced-motion:reduce) { .busy-dot {animation:none;} }

@@ -66,3 +66,18 @@ describe('DM/ST domain', () => {
     v.log = [generation('zero', 'a', 0)]; expect(stats(v).models[0].share).toBeNull();
   });
 });
+
+describe('DM-41 direction', () => {
+  test('is optional, trimmed, kept on creation and validated on read', () => {
+    const plain = createSubject('Tides').rooms.learn; expect(plain).not.toHaveProperty('direction'); expect(() => validateVisit(plain)).not.toThrow();
+    const blank = createSubject('Tides', 'learn', { tone: 'curious', model: 'opus', effort: 'medium', direction: '   ' }).rooms.learn;
+    expect(blank).not.toHaveProperty('direction');
+    const v = createSubject('Tides', 'learn', { tone: 'curious', model: 'opus', effort: 'medium', direction: '  Start with the Moon.\nSkip history.  ' }).rooms.learn;
+    expect(v.direction).toBe('Start with the Moon.\nSkip history.'); expect(() => validateVisit(v)).not.toThrow();
+    v.direction = ''; expect(() => validateVisit(v)).not.toThrow();
+    v.direction = 'é'.repeat(500); expect(() => validateVisit(v)).not.toThrow();
+    v.direction = 'x'.repeat(501); expect(() => validateVisit(v)).toThrow('Invalid room visit');
+    (v as { direction?: unknown }).direction = 3; expect(() => validateVisit(v)).toThrow('Invalid room visit');
+    expect(() => createSubject('Tides', 'learn', { tone: 'curious', model: 'opus', effort: 'medium', direction: 'x'.repeat(501) })).toThrow('at most 500');
+  });
+});

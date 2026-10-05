@@ -15,6 +15,8 @@ export function cases(): EvalCase[] {
       content: french ? 'La force de la Lune est plus forte sur la face proche, plus faible sur la face éloignée. Par rapport au centre, les deux faces sont étirées en sens opposés.' : 'The Moon pulls harder on the near side, less on the far side. Relative to the centre, the two sides stretch in opposite directions.' };
     for (let i = 2; i < size; i++) nodes[`n${i}`] = { ...structuredClone(root), id: `n${i}`, parents: ['n0'], title: french ? `Direction réservée ${i}` : `Reserved direction ${i}`, hook: french ? 'Une direction déjà proposée, à ne pas répéter.' : 'An existing direction that must never be repeated.', state: i % 5 === 0 ? 'dismissed' : 'open', kind: 'axis', createdBy: 'tutor', content: '' };
     const visit: RoomVisit = { tone: 'curious', model: 'haiku', effort: 'low', rootId: 'n0', focusId: 'n1', nodes, log: [] };
+    // TP-13 (learn-2): the small subjects carry a direction, the large ones none, so both prompt shapes are gated.
+    if (size === 5) visit.direction = french ? 'Commencez par ce que les marées changent pour les ports et la navigation,\npuis seulement la physique.' : 'Start with what tides change for harbours and sailing,\nthen the physics.';
     const subject: Subject = { format: 'lantern/1', id: `tides-${language}-${size}`, title, createdAt: at, rooms: { learn: visit } };
     for (const task of ['intro', 'light', 'more', 'check', 'reply'] as const) {
       const fixture = structuredClone(subject), v = fixture.rooms.learn;

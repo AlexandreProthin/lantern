@@ -8,6 +8,9 @@ test('WG-2/3/5/60..67: create, return, continue, rename and recycle through the 
   await page.getByRole('textbox',{name:'What do you want to learn?'}).fill('Ocean tides');
   await page.locator('#welcome-model').selectOption('sonnet');
   await page.getByRole('radio',{name:'Engineer',exact:true}).check();
+  // WG-10: the button shows only while the field has focus; it then submits like Enter.
+  await expect(page.getByRole('button',{name:'Carry the lantern in'})).toBeHidden();
+  await page.getByRole('textbox',{name:'What do you want to learn?'}).focus();
   await page.getByRole('button',{name:'Carry the lantern in'}).click();
   await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
   const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem(Object.keys(localStorage).find(k=>k.startsWith('lantern.subject.'))!)!));
@@ -53,6 +56,49 @@ test('WG-4/8/13: suggestions fill without submitting; provider failure can retry
   await expect(page.getByRole('button',{name:'Carry the lantern in'})).toBeDisabled();
   await page.locator('#welcome-model').selectOption('other');await page.getByRole('textbox',{name:'Model',exact:true}).fill('invalid model');
   await expect(page.getByRole('button',{name:'Suggest 3 subjects',exact:true})).toBeDisabled();
+});
+
+test('WG-9..11/RS-19: the direction opens with Shift+Enter, is validated, stored and edited in the subject menu',async({page})=>{
+  await page.goto('/');
+  const subject=page.getByRole('textbox',{name:'What do you want to learn?'}),direction=page.getByRole('textbox',{name:'Direction, optional'});
+  const carry=page.getByRole('button',{name:'Carry the lantern in'});
+  await expect(subject).toBeFocused();await expect(carry).toBeVisible();await expect(carry).toBeDisabled();
+  await expect(direction).toBeHidden();
+  await subject.fill('Granular synthesis');await subject.press('Shift+Enter');
+  await expect(direction).toBeFocused();
+  // Esc closes and clears it, back in the subject; Backspace in an empty one does the same.
+  await direction.fill('temporary');await direction.press('Escape');
+  await expect(direction).toBeHidden();await expect(subject).toBeFocused();
+  await subject.press('Shift+Enter');await expect(direction).toHaveValue('');await direction.press('Backspace');
+  await expect(direction).toBeHidden();await expect(subject).toBeFocused();
+  // Limit: a counter from 400, the reason and a disabled submit over 500.
+  await subject.press('Shift+Enter');await direction.fill('x'.repeat(520));
+  await expect(page.locator('.dmeta')).toHaveText('520 / 500');await expect(page.locator('.why')).toHaveText('The direction is 20 characters over the 500 limit.');
+  await expect(carry).toBeDisabled();
+  await direction.press('Enter');expect(await page.evaluate(()=>Object.keys(localStorage).some(k=>k.startsWith('lantern.subject.')))).toBe(false);
+  await direction.fill('Start from one grain,\nthen clouds.');await expect(page.locator('.dmeta')).toHaveText('');await expect(carry).toBeEnabled();
+  // A blank subject keeps it disabled whatever the direction holds.
+  await subject.fill('');await expect(page.locator('.why')).toHaveText('Add a subject to carry the lantern in; the direction alone is not enough.');await expect(carry).toBeDisabled();
+  await subject.fill('Granular synthesis');await page.keyboard.press('ArrowDown');await expect(direction).toBeFocused();
+  // Leaving the field hides the button but keeps a direction that holds text.
+  await page.getByRole('radio',{name:'Student',exact:true}).check();
+  await expect(carry).toBeHidden();await expect(direction).toHaveValue('Start from one grain,\nthen clouds.');
+  await direction.focus();await direction.press('Enter');
+  await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  const stored=()=>page.evaluate(()=>JSON.parse(localStorage.getItem(Object.keys(localStorage).find(k=>k.startsWith('lantern.subject.'))!)!).rooms.learn);
+  expect((await stored()).direction).toBe('Start from one grain,\nthen clouds.');await expect.poll(async()=>(await stored()).log[0]?.promptVersion).toBe('learn-2');
+  // RS-19: edited in the subject menu, applied on blur; emptying it removes the direction.
+  await page.locator('header .subject').click();
+  const menuDirection=page.locator('.subject-menu textarea.direction');
+  await expect(menuDirection).toHaveValue('Start from one grain,\nthen clouds.');
+  await menuDirection.fill('Only the maths.');await page.locator('.subject-menu').getByRole('textbox',{name:'Title',exact:true}).focus();
+  await expect.poll(async()=>(await stored()).direction).toBe('Only the maths.');
+  await menuDirection.fill('');await page.locator('.subject-menu').getByRole('textbox',{name:'Title',exact:true}).focus();
+  await expect.poll(async()=>'direction' in (await stored())).toBe(false);
+  // An empty direction closes when focus leaves Welcome's field.
+  await page.keyboard.press('Escape');await page.keyboard.press('Control+1');
+  await subject.focus();await subject.fill('Another');await subject.press('Shift+Enter');await expect(direction).toBeFocused();
+  await page.getByRole('radio',{name:'Expert',exact:true}).check();await expect(direction).toBeHidden();
 });
 
 test('WG-53..55/68: gallery filter survives navigation and detailed usage respects settings',async({page})=>{

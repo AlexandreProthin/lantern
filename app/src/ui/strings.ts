@@ -2,6 +2,10 @@
 export const strings = {
   subjectQuestion: 'What do you want to learn?', carryIn: 'Carry the lantern in',
   subjectExample: 'For example, ocean tides, jazz harmony, or how cities grow.',
+  addsDirection: 'adds a direction.', directionPlaceholder: 'Where should it start, or head? (optional)', directionLabel: 'Direction, optional',
+  directionAlone: 'Add a subject to carry the lantern in; the direction alone is not enough.',
+  directionOver: (over: number, limit: number) => `The direction is ${over} character${over === 1 ? '' : 's'} over the ${limit} limit.`,
+  direction: 'Direction',
   firstWelcome: 'Bring a subject. The tutor lights it one node at a time; you choose where to go next.',
   suggestSubjects: 'Suggest 3 subjects', thinkingSubjects: 'Thinking of subjects…',
   cliNotReady: 'The Claude Code CLI is not ready. Fix it in Settings → Provider.',

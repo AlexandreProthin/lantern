@@ -11,6 +11,13 @@ fn subject(count: usize) -> Value {
         "rooms":{"learn":{"rootId":"n0", "focusId":"n0", "tone":"curious", "model":"opus", "effort":"medium", "nodes":nodes, "log":[]}}})
 }
 #[test]
+fn direction_is_optional_and_at_most_500_characters() {
+    let mut s = subject(2); assert!(validate_subject(&s, "tides-k3f9").is_ok());
+    s["rooms"]["learn"]["direction"] = json!("é".repeat(500)); assert!(validate_subject(&s, "tides-k3f9").is_ok());
+    s["rooms"]["learn"]["direction"] = json!("x".repeat(501)); assert!(validate_subject(&s, "tides-k3f9").is_err());
+    s["rooms"]["learn"]["direction"] = json!(3); assert!(validate_subject(&s, "tides-k3f9").is_err());
+}
+#[test]
 fn paths_reject_traversal_and_windows_devices() {
     for id in ["../outside", "a/b", "a\\b", "C:drive", "con", "nul", "com1", "bad..id", "x.conflict-1", "", "-x", "x--y"] {
         assert!(subject_path(Path::new("library"), id).is_err(), "accepted {id}");

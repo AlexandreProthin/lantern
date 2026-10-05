@@ -22,6 +22,8 @@ export interface Generation {
 }
 export interface RoomVisit {
   tone: Tone; model: string; effort: Effort; focusId: string; rootId: string;
+  /** DM-41 (v0.1.1): the learner's own words on where to start or head; absent or "" means none. */
+  direction?: string;
   nodes: Record<string, GraphNode>; log: Generation[];
 }
 export interface Subject { format: 'lantern/1'; id: string; title: string; createdAt: string; rooms: Record<string, RoomVisit> }
@@ -39,11 +41,19 @@ export function checkedTitle(title: string, limit = 120): string {
   if (!title || [...title].length > limit) throw new Error(`Title must contain 1–${limit} characters`);
   return title;
 }
-export function createSubject(title: string, room = 'learn', defaults: { tone: Tone; model: string; effort: Effort } = { tone: 'curious', model: 'opus', effort: 'medium' }, by = ''): Subject {
+export const DIRECTION_LIMIT = 500;
+/** WG-9: trimmed at the ends, line breaks kept; empty is no direction. */
+export function checkedDirection(text: string): string {
+  text = text.trim();
+  if ([...text].length > DIRECTION_LIMIT) throw new Error(`Direction must contain at most ${DIRECTION_LIMIT} characters`);
+  return text;
+}
+export function createSubject(title: string, room = 'learn', defaults: { tone: Tone; model: string; effort: Effort; direction?: string } = { tone: 'curious', model: 'opus', effort: 'medium' }, by = ''): Subject {
   title = checkedTitle(title);
+  const { direction, ...settings } = defaults;
   const id = newId(), at = now();
   return { format: 'lantern/1', id: subjectId(title), title, createdAt: at, rooms: {
-    [room]: { ...defaults, focusId: id, rootId: id, log: [], nodes: {
+    [room]: { ...settings, ...(direction?.trim() ? { direction: checkedDirection(direction) } : {}), focusId: id, rootId: id, log: [], nodes: {
       [id]: { id, parents: [], title, hook: '', kind: 'subject', state: 'open', understoodBy: null,
         content: '', author: { kind: 'user', by }, dialogue: [], createdAt: at, createdBy: 'learner' }
     } }
@@ -70,7 +80,8 @@ function validAuthor(a: Author | undefined): boolean {
 }
 export function validateVisit(v: RoomVisit): void {
   if (!v || !v.nodes || Array.isArray(v.nodes) || typeof v.nodes !== 'object' || !Array.isArray(v.log)
-    || !validTone(v.tone) || typeof v.model !== 'string' || !v.model || !efforts.includes(v.effort)) throw new Error('Invalid room visit');
+    || !validTone(v.tone) || typeof v.model !== 'string' || !v.model || !efforts.includes(v.effort)
+    || (v.direction !== undefined && (typeof v.direction !== 'string' || [...v.direction].length > DIRECTION_LIMIT))) throw new Error('Invalid room visit');
   const nodes = Object.values(v.nodes);
   if (nodes.filter(n => Array.isArray(n.parents) && !n.parents.length).length !== 1 || !Object.hasOwn(v.nodes, v.rootId)
     || !Object.hasOwn(v.nodes, v.focusId)) throw new Error('Visit needs one root and an existing focus');

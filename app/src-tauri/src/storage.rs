@@ -34,6 +34,8 @@ pub fn validate_subject(s: &Value, id: &str) -> Result<()> {
         let root = visit["rootId"].as_str().ok_or("Missing root")?;
         let focus = visit["focusId"].as_str().ok_or("Missing focus")?;
         if !nodes.contains_key(root) || !nodes.contains_key(focus) || !visit["log"].is_array() { return Err("Invalid visit root, focus or log".into()); }
+        // DM-41: an optional direction of at most 500 characters.
+        if !(visit["direction"].is_null() || visit["direction"].as_str().is_some_and(|d| d.chars().count() <= 500)) { return Err("Invalid direction".into()); }
         for (key, n) in nodes {
             let parents = n["parents"].as_array().ok_or("Missing parents")?;
             if n["id"] != *key || parents.len() != usize::from(key != root) || parents.iter().any(|p| p.as_str().is_none_or(|p| !nodes.contains_key(p))) { return Err("Invalid node id or parent".into()); }
