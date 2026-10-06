@@ -64,3 +64,6 @@ restent à tester ; autres r004 variantes archivées/non sélectionnées, pas su
 ## Silhouette et favicon — clôture Round 2, 2026-10-05
 D0012/D0013/D0014 : r005-c03 puis r006-c01, avec variante optique r007-c01 à 16 px ; master r006-c01 à 24–256 px. Règle et sources acceptées. Historique ci-dessus conservé ; statut courant dans STATE.
 Flou à 16 px encore faible ; tests perceptifs/browser-DPI non établis. Palette et expression/mouvement restent ultérieurs. Dossier de passage de relais rounds/r007/handoff-phase-3.md ; aucune nouvelle phase engagée.
+
+## Future flame qualities — 2026-10-06
+User request 23 / D0018: volumetric fire-like feeling, glow/emitted light, warmth, multilayer flame, predominantly peaceful subtle motion. Deferred to a later iteration; details in flame-future-requirements.md. No chosen palette/material/layer technique or product integration inferred.

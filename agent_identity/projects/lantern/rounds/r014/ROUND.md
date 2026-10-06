@@ -1,0 +1,2 @@
+# r014 — gesture consistency test
+Request 27; test mode. D0020 accepts r013-c01 Living inner layers (display 02). Six scenes combine selected Amber ember/layers and accepted gestures; no new candidates. Corrected halo/rim actor attachment and warm support colors. 36 native diagnostics, static SVGs, sampled boards and browser checks preserved. Sampled visual critique in evidence/. Next user review of family, then identity-system rules/export matrix upon continuation. No phase closure or integration/release.

@@ -1,0 +1,281 @@
+{
+  "name": "lantern-identity-v0.1-review",
+  "status": "review",
+  "files": [
+    {
+      "path": "exports/companion/gesture-01-128.png",
+      "bytes": 9681,
+      "sha256": "ea136c874bfaa4dea2fe6da65b802590533d201b2d1bb2a70dc8c1dea0059742"
+    },
+    {
+      "path": "exports/companion/gesture-01-256.png",
+      "bytes": 23676,
+      "sha256": "67b181758027e7e1927d878aa6093eb37c22d932cbf8d6a26eaa5e646e4b2cc3"
+    },
+    {
+      "path": "exports/companion/gesture-01-64.png",
+      "bytes": 3727,
+      "sha256": "1f0b2d3ee9e57c41036016efcba0f0a1ff44d6384c26c7957d276d485efa7a57"
+    },
+    {
+      "path": "exports/companion/gesture-01.svg",
+      "bytes": 2427,
+      "sha256": "365ec57de25ba6434d25f090bf2fe7d2b5c8957abd98119516ed5cc3bf3aa73c"
+    },
+    {
+      "path": "exports/companion/gesture-02-128.png",
+      "bytes": 9749,
+      "sha256": "b6abc1c9c665c1440974164e9208004403600b85eaac49d4f963b9e02dfa6f35"
+    },
+    {
+      "path": "exports/companion/gesture-02-256.png",
+      "bytes": 24402,
+      "sha256": "0ee4f4d059c8cf376a4e319dea18ffc092f0305718893259014ce9c1a6c3b394"
+    },
+    {
+      "path": "exports/companion/gesture-02-64.png",
+      "bytes": 3775,
+      "sha256": "0ea4e9ce0bafb4913c5d9ea00742d2d87732c62726f209908c251facda7ba73f"
+    },
+    {
+      "path": "exports/companion/gesture-02.svg",
+      "bytes": 2421,
+      "sha256": "65527b6fd510d9af98af707dae6cb142bb514b0630881a19fe692826b465151e"
+    },
+    {
+      "path": "exports/companion/gesture-03-128.png",
+      "bytes": 9805,
+      "sha256": "4fd58369a7e339bbe2c8e7c8548272f97ff37fdbdf117ea001295ec270e1f08e"
+    },
+    {
+      "path": "exports/companion/gesture-03-256.png",
+      "bytes": 23915,
+      "sha256": "91c19eeafa63957865f9ebb22dcb101115b866e8eb7cb5ff4d1647cf2ca2a66d"
+    },
+    {
+      "path": "exports/companion/gesture-03-64.png",
+      "bytes": 3839,
+      "sha256": "e78f0474a46b659642b18e97d56edcbf74a2fa0ce67c34a717765a685d7623ce"
+    },
+    {
+      "path": "exports/companion/gesture-03.svg",
+      "bytes": 2580,
+      "sha256": "d617ae5bd214ef6dbc0ad9ce402ae84044bb84f7bd6178ef41020c8bd5f30c53"
+    },
+    {
+      "path": "exports/companion/gesture-04-128.png",
+      "bytes": 9730,
+      "sha256": "c0aab730ea949b9f72c2da839262743b16545fae2338ccff0f159c231d971a93"
+    },
+    {
+      "path": "exports/companion/gesture-04-256.png",
+      "bytes": 23770,
+      "sha256": "2865c37d212924194331be55cb9161f59e6c0e9e3ff858eecd3849795ca1cd9c"
+    },
+    {
+      "path": "exports/companion/gesture-04-64.png",
+      "bytes": 3746,
+      "sha256": "8e869a7c80246d0b0d11ef3391d2bdf7647dc4d953ea8a59614c89228f06cfcd"
+    },
+    {
+      "path": "exports/companion/gesture-04.svg",
+      "bytes": 2490,
+      "sha256": "3e694ddac5dbcdc032180f7765137798264aabd378a7f1e4193b10af978cd9ce"
+    },
+    {
+      "path": "exports/companion/gesture-05-128.png",
+      "bytes": 9492,
+      "sha256": "e8382dcbeb9222d86ccc9e12649d2c8fd5d78fb76d37188635741ec7a91217f5"
+    },
+    {
+      "path": "exports/companion/gesture-05-256.png",
+      "bytes": 23596,
+      "sha256": "e6c338a9ee1f810b61833f57c9cf394bfb758630b3d5aed4274bcbdf0fa36dbb"
+    },
+    {
+      "path": "exports/companion/gesture-05-64.png",
+      "bytes": 3742,
+      "sha256": "dc9bcc5c27cdaf67571faf85241a3ff5acf9d0715d37196459e105054737d4fd"
+    },
+    {
+      "path": "exports/companion/gesture-05.svg",
+      "bytes": 2429,
+      "sha256": "950376e168fee071bfbcca4ce9695a99a3dc6b154295723f46fbd00d896da3a0"
+    },
+    {
+      "path": "exports/companion/gesture-06-128.png",
+      "bytes": 9770,
+      "sha256": "7518186e62779d71348ec233e144fcc4666b8da0c411c2733b4f53e8b2b7c020"
+    },
+    {
+      "path": "exports/companion/gesture-06-256.png",
+      "bytes": 23733,
+      "sha256": "0bbb9e6d06c813e0ffab6f76d41180380093b1fc2f0108a9430fc377c66cbc61"
+    },
+    {
+      "path": "exports/companion/gesture-06-64.png",
+      "bytes": 3818,
+      "sha256": "7721e4dc4b5df93f9e4275324ceb42abb4d6999849029694276b0168a5253318"
+    },
+    {
+      "path": "exports/companion/gesture-06.svg",
+      "bytes": 2583,
+      "sha256": "71b3e17cbd31f070d9492a8176befe34849e7675693482dd7f58b3ff1adaf2c9"
+    },
+    {
+      "path": "exports/favicon/favicon-dark-16-16.png",
+      "bytes": 441,
+      "sha256": "12140bdc167533bae1d2923ec1a395f784efc0225824dcd1829ed3cb5cdf45a4"
+    },
+    {
+      "path": "exports/favicon/favicon-dark-16.svg",
+      "bytes": 614,
+      "sha256": "7de52ab323f310909857a1553639e526521de91323cd99cad67123eca0494583"
+    },
+    {
+      "path": "exports/favicon/favicon-dark-24-24.png",
+      "bytes": 621,
+      "sha256": "7e9d76b0f97e051e62189d29ec2ae3f1ed9dc1fa54d5c01c3a2a7ef87f5f47d3"
+    },
+    {
+      "path": "exports/favicon/favicon-dark-24.svg",
+      "bytes": 612,
+      "sha256": "d5b250e05b8790fa0421d662429789aeaa88fff59b1f71b0507094cf6dbbd7b8"
+    },
+    {
+      "path": "exports/favicon/favicon-dark-32-32.png",
+      "bytes": 821,
+      "sha256": "21f83c916469f940ac1d82fa496990fe699338339822ec001ae1dc245c6f21cb"
+    },
+    {
+      "path": "exports/favicon/favicon-dark-32.svg",
+      "bytes": 612,
+      "sha256": "d5b250e05b8790fa0421d662429789aeaa88fff59b1f71b0507094cf6dbbd7b8"
+    },
+    {
+      "path": "exports/favicon/favicon-dark-48-48.png",
+      "bytes": 1253,
+      "sha256": "4fcc136fdada68fca1c19bcf09c31d604e12ae4268797f43c37b13b5088d557c"
+    },
+    {
+      "path": "exports/favicon/favicon-dark-48.svg",
+      "bytes": 612,
+      "sha256": "d5b250e05b8790fa0421d662429789aeaa88fff59b1f71b0507094cf6dbbd7b8"
+    },
+    {
+      "path": "exports/favicon/favicon-light-16-16.png",
+      "bytes": 433,
+      "sha256": "f2ee43c38d7c4cc75a90a1bd748643982c5291a6244bfe101268d7db013046d8"
+    },
+    {
+      "path": "exports/favicon/favicon-light-16.svg",
+      "bytes": 614,
+      "sha256": "5c795a59080e2cccad8407517d814ff10bd9d4a132f64b01878b40bdca91f505"
+    },
+    {
+      "path": "exports/favicon/favicon-light-24-24.png",
+      "bytes": 623,
+      "sha256": "26db2568b35e71a8e6dec21e268ce3c47460f8e6e650f3f308acea9df7aedb6e"
+    },
+    {
+      "path": "exports/favicon/favicon-light-24.svg",
+      "bytes": 612,
+      "sha256": "0918e5ee2aab701aa800272874b004e35ae5302ca65ae0667bfd25f926d38184"
+    },
+    {
+      "path": "exports/favicon/favicon-light-32-32.png",
+      "bytes": 835,
+      "sha256": "223dc7a030498b4d4fb942dc280f7270a3ef26766b869e668972f7666fe8305a"
+    },
+    {
+      "path": "exports/favicon/favicon-light-32.svg",
+      "bytes": 612,
+      "sha256": "0918e5ee2aab701aa800272874b004e35ae5302ca65ae0667bfd25f926d38184"
+    },
+    {
+      "path": "exports/favicon/favicon-light-48-48.png",
+      "bytes": 1271,
+      "sha256": "bb549b0a093ca0d6b319c26378afe591829e625018c4a84988413f4eecb1cd6c"
+    },
+    {
+      "path": "exports/favicon/favicon-light-48.svg",
+      "bytes": 612,
+      "sha256": "0918e5ee2aab701aa800272874b004e35ae5302ca65ae0667bfd25f926d38184"
+    },
+    {
+      "path": "exports/favicon/master-editable.svg",
+      "bytes": 617,
+      "sha256": "7571bc02578ca822570b05b82ec41da096b049af0f13e877edc5d3892ef3a330"
+    },
+    {
+      "path": "exports/favicon/optical-16-editable.svg",
+      "bytes": 619,
+      "sha256": "97a23b66aaeaa23f5ebe89ec6bb642a2d5b6a6e9076b46a685c66ddfe48e6a0d"
+    },
+    {
+      "path": "exports/mark/amber-ember-128.png",
+      "bytes": 9605,
+      "sha256": "ca8ab80efa3ae15fd02556bd8f70f7c62057b612aaa372129784cdc291a4813b"
+    },
+    {
+      "path": "exports/mark/amber-ember-256.png",
+      "bytes": 23492,
+      "sha256": "b1243ba1e7442e76dca6c6832713f694f5d257e096ce1d8e68157c7e7958dce7"
+    },
+    {
+      "path": "exports/mark/amber-ember-512.png",
+      "bytes": 54612,
+      "sha256": "f168b5e1e63db761e88d31a565bd673be45ca6ae40901a86ebb0c46450c7d08c"
+    },
+    {
+      "path": "exports/mark/amber-ember-64.png",
+      "bytes": 3709,
+      "sha256": "56bebcc7b1f718b25c4ab620d6f153b05287add89700f76d6dfdc8da7830e596"
+    },
+    {
+      "path": "exports/mark/amber-ember.svg",
+      "bytes": 2313,
+      "sha256": "9cc8fe56b4f21ce9f1709610799c3383b8ff2c4c2d4c2395458367b5b085c25a"
+    },
+    {
+      "path": "IDENTITY.md",
+      "bytes": 3469,
+      "sha256": "790d55a68ab70d2be89c3f5c3a47f1f8dfd50969c95bc4be55817b74897a9623"
+    },
+    {
+      "path": "IMPLEMENTATION.md",
+      "bytes": 1600,
+      "sha256": "f5b7e499f80c8c9a075b1b23dab9d876062ac44b1d9241947f5471203e942617"
+    },
+    {
+      "path": "README.md",
+      "bytes": 400,
+      "sha256": "d5292135dfda4b7adb8ade2b7560d149df2b3473cb1e63f83c4861a241310399"
+    },
+    {
+      "path": "runtime/review.html",
+      "bytes": 3163,
+      "sha256": "569aa955381e15fa355ccf7ce07bea43e227349124b6e6f307f0dfc9edcb5638"
+    },
+    {
+      "path": "runtime/sources/body.js",
+      "bytes": 566,
+      "sha256": "d9b17a214fd91038c22c69689e4f9671e5b836d221976991620e446572e3e824"
+    },
+    {
+      "path": "runtime/sources/motion.js",
+      "bytes": 4399,
+      "sha256": "bffaf06bc433916121893a5f710231c2311563a9aa844f0fe7b1bb98feac0212"
+    },
+    {
+      "path": "runtime/sources/review.js",
+      "bytes": 4407,
+      "sha256": "0f22f6efd6eeccfbb6320767d78f8908f63f685116e70448afbade0be79c51f9"
+    },
+    {
+      "path": "runtime/sources/styles.js",
+      "bytes": 2866,
+      "sha256": "ead04103e1c207bc53d3be57f40f211066245db91a43df89f604484a89964c6e"
+    }
+  ]
+}

@@ -197,3 +197,52 @@ Request 20/r010. Six deterministic finite motion samples, repeating comparison G
 
 ## E0034 — 2026-10-06 Europe/Paris — pause and commit requested
 User verbatim "commit i will continue later". Request 21/base state 23. Preserve all identity-workshop progress for Git commit; r010 paused for later movement review. No motion acceptance, new generation, phase transition or release. Resume from r010 review.html/motion-preview.gif with pace/amplitude feedback.
+
+## E0035 / D0017 — 2026-10-06 Europe/Paris — motions accepted; living flame requested
+User verbatim: "all good to me. I also want the flame animated so we can feel it is alive." Accept r010-c01..c06 as shown, preserve their known limits. Request 22/base state 24; reserve r011 and r011-c01..c06. Add internal flame motion only, retain gestures/frame/favicon; no phase closure, palette, integration or release. New flame work awaits review.
+
+## E0036 — 2026-10-06 Europe/Paris — living flame review checkpoint
+Request 22/r011. Six descendants preserve accepted gestures and add shared upper-flame contour motion, anchored bowl/face/frame. Rendered GIF, native diagnostics, static fallbacks; browser controls/reduced/finite-end checks pass. Sampled boards visually inspected; limitations in evidence/critique.md. Local renderer/browser subprocesses required approved execution. Parents preserved, hashes recorded. No new user selection or phase closure. Next: review flame liveliness/amplitude and whether a controlled idle loop is desired.
+
+## E0037 / D0018 — 2026-10-06 Europe/Paris — living flame accepted; future qualities saved
+Owner user; verbatim:
+
+ok good. for later iteration the flame caracter:
+
+- is have a volumetric feeling (like fire flame)
+- glow/emmit light
+- warm feeling
+- multilayer flame
+- most of the time peacefull flame (subtle motion)
+
+Request 23/base state 25. Accept r011-c01..c06 living-flame motion as shown. Save requested future qualities in flame-future-requirements.md and BRIEF.md. No new generation or automatic phase transition. Prior motion/test limitations retained.
+
+## E0038 — 2026-10-06 Europe/Paris — visual-language exploration initiated
+User verbatim "next"; request 24/base state 26. Reserve r012/r012-c01..c03, each parent r011-c01. Three controlled warm layered depth/glow variations, accepted structure and motion retained. Additive contract v3 preserves v2; supplied qualities confirmed, agent test conditions proposed. Explore phase 5 while preserving phase-4 product-context/transition limits. No final palette/release selection.
+
+## E0039 — 2026-10-06 Europe/Paris — layered warm flame review
+Request 24/r012. Three vector treatments, editable sources/tokens, comparison boards and 24 native diagnostics. Layer replacement-order bug corrected before publication; final board and c02 64px light visually inspected. Browser control/reduced/responsive checks passed after correction. c02 agent recommendation, no human selection. Visual volume/emission are stylized 2D effects; further layer-flow/product-context tests deferred. Next: user style feedback.
+
+## E0040 / D0019 — 2026-10-06 Europe/Paris — Amber ember selected
+Owner user; verbatim "## 01 / Amber ember". Request 25/base state 27. Select r012-c01 as shown, superseding agent c02 recommendation. Other studies preserved/nonselected, no explicit rejection or rationale. Sources unchanged; phase 5 refinement/testing remains open. No generation, release or integration inferred.
+
+## E0041 — 2026-10-06 Europe/Paris — inner-layer refinement initiated
+Request 26/base state 28. User "gp", clarified "Yes, continue" to explicit Amber ember inner-layer motion question (full wording in rounds/r013/request.md). Reserve r013/r013-c01; parent r012-c01. One controlled mutation; parent shown for comparison. Palette/frame/face/base and outer motion frozen. No release/integration.
+
+## E0042 — 2026-10-06 Europe/Paris — inner-layer review ready
+Request 26/r013. One controlled descendant r013-c01 plus selected parent reference. Phase-offset middle/core motion, anchored endpoints and clipped layers, accepted palette/glow/frame/face/outer motion preserved. Native diagnostics, comparison boards, static SVGs and browser preview generated. Sampled board and 64px dark visually inspected; browser controls/reduced/finite/responsive checks and neutral parity/seam/finite SVG samples passed. Parent hashes recorded. No human acceptance, phase closure or release. Next: review subtle flow/amplitude.
+
+## E0043 / D0020 — 2026-10-06 Europe/Paris — living layers accepted; consistency tests
+User verbatim "## 02 / Living inner layers then go next". Select r013-c01 (display 02), parent r012-c01. Request 27/base state 29; reserve r014 test attempt, six scenes not new candidates. Combine accepted layer/style with six accepted gestures, check transformed emission/rim and static/reduced controls. No phase promotion or product release.
+
+## E0044 — 2026-10-06 Europe/Paris — gesture family test ready
+Request 27/r014. Selected living-layer Amber ember combined with six accepted gestures. Halo/rim now actor-attached, supports warm frame color. Browser controls/reduced/finite/responsive checks passed; final sample board and walking 64px light inspected. 36 native diagnostics/static fallbacks preserved. No new candidates, phase closure or release. Next family review then system rules/exports on continuation.
+
+## E0045 — 2026-10-06 Europe/Paris — identity-system preparation
+User verbatim "go"; request 28/base state 30. Reserve r015, system/export preparation without new candidates. Use accepted favicon/style/layers/gestures and preserve r014 combination-test limits. Phase 6 preparation, no silent upstream closure, final release acceptance or installation. Proposed review package lantern-identity-v0.1-review.
+
+## E0046 — 2026-10-06 Europe/Paris — identity-system review package prepared
+Request 28/r015. Named lantern-identity-v0.1-review package, rules/recipe/editable runtime/SVGs, 30 transparent PNGs, face-free mark, six static poses, native monochrome favicons, SHA-256 manifest and ZIP. Dimension/alpha/render/hash/archive checks passed; system board visually inspected. Derived mark/size/clear-space choices remain proposals. No final acceptance/install. Outstanding tests explicitly documented. Next package review before named final release.
+
+## E0047 — 2026-10-06 Europe/Paris — commit requested, awaiting feedback
+User verbatim "commit then i will give you my feedback"; request 29/base state 31. Commit identity work r011–r015 and preserve review checkpoint. No final acceptance or additional design/install/release. Next user package feedback.

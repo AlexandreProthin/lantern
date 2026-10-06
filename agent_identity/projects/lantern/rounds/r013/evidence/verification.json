@@ -1,0 +1,15 @@
+{
+  "browser": "153.0.8010.12",
+  "checks": [
+    "static default",
+    "play",
+    "pause freezes",
+    "resume",
+    "still/reduced",
+    "hide/show",
+    "finite six-second end",
+    "system reduced",
+    "360px no overflow"
+  ],
+  "errors": []
+}

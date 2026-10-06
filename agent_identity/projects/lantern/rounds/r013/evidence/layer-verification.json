@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "same neutral geometry as selected parent",
+    "inner layers change at 600ms",
+    "seamless 2400ms full contour/layer cycle",
+    "finite SVG values every 25ms over six seconds"
+  ],
+  "passed": true
+}

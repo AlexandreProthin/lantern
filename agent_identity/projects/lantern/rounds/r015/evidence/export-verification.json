@@ -1,0 +1,189 @@
+{
+  "checks": [
+    "PNG dimensions match declared square size",
+    "PNG alpha channel present",
+    "SVG renderable"
+  ],
+  "exports": [
+    {
+      "path": "exports/favicon/favicon-light-16-16.png",
+      "width": 16,
+      "height": 16,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/favicon-dark-16-16.png",
+      "width": 16,
+      "height": 16,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/favicon-light-24-24.png",
+      "width": 24,
+      "height": 24,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/favicon-dark-24-24.png",
+      "width": 24,
+      "height": 24,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/favicon-light-32-32.png",
+      "width": 32,
+      "height": 32,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/favicon-dark-32-32.png",
+      "width": 32,
+      "height": 32,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/favicon-light-48-48.png",
+      "width": 48,
+      "height": 48,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/favicon-dark-48-48.png",
+      "width": 48,
+      "height": 48,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/amber-ember-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/amber-ember-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/amber-ember-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/amber-ember-512.png",
+      "width": 512,
+      "height": 512,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    }
+  ]
+}

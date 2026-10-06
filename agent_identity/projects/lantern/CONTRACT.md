@@ -46,3 +46,12 @@ est différé aux phases caractère/mouvement/système ; aucune fonctionnalité 
 
 ## Validation enregistrée
 Accepté le 2026-10-04 Europe/Paris, réponse « oui », D0006. Les mentions de proposition dans le texte décrivent la rédaction soumise ; cette validation fixe son statut courant.
+
+## Version 3 additive clauses — 2026-10-06
+Supersedes v2 by adding user requirements from request 23; v2 clauses/acceptance retained. User supplied qualities confirmed; concrete agent test conditions remain proposed.
+C15: volumetric fire-like feeling — compare directional gradients/layer depth at equal pose/size.
+C16: glow/emitted light — compare flame halo and reflected warmth on frame without obscuring eyes.
+C17: warmth — compare amber/soft orange/ivory treatments; exact palette unselected.
+C18: multilayer flame — distinct outer envelope/intermediate body/inner core within accepted contour.
+C19: predominantly peaceful subtle motion — accepted contour movement retained, controllable finite preview; continuous idle unresolved.
+Actual product-context distraction, light-background legibility and small-size simplifications require tests.
