@@ -1,0 +1,3 @@
+# Hashed identity packages: store exact bytes so MANIFEST/RELEASE-MANIFEST SHA-256 stay valid.
+agent_identity/projects/*/final/** -text
+agent_identity/projects/*/rounds/*/package/** -text
