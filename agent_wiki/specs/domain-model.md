@@ -24,7 +24,7 @@ Library (a folder) → Subject → RoomVisit (one per room the subject visited) 
 
 # Node
 
-- **DM-10** A node MUST have: `id` (short random, unique within the room visit), `parents: string[]`, `title`, `hook`, `kind`, `state`, `understoodBy`, `content` (markdown), `dialogue`, `createdAt`, `createdBy` (`tutor` | `learner`).
+- **DM-10** A node MUST have: `id` (short random, unique within the room visit), `parents: string[]`, `title`, `hook`, `kind`, `state`, `understoodBy`, `content` (markdown), `dialogue`, `createdAt`, `createdBy` (`tutor` | `learner`). Timestamps the app writes MUST strictly increase within a session (a write in the same millisecond moves 1 ms later), so siblings created by one reply keep their order; where `createdAt` ties anyway (older files), creation order is broken by `id`.
 - **DM-11** The v0.1.0 graph is a **tree**. `parents` MUST hold exactly one id for every node except the root, where it is empty. The array form exists so that merge (several parents) can be added later without a format change ([decision](/decisions/merge-deferred.md)).
 - **DM-12** `kind` MUST be one of: `subject`, `axis`, `deeper`, `application`, `adjacent`, `exercise`, `question`, `own` (added by the user). The `merge` kind is Later.
 - **DM-13** `state` MUST be one of: `open`, `lit`, `understood`, `dismissed`. Normal flow is open → lit → understood.

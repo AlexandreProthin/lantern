@@ -27,7 +27,9 @@ export interface RoomVisit {
   nodes: Record<string, GraphNode>; log: Generation[];
 }
 export interface Subject { format: 'lantern/1'; id: string; title: string; createdAt: string; rooms: Record<string, RoomVisit> }
-export const now = () => new Date().toISOString();
+// DM-10: strictly increasing, so nodes created by one reply keep their creation order.
+let lastNow = 0;
+export const now = () => { lastNow = Math.max(Date.now(), lastNow + 1); return new Date(lastNow).toISOString(); };
 /** Wire data is JSON; this also snapshots reactive UI proxies without a UI dependency. */
 export const cloneJson = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 export const newId = () => crypto.randomUUID().replaceAll('-', '').slice(0, 8);

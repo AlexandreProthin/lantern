@@ -6,7 +6,7 @@ export function nodeOf(v: RoomVisit, id: string): GraphNode {
   return v.nodes[id];
 }
 export const childrenOf = (v: RoomVisit, id: string) => Object.values(v.nodes).filter(n => n.parents[0] === id)
-  .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
 export function pathTo(v: RoomVisit, id: string): GraphNode[] {
   const path: GraphNode[] = [], seen = new Set<string>();
   while (id) {

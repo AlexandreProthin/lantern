@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { createSubject, parseSubject, validateVisit } from './model';
+import { createSubject, now, parseSubject, validateVisit } from './model';
 import type { Generation, Turn } from './model';
-import { addChild, deleteSubtree, editText, pathTo, revertText, setState } from './graph';
+import { addChild, childrenOf, deleteSubtree, editText, pathTo, revertText, setState } from './graph';
 import { stats } from './stats';
 
 const setup = () => { const s = createSubject('Marées', 'learn', undefined, 'Alex'); return { s, v: s.rooms.learn, root: s.rooms.learn.nodes[s.rooms.learn.rootId] }; };
@@ -80,4 +80,12 @@ describe('DM-41 direction', () => {
     (v as { direction?: unknown }).direction = 3; expect(() => validateVisit(v)).toThrow('Invalid room visit');
     expect(() => createSubject('Tides', 'learn', { tone: 'curious', model: 'opus', effort: 'medium', direction: 'x'.repeat(501) })).toThrow('at most 500');
   });
+});
+
+test('DM-10: timestamps strictly increase and tied siblings order by id, whatever the key order', () => {
+  const stamps = Array.from({ length: 5 }, now);
+  expect(stamps.every((t, i) => !i || t > stamps[i - 1])).toBe(true);
+  const v = createSubject('Order').rooms.learn, at = '2026-10-07T00:00:00.000Z';
+  for (const id of ['b1', '12345678', 'a0']) v.nodes[id] = { ...v.nodes[v.rootId], id, parents: [v.rootId], createdAt: at };
+  expect(childrenOf(v, v.rootId).map(n => n.id)).toEqual(['12345678', 'a0', 'b1']);
 });
