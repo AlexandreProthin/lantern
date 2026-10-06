@@ -18,7 +18,8 @@ Order decided 2026-09-27: README → PoC → OKF wiki → specs + v0.1.0 plan.
 | 3 | Project wiki (this bundle) | done, 2026-09-29; replaces the interim `MEMORY.md` |
 | 4 | Specs | done, 2026-10-02 (13 specs agreed; workshop at `agent_design/tool/specs_work/`) |
 | 5 | v0.1.0 implementation, plan in [v0-1-0](/plans/v0-1-0.md) | released 2026-10-04; PoC removed (tag `poc-final`) |
-| 6 | v0.1.1, plan in [v0-1-1](/plans/v0-1-1.md) | next: the acceptance notes |
+| 6 | v0.1.1, plan in [v0-1-1](/plans/v0-1-1.md) | released 2026-10-06 |
+| 7 | v0.1.2, plan in [v0-1-2](/plans/v0-1-2.md): the identity in the app | in progress; later work in the [backlog](/plans/backlog.md) |
 
 # Inputs to the specs
 

@@ -11,3 +11,5 @@ it `deprecated` and link to what it produced rather than deleting it.
 * [Roadmap](roadmap.md) - README, PoC, wiki, then specs and the v0.1.0 plan.
 * [v0.1.0 implementation plan](v0-1-0.md) - Milestones M0–M6 plus the Welcome design track, exit checks and early risks.
 * [v0.1.1 plan](v0-1-1.md) - The bugs, improvements and feature requests from the v0.1.0 acceptance walk-through.
+* [v0.1.2 plan](v0-1-2.md) - The accepted identity release in the app: header mark, Windows app icon, dev favicon, real-use check.
+* [Backlog](backlog.md) - Agreed future work with no version yet; first entry: the companion behaviour spec.

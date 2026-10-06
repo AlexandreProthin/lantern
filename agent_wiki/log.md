@@ -2,6 +2,8 @@
 
 ## 2026-10-06
 
+* **Identity in the app** ([v0.1.2 plan](/plans/v0-1-2.md) ID1 to ID3): the accepted release `lantern-identity-v0.2` replaces the `◈` header glyph with the ember favicon and rebuilds the Windows `icon.ico` from its exports, one per size ([rooms-spaces](/specs/rooms-spaces.md) RS-12, new RS-53). Verified: `npm run check` 0/0, 48 TS tests, Playwright 17 passed (GV-92/94/96 flaked once, passes alone with and without the change). ID4, the real-use check in the installed build, is open. The companion behaviour spec goes to the new [backlog](/plans/backlog.md).
+
 * **v0.1.1 version**: the app is versioned 0.1.1 (`package.json`, `Cargo.toml`, `tauri.conf.json`) and every item of the [v0.1.1 plan](/plans/v0-1-1.md) is merged to `master`; the preview installer is built for the user's installed-build checks (motion of the direction, *Open* and copy path, `model-unknown` messages, the model list). **Released** on the user's instruction: `master` pushed, tag `v0.1.1`, and a GitHub release with the unsigned per-user NSIS installer `Lantern_0.1.1_x64-setup.exe`.
 
 ## 2026-10-05

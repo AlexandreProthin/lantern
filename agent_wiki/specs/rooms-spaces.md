@@ -59,7 +59,8 @@ One bar across the full window width, below the native OS title bar. It acts on 
 the open subject; it is rarely touched. The stats stay secondary.
 
 - **RS-12** The header MUST contain, left to right:
-  1. **Lantern mark**: leads to the current room's Welcome. Tooltip *Welcome*.
+  1. **Lantern mark**: leads to the current room's Welcome. Tooltip *Welcome*. Drawn with the
+     ember favicon of the accepted identity release `lantern-identity-v0.2` (RS-53), not a text glyph.
   2. **Room chip**: the room name (*Learn*) in the room accent. A label with no action in
      v0.1.0; it becomes the room switcher when a second room ships.
   3. **Space navigation** (RS-20): icon buttons for the room's spaces, the active one marked.
@@ -68,6 +69,12 @@ the open subject; it is rarely touched. The stats stay secondary.
   5. **Compact stats**: *12 lit · 4 understood · 9 dark*. Hover shows the token total
      (*Tokens spent: 48.3k in / 21.0k out*), computed as in WG-31. Hidden with no subject open.
   6. **Settings gear**: opens Settings; always visible; never hidden by narrow widths.
+- **RS-53** *Identity assets.* The header mark (RS-12) MUST use `ember-on-dark-32.svg` from
+  `agent_identity/projects/lantern/final/lantern-identity-v0.2/exports/favicon/`, shown at 28 px,
+  with no recolouring (its tokens are part of the release). The Windows app icon MUST be built from
+  the same release: ember favicon PNGs for 16, 24, 32 and 48 px and `mark-on-dark` PNGs for 64 and
+  256 px, each size taken from its own export rather than downscaled from one image. A new identity
+  release replaces these files together; the release's `IDENTITY.md` is the source of the rules.
 - **RS-13** The three numbers and the token total MUST use the single definition of
   [welcome-gallery](/specs/welcome-gallery.md) WG-30 and WG-31 (*lit* includes understood, *dark* is the open nodes,
   dismissed nodes are not counted), the same as the Gallery card. This spec does not restate it.

@@ -277,3 +277,6 @@ Request 33/r019. lantern-identity-v0.2-review: lit frame, ember + mono favicons,
 
 ## E0057 / D0025 — 2026-10-06 Europe/Paris — v0.2 accepted as named release
 Owner user; verbatim "all good to me" in reply to the v0.2 review (asked: light-background eyes, named acceptance or deferrals). D0025: accept lantern-identity-v0.2-review as release lantern-identity-v0.2. Eyes kept as built. Deferred, not passed: native DPI perception, real room placement/distraction, Windows icon pipeline, idle/transition policy, arbitrary gesture chaining, profile/back views. Request 34/base state 36. Phase 6 exit for v0.2; no installation.
+
+## E0058 — 2026-10-06 Europe/Paris — release installed in the app (partial)
+User request in chat: "rebase then merge.  then 1. point 2 in a future session add it to the backlog" (1 = put the identity in the app). lantern-identity-v0.2 used by the Lantern app on branch feat/identity-integration: header mark = exports/favicon/ember-on-dark-32.svg (28 px), app/src-tauri/icons/icon.ico built from ember-on-dark 16–48 + mark-on-dark 64/256 PNGs (app/scripts/build-icon.mjs), dev favicon. Release files unchanged. Real-use check (taskbar, Explorer, DPI) pending in the installed build; on light backgrounds the 16–48 frame is faint (known). Companion behaviour spec put on the app backlog (agent_wiki/plans/backlog.md).
