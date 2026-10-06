@@ -4,10 +4,47 @@ title: Backlog
 description: Agreed future work with no session or version assigned yet; each entry says where it starts and what it needs.
 tags: [plan, backlog]
 status: stable
-generated: { by: claude-code/opus-5.5, at: 2026-10-06T22:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-07T00:30:00Z }
 ---
 
 Entries move out of here into a versioned plan when the user schedules them. Newest first.
+
+# Export a subject
+
+- **Added:** 2026-10-07, on the user's request.
+- **What:** take a subject's graph out of Lantern (explanations, edits, dialogue) to reuse it elsewhere.
+- **Open question first:** the form is **not decided**: one file (Markdown, JSON), an OKF bundle (one
+  concept per node, the scope's example in [product-scope](/specs/product-scope.md) *Later*), or
+  something else. The user wants this determined properly before any implementation.
+- **How:** a spec workshop round on the format and its readers, then a spec, then implementation.
+
+# Regenerate an explanation
+
+- **Added:** 2026-10-07, on the user's request.
+- **What:** one action on a lit node that asks the tutor to rewrite its explanation; the old text
+  becomes the previous version ([domain-model](/specs/domain-model.md) DM-16 already stores one).
+- **Needs:** a new task in [tutor-protocol](/specs/tutor-protocol.md), so a new prompt version and the
+  three-run eval gate (PQ-33); the action in the panel and node menu ([graph-view](/specs/graph-view.md) GV-55).
+  Relates to [tutor-prose-quality](/issues/tutor-prose-quality.md). Listed as *Later* in product-scope.
+
+# Cheaper model for cheap tasks
+
+- **Added:** 2026-10-07, on the user's request.
+- **What:** run the cheap tasks (check-answer replies, subject suggestions) on a small model such as
+  Haiku and keep the subject's model for explanations.
+- **Needs:** a setting (on by default or not, which model), the per-task model in the call log
+  (DM-30 already records `model`), and the eval gate on the small model. One of the levers of
+  [latency-masked-not-reduced](/decisions/latency-masked-not-reduced.md) and
+  [llm-latency](/issues/llm-latency.md).
+
+# Update notification
+
+- **Added:** 2026-10-07, on the user's request.
+- **What:** the app says when a newer release exists and installs it, instead of a manual download
+  from GitHub. The updater plugin is wired with no UI ([platform-quality](/specs/platform-quality.md) PQ-42).
+- **Needs:** an updater signing key pair (kept out of the repository), updater artifacts and a
+  `latest.json` published with each GitHub release, which changes the release routine once; a spec
+  for when to check and how to ask.
 
 # Companion behaviour spec
 
