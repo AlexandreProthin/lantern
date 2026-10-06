@@ -62,6 +62,7 @@
       <label>{strings.libraryFolder}<input bind:value={typedPath} disabled={!desktop} spellcheck="false" onkeydown={e=>{if(e.key==='Enter'){e.preventDefault();if(typedPath.trim()&&typedPath.trim()!==settings.library.path)void choose(typedPath.trim());}}} /></label>
       <div class="actions"><button disabled={!desktop||generating||!typedPath.trim()||typedPath.trim()===settings.library.path} onclick={()=>choose(typedPath.trim())}>{strings.applyLibrary}</button><button disabled={!desktop||generating} title={generating?strings.finishGeneration:undefined} onclick={()=>choose()}>{strings.changeLibrary}</button><button disabled={!desktop} onclick={()=>invoke('reveal_library',{path:settings.library.path}).catch(e=>validation=String(e))}>{strings.revealLibrary}</button></div>
       {#if generating}<p>{strings.finishGeneration}</p>{/if}
+      <p class="version">{strings.appVersion(__APP_VERSION__)}</p>
     {:else if section==='provider'}
       <div class="field"><label for="default-model">{strings.defaultModel}</label><ModelPicker id="default-model" value={settings.provider.defaultModel} label={strings.defaultModel} commit={model=>{settings.provider.defaultModel=model;validation='';changed();}} /></div>
       <label>{strings.defaultEffort}<select bind:value={settings.provider.defaultEffort} onchange={changed}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label><p>{strings.newSubjectsHint}</p>

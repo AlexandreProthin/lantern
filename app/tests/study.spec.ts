@@ -40,19 +40,23 @@ test('PQ-22/LR-36: cancel discards the streamed root and logs cancellation', asy
 });
 test('GV-92/94/96: pending bodies reveal in place and stay out of saved state', async ({page}) => {
   const errors:string[]=[]; page.on('pageerror',e=>errors.push(e.message));
+  // Record pending bodies as they appear: with a short fake delay they can resolve before a locator polls.
+  await page.addInitScript(()=>{const seen:{el:Element;hidden:string|null}[]=[];(window as any).__pendingSeen=seen;
+    new MutationObserver(()=>document.querySelectorAll('.node[data-pending="waiting"]').forEach(el=>{if(!seen.some(s=>s.el===el))seen.push({el,hidden:el.getAttribute('aria-hidden')});}))
+      .observe(document,{subtree:true,childList:true,attributes:true,attributeFilter:['data-pending']});});
+  const seen=():Promise<{hidden:string|null;connected:boolean;pending:string|null;text:string}[]>=>page.evaluate(()=>(window as any).__pendingSeen.map((s:any)=>({hidden:s.hidden,connected:s.el.isConnected,pending:s.el.dataset.pending??null,text:s.el.textContent})));
   await page.goto('/?study=1&subject=Spawn&delay=60');
-  const pending=page.locator('.node[data-pending="waiting"]');
-  await expect(pending).toHaveCount(3);
-  await expect(pending.first()).toHaveAttribute('aria-hidden','true');
-  await page.evaluate(()=>{(window as any).__pendingElement=document.querySelector('.node[data-pending="waiting"]');});
+  await expect.poll(async()=>(await seen()).length).toBe(3);
   await expect(page.locator('.node[data-pending]')).toHaveCount(0);
-  expect(await page.evaluate(()=>{const element=(window as any).__pendingElement;return element.isConnected && !element.dataset.pending && element.textContent.includes('Mechanism');})).toBe(true);
+  const revealed=await seen();
+  for(const s of revealed){expect(s.hidden).toBe('true');expect(s).toMatchObject({connected:true,pending:null});}
+  expect(new Set(revealed.map(s=>s.text.trim())).size).toBe(3);expect(revealed.map(s=>s.text).join()).toContain('Mechanism 1');
   await expect.poll(()=>page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('lantern.subject.')).map(k=>localStorage.getItem(k)).join(''))).toContain('Mechanism 1');
   expect(await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('lantern.subject.')).map(k=>localStorage.getItem(k)).join(''))).not.toContain('pending-');
   await page.getByRole('button',{name:'Tree layout',exact:true}).click();
   await page.locator('.panel').getByRole('button',{name:'Mechanism 1',exact:false}).click();
   await page.locator('.panel').getByRole('button',{name:'Light it up',exact:true}).click();
-  await expect(pending).toHaveCount(3);
+  await expect.poll(async()=>(await seen()).length).toBe(6);
   await expect(page.locator('.node[data-pending]')).toHaveCount(0);
   expect(errors).toEqual([]);
 });

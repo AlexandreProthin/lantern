@@ -72,7 +72,7 @@ export const strings = {
   shortcuts: 'Keyboard shortcuts', close: 'Close', settingsRecovered: 'Unreadable settings were backed up and reset to defaults.',
   libraryUnavailable: 'Your library folder is unavailable.', openConflict: 'Open conflict copy',
   checkAgain: 'Check again', testProvider: 'Test', notTested: 'Not tested yet'
-  , changeLibrary:'Browse…', applyLibrary:'Apply path', revealLibrary:'Reveal library in Explorer', finishGeneration:'Finish or cancel the running generation first',
+  , changeLibrary:'Browse…', applyLibrary:'Apply path', revealLibrary:'Reveal library in Explorer', appVersion:(version:string)=>`Lantern ${version}`, finishGeneration:'Finish or cancel the running generation first',
   libraryChanged:(path:string)=>`Library switched to ${path}.`, collisionsRenamed:(count:number)=>`${count} colliding subject ids were renamed.`,
   transferLibrary:'Bring your subjects to this library?', transferHint:'Move copies and verifies every file before removing originals. Copy keeps the originals. Leave them switches folders only.',
   moveSubjects:'Move', copySubjects:'Copy', leaveSubjects:'Leave them', resetDefaults:'Reset to defaults', confirmReset:'Reset this section to its defaults?',

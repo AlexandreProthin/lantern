@@ -67,6 +67,7 @@ The last-opened times and the recents list are **not** in this file: they live i
 
 - **SE-20** The display name default MUST be the Windows user name (`USERNAME`), read at first run and stored; the user can change it. It is the author name on learner turns and edits ([domain-model](/specs/domain-model.md)).
 - **SE-21** *Reveal library in Explorer* MUST open the library folder.
+- **SE-22** The section MUST end with the app version, *Lantern 0.1.2*, taken at build time from `package.json` (kept equal to `Cargo.toml` and `tauri.conf.json`).
 
 # Library folder change flow
 

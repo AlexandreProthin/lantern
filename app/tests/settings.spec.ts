@@ -1,9 +1,13 @@
+import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 test('SE-6/14/16/42: validation, scoped reset, provider health and live reduced motion', async ({page}) => {
   await page.goto('/?study=1&subject=Preferences');
   await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
   await page.getByRole('button',{name:'Settings',exact:true}).click();
   const dialog=page.getByRole('dialog');
+  // SE-22: General ends with the app version from package.json.
+  const {version}=JSON.parse(readFileSync('package.json','utf8'));
+  await expect(dialog.getByText(`Lantern ${version}`,{exact:true})).toBeVisible();
   await dialog.getByRole('button',{name:'Provider',exact:true}).click();
   await expect(dialog.getByRole('status')).toContainText('Signed in · fake-tutor');
   const model=dialog.getByRole('combobox',{name:'Default model'});
