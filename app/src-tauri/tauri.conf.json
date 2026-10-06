@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.tauri.app/config/2", "productName": "Lantern", "version": "0.1.1",
+  "$schema": "https://schema.tauri.app/config/2", "productName": "Lantern", "version": "0.1.2",
   "identifier": "io.github.alexandreprothin.lantern",
   "build": { "beforeDevCommand": "npm run dev", "beforeBuildCommand": "npm run build", "devUrl": "http://localhost:1431", "frontendDist": "../dist" },
   "app": { "windows": [{ "label": "main", "title": "Lantern", "width": 1360, "height": 860, "minWidth": 1024, "minHeight": 640 }], "security": { "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost" } },

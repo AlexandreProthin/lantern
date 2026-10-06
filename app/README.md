@@ -1,4 +1,4 @@
-# Lantern v0.1.1
+# Lantern v0.1.2
 
 New implementation; the proof of concept it replaced is kept at the `poc-final` git tag. Requirements and milestone exit gates live in `../agent_wiki/plans/v0-1-0.md`.
 
