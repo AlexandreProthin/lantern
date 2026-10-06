@@ -206,3 +206,41 @@ test('v0.1.1 B4/I1/I2: subject menu closes outside, offers the model list; graph
   await page.locator('.panel').click({position:{x:20,y:20}});
   await expect(menu).toHaveCount(0);
 });
+
+test('GV-57: Ctrl+F searches nodes, Enter steps through matches, Esc closes', async ({page}) => {
+  const errors:string[]=[]; page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/?study=1&subject=Tidal%20forces');
+  await expect(page.locator('.panel').getByRole('button',{name:'Mechanism 1',exact:false})).toBeVisible();
+  // A node still growing in (GV-90) is hidden and cannot take focus; let the spawn finish.
+  await expect(page.locator('.node[data-spawn-phase], .node[data-pending]')).toHaveCount(0);
+  await page.keyboard.press('Control+f');
+  const field=page.getByRole('textbox',{name:'Search nodes',exact:true});
+  await expect(field).toBeFocused();
+  await field.fill('DIRECTION');
+  const count=page.getByRole('search').getByRole('status');
+  await expect(count).toHaveText('4 matches'); // the root's explanation mentions "direction" too
+  await expect(page.locator('.node.match')).toHaveCount(4);
+  await field.fill('direction 2');
+  await expect(count).toHaveText('1 match');
+  await expect(page.locator('.node.unmatched')).toHaveCount(3);
+  await field.press('Enter');
+  await expect(count).toHaveText('1 of 1');
+  await expect(page.locator('.node[aria-pressed="true"]')).toHaveAttribute('title',/Application 1/);
+  await field.fill('Direction');await field.press('Enter');
+  await expect(page.locator('.node[aria-pressed="true"]')).toHaveAttribute('title',/Experiment 1/);
+  await expect(count).toHaveText('4 of 4');
+  await field.press('Enter');
+  await expect(count).toHaveText('1 of 4');
+  await field.press('Shift+Enter');
+  await expect(count).toHaveText('4 of 4');
+  await field.fill('expérience absente');
+  await expect(page.getByRole('search').getByRole('status')).toHaveText('No matches');
+  await field.press('Escape');
+  await expect(field).toHaveCount(0);
+  await expect(page.locator('.node.unmatched, .node.match')).toHaveCount(0);
+  await expect(page.locator('.node[aria-pressed="true"]')).toBeFocused();
+  await expect(page.locator('.panel').getByRole('button',{name:'Cancel',exact:true})).toHaveCount(0);
+  await page.getByRole('button',{name:'Search nodes',exact:true}).click();
+  await expect(field).toBeFocused();
+  expect(errors).toEqual([]);
+});

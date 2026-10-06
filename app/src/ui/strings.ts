@@ -34,7 +34,8 @@ export const strings = {
   readOnly: 'This file was created by a newer Lantern version and is read-only.'
   , welcome: 'Welcome', study: 'Study', gallery: 'Gallery', learn: 'Learn', settings: 'Settings',
   graphNavigation: 'Graph navigation', nodeActions: (title: string) => `Actions for ${title}`, previousView: 'Previous view', recenter: 'Recenter',
-  treeLayout: 'Tree layout', freeLayout: 'Free layout', zoomIn: 'Zoom in', zoomOut: 'Zoom out', untitledQuestion: 'Untitled question',
+  treeLayout: 'Tree layout', freeLayout: 'Free layout', zoomIn: 'Zoom in', zoomOut: 'Zoom out', searchHint: 'Search nodes · Ctrl+F', searchNodes: 'Search nodes', closeSearch: 'Close search',
+  noNodeMatches: 'No matches', matchCount: (n: number) => n === 1 ? '1 match' : `${n} matches`, matchOf: (k: number, n: number) => `${k} of ${n}`, untitledQuestion: 'Untitled question',
   darkNode: 'This node is still dark.', lightUp: 'Light it up', lighting: 'Lighting…',
   dismissedNotice: 'Dismissed. It will not be proposed again.', restore: 'Restore', dismiss: 'Dismiss',
   whereNext: 'Where to go next', axes: 'Axes to explore', dialogue: 'Dialogue',
@@ -84,5 +85,5 @@ export const strings = {
   , transferRecovered:'An interrupted library transfer was recovered. Your subjects are safe.'
   , installInstructions: 'Install Claude Code from the setup page, then return to Lantern and choose Check again.', installClaude: 'Install Claude Code',
   signinInstructions: 'Start Claude Code once outside Lantern and follow its browser sign-in with your Claude account. Then return here and choose Check again.',
-  shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\nCtrl+1 / Ctrl+2 / Ctrl+3 — Welcome / Study / Gallery\nAlt+A / Alt+N with selected text — Ask / Make it a node\n? — show or hide shortcuts\nCtrl+, — Settings'
+  shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\nCtrl+1 / Ctrl+2 / Ctrl+3 — Welcome / Study / Gallery\nAlt+A / Alt+N with selected text — Ask / Make it a node\n? — show or hide shortcuts\nCtrl+, — Settings\nCtrl+F in Study — search nodes; Enter / Shift+Enter next / previous, Esc close'
 };

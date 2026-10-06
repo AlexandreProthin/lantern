@@ -1,5 +1,11 @@
 # Wiki Update Log
 
+## 2026-10-07
+
+* **Search in a subject** ([graph-view](/specs/graph-view.md) GV-57, new; Ctrl+F row in the GV-76 table): a magnifier left of the layout toggle, or Ctrl+F in Study, opens a field that matches titles, hooks, explanations and dialogue ignoring case, accents and spaces; matches get an accent ring, the rest dim, a count reads *n matches* / *k of n*, Enter / Shift+Enter step through them in tree order with `setFocus`, Esc closes. Matching is the pure `app/src/rooms/learn/graph-search.ts` (unit tested); browser test GV-57 passes 40/40 repeated runs.
+* **Sibling order fix** ([domain-model](/specs/domain-model.md) DM-10): siblings created by one reply shared a `createdAt` millisecond, so their order fell back to object key order, where an all-digit random id (about 2 % of ids) jumps first; search order and arrow-key sibling moves (GV-70) could shuffle. Timestamps the app writes now strictly increase, and ties (older files) break by `id` in `childrenOf` and the tree layout, as the context builder already did. Verified: `npm run check` 0/0, 51 TS tests, Playwright 20 passed (2 idle perf skipped) in three full runs.
+* **Backlog**: four entries from the user: subject export (format to be decided properly first), regenerate an explanation, a cheaper model for cheap tasks, and an update notification ([backlog](/plans/backlog.md)).
+
 ## 2026-10-06
 
 * **Installed-build checks closed**: the user reported "everything as expected" for v0.1.1 F2 (*Open* reveals in Explorer, right-click copies the path), F5 (pedagogy and motion of the Welcome direction) and the v0.1.0 leftovers (500-node native pan/zoom, Recycle Bin delete).

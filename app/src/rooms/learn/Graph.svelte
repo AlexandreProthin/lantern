@@ -28,6 +28,7 @@
   import { graphLinks } from './graph-links';
   import { SpawnMotion } from './spawn-motion';
   import { nodeActions, runNodeAction, type NodeAction, type PanelRequest } from './actions';
+  import { searchNodes, stepMatch } from './graph-search';
 
   let { session, revision, settings, preferencesChanged, navigate = () => {}, visible = true, openInPanel = () => {}, library, linkPreview = null }: { library?: LibrarySpaces; linkPreview?: string | null; session: LearnSession; revision: number; settings: Settings; preferencesChanged: () => void; navigate?: (space: string) => void; visible?: boolean; openInPanel?: (kind: PanelRequest['kind'], nodeId: string) => void } = $props();
 
@@ -299,6 +300,32 @@
     previewFrame = requestAnimationFrame(step);
   }
 
+  // ---- Search (GV-57) ------------------------------------------------------------------
+
+  let searchOpen = $state(false), searchText = $state(''), searchQuery = $state(''), searchPicked = $state(false), searchField = $state<HTMLInputElement>();
+  let searchTimer: ReturnType<typeof setTimeout> | undefined;
+  const matches = $derived.by(() => { revision; return searchNodes(session.visit, searchQuery); });
+  const matchSet = $derived(new Set(matches));
+  const searching = $derived(searchOpen && !!searchQuery.trim());
+  const matchAt = $derived(searchPicked ? matches.indexOf(session.visit.focusId) : -1);
+  const matchCount = $derived(!matches.length ? strings.noNodeMatches : matchAt >= 0 ? strings.matchOf(matchAt + 1, matches.length) : strings.matchCount(matches.length));
+  function openSearch() { searchOpen = true; afterUpdate().then(() => { searchField?.focus(); searchField?.select(); }); }
+  function typeSearch(text: string) { searchText = text; searchPicked = false; clearTimeout(searchTimer); searchTimer = setTimeout(() => searchQuery = text, 150); }
+  function resetSearch() { clearTimeout(searchTimer); searchOpen = false; searchText = searchQuery = ''; searchPicked = false; }
+  // Focus the node before the field goes, so focus never falls to the body in between.
+  function closeSearch() { host.querySelector<HTMLButtonElement>(`[data-id="${session.visit.focusId}"]`)?.focus(); resetSearch(); }
+  function searchKey(e: KeyboardEvent) {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeSearch(); }
+    else if (e.key === 'Enter') {
+      e.preventDefault(); clearTimeout(searchTimer); searchQuery = searchText;
+      const id = stepMatch(searchNodes(session.visit, searchText), session.visit.focusId, e.shiftKey ? -1 : 1);
+      if (id) { session.setFocus(id); searchPicked = true; }
+    }
+  }
+  function windowKey(e: KeyboardEvent) {
+    if (visible && e.ctrlKey && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'f') { e.preventDefault(); openSearch(); }
+  }
+
   // ---- Open / copy path (GV-56) ----------------------------------------------------------
 
   let fileNote = $state(''), fileNoteTimer: ReturnType<typeof setTimeout> | undefined;
@@ -319,7 +346,7 @@
   let shownSubject=untrack(()=>session.subject.id);
   $effect(()=>{revision;const id=session.subject.id;untrack(()=>{
     if(id===shownSubject)return;
-    viewMemory.set(shownSubject,{transform});shownSubject=id;
+    viewMemory.set(shownSubject,{transform});shownSubject=id;resetSearch();
     const memory=viewMemory.get(id);prevFocus=session.visit.focusId;lastRoute=route;stopTravel();stopPan();
     afterUpdate().then(()=>{if(!zoomer)return;if(memory)select(host).call(zoomer.transform,memory.transform);else setTimeout(reset,500);});
   });});
@@ -620,7 +647,7 @@
   });
 </script>
 
-<svelte:window onpointerdowncapture={menuOutside} />
+<svelte:window onpointerdowncapture={menuOutside} onkeydown={windowKey} />
 <div class="graph" class:degraded={halfRate} data-settled={settled} data-reduced={motionReduced()} bind:this={host} bind:clientWidth={width} bind:clientHeight={height}
   style="--grow:{graphMotion.SPAWN_GROW_MS}ms;--stagger:{graphMotion.SPAWN_STAGGER_MS}ms;--breathe:{graphMotion.PENDING_BREATHE_PERIOD_MS}ms;--shrink:{graphMotion.SPAWN_SHRINK_MS}ms;--reveal:{graphMotion.SPAWN_REVEAL_MS}ms;--pulse:{graphMotion.BUSY_PULSE_PERIOD_MS}ms;--opacity-low:{graphMotion.PENDING_BREATHE_OPACITY[0]};--opacity-high:{graphMotion.PENDING_BREATHE_OPACITY[1]}">
   <div
@@ -648,6 +675,8 @@
         class:busy
         class:pulsing={busy}
         class:muted={!route.has(n.id)}
+        class:match={searching && matchSet.has(n.id)}
+        class:unmatched={searching && !n.pending && !matchSet.has(n.id)}
         data-id={n.id}
         data-state={n.state}
         data-understood={n.understoodBy}
@@ -686,6 +715,18 @@
   {#if Object.keys(session.visit.nodes).length > 800}<div class="large-notice" role="status">{strings.largeGraph}</div>{/if}
 
   <nav class="controls layout-controls">
+    {#if searchOpen}
+      <div class="search" role="search">
+        <input bind:this={searchField} value={searchText} aria-label={strings.searchNodes} placeholder={strings.searchNodes} spellcheck="false"
+          oninput={e => typeSearch(e.currentTarget.value)} onkeydown={searchKey} />
+        {#if searchQuery.trim()}<span class="search-count" role="status">{matchCount}</span>{/if}
+        <button onclick={closeSearch} aria-label={strings.closeSearch} title={strings.closeSearch}>×</button>
+      </div>
+    {:else}
+      <button onclick={openSearch} aria-label={strings.searchNodes} title={strings.searchHint}>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="m10.5 10.5 3.5 3.5" /></svg>
+      </button>
+    {/if}
     <button
       onclick={() => { settings.ui.graphLayout = layout === 'force' ? 'tree' : 'free'; preferencesChanged(); }}
       aria-pressed={layout==='tree'}
@@ -861,6 +902,8 @@
   .node:not([data-state='open']):hover .disc {
     border-color: var(--focus);
   }
+  .node.unmatched { opacity:.3; }
+  .node.match .disc { outline:1.5px solid var(--accent); outline-offset:3px; }
   .node[aria-pressed='true'] .disc,
   .node:focus-visible .disc {
     outline: 1px solid var(--focus);
@@ -916,6 +959,10 @@
     border-color: var(--line);
     color: var(--accent);
   }
+  .search { display:flex; align-items:center; gap:8px; height:32px; padding:0 0 0 12px; background:var(--surface); border:1px solid var(--line); border-radius:16px; }
+  .search input { width:200px; border:0; background:none; color:var(--ink); font-size:13px; outline:none; }
+  .search-count { font-size:12px; color:var(--ink-mute); white-space:nowrap; }
+  .search button { border:0; background:none; }
   .controls svg {
     width: 14px;
     height: 14px;

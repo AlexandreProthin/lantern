@@ -114,7 +114,7 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
 - **GV-50** *Removed 2026-10-05 (v0.1.1 I1).* The graph has no navigation cluster: the *Welcome*
   and *Gallery* icons duplicated the header ([rooms-spaces](/specs/rooms-spaces.md) RS-21), and
   *Previous view* (which sat hidden under the layout toggle) went with them. The layout toggle
-  (GV-53) is the only control at the top of the graph.
+  (GV-53) and the search button (GV-57) are the only controls at the top of the graph.
 - **GV-51** A **zoom cluster** at the **bottom-right**, in this order: zoom out, **recenter** (fit
   all), zoom in (order since v0.1.1 I2).
   Recenter is its own control and no longer changes focus (the PoC reset also jumped to the
@@ -138,6 +138,18 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   panel's own form and confirmation dialog for that node (the panel is uncollapsed if needed).
   The menu follows the node while the view pans; Esc, a press outside it or choosing an action
   closes it and returns focus to the node; arrow keys move between items.
+- **GV-57** *Search (v0.1.3).* A **search** button (magnifier, tooltip *Search · Ctrl+F*) sits left of
+  the layout toggle. It, or **Ctrl+F** anywhere in Study, opens a search field in its place (the text
+  selected when it was already open). The query matches, as a substring ignoring case, accents and
+  repeated spaces, a node's title, hook, explanation and dialogue turns; pending bodies never match.
+  The query applies after about 150 ms of no typing. With a non-empty query: matching nodes show a
+  thin `--accent` ring, the others are dimmed to 30 % (route edges unchanged, GV-31), and a count
+  beside the field reads *No matches*, *1 match*, *n matches*, or *k of n* once one is selected.
+  **Enter** focuses the next match and **Shift+Enter** the previous one, wrapping, in tree order
+  (depth first, children in creation order, GV-70), through `setFocus` (GV-80): the panel follows
+  and the view pans (GV-34). Typing alone never moves the focus. **Esc** in the field, or its close
+  button, clears the query, closes the field and returns focus to the focused node. The search is
+  not saved and is cleared when another subject opens.
 - **GV-54** Every control MUST be at least 32 px, have a tooltip and an accessible name, and not
   overlap nodes' hit areas except where the overlay sits.
 
@@ -188,6 +200,7 @@ Active when the graph has focus (Tab reaches the focused node; the graph is one 
 | Alt+A / Alt+N | with a text selection | *Ask about this* / *Make it a node* (the selection popover) |
 | ? | anywhere outside a text field | Show or hide the shortcuts |
 | Ctrl+, | anywhere | Open Settings |
+| Ctrl+F | Study | Search the subject's nodes; in the field, Enter / Shift+Enter: next / previous match, Esc: close (GV-57) |
 
   Keys that belong to one control only stay in that control's spec: the Gallery grid
   ([welcome-gallery](/specs/welcome-gallery.md) WG-65), the split divider (GV-85) and the legend chip
