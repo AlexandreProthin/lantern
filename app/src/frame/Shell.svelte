@@ -3,7 +3,8 @@
   import { invoke } from '@tauri-apps/api/core';
   import { strings } from '../ui/strings';
   // RS-53: header mark is the ember favicon of the accepted identity release, unchanged.
-  import lanternMark from '../assets/identity/ember-on-dark-32.svg';
+  // Inlined as markup: an image URL would be a data: URI, which the app CSP blocks.
+  import lanternMark from '../assets/identity/ember-on-dark-32.svg?raw';
   import { providerMode } from './provider-mode';
   import { DesktopProvider, ObservedProvider, ProviderError } from './provider';
   import type { Completion, ErrorKind } from './provider';
@@ -243,7 +244,7 @@
 </script>
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
 <header>
-  <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}><img src={lanternMark} alt="" width="28" height="28"/></button><span class="room">{room.name}</span>
+  <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}><span class="mark-art" aria-hidden="true">{@html lanternMark}</span></button><span class="room">{room.name}</span>
   <nav>{#each room.spaces as item}<button aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space===item.id?'page':undefined} disabled={item.id!=='welcome' && !subjectCount} onclick={()=>navigate(item.id)}>{item.icon}</button>{/each}</nav>
   {#if session && space!=='welcome'}<button class="subject" onclick={()=>subjectMenu=!subjectMenu} title={session.subject.title}>{session.subject.title}{#if running}<span class="busy-dot">·</span>{/if}</button>{/if}
   {#if summary && space!=='welcome'}<small title={settings.appearance.showTokenStats?summary.tooltip:undefined}>{summary.text}</small>{/if}
@@ -270,7 +271,7 @@
 <style>
   :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; } header { height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid var(--line); background:var(--surface); }
   :global(#app) {display:flex;flex-direction:column;} header {flex-shrink:0;} .banner {flex-shrink:0;}
-  header button { background:none; padding:5px 9px; min-width:32px; }.mark { display:flex; align-items:center; padding:4px 6px; }.mark img { display:block; width:28px; height:28px; }.room { color:var(--accent); font-size:13px; } nav { display:flex; gap:4px; } [aria-current='page'] { border-color:var(--accent); color:var(--accent); }
+  header button { background:none; padding:5px 9px; min-width:32px; }.mark { display:flex; align-items:center; padding:4px 6px; }.mark-art, .mark-art :global(svg) { display:block; width:28px; height:28px; }.room { color:var(--accent); font-size:13px; } nav { display:flex; gap:4px; } [aria-current='page'] { border-color:var(--accent); color:var(--accent); }
   .subject { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:35vw; border:0; } header small { color:var(--ink-mute); font-size:13px; margin-left:auto; }.gear { margin-left:auto; }
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
