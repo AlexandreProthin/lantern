@@ -3,7 +3,7 @@ type: Issue
 title: Context does not scale with subject size
 description: Every turn sends the whole map to the model, so a large subject will blow the context budget.
 tags: [prompts, context, scaling]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-01T21:45:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
@@ -22,4 +22,4 @@ dozen nodes; a long-lived subject will exceed the budget and cost more latency p
 
 This is the "prompt engineering and context management" topic in the README's open work.
 
-v0.1.0 direction is adaptive context (the whole map within a budget, neighbourhood plus all titles beyond); spec pending.
+Addressed in v0.1.0 by [context-assembly](/specs/context-assembly.md): the map part has a 12,000-token budget (configurable), with a full outline under it and a reduced outline beyond. Open only if real subjects outgrow the reduced form.

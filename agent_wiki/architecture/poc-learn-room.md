@@ -3,11 +3,13 @@ type: Architecture
 title: "PoC: the Learn room"
 description: How the throwaway proof of concept in poc/ is wired end to end, and what it deliberately cuts corners on.
 tags: [poc, learn-room, tauri, svelte]
-status: stable
+status: deprecated
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
 resource: /app/src/rooms/learn
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
+
+Superseded by the v0.1.0 app: [foundation](/components/v010-foundation.md), [Study](/components/v010-study.md) and [Learn runtime](/components/v010-learn-runtime.md). The PoC was removed from the tree on 2026-10-04 and stays at the `poc-final` tag; this page describes it as it was.
 
 Throwaway code (about 1600 lines) that shows a conversation with a tutor grows a persistent
 graph. The user judged it "very close to what I want" on 2026-09-29. Run instructions and the

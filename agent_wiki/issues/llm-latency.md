@@ -3,7 +3,7 @@ type: Issue
 title: LLM latency
 description: Each call takes seconds because the CLI provider spawns a process; lighting a node takes about 25 s.
 tags: [latency, provider, claude-cli]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-01T21:45:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
@@ -36,4 +36,4 @@ checks; the replies and timings remain locally under `app/evals/results/`.
   conflicts with the current tagged-blocks-at-the-end design
   ([tagged-blocks-protocol](/decisions/tagged-blocks-protocol.md)).
 
-v0.1.0 direction: accept the latency and mask it with motion, see [latency-masked-not-reduced](/decisions/latency-masked-not-reduced.md).
+Still true in v0.1.2. v0.1.0 direction: accept the latency and mask it with motion, see [latency-masked-not-reduced](/decisions/latency-masked-not-reduced.md). Reducing it needs another provider and is not scheduled.

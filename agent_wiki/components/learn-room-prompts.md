@@ -3,11 +3,13 @@ type: Component
 title: Learn room prompts
 description: The tutor's system prompt, the per-task prompts, the context each one carries, and the reply parsing.
 tags: [learn-room, prompts, context]
-status: stable
+status: deprecated
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
 resource: /app/src/rooms/learn/prompts.ts
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
+
+Superseded by [tutor-protocol](/specs/tutor-protocol.md) (prompts `learn-1`, now `learn-2`), [context-assembly](/specs/context-assembly.md) and [Learn runtime](/components/v010-learn-runtime.md). This page describes the PoC prompts as they were (tag `poc-final`).
 
 Seeded from the `learning-session` skill (see [related projects](/references/related-projects.md)).
 

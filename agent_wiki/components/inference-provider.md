@@ -3,11 +3,13 @@ type: Component
 title: Inference provider
 description: The Rust trait the app calls for completions, and its Claude Code CLI implementation.
 tags: [llm, rust, provider]
-status: stable
+status: deprecated
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T10:00:00Z }
 resource: /app/src-tauri/src/provider.rs
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
+
+Superseded by the [inference-provider spec](/specs/inference-provider.md) and its v0.1.0 implementation in [Learn runtime](/components/v010-learn-runtime.md). This page describes the PoC provider as it was (tag `poc-final`).
 
 # Contract
 

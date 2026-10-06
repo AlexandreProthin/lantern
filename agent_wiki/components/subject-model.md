@@ -3,11 +3,13 @@ type: Component
 title: Subject model and storage
 description: The PoC's subject/node data model and how a subject is saved to disk.
 tags: [subject, graph, persistence]
-status: draft
+status: deprecated
 generated: { by: claude-code/sonnet-5.5, at: 2026-09-29T21:30:00Z }
 resource: /app/src/core/model.ts
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
+
+Superseded by [domain-model](/specs/domain-model.md), [subject-storage](/specs/subject-storage.md) and [v0.1.0 core](/components/v010-core.md). This page describes the PoC model as it was (tag `poc-final`).
 
 # Model (format tag `lantern-poc/1`)
 
