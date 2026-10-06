@@ -246,3 +246,34 @@ Request 28/r015. Named lantern-identity-v0.1-review package, rules/recipe/editab
 
 ## E0047 — 2026-10-06 Europe/Paris — commit requested, awaiting feedback
 User verbatim "commit then i will give you my feedback"; request 29/base state 31. Commit identity work r011–r015 and preserve review checkpoint. No final acceptance or additional design/install/release. Next user package feedback.
+
+## E0048 — 2026-10-06 Europe/Paris — proposition round on review package requested
+User verbatim: "i made good progress on agent_identity but want you to make me your proposition round from the last iteration. I come up with a solid draft but you can improve it !" Request 30/base state 32. Reserve r016 and r016-c01..c07, branch from r015 package. Seven isolated, combinable system improvements; silhouette/face/gestures/motion/flame tokens frozen. No selection, final acceptance or installation inferred.
+
+## E0049 — 2026-10-06 Europe/Paris — r016 propositions ready for review
+Request 30/r016. Seven combinable system propositions r016-c01..c07 on the r015 draft: lit frame, ember favicon, app tile, flat 32–64 tier + weighted frame, clear space/minimum sizes, ground light, per-background tokens (neutral/Learn #101827/light). Draft parity 24/24; boards on three backgrounds visually inspected; browser behaviour checks passed. Agent take recommends c01–c05, c07; c06 optional. No human selection, no r015 change, no final/ write or install. Next: user feedback file rounds/r016/feedback.md, then "next".
+
+## E0050 / D0021 / D0022 — 2026-10-06 Europe/Paris — r016 feedback recorded
+Owner user; verbatim feedback saved in rounds/r016/feedback.md. D0021: r016-c01 lit frame and r016-c02 ember favicon taken. D0022: r016-c05 clear space/minimum sizes and r016-c07 per-background tokens taken by delegation ("your take"; agent take recommended both; checkbox left on "leave"). Not taken, draft kept: r016-c03 app tile, r016-c04 flat tier, r016-c06 ground light (note "Draft r015"); not rejected for reuse. Request 31/base state 33.
+Global feedback reopens flame motion (D0018 outer contour, D0020 inner layers): wants more realistic flame physics; the flame character "feels ghosty", which it must not. r015 package motion/flame rendering claims become provisional pending r017; frame/favicon/gesture decisions unaffected.
+
+## E0051 — 2026-10-06 Europe/Paris — r017 flame physics reserved
+Request 31. Reserve r017, r017-c01..c04, parent r013-c01, with r016-c01/c07 applied. Four studies: c01 rising-flow physics (motion only), c02 tongues and wisps, c03 wick-anchored teardrop with hot root and crisper edge, c04 combined with rare embers. Eyes/frame/gestures frozen.
+
+## E0052 — 2026-10-06 Europe/Paris — r017 flame physics ready for review
+Request 31/r017. Four studies r017-c01..c04 (rising flow; + tongues/wisps; candle teardrop with hot root; all + rare embers), parent r013-c01 with r016-c01/c07 applied. 9.6 s seam verified, physics response and three backgrounds visually inspected, browser behaviour passed. Initial detached-tongue rendering corrected before publication. Agent take c04 (embers optional). No human selection; eyes/frame/gestures unchanged. Next: rounds/r017/feedback.md then "next".
+
+## E0053 / D0023 — 2026-10-06 Europe/Paris — flame mix selected
+Owner user; verbatim "a mix of Ref / Reference — current flame r013-c01 and 01 / Rising flow r017-c01". D0023: combine r013-c01 look/shape with r017-c01 motion physics. r017-c02..c04 not selected (no rejection reason given; tongues, teardrop, embers kept as reusable fragments). Request 32/base state 34. Reserve r018, r018-c01..c02 (inner-layer source is the only open variable).
+
+## E0054 — 2026-10-06 Europe/Paris — r018 flame mix ready for review
+Request 32/r018. Two combine candidates r018-c01 (accepted inner layers) and r018-c02 (rising-flow inner layers), both accepted r013-c01 outline/rendering moved by r017-c01 flow physics. Seam, root pinning, NaN sweep, three backgrounds and physics frames checked; browser behaviour passed. Agent take c01. No human selection. Next: rounds/r018/feedback.md then "next".
+
+## E0055 / D0024 — 2026-10-06 Europe/Paris — current flame kept; package v0.2 requested
+Owner user; verbatim "final pick: Ref / Current flame r013-c01 go next". D0024: flame remains r013-c01 (D0018/D0020 reinstated), superseding D0023; r018-c01/c02 and r017 studies not selected, kept as reusable fragments (physics engine rounds/r018/sources/flame.js). The r016 "ghosty" note is resolved by user decision after an in-motion comparison; no further flame change requested. Request 33/base state 35. Reserve r019: system/export round, no candidates, package lantern-identity-v0.2-review.
+
+## E0056 — 2026-10-06 Europe/Paris — identity package v0.2 review prepared
+Request 33/r019. lantern-identity-v0.2-review: lit frame, ember + mono favicons, face-free mark and six companion poses for neutral/Learn/light, clear space and minimum sizes, per-background tokens, runtime with context switch, SHA-256 manifest (129 files) and ZIP. Dimension/alpha/hash/CRC checks passed; three system boards inspected; runtime browser checks passed. Light-background eyes faint (inherited mask construction) flagged. No final acceptance/install. Next: user review of v0.2.
+
+## E0057 / D0025 — 2026-10-06 Europe/Paris — v0.2 accepted as named release
+Owner user; verbatim "all good to me" in reply to the v0.2 review (asked: light-background eyes, named acceptance or deferrals). D0025: accept lantern-identity-v0.2-review as release lantern-identity-v0.2. Eyes kept as built. Deferred, not passed: native DPI perception, real room placement/distraction, Windows icon pipeline, idle/transition policy, arbitrary gesture chaining, profile/back views. Request 34/base state 36. Phase 6 exit for v0.2; no installation.

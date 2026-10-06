@@ -1,0 +1,67 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lantern — r018 flame mix</title>
+<style>
+:root{--bg:#181818;--card:#232323;--ink:#eee;--mute:#a9a9a9;--line:#3a3a3a;--accent:#ffac38}
+body[data-ctx=learn]{--bg:#101827;--card:#172132;--ink:#f3e9dc;--mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e}
+body[data-ctx=light]{--bg:#f4eee3;--card:#fffaf1;--ink:#292018;--mute:#695c50;--line:#e0d5c4;--accent:#b8410f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'Segoe UI',system-ui,sans-serif}
+main{max-width:1180px;margin:auto;padding:28px 16px 80px}h1{font-size:28px;margin:0 0 4px}h2{font-size:18px;margin:0}p{margin:.4em 0}.mute{color:var(--mute)}
+button,select{font:inherit;padding:7px 14px;background:var(--card);color:inherit;border:1px solid var(--line);border-radius:8px;cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.bar{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:20px}
+.seg button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+article{background:var(--card);border-radius:14px;padding:16px;border:1px solid transparent}article.on{border-color:var(--accent)}article.ref{opacity:.92}
+.stage{display:flex;justify-content:center;align-items:flex-end;gap:10px;min-height:250px}.stage svg{display:block}
+.pick{display:flex;flex-direction:column;gap:8px;margin-top:8px}.pick label{display:flex;gap:8px;align-items:center;font-weight:600}
+textarea{width:100%;min-height:44px;font:inherit;background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:8px;padding:8px}
+details{margin:6px 0;color:var(--mute)}summary{cursor:pointer}
+.box{background:var(--card);border-radius:14px;padding:16px;margin:0 0 20px}
+#out{min-height:140px;font:12px/1.4 Consolas,monospace}
+</style>
+<body data-ctx="learn"><main>
+<h1>Lantern — r018 flame mix</h1>
+<p class="mute">Your pick: “a mix of Ref (r013-c01) and 01 Rising flow (r017-c01)”. Both mixes keep the accepted outline (S-hook), amber depth and glow, and replace the sideways drift with rising-flow physics: root pinned, turbulence travelling up, tip flicker, upright on tilt, trailing/squash/stretch with movement. The only open choice is where the inner layers come from. Both parents are shown for comparison.</p>
+<div class="bar"><span class="seg" id="ctx"><button data-c="neutral" aria-pressed="false">Neutral dark</button> <button data-c="learn" aria-pressed="true">Learn #101827</button> <button data-c="light" aria-pressed="false">Light</button></span>
+<label>Scene <select id="scene"><option value="-1">Flame only (rest)</option></select></label>
+<label>Size <select id="size"><option>64</option><option>128</option><option selected>220</option></select></label>
+<button id="play">Play · 9.6 s</button><button id="still">Still</button><label><input type="checkbox" id="reduced"> Reduced motion</label><span id="status" class="mute" role="status">Still.</span></div>
+<div class="grid" id="cards"></div>
+<div class="box" style="margin-top:20px"><h2>Feedback</h2><p class="mute">Tick, annotate, save to <code>rounds/r018/feedback.md</code> (or copy into chat), then say <b>next</b>.</p>
+<textarea id="global" placeholder="Global note"></textarea><p><button id="save">Save feedback.md</button> <button id="copy">Copy</button></p><textarea id="out" readonly></textarea></div>
+</main>
+<script src="sources/body.js"></script><script src="sources/motion.js"></script><script src="sources/favicons.js"></script><script src="sources/flame.js"></script><script src="sources/system.js"></script><script src="sources/variants.js"></script>
+<script>
+const S=LanternSystem,M=LanternMotion,$=id=>document.getElementById(id);let ctx='learn',t=0,running=false,last=0,uid=0;
+const INFO={
+ 'r018-c01':['Accepted outline + accepted inner layers (the D0020 middle/core shapes), all carried by the rising flow. The inner layers follow with a slight lag (80/160 ms), so they appear to rise through the body.','Closest to what you already accepted; only the motion changes. My pick.'],
+ 'r018-c02':['Accepted outline + the rising-flow inner layers from r017-c01: rounder nested shapes centred on the root, clipped inside the accepted outline.','A softer, rounder glowing heart; the inner shape no longer echoes the S-hook.']
+};
+const cards=[...R018_REFS.map(r=>({...r,ref:1})),...R018];
+M.specs.forEach((s,i)=>$('scene').insertAdjacentHTML('beforeend',`<option value="${i}">${String(i+1).padStart(2,'0')} ${s.name}</option>`));
+const picks={},notes={};
+function render(c){const gi=+$('scene').value,s=+$('size').value,o={uid:'u'+(uid++),face:true,lit:1,tuned:1,ctx,t};
+ if(c.physics)o.physics=c.physics;
+ if(gi<0){o.gesture=0;o.pose={...M.still(0),flameTime:t};}else{o.gesture=gi;if(!running)o.pose={...M.still(gi),flameTime:t};}
+ return S.actor(o).replace('<svg ',`<svg width="${s}" height="${s}" `);}
+function build(){
+ $('cards').innerHTML=cards.map((c,i)=>`<article class="${c.ref?'ref':''}${picks[c.id]?' on':''}"><h2>${c.ref?'Ref':String(i-1).padStart(2,'0')} / ${c.title} <small class="mute">${c.id}</small></h2><div class="stage" id="st${i}"></div>${c.ref?`<p class="mute">${c.id==='r013-c01'?'Look and outline parent (D0018/D0020).':'Motion and physics parent (r017).'}</p>`:`<p>${INFO[c.id][0]}</p><details><summary>My take</summary><p>${INFO[c.id][1]}</p></details><div class="pick"><label><input type="checkbox" data-id="${c.id}" ${picks[c.id]?'checked':''}> Take it</label><textarea data-note="${c.id}" placeholder="Note: keep, adjust, mix…">${notes[c.id]||''}</textarea></div>`}</article>`).join('');
+ draw();}
+function draw(){uid=0;cards.forEach((c,i)=>$('st'+i).innerHTML=render(c));report();}
+function report(){const L=['# r018 feedback','','Context viewed last: '+ctx+' · scene: '+$('scene').selectedOptions[0].text,''];
+ R018.forEach((v,i)=>{L.push(`## ${String(i+1).padStart(2,'0')} / ${v.title} (${v.id}) — ${picks[v.id]?'TAKE':'leave'}`);if(notes[v.id])L.push(notes[v.id]);L.push('')});
+ if($('global').value.trim())L.push('## Global','',$('global').value.trim(),'');$('out').value=L.join('\n');}
+document.addEventListener('change',e=>{const id=e.target.dataset.id;if(id){picks[id]=e.target.checked;e.target.closest('article').classList.toggle('on',e.target.checked);report()}});
+document.addEventListener('input',e=>{const id=e.target.dataset.note;if(id){notes[id]=e.target.value}report()});
+$('scene').onchange=()=>{stop();draw()};$('size').onchange=draw;
+$('ctx').onclick=e=>{const c=e.target.dataset.c;if(!c)return;ctx=c;document.body.dataset.ctx=c;[...$('ctx').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===c));draw()};
+const media=matchMedia('(prefers-reduced-motion: reduce)');$('reduced').checked=media.matches;
+function stop(){running=false;t=0;last=0;$('status').textContent='Still.'}
+function frame(now){if(!running)return;if(last)t+=now-last;last=now;if(t>=FlamePhysics.PERIOD){stop();$('status').textContent='Finished — still.';draw();return}draw();requestAnimationFrame(frame)}
+$('play').onclick=()=>{if($('reduced').checked){stop();$('status').textContent='Reduced motion — static.';draw();return}t=0;last=0;running=true;$('status').textContent='Playing one 9.6 s cycle…';requestAnimationFrame(frame)};
+$('still').onclick=()=>{stop();draw()};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();draw()}});
+$('copy').onclick=async()=>{report();try{await navigator.clipboard.writeText($('out').value);$('copy').textContent='Copied'}catch{$('out').select()}};
+$('save').onclick=async()=>{report();const blob=new Blob([$('out').value],{type:'text/markdown'});
+ try{if(window.showSaveFilePicker){const h=await showSaveFilePicker({suggestedName:'feedback.md',types:[{description:'Markdown',accept:{'text/markdown':['.md']}}]});const w=await h.createWritable();await w.write(blob);await w.close();$('save').textContent='Saved';return}}catch(e){if(e.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='feedback.md';a.click();$('save').textContent='Downloaded — move it to rounds/r018/'};
+build();
+</script></body></html>

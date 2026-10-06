@@ -1,0 +1,106 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lantern — r016 propositions</title>
+<style>
+:root{--bg:#181818;--card:#232323;--ink:#eee;--mute:#a9a9a9;--line:#3a3a3a;--accent:#ffac38}
+body[data-ctx=learn]{--bg:#101827;--card:#172132;--ink:#f3e9dc;--mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e}
+body[data-ctx=light]{--bg:#f4eee3;--card:#fffaf1;--ink:#292018;--mute:#695c50;--line:#e0d5c4;--accent:#b8410f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'Segoe UI',system-ui,sans-serif}
+main{max-width:1180px;margin:auto;padding:28px 16px 80px}h1{font-size:28px;margin:0 0 4px}h2{font-size:19px;margin:0}p{margin:.4em 0}.mute{color:var(--mute)}
+button,select{font:inherit;padding:7px 14px;background:var(--card);color:inherit;border:1px solid var(--line);border-radius:8px;cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.bar{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:20px}
+.seg button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}.hero>div{background:var(--card);border-radius:14px;padding:14px;text-align:center}
+.row{display:flex;gap:18px;align-items:flex-end;justify-content:center;flex-wrap:wrap;min-height:120px}.row>div{display:flex;flex-direction:column;align-items:center;gap:4px}.row small{color:var(--mute);font-size:11px}
+.row svg{display:block}
+article{background:var(--card);border-radius:14px;padding:18px;margin-bottom:18px;border:1px solid transparent}article.on{border-color:var(--accent)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}.cmp>div{border:1px dashed var(--line);border-radius:10px;padding:10px}.cmp h3{margin:0 0 6px;font-size:12px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+.pick{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}.pick label{display:flex;gap:8px;align-items:center;font-weight:600}textarea{flex:1;min-width:240px;min-height:44px;font:inherit;background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:8px;padding:8px}
+details{margin:8px 0;color:var(--mute)}summary{cursor:pointer}
+table{border-collapse:collapse;font-size:13px}td,th{border-bottom:1px solid var(--line);padding:4px 10px;text-align:left}
+#out{width:100%;min-height:140px;font:12px/1.4 Consolas,monospace}
+@media(max-width:760px){.hero,.cmp{grid-template-columns:1fr}}
+</style>
+<body data-ctx="neutral"><main>
+<h1>Lantern identity — r016 propositions</h1>
+<p class="mute">Your r015 draft (<i>lantern-identity-v0.1-review</i>) stays the base. Seven isolated improvements; each can be taken or left, and they combine. Silhouette, face, gestures, motion timings and Amber ember flame tokens are frozen.</p>
+<div class="bar"><span class="seg" id="ctx"><button data-c="neutral" aria-pressed="true">Neutral dark #181818</button> <button data-c="learn" aria-pressed="false">Learn room #101827</button> <button data-c="light" aria-pressed="false">Light #f4eee3</button></span>
+<button id="play">Play living flame · 6 s</button><button id="still">Still</button><label><input type="checkbox" id="reduced"> Reduced motion</label><span id="status" class="mute" role="status">Still.</span></div>
+
+<section class="hero"><div><h2>Draft r015</h2><div class="row" id="heroA"></div></div><div><h2>Draft + your ticks</h2><div class="row" id="heroB"></div><p class="mute" id="mixnote"></p></div></section>
+<div id="cards"></div>
+
+<article><h2>Feedback</h2><p class="mute">Tick, annotate, then save. The file goes to <code>rounds/r016/feedback.md</code>; I read it when you say <b>next</b>. Copy also works — paste it in chat.</p>
+<textarea id="global" placeholder="Global note (anything else about the draft or this round)"></textarea>
+<p><button id="save">Save feedback.md</button> <button id="copy">Copy</button></p><textarea id="out" readonly></textarea></article>
+</main>
+<script src="sources/body.js"></script><script src="sources/motion.js"></script><script src="sources/favicons.js"></script><script src="sources/system.js"></script>
+<script>
+const S=LanternSystem,M=LanternMotion,$=id=>document.getElementById(id);let ctx='neutral',t=0,running=false,last=0,uid=0;const U=()=>'x'+(uid++);
+const sized=(svg,s)=>svg.replace('<svg ',`<svg width="${s}" height="${s}" `);
+const cell=(svg,s,lab)=>`<div>${sized(svg,s)}<small>${lab||s+' px'}</small></div>`;
+const P=[
+ {id:'r016-c01',key:'lit',title:'Lit frame',what:'The frame receives the flame’s light: warm on the inner edges and base, darker toward the loop. Same geometry, gradient fill only.',why:'The draft frame is one flat brown (#9b7254) and reads muddy on dark; the flame “emits light” requirement stops at the halo. Lighting the cage makes the light feel real and gives the struts volume.',take:'Strongest single improvement for the companion and mark at ≥64 px. Invisible below 32 px, so the favicon is unaffected.',
+  show:o=>[64,128,200].map(s=>cell(S.actor({uid:U(),face:true,t,ctx,...o}),s)).join(''),on:{lit:1}},
+ {id:'r016-c02',key:'ember',title:'Ember favicon',what:'Two-color favicon: the accepted monochrome frame plus a flat amber flame (no gradient, no glow). 16 px keeps the optical enlarged-loop source.',why:'The draft favicon is pure monochrome, so the tab icon has no link to the warm identity. One flat amber fill is the cheapest brand cue that survives 16 px.',take:'Recommended for browser tabs and the taskbar at 16–48. Keep the monochrome one as the fallback for single-color contexts.',
+  show:o=>[16,24,32,48].map(s=>cell(S.favicon(s,{ctx,ember:!!o.ember}),s)).join('')+(o.ember?'':''),on:{ember:1},fav:1},
+ {id:'r016-c03',key:'tile',title:'App tile',what:'A warm-black rounded square with its own inner glow carries the face-free mark (Windows app icon, Start, installer, store).',why:'The draft mark is transparent, so its halo vanishes on light or busy backgrounds and the app icon depends on the wallpaper. The tile brings its own darkness so the ember always glows.',take:'Recommended as the app icon specifically; the transparent mark stays for in-app use.',
+  show:o=>[32,48,96,160].map(s=>cell(o.tile?S.tile({uid:U(),t}):S.actor({uid:U(),face:false,t,ctx}),s)).join(''),on:{tile:1}},
+ {id:'r016-c04',key:'flat',title:'Flat mid tier + weighted frame',what:'Between favicon and full mark, a 32–64 px tier: the same three flame layers as solid fills (no blur, no halo) and frame strokes +1.8 units.',why:'At 32–64 the draft’s blur and gradients turn to orange mush, which is why it fell back to “monochrome below 64”. A flat tier gives a colored icon at those sizes.',take:'Fills the gap in your size ladder. Proposed ladder: mono glyph 16–24 · ember favicon 16–48 · flat mark 32–64 · full mark/companion ≥96.',
+  show:o=>[32,48,64].map(s=>cell(S.actor({uid:U(),face:false,t,ctx,flat:!!o.flat,thick:!!o.flat}),s)).join(''),on:{flat:1}},
+ {id:'r016-c05',key:'clear',title:'Clear space and minimum sizes',what:'Clear space = one loop height (the ring, 20 units of the 100-unit master) on every side of the ink box. The halo may bleed into it; nothing else may. Minimum sizes per tier as in the table.',why:'The draft says “no independently approved clear-space metric yet”. A unit taken from the mark itself scales with every variant and is easy to check.',take:'Low-risk documentation decision; it unblocks finalization.',
+  show:o=>clearDiagram(o.clear),on:{clear:1}},
+ {id:'r016-c06',key:'ground',title:'Ground light',what:'A soft warm pool under the base when standing or landed. It fades as the lantern rises and is gone in flight. Static: no extra animation.',why:'Companions in rooms float without contact; the pool anchors the lantern to the surface it is standing on and extends “emits light” to its surroundings.',take:'Companion only, never the mark or favicon. Subtle on light backgrounds by design.',
+  show:o=>[[2,'landed'],[4,'in flight'],[5,'descent']].map(([gi,l])=>cell(S.actor({uid:U(),face:true,gesture:gi,pose:running?null:M.still(gi),t,ctx,ground:!!o.ground}),150,l)).join(''),on:{ground:1}},
+ {id:'r016-c07',key:'tuned',title:'Context tuning',what:'Per-background tokens instead of one set. Light: frame #6e4a32, outer flame #b8410f, no halo. Learn navy: frame #a57a5a, halo .24. Neutral dark: unchanged.',why:'The draft was only tested on #181818 and a pale diagnostic. On light the brown frame washes out (3.7:1) and the halo turns to a dirty smudge. On light the tuned frame reaches 6.8:1. Learn’s real background is navy, not grey.',take:'Recommended. Switch backgrounds with the bar on top. On neutral dark this card shows no difference, which is intended.',
+  show:o=>[64,128,200].map(s=>cell(S.actor({uid:U(),face:true,t,ctx,tuned:!!o.tuned}),s)).join(''),on:{tuned:1}},
+];
+function clearDiagram(on){
+ const m=S.actor({uid:U(),face:false,ctx}).replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'');
+ const col=getComputedStyle(document.body).getPropertyValue('--accent');
+ const ov=on?`<rect x="-6" y="-16" width="112" height="134" fill="none" stroke="${col}" stroke-dasharray="3 3" stroke-width=".8"/><rect x="14" y="4" width="72" height="94" fill="none" stroke="${col}" stroke-width=".6" opacity=".7"/><text x="50" y="-19" font-size="6" fill="${col}" text-anchor="middle">1 loop height (20 u)</text>`:'';
+ const tbl=on?`<table><tr><th>Tier</th><th>Use</th><th>Sizes</th></tr><tr><td>Mono glyph</td><td>single-color, OS masks</td><td>16–24</td></tr><tr><td>Ember favicon</td><td>tabs, taskbar small</td><td>16–48</td></tr><tr><td>Flat mark</td><td>lists, small app icon</td><td>32–64</td></tr><tr><td>Full mark / tile</td><td>app icon, splash</td><td>≥ 96</td></tr><tr><td>Companion</td><td>rooms</td><td>≥ 64 (face legible)</td></tr></table>`:'<p class="mute">Draft: full viewBox kept, no metric, colored minimum 64 px as a working choice.</p>';
+ return `<div><svg viewBox="-20 -24 140 148" width="190" height="200">${m}${ov}</svg></div><div>${tbl}</div>`;
+}
+const picks={},notes={};
+function draw(){
+ $('cards').innerHTML='';
+ P.forEach((p,i)=>{const a=document.createElement('article');a.className=picks[p.id]?'on':'';
+  a.innerHTML=`<h2>${String(i+1).padStart(2,'0')} / ${p.title} <small class="mute">${p.id}</small></h2><p>${p.what}</p><p class="mute">${p.why}</p>
+  <div class="cmp"><div><h3>Draft r015</h3><div class="row" id="r${i}a"></div></div><div><h3>Proposal</h3><div class="row" id="r${i}b"></div></div></div>
+  <details><summary>My take</summary><p>${p.take}</p></details>
+  <div class="pick"><label><input type="checkbox" data-id="${p.id}" ${picks[p.id]?'checked':''}> Take it</label><textarea data-note="${p.id}" placeholder="Note: adjust, reject, why…">${notes[p.id]||''}</textarea></div>`;
+  $('cards').appendChild(a);});
+ rows();
+}
+function rows(){uid=0;P.forEach((p,i)=>{$('r'+i+'a').innerHTML=p.show({});$('r'+i+'b').innerHTML=p.show(p.on)});hero()}
+function mix(){const o={};P.forEach(p=>{if(picks[p.id])Object.assign(o,p.on)});return o}
+function hero(){
+ const o=mix(),base=s=>S.actor({uid:U(),face:true,t,ctx}),
+  comp=s=>S.actor({uid:U(),face:true,t,ctx,lit:o.lit,tuned:o.tuned,ground:o.ground});
+ const fav=e=>[16,32].map(s=>cell(S.favicon(s,{ctx,ember:e}),s)).join('');
+ const mark=on=>on.tile?cell(S.tile({uid:U(),t}),96,'app icon'):cell(S.actor({uid:U(),face:false,t,ctx,flat:on.flat,thick:on.flat,lit:on.lit,tuned:on.tuned}),on.flat?64:96,on.flat?'mark 64':'mark');
+ $('heroA').innerHTML=fav(false)+mark({})+cell(base(),160,'companion');
+ $('heroB').innerHTML=fav(!!o.ember)+mark(o)+cell(comp(),160,'companion');
+ const n=Object.values(picks).filter(Boolean).length;$('mixnote').textContent=n?`${n} proposition(s) applied.`:'Tick propositions below to see them combined here.';
+ report();
+}
+function report(){
+ const lines=['# r016 feedback','','Context viewed last: '+ctx,''];
+ P.forEach((p,i)=>{lines.push(`## ${String(i+1).padStart(2,'0')} / ${p.title} (${p.id}) — ${picks[p.id]?'TAKE':'leave'}`);if(notes[p.id])lines.push(notes[p.id]);lines.push('')});
+ if($('global').value.trim())lines.push('## Global','',$('global').value.trim(),'');
+ $('out').value=lines.join('\n');
+}
+document.addEventListener('change',e=>{const id=e.target.dataset.id;if(id){picks[id]=e.target.checked;e.target.closest('article').className=e.target.checked?'on':'';hero()}});
+document.addEventListener('input',e=>{const id=e.target.dataset.note;if(id){notes[id]=e.target.value;report()}if(e.target.id==='global')report()});
+$('ctx').onclick=e=>{const c=e.target.dataset.c;if(!c)return;ctx=c;document.body.dataset.ctx=c;[...$('ctx').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===c));draw()};
+// Finite 6 s living-flame preview; reduced motion keeps the still state.
+const media=matchMedia('(prefers-reduced-motion: reduce)');$('reduced').checked=media.matches;
+function frame(now){if(!running)return;if(last)t+=now-last;last=now;if(t>=6000){t=0;running=false;last=0;$('status').textContent='Finished — still.';rows();return}rows();requestAnimationFrame(frame)}
+$('play').onclick=()=>{if($('reduced').checked){$('status').textContent='Reduced motion — static.';return}t=0;last=0;running=true;$('status').textContent='Playing 6 s…';requestAnimationFrame(frame)};
+$('still').onclick=()=>{running=false;t=0;last=0;$('status').textContent='Still.';rows()};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){running=false;t=0;last=0;rows()}});
+$('copy').onclick=async()=>{report();try{await navigator.clipboard.writeText($('out').value);$('copy').textContent='Copied'}catch{$('out').select()}};
+$('save').onclick=async()=>{report();const blob=new Blob([$('out').value],{type:'text/markdown'});
+ try{if(window.showSaveFilePicker){const h=await showSaveFilePicker({suggestedName:'feedback.md',types:[{description:'Markdown',accept:{'text/markdown':['.md']}}]});const w=await h.createWritable();await w.write(blob);await w.close();$('save').textContent='Saved';return}}catch(e){if(e.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='feedback.md';a.click();$('save').textContent='Downloaded — move it to rounds/r016/'};
+draw();
+</script></body></html>

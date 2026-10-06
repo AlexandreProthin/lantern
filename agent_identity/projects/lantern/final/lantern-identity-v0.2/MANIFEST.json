@@ -1,0 +1,662 @@
+{
+  "name": "lantern-identity-v0.2-review",
+  "status": "review",
+  "supersedes": "lantern-identity-v0.1-review",
+  "decisions": [
+    "D0014",
+    "D0017",
+    "D0018",
+    "D0019",
+    "D0020",
+    "D0021",
+    "D0022",
+    "D0024"
+  ],
+  "files": [
+    {
+      "path": "IDENTITY.md",
+      "bytes": 4621,
+      "sha256": "96b46a42956521ea4b30f856b7fbbc12c79cf80ed8592fc53e3069a3fb7dab98"
+    },
+    {
+      "path": "IMPLEMENTATION.md",
+      "bytes": 2246,
+      "sha256": "086d2ccafc4e89b0838b50d4995543ccf6de2852455f830b1bb18d9def6c3b17"
+    },
+    {
+      "path": "README.md",
+      "bytes": 411,
+      "sha256": "0256b19542e68acbb6782cb5e972657cdc0c84408b4edbf9a5c3a14751274904"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-dark-128.png",
+      "bytes": 10999,
+      "sha256": "bab8fa7e2e966bcda6e830033b9d104f6d18b430121d395eac2ff8501f3d0ac5"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-dark-256.png",
+      "bytes": 27148,
+      "sha256": "6598f823e00188d26ff400b99765c2ac98853885a5e898a66910048d93be9b73"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-dark-64.png",
+      "bytes": 3951,
+      "sha256": "0af8607c32662da47b2c3518a594550e9e9b08b269d2f73f7e1d09cfbbdb76f6"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-dark.svg",
+      "bytes": 2649,
+      "sha256": "e40c3d452fc52b6fd288c1482537f07ac85d3ad71a82b4daacfddb9681229b0c"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-learn-128.png",
+      "bytes": 11126,
+      "sha256": "eb1ee5cc1cf412ed23e17fde282c5a3e73e7b3b03a824dce95a6801191fb8c2d"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-learn-256.png",
+      "bytes": 27746,
+      "sha256": "5723632cd7452c38ed1dc8a84971bd13519bca37b4b6df5e12035269a19f80b9"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-learn-64.png",
+      "bytes": 4107,
+      "sha256": "772ce1a77fd046ad8f1d7a92cd89792be19d83bb34c81d46e270e56a995c802d"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-learn.svg",
+      "bytes": 2616,
+      "sha256": "83e9574d23f859de29d17031550e787b3df914d38c3b5eadc527fe0a32d15f54"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-light-128.png",
+      "bytes": 7626,
+      "sha256": "3623aff3e081455928b7ebe0e555fb35c73c393b83402e414414ab5438af0a7d"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-light-256.png",
+      "bytes": 17875,
+      "sha256": "c29eab07cf35299f41936015291d0698b1cd9b22722c657fc289ce6a4027bd85"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-light-64.png",
+      "bytes": 2846,
+      "sha256": "ed64269030788bd250d339cfc9b5ad5cd2b51c1795e472add73284f4e2913347"
+    },
+    {
+      "path": "exports/companion/gesture-01-on-light.svg",
+      "bytes": 2543,
+      "sha256": "cb3e15d09bacfbe6773862eaf56fd46bad81970d490c74666ba21b54ae307c50"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-dark-128.png",
+      "bytes": 10813,
+      "sha256": "6ff558aa961c5ebc1a833e40b7ed1462b93384cbf91b53d92512b0d9c55b3ad8"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-dark-256.png",
+      "bytes": 27272,
+      "sha256": "60941f86b7f56cff91c73effedcf1829d350b83abc4b68fc627b7943b4904135"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-dark-64.png",
+      "bytes": 4019,
+      "sha256": "44b7f63de53647ccf938a5bed1af8a7ef73b455035ec10bff1d96ea198e05f95"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-dark.svg",
+      "bytes": 2643,
+      "sha256": "eef04826c7952330b2de2e1c681c27dabba3f227b27e64385e55faa267b4c047"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-learn-128.png",
+      "bytes": 11136,
+      "sha256": "0975bc435cb7b0c98397456279cb35385352934c964a9b8c1c71c38a5990af12"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-learn-256.png",
+      "bytes": 27867,
+      "sha256": "3e08d483a1b0c32f25eeb503928ba07c61a81f5b047bfcaa8f3dba486b5872fc"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-learn-64.png",
+      "bytes": 4145,
+      "sha256": "5af9e003d1733874639df943737d432e8d685433070a530f530a784329359b02"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-learn.svg",
+      "bytes": 2610,
+      "sha256": "deddafb56333b0dcd3834d31adbc1d392d12506d1f663b98c92f2fcabee4a216"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-light-128.png",
+      "bytes": 7672,
+      "sha256": "a1248b6271f4cf7d1627ca0e832d5d136c64b25c5c53e04892e29a9226ed0777"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-light-256.png",
+      "bytes": 18188,
+      "sha256": "27b86aec08e58c7ae656dc2415a7477df86c2e9781ab532dd9ffbf0019d995ec"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-light-64.png",
+      "bytes": 2949,
+      "sha256": "33bc28abc1bdb3188db078835fc556b5725fcb85c089244995cc978c3211dd1d"
+    },
+    {
+      "path": "exports/companion/gesture-02-on-light.svg",
+      "bytes": 2537,
+      "sha256": "7ee8c78d2aa7f5cd3b36bf44213661d3aae66a0348c51d6d8acc1b451ecae740"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-dark-128.png",
+      "bytes": 11110,
+      "sha256": "81b09e97cd6d786b929efc376df6b97ca663a7d0513662054198d6e88d22f578"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-dark-256.png",
+      "bytes": 27458,
+      "sha256": "ca19ed4153231b9d8a04f4e74ba0c25787bf034b32268f9c3b0ef157e71fae4f"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-dark-64.png",
+      "bytes": 4159,
+      "sha256": "718cca7c387ff588668cb9c7bd3c57501f6e65b3e2b2995628c7406ec9e7182b"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-dark.svg",
+      "bytes": 2802,
+      "sha256": "f87a51d0ea0c07b8c5e57c0f843d75b3b99cb9ed111c6f6fb566773685af2a6d"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-learn-128.png",
+      "bytes": 11464,
+      "sha256": "c9036ec38ea056db0437a97536d8a88f5efd0db88e767f656f93a9b81692adff"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-learn-256.png",
+      "bytes": 28224,
+      "sha256": "37ce9ba313553e464a7355122cef0106866df55bebcde5048b9a467a9a53d243"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-learn-64.png",
+      "bytes": 4292,
+      "sha256": "ff6ea84b1f3f8a807f8d4cc2bd65c2ed06db287c34d82fa7357cfba73f08df09"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-learn.svg",
+      "bytes": 2769,
+      "sha256": "03487b8174838bee6160530a1dc4b4138aea76528d12bdcc997b4d96e90952bc"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-light-128.png",
+      "bytes": 7861,
+      "sha256": "f2dbe0f6e51ab624573a121c0092d2aceebaa24b6a4bc3c47bc9cd031dd492f7"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-light-256.png",
+      "bytes": 18174,
+      "sha256": "2179a94db510105c0560f7d331042e7b41eb4285c24e239dc3a1d740f7f66eb6"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-light-64.png",
+      "bytes": 2986,
+      "sha256": "3fadef8b6f204e32af3bc72d3e47c91f56c8d0a8f61ffea06c92f6698454f8d0"
+    },
+    {
+      "path": "exports/companion/gesture-03-on-light.svg",
+      "bytes": 2696,
+      "sha256": "a518d25e64928783068be5bd5cece5384d3f77249294e83f7cd839d16d950471"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-dark-128.png",
+      "bytes": 11048,
+      "sha256": "cfb707255c097a99ee7af7c2a3d6697ba25f391da5311885646210c0fecb5347"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-dark-256.png",
+      "bytes": 27251,
+      "sha256": "7c2e75caa0c063f13319f03cbd18a63267af3a7ac0f29af8c77074595f8d2e81"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-dark-64.png",
+      "bytes": 3978,
+      "sha256": "46ca03194c8e931e2917874ce9d4303449a179384fbee6e74518bacc8fb987c7"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-dark.svg",
+      "bytes": 2712,
+      "sha256": "99221d8f9e22a73681c479f1b3996ef0f22b36c922a15cc3183c9f7d5e89eabc"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-learn-128.png",
+      "bytes": 11184,
+      "sha256": "68d9326545058c3830e3d230952e4df456616218ac89e25c1c951cf7010ee0e6"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-learn-256.png",
+      "bytes": 27833,
+      "sha256": "81ad3f1fe6c70687475980aca4cf82e73be95a971af16bcf98ba15d9f2e98a87"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-learn-64.png",
+      "bytes": 4137,
+      "sha256": "208b1c812b0a653b64143b269cc6eb94a94553dbddcfb98a661352d3ceca1181"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-learn.svg",
+      "bytes": 2679,
+      "sha256": "01718d66f9a21108f2965cd7cb98dc3576d3f918002b7802ab935705bfd983f2"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-light-128.png",
+      "bytes": 7686,
+      "sha256": "879bdfcd099b9f69badc7debe7f23cf9e9d7ebfd70c6d9d6c499a0a61d833ab0"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-light-256.png",
+      "bytes": 17985,
+      "sha256": "327b3ee1e7089fe8aaf730555f85fb2f7cc1bedc8c985a72085a1539436a2147"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-light-64.png",
+      "bytes": 2874,
+      "sha256": "c0f8db137eb0ffb80a700c754aed1dd94d6783476f93450aa34082900f0f0e82"
+    },
+    {
+      "path": "exports/companion/gesture-04-on-light.svg",
+      "bytes": 2606,
+      "sha256": "9bae10df51c8ba65896a80e41a7fdb45b1cdd61d7b423e21a17ff7280e3e673f"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-dark-128.png",
+      "bytes": 10816,
+      "sha256": "6b7dcc56df52731965ff08b21e28533e2761f796ae25f63d360c7003469c0b63"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-dark-256.png",
+      "bytes": 27079,
+      "sha256": "63c83ca53d5c2b2f2be3e47a68da8600106b8e3989d2324a49013db6a76bb4fe"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-dark-64.png",
+      "bytes": 4000,
+      "sha256": "9bdd3cdde9a8fb049b6782d6c5dc81f6091a2b78e88d22f5f60a6c573f9ba568"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-dark.svg",
+      "bytes": 2651,
+      "sha256": "2ee146387104e0e5ca864f5b443a1b2c03a57fdc1cb0f6c03a0f610737eaa36b"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-learn-128.png",
+      "bytes": 11076,
+      "sha256": "6ec4267558b5fbb49c853ed5ac953d83535d38a5ab0f84e9a800350d61730e86"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-learn-256.png",
+      "bytes": 27568,
+      "sha256": "add850228f06523e266fe57bd1a3479d40179b6717f96823eb7f47611beee2fc"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-learn-64.png",
+      "bytes": 4086,
+      "sha256": "764e8b01d2788424ee77546b06d3f72f91dc83d93160d16df50c11688e6fc6ae"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-learn.svg",
+      "bytes": 2618,
+      "sha256": "ae5c0220aa77995a12bced3c7585b5bda2d6ef902007ba2321fec982a067cb9c"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-light-128.png",
+      "bytes": 7582,
+      "sha256": "9192101ac0393b5bb59458ba6ba436da2e8470d833d2d630ad026013e1d794eb"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-light-256.png",
+      "bytes": 17787,
+      "sha256": "d644569125c7bd88129a7c13bcd71c740aca74dbbc5d53fb79d2831233a80b96"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-light-64.png",
+      "bytes": 2850,
+      "sha256": "c243e2e6db4c7c11771e717d568156ce791e12491cc028af1a419cb765c8393c"
+    },
+    {
+      "path": "exports/companion/gesture-05-on-light.svg",
+      "bytes": 2545,
+      "sha256": "0a2cfb87c1b04c81d44344f7b63b279b3da0bda8d75879a0727abb8d5fc1abff"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-dark-128.png",
+      "bytes": 11054,
+      "sha256": "e2fc468f9ba64fd58faf8b698bc972685120607b84c3939684cc3b42c0f8bfc1"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-dark-256.png",
+      "bytes": 27192,
+      "sha256": "e5e0ef203be7f976bb6f63dd0479f898c047a14debe08f750f2568b196ebc18a"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-dark-64.png",
+      "bytes": 4043,
+      "sha256": "e893fd4e08cf21f8a4b3d817faf6cd8f05a7d97ba3d3f714501d2491959c84e6"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-dark.svg",
+      "bytes": 2805,
+      "sha256": "51af6374d07d4696c3bb6cf18082926f8e00d03ee3e345b1b1fa61b5dd348fff"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-learn-128.png",
+      "bytes": 11362,
+      "sha256": "ae613ace1be04763a6779c5120a6bbfa03f33302d2f63f7709463229992b7e29"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-learn-256.png",
+      "bytes": 28003,
+      "sha256": "c26e1a20cc9477cc27c834a10bc0540d2a57caec1bc8f675d5408a9030e90224"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-learn-64.png",
+      "bytes": 4186,
+      "sha256": "35c50215ebcd2fc128139aa8c75664c9f5257640cb2596ea82444a8d0ccaf190"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-learn.svg",
+      "bytes": 2772,
+      "sha256": "b7bc2d9ec33a32ff9f8a5047ac914f268dd99799ea96fe73ce367213144ba702"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-light-128.png",
+      "bytes": 7771,
+      "sha256": "6f849115d42efc1b76c758edfcee57607d126b51d970f43ac6238ea7b8ad0ee1"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-light-256.png",
+      "bytes": 18047,
+      "sha256": "0046bf2836d748751051f5fd8b4a08d8aefb9b378326cd6205f5169fadc587ce"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-light-64.png",
+      "bytes": 2920,
+      "sha256": "bddc373b60c08e6a1334950ff8022c195495598f516eb5dfe5be2947c9d8b56a"
+    },
+    {
+      "path": "exports/companion/gesture-06-on-light.svg",
+      "bytes": 2699,
+      "sha256": "f1150f6792dc6c494c9c08b4807c1559e42f5616722792cd8e7737dcbb67b053"
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-16-16.png",
+      "bytes": 490,
+      "sha256": "85f6a4321d410aa418e3c0e8fcc03d0f43d6845a7403c0f7f577f7d776a270b6"
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-16.svg",
+      "bytes": 652,
+      "sha256": "64ea435d2f90371c6b6330fc0d548c3410640e5cd6f7a6efc07554177ab40841"
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-24-24.png",
+      "bytes": 704,
+      "sha256": "504a64f54f8350c2acb1195c800d5e64ab20241a7cd4aa3cc51c7d18860aaac7"
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-24.svg",
+      "bytes": 650,
+      "sha256": "c3e8d1a4f3089b7afc683f511b39332ab8049a6a616a92ceb05163b5cd68943c"
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-32-32.png",
+      "bytes": 945,
+      "sha256": "e006f9fd4ca448a14e206e52c485dbfe365af11730086d66760a62c3fee850d2"
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-32.svg",
+      "bytes": 650,
+      "sha256": "5716297162df0e6f3e190e3a7d0f5a3df81de2806346bbd4c42380fa338e1879"
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-48-48.png",
+      "bytes": 1430,
+      "sha256": "868d487d9e076022835b9f0583fe73f87bdc559a0cfc53f06c3d30b69eff294b"
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-48.svg",
+      "bytes": 650,
+      "sha256": "538a17eaa09385f96d7b4123d7afd83afc01e0a71c38f0d506a962a7d72d0e50"
+    },
+    {
+      "path": "exports/favicon/ember-on-light-16-16.png",
+      "bytes": 479,
+      "sha256": "90e74fce4feac8edb87c120e05b6eef762481b9d704d82afead55a46ad8b068a"
+    },
+    {
+      "path": "exports/favicon/ember-on-light-16.svg",
+      "bytes": 652,
+      "sha256": "ec7127dbf575f5e9eb6102c6d7fac2962e414e8ec789a52235f94589a9db877f"
+    },
+    {
+      "path": "exports/favicon/ember-on-light-24-24.png",
+      "bytes": 690,
+      "sha256": "26cb6ce36f613b7426116510d6fd2d5325e6eb4aa271564055dcff4b3b459991"
+    },
+    {
+      "path": "exports/favicon/ember-on-light-24.svg",
+      "bytes": 650,
+      "sha256": "2fd3292d91bbaad718082d2f47da123cbad92e96c5a362af6f9d0699ae5f247d"
+    },
+    {
+      "path": "exports/favicon/ember-on-light-32-32.png",
+      "bytes": 939,
+      "sha256": "6adc3599ca007c734ab14980b3b6f911031c4b53eab466b13a8ab8049d313ea1"
+    },
+    {
+      "path": "exports/favicon/ember-on-light-32.svg",
+      "bytes": 650,
+      "sha256": "73f92e7a9720aa30bf44d0f2018bdb47d763705a189836d234d8dca0631fe055"
+    },
+    {
+      "path": "exports/favicon/ember-on-light-48-48.png",
+      "bytes": 1400,
+      "sha256": "ccf48c3ad0c27b44ad3471b5f080902fb35698639322a38d0f0e984c8bae36f7"
+    },
+    {
+      "path": "exports/favicon/ember-on-light-48.svg",
+      "bytes": 650,
+      "sha256": "c297af77aab0c9b4e69b76ae9a8becc791167e9df1ee5c02dbb4f67939e7c116"
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-16-16.png",
+      "bytes": 433,
+      "sha256": "f2ee43c38d7c4cc75a90a1bd748643982c5291a6244bfe101268d7db013046d8"
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-16.svg",
+      "bytes": 637,
+      "sha256": "b04422b2f9d3ffe3d4ed528d1f550c68cd15db029df4b5e32e04e5712c766b9a"
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-24-24.png",
+      "bytes": 623,
+      "sha256": "26db2568b35e71a8e6dec21e268ce3c47460f8e6e650f3f308acea9df7aedb6e"
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-24.svg",
+      "bytes": 635,
+      "sha256": "a6673067e5cfb2d4822be4841d0fa089dcccaaf4327b8baa8d63561cff5a6e03"
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-32-32.png",
+      "bytes": 835,
+      "sha256": "223dc7a030498b4d4fb942dc280f7270a3ef26766b869e668972f7666fe8305a"
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-32.svg",
+      "bytes": 635,
+      "sha256": "9b300862bb9809cc18f6d540388a30b7196952ac08c65bc8afc4b035ad6cf6b9"
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-48-48.png",
+      "bytes": 1271,
+      "sha256": "bb549b0a093ca0d6b319c26378afe591829e625018c4a84988413f4eecb1cd6c"
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-48.svg",
+      "bytes": 635,
+      "sha256": "2d9e427ea1ad042227d6149602b7ac65b0637afbe0450d7d6b1e20b4fc18cdcf"
+    },
+    {
+      "path": "exports/favicon/mono-on-light-16-16.png",
+      "bytes": 441,
+      "sha256": "12140bdc167533bae1d2923ec1a395f784efc0225824dcd1829ed3cb5cdf45a4"
+    },
+    {
+      "path": "exports/favicon/mono-on-light-16.svg",
+      "bytes": 637,
+      "sha256": "ff79ffdc4e0fe9e19ff6f62cfb3f596b4901a3ae5f81e5f5122be583eba14f96"
+    },
+    {
+      "path": "exports/favicon/mono-on-light-24-24.png",
+      "bytes": 621,
+      "sha256": "7e9d76b0f97e051e62189d29ec2ae3f1ed9dc1fa54d5c01c3a2a7ef87f5f47d3"
+    },
+    {
+      "path": "exports/favicon/mono-on-light-24.svg",
+      "bytes": 635,
+      "sha256": "eca90b1a68b57abb323a66be32fd1e47c8badf603961f6a86fa62042290b4785"
+    },
+    {
+      "path": "exports/favicon/mono-on-light-32-32.png",
+      "bytes": 821,
+      "sha256": "21f83c916469f940ac1d82fa496990fe699338339822ec001ae1dc245c6f21cb"
+    },
+    {
+      "path": "exports/favicon/mono-on-light-32.svg",
+      "bytes": 635,
+      "sha256": "b584d4e5bcc638ca30155fcadfe6bcf496bb018267b83da7d93768e29a254596"
+    },
+    {
+      "path": "exports/favicon/mono-on-light-48-48.png",
+      "bytes": 1253,
+      "sha256": "4fcc136fdada68fca1c19bcf09c31d604e12ae4268797f43c37b13b5088d557c"
+    },
+    {
+      "path": "exports/favicon/mono-on-light-48.svg",
+      "bytes": 635,
+      "sha256": "b125520a27e4037683b890101f96f8980ebf44c1346f60362ebfd5f4573ed2f6"
+    },
+    {
+      "path": "exports/mark/mark-on-dark-128.png",
+      "bytes": 10922,
+      "sha256": "cc025fe19e90faa6b7c27d06a684d7bf875eab01d15a09128449efd4daa75217"
+    },
+    {
+      "path": "exports/mark/mark-on-dark-256.png",
+      "bytes": 26974,
+      "sha256": "9927f473269ea129945d74c36dff0053cd21b3d826730e60edc79cdaaf39f1e9"
+    },
+    {
+      "path": "exports/mark/mark-on-dark-512.png",
+      "bytes": 62474,
+      "sha256": "a2ef6cca053aa431d921f78d7b712a8c8d4c115ba69b6996158bffbf5a76d2d8"
+    },
+    {
+      "path": "exports/mark/mark-on-dark-64.png",
+      "bytes": 3930,
+      "sha256": "ed55dffd0b298fdacaf9f2a74b925ca26ae3df8f64f580d8913dccbe78e0a610"
+    },
+    {
+      "path": "exports/mark/mark-on-dark.svg",
+      "bytes": 2569,
+      "sha256": "f4bcb01c28e68ade4a0d32c3e250282f9852b66042efd04e2568043ca0c99ab5"
+    },
+    {
+      "path": "exports/mark/mark-on-learn-128.png",
+      "bytes": 11052,
+      "sha256": "286c5fbd83e70e031f3258d642c1d5dc17fa08666065f8af635e28b7515b8482"
+    },
+    {
+      "path": "exports/mark/mark-on-learn-256.png",
+      "bytes": 27617,
+      "sha256": "4e17542890d42547d646b33746d9584f25dabe1dcb6536e8a1dcd70a0d86525d"
+    },
+    {
+      "path": "exports/mark/mark-on-learn-512.png",
+      "bytes": 64650,
+      "sha256": "19f25aa4a36054832a9e675c08e7cbacb4250546c8dc575cc41d59acedd03462"
+    },
+    {
+      "path": "exports/mark/mark-on-learn-64.png",
+      "bytes": 4085,
+      "sha256": "61f7a7a6b1565afe136c798bb971e094bec63d19e0ee4e92093a88357a7476a2"
+    },
+    {
+      "path": "exports/mark/mark-on-learn.svg",
+      "bytes": 2536,
+      "sha256": "37087fbaa6aeef57309a96d4f44bedba4634b1df1fac98771682d20186360a8c"
+    },
+    {
+      "path": "exports/mark/mark-on-light-128.png",
+      "bytes": 7571,
+      "sha256": "1b9b53fe03c98506e565cf67875c4b7dc8585b827e37dca4cc56c5558dd6298a"
+    },
+    {
+      "path": "exports/mark/mark-on-light-256.png",
+      "bytes": 17753,
+      "sha256": "c4636bb816c0c31b14685fcee62c1608715a9bc5fa7475ec1fecaaeab924f4c0"
+    },
+    {
+      "path": "exports/mark/mark-on-light-512.png",
+      "bytes": 39913,
+      "sha256": "64d07461f2880fdaae9f1d25e374931d25395cf9f39e38428e0c7e309c8bd6eb"
+    },
+    {
+      "path": "exports/mark/mark-on-light-64.png",
+      "bytes": 2829,
+      "sha256": "a4d679aaea69d04ff84aa18f24926532ab28fab6815dcef8c22d0ceddab7a33f"
+    },
+    {
+      "path": "exports/mark/mark-on-light.svg",
+      "bytes": 2461,
+      "sha256": "deff79aaa937218848cf7d8d9e82afd911c5af925dfcbdbb87979e70f552ab96"
+    },
+    {
+      "path": "runtime/review.html",
+      "bytes": 3573,
+      "sha256": "bf5171e9047b27d0da3e0f45beac74f2dd00cabefbb1ac6a716f8d11f7c59091"
+    },
+    {
+      "path": "runtime/sources/body.js",
+      "bytes": 566,
+      "sha256": "d9b17a214fd91038c22c69689e4f9671e5b836d221976991620e446572e3e824"
+    },
+    {
+      "path": "runtime/sources/favicons.js",
+      "bytes": 1328,
+      "sha256": "1482876101b7ee3dcd595503050455b33ec7fb7f544a37d0487e52db201a43c3"
+    },
+    {
+      "path": "runtime/sources/motion.js",
+      "bytes": 4399,
+      "sha256": "bffaf06bc433916121893a5f710231c2311563a9aa844f0fe7b1bb98feac0212"
+    },
+    {
+      "path": "runtime/sources/review.js",
+      "bytes": 4914,
+      "sha256": "fe024153a64866c427be7037ad3a2f0095bff047c590fddc07d2c658abb07742"
+    },
+    {
+      "path": "runtime/sources/styles.js",
+      "bytes": 899,
+      "sha256": "70538ea1d14d323803b2409c3af4609887a59e92a8322f576ce58f5c02849881"
+    },
+    {
+      "path": "runtime/sources/system.js",
+      "bytes": 6345,
+      "sha256": "06bd58af4768bcde0ca7fcfe0506c86362b56e0a24e6f7c8aab4d7a37b2b5ac4"
+    }
+  ]
+}

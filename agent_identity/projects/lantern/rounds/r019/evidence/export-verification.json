@@ -1,0 +1,502 @@
+{
+  "checks": [
+    "PNG dimensions match declared square size",
+    "PNG alpha channel present",
+    "SVG renderable by sharp/librsvg"
+  ],
+  "count": 82,
+  "exports": [
+    {
+      "path": "exports/favicon/ember-on-dark-16-16.png",
+      "width": 16,
+      "height": 16,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-16-16.png",
+      "width": 16,
+      "height": 16,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/ember-on-light-16-16.png",
+      "width": 16,
+      "height": 16,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/mono-on-light-16-16.png",
+      "width": 16,
+      "height": 16,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-24-24.png",
+      "width": 24,
+      "height": 24,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-24-24.png",
+      "width": 24,
+      "height": 24,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/ember-on-light-24-24.png",
+      "width": 24,
+      "height": 24,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/mono-on-light-24-24.png",
+      "width": 24,
+      "height": 24,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-32-32.png",
+      "width": 32,
+      "height": 32,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-32-32.png",
+      "width": 32,
+      "height": 32,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/ember-on-light-32-32.png",
+      "width": 32,
+      "height": 32,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/mono-on-light-32-32.png",
+      "width": 32,
+      "height": 32,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/ember-on-dark-48-48.png",
+      "width": 48,
+      "height": 48,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/mono-on-dark-48-48.png",
+      "width": 48,
+      "height": 48,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/ember-on-light-48-48.png",
+      "width": 48,
+      "height": 48,
+      "alpha": true
+    },
+    {
+      "path": "exports/favicon/mono-on-light-48-48.png",
+      "width": 48,
+      "height": 48,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-dark-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-dark-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-dark-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-dark-512.png",
+      "width": 512,
+      "height": 512,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-learn-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-learn-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-learn-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-learn-512.png",
+      "width": 512,
+      "height": 512,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-light-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-light-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-light-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/mark/mark-on-light-512.png",
+      "width": 512,
+      "height": 512,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-on-dark-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-on-dark-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-on-dark-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-on-dark-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-on-dark-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-on-dark-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-on-dark-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-on-dark-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-on-dark-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-on-dark-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-on-dark-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-on-dark-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-on-dark-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-on-dark-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-on-dark-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-on-dark-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-on-dark-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-on-dark-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-on-learn-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-on-learn-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-on-learn-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-on-learn-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-on-learn-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-on-learn-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-on-learn-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-on-learn-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-on-learn-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-on-learn-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-on-learn-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-on-learn-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-on-learn-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-on-learn-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-on-learn-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-on-learn-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-on-learn-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-on-learn-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-on-light-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-on-light-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-01-on-light-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-on-light-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-on-light-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-02-on-light-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-on-light-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-on-light-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-03-on-light-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-on-light-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-on-light-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-04-on-light-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-on-light-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-on-light-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-05-on-light-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-on-light-64.png",
+      "width": 64,
+      "height": 64,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-on-light-128.png",
+      "width": 128,
+      "height": 128,
+      "alpha": true
+    },
+    {
+      "path": "exports/companion/gesture-06-on-light-256.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+# Lantern identity review package v0.2
+Read IDENTITY.md for lineage, rules, tokens and limits; IMPLEMENTATION.md for use; MANIFEST.json for dimensions and hashes. Open runtime/review.html to review the favicon, mark and six gestures offline on three backgrounds. exports/ holds transparent SVG/PNG favicon, mark and companion assets per background. Final acceptance and product installation are separate steps.

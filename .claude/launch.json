@@ -45,6 +45,20 @@
         "8765"
       ],
       "port": 8765
+    },
+    {
+      "name": "identity-review",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8780",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "agent_identity"
+      ],
+      "port": 8780
     }
   ]
 }
