@@ -11,15 +11,25 @@ export class UpdateController {
   /** True when the check came from the launch rule, so only that one raises the notice (UP-10, UP-11). */
   fromLaunch = $state(false);
   /** Resolves true when the server answered (UP-1, UP-21); false when it could not be asked. */
-  async check(launch: boolean): Promise<boolean> {
+  /** `folder`: the local update folder that replaces GitHub (UP-61), or empty. */
+  async check(launch: boolean, folder = ''): Promise<boolean> {
     if (this.phase === 'checking' || this.phase === 'downloading' || this.phase === 'installing') return false;
     this.phase = 'checking'; this.message = '';
     try {
-      const result = await invoke<Checked>('check_update');
+      const result = await invoke<Checked>('check_update', { folder: folder || null });
       if (result.status === 'available') { this.version = result.version; this.fromLaunch = launch; this.phase = 'available'; }
       else this.phase = result.status === 'unconfigured' ? 'unconfigured' : 'up-to-date';
       return result.status !== 'unconfigured';
-    } catch { this.phase = 'failed'; this.message = strings.updateUnreachable; return false; }
+    } catch (e) {
+      const reason = String(e) as keyof typeof strings.updateFolderErrors;
+      this.phase = 'failed'; this.message = strings.updateFolderErrors[reason] ?? strings.updateUnreachable; return false;
+    }
+  }
+  /** UP-11, UP-63: *Later* releases the found update and stops the local server. */
+  async release(): Promise<void> {
+    this.fromLaunch = false;
+    if (this.phase === 'available') this.phase = 'idle';
+    try { await invoke('release_update'); } catch { /* nothing held */ }
   }
   async install(flush: () => Promise<void>): Promise<void> {
     if (this.phase !== 'available') return;

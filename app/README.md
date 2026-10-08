@@ -45,11 +45,18 @@ npx tauri signer generate -w $HOME\.tauri\lantern-updater.key   # once; keep the
 $env:TAURI_SIGNING_PRIVATE_KEY = Get-Content $HOME\.tauri\lantern-updater.key -Raw
 $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = '<the password you chose>'
 npx tauri build --bundles nsis          # writes the installer, its .sig
-node scripts/make-latest-json.mjs "What changed"   # writes latest.json
+node scripts/make-latest-json.mjs "What changed" --out D:\LanternReleases   # writes latest.json, copies both
 ```
 
+If the build is run without the password, it still writes the installer and only
+the signing step fails; sign it afterwards (the password is asked for interactively):
+`npx tauri signer sign -f $HOME\.tauri\lantern-updater.key src-tauri\target\release\bundle\nsis\Lantern_<version>_x64-setup.exe`.
+
 Upload the installer and `latest.json` to the GitHub release. A release without
-`latest.json` can never update itself. No signing key is generated or committed. Follow `ACCEPTANCE.md` before releasing.
+`latest.json` can never update itself. While the repository is private the GitHub
+channel answers 404 (UP-45); `--out` fills a **local update folder** instead, which
+an installed build uses once it is set in the hidden Settings → Developer section
+(five clicks on the version line, UP-60..66). No signing key is generated or committed. Follow `ACCEPTANCE.md` before releasing.
 
 Storage tests use isolated temporary libraries and never modify real subjects.
 They cover round-trip, path safety, conflicts, cache invalidation, read-only newer

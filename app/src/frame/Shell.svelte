@@ -61,10 +61,10 @@
   const updater=new UpdateController();
   const showUpdateNotice=$derived(updater.fromLaunch&&['available','downloading','installing'].includes(updater.phase)&&shouldShowNotice(settings,updater.version,anyRunning&&updater.phase==='available'));
   /** UP-1, UP-21: a check the server answered counts, however it was started. */
-  async function checkUpdates(launch:boolean){if(await updater.check(launch)){settings.ui.lastUpdateCheck=Date.now();preferencesChanged();}}
+  async function checkUpdates(launch:boolean){if(await updater.check(launch,settings.developer.updateFolder)){settings.ui.lastUpdateCheck=Date.now();preferencesChanged();}}
   /** UP-31: every pending save lands before the installer closes the app. */
   async function installUpdate(){if(anyRunning)return;await updater.install(async()=>{for(const entry of owned.values())await entry.persistence.flush();await writer.flush();await windowMemory?.flush();});}
-  function dismissUpdate(){settings.ui.dismissedUpdate=updater.version;updater.fromLaunch=false;preferencesChanged();}
+  function dismissUpdate(){settings.ui.dismissedUpdate=updater.version;void updater.release();preferencesChanged();}
   async function checkReady(){if(anyRunning||checkingReady)return;checkingReady=true;readyController=new AbortController();
     try{if(desktop)await invoke('provider_status');readyPending=provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'haiku',effort:'low',cancel:readyController.signal},()=>{});await readyPending;}
     catch(e){if(!(e instanceof ProviderError))banner=String(e);}finally{checkingReady=false;readyPending=undefined;}

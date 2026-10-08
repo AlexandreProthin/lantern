@@ -25,6 +25,7 @@ the settings below only supply their **defaults**.
 | Learn room | `learn.defaultTone` | enum or text | `curious` | preset (`eli5`, `curious`, `student`, `engineer`, `expert`) or custom text up to 300 chars | new subjects; a subject's tone is changed in its subject menu (opened from the title in the header; [rooms-spaces](/specs/rooms-spaces.md) RS-15) |
 | Learn room | `learn.contextBudget` | integer (advanced) | 12000 | 2000–100000 tokens | next generation (the map part only; the CLI's own ~13k baseline is extra) |
 | General | `updates.checkAtLaunch` | boolean | true | — | next launch; off means no update request unless *Check for updates* is pressed ([updates](/specs/updates.md) UP-3) |
+| Developer (hidden) | `developer.updateFolder` | absolute path | empty | empty, or an existing folder | replaces GitHub as the update source ([updates](/specs/updates.md) UP-60 to UP-66) |
 | Appearance | `appearance.reduceMotion` | enum | `system` | `system`/`on`/`off` | immediate; `system` follows the OS |
 | Appearance | `appearance.showTokenStats` | boolean | true | — | immediate; hides every token and time figure (node meta line, stats hover, Gallery cards) |
 
@@ -58,7 +59,7 @@ The last-opened times and the recents list are **not** in this file: they live i
 # Panel
 
 - **SE-10** The panel MUST open from the **gear in the header** and from **Ctrl+,** (table: [graph-view](/specs/graph-view.md) GV-76); Esc closes it. It is an overlay, so the current space stays visible underneath.
-- **SE-11** The panel MUST have sections **General**, **Provider**, **Learn room** and **Appearance**, in that order, as a left list with the content on the right.
+- **SE-11** The panel MUST have sections **General**, **Provider**, **Learn room** and **Appearance**, in that order, as a left list with the content on the right. A hidden **Developer** section follows them when revealed ([updates](/specs/updates.md) UP-60).
 - **SE-12** **Learn room** is the *room submenu*. Settings sections MUST be contributed by the room definition (id, label, fields with the shape of the catalogue above), so a future room adds its own submenu without changing the panel code ([rooms-spaces](/specs/rooms-spaces.md)).
 - **SE-13** Advanced settings (context budget) MUST sit under an *Advanced* fold inside their section.
 - **SE-14** Changes MUST apply **on change**, with no Save button. A text field applies on blur or Enter (debounced while typing); an invalid value shows an inline message and is not applied.

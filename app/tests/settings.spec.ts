@@ -10,6 +10,13 @@ test('UP-3/4/20: General offers the launch-check switch, and the manual check is
   await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')??'{}').updates?.checkAtLaunch)).toBe(false);
   await expect(dialog.getByRole('button',{name:'Check for updates',exact:true})).toBeDisabled();
   await expect(page.getByText(/is available/)).toHaveCount(0);
+  // UP-60: Developer is hidden until five clicks on the version line.
+  await expect(dialog.getByRole('button',{name:'Developer',exact:true})).toHaveCount(0);
+  const version=dialog.getByRole('button',{name:/^Lantern \d/});
+  for(let i=0;i<5;i++) await version.click();
+  await expect(dialog.getByRole('button',{name:'Developer',exact:true})).toHaveAttribute('aria-current','page');
+  await expect(dialog.getByRole('textbox',{name:'Local update folder'})).toHaveValue('');
+  await expect(dialog.getByRole('button',{name:'Clear',exact:true})).toBeDisabled();
 });
 test('SE-6/14/16/42: validation, scoped reset, provider health and live reduced motion', async ({page}) => {
   await page.goto('/?study=1&subject=Preferences');

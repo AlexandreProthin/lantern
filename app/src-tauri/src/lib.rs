@@ -4,6 +4,7 @@ pub mod provider;
 pub mod library;
 mod commands;
 mod updates;
+mod local_feed;
 
 pub fn run() {
     tauri::Builder::default()
@@ -17,7 +18,7 @@ pub fn run() {
             provider::commands::cancel_generation, provider::commands::provider_status,
             commands::load_settings, commands::save_settings, commands::open_external,
             commands::pick_library, commands::validate_library, commands::switch_library, commands::reveal_library, commands::save_window_state,
-            updates::check_update, updates::install_update])
+            updates::check_update, updates::install_update, updates::release_update])
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             use tauri::Manager;
             if let Some(window) = app.get_webview_window("main") { let _ = window.set_focus(); }

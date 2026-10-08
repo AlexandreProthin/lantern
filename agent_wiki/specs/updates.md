@@ -76,6 +76,36 @@ contacts GitHub, so the content security policy and the capability list do not c
   (`npm run installer:preview`) keep updater signing off and are never published.
 - **UP-44** The first release that carries the key and endpoint cannot be reached by builds installed before
   it (they have no endpoint): the user installs it by hand once; every later release updates in place.
+- **UP-45** While the repository is private the GitHub endpoint answers 404, which is a failed check (UP-2:
+  silent at launch, *Could not reach the update server* by hand). The day the repository is public, installed
+  builds find the update with no rebuild, as long as each release kept its `latest.json`.
+
+## Local update folder (developer)
+
+Added 2026-10-08 on the user's request: test real updates while the repository is private.
+
+- **UP-60** Settings MUST have a hidden **Developer** section, shown after **five clicks on the version line**
+  (SE-22) within 3 seconds, and always shown while a local update folder is set. It holds the
+  *Local update folder* (`developer.updateFolder`, absolute path, default empty) with *Browse…* and *Clear*.
+- **UP-61** While the folder is set it **replaces GitHub** as the update source for the launch check and
+  *Check for updates*; the launch check then runs at every launch (UP-1's 24 hours do not apply) but still
+  honours `updates.checkAtLaunch`. Settings → General says *Updates come from a local folder* under the version.
+- **UP-62** The folder holds what a release publishes: `latest.json` and the installer it names (the file name
+  of its `windows-x86_64.url`). `app/scripts/make-latest-json.mjs --out <folder>` copies both there.
+- **UP-63** To read it, the app MUST start a server bound to `127.0.0.1` on a random port, serving **only**
+  `latest.json` and that one installer file (every other path answers 404). It starts for a check and stops
+  when the check finds nothing, when the install has downloaded, when the notice is dismissed, or after
+  **10 minutes idle**. Without a folder it never starts.
+- **UP-64** The announced download URL is replaced with the local server's for that file; the version and
+  **signature are not**. The installer MUST pass the same signature check against the built-in public key
+  (UP-31): a folder cannot install anything the private key did not sign.
+- **UP-65** The plugin refuses non-`https` endpoints in release builds unless
+  `dangerousInsecureTransportProtocol` is on; it is on. That flag only skips the endpoint scheme check
+  (it does not touch signature verification), and the only non-`https` endpoint the app ever uses is the
+  loopback server of UP-63.
+- **UP-66** A folder that is missing, unreadable or without a valid `latest.json` is a failed check with the
+  reason (*No latest.json in the update folder*, *The update folder does not name an installer*,
+  *The installer named in latest.json is missing*).
 
 ## Privacy
 
@@ -91,6 +121,8 @@ contacts GitHub, so the content security policy and the capability list do not c
    *Install* replaces the app and it starts again on the new version with the subjects intact.
 3. Offline, or with the setting off, startup shows nothing and is not slower.
 4. A tampered or unsigned `latest.json` entry is refused and the app keeps running.
+5. With a local update folder holding a newer signed release, an installed build offers it at launch and by
+   hand, installs it and restarts on the new version; no server is listening afterwards.
 
 # Open
 
