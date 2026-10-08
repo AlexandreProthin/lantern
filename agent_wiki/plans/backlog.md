@@ -37,15 +37,6 @@ Entries move out of here into a versioned plan when the user schedules them. New
   [latency-masked-not-reduced](/decisions/latency-masked-not-reduced.md) and
   [llm-latency](/issues/llm-latency.md).
 
-# Update notification
-
-- **Added:** 2026-10-07, on the user's request.
-- **What:** the app says when a newer release exists and installs it, instead of a manual download
-  from GitHub. The updater plugin is wired with no UI ([platform-quality](/specs/platform-quality.md) PQ-42).
-- **Needs:** an updater signing key pair (kept out of the repository), updater artifacts and a
-  `latest.json` published with each GitHub release, which changes the release routine once; a spec
-  for when to check and how to ask.
-
 # Companion behaviour spec
 
 - **Added:** 2026-10-06, on the user's request ("point 2 in a future session add it to the backlog").

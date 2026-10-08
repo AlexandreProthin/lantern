@@ -33,3 +33,12 @@ evidence (see the [log](/log.md)); native Explorer reveal and installed-build ch
 
 Build/test results are recorded in the [log](/log.md). Acceptance was signed off by the user on 2026-10-04 and v0.1.0 shipped (see the
 [log](/log.md)); follow-up work is in [v0.1.1](/plans/v0-1-1.md).
+
+# Update channel (added 2026-10-08)
+
+The updater is no longer inert: [updates](/specs/updates.md) specifies the daily launch check, notice,
+manual check and install. `tauri.conf.json` carries the endpoint
+`https://github.com/AlexandreProthin/lantern/releases/latest/download/latest.json` and passive NSIS install
+mode; the public key stays empty until the user generates the pair, and with an empty key the app reports
+*Updates are not set up in this build* instead of failing. Release routine: `app/README.md` (build signed,
+`app/scripts/make-latest-json.mjs`, upload both files). The preview overlay still turns updater signing off.

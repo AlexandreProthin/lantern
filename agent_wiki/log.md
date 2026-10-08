@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-10-08
+
+* **Update notification** (branch `worktree-update-notification`, from the [backlog](/plans/backlog.md) entry, now removed): new spec [updates](/specs/updates.md) (UP-1 to UP-50, status `draft` until the user verifies it), with [settings](/specs/settings.md) (`updates.checkAtLaunch`, `ui.lastUpdateCheck`, `ui.dismissedUpdate`, SE-22) and [platform-quality](/specs/platform-quality.md) PQ-42 (superseded) amended first. The user chose: launch check at most once a day plus a manual *Check for updates* in Settings → General, a quiet *Install* / *Later* notice, and a locally generated key pair (only the public key reaches the repository). Implementation: Rust `check_update` / `install_update` (`app/src-tauri/src/updates.rs`; the webview never contacts GitHub, so CSP and capabilities are unchanged), `app/src/frame/updates.ts` (pure rules) and `updates.svelte.ts` (controller), the notice in `Shell.svelte`, the controls in `SettingsPanel.svelte`, `app/scripts/make-latest-json.mjs`. Verified: `npm run check` 0/0, 54 TS tests, 2 new Rust tests, Playwright all pass on a private port (the shared port 1431 was held by other sessions' dev servers). **Not yet verified**: a real download and install, which needs the user's public key and a signed release (the first such release must be installed by hand once, UP-44).
+
 ## 2026-10-07
 
 * **Search in a subject** ([graph-view](/specs/graph-view.md) GV-57, new; Ctrl+F row in the GV-76 table): a magnifier left of the layout toggle, or Ctrl+F in Study, opens a field that matches titles, hooks, explanations and dialogue ignoring case, accents and spaces; matches get an accent ring, the rest dim, a count reads *n matches* / *k of n*, Enter / Shift+Enter step through them in tree order with `setFocus`, Esc closes. Matching is the pure `app/src/rooms/learn/graph-search.ts` (unit tested); browser test GV-57 passes 40/40 repeated runs.

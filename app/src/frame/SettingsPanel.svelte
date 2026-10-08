@@ -7,8 +7,10 @@
   import { ProviderError } from './provider';
   import { strings } from '../ui/strings';
   import ModelPicker from '../ui/ModelPicker.svelte';
-  let { settings, defaults, room, provider, health=null, initialSection='general', changed, close, switchLibrary, generating=false, readonly=false }: {
+  import type { UpdateController } from './updates.svelte';
+  let { settings, defaults, room, provider, health=null, initialSection='general', changed, close, switchLibrary, updater, checkUpdates, installUpdate, generating=false, readonly=false }: {
     settings:Settings; defaults:Settings; room:RoomDefinition; provider:InferenceProvider; health?:Completion|ProviderError|null;
+    updater:UpdateController; checkUpdates:()=>Promise<void>; installUpdate:()=>Promise<void>;
     changed:()=>void;close:()=>void;switchLibrary:(destination:string,mode:string)=>Promise<void>;initialSection?:string;generating?:boolean;readonly?:boolean
   }=$props();
   const desktop='__TAURI_INTERNALS__' in window;
@@ -39,7 +41,7 @@
   }
   async function transfer(mode:string) {transferring=true;try{await switchLibrary(destination,mode);destination='';validation='';}catch(e){validation=String(e);}finally{transferring=false;}}
   async function reset() {
-    if(section==='general') {settings.user={...settings.user,...defaults.user};changed();if(desktop&&settings.library.path!==defaults.library.path)await choose(defaults.library.path);}
+    if(section==='general') {settings.user={...settings.user,...defaults.user};settings.updates={...settings.updates,...defaults.updates};changed();if(desktop&&settings.library.path!==defaults.library.path)await choose(defaults.library.path);}
     else if(section==='room'){settings.learn={...settings.learn,...defaults.learn};changed();}
     else if(section==='provider'){settings.provider={...settings.provider,...defaults.provider};changed();}
     else {settings.appearance={...settings.appearance,...defaults.appearance};changed();}
@@ -63,6 +65,10 @@
       <div class="actions"><button disabled={!desktop||generating||!typedPath.trim()||typedPath.trim()===settings.library.path} onclick={()=>choose(typedPath.trim())}>{strings.applyLibrary}</button><button disabled={!desktop||generating} title={generating?strings.finishGeneration:undefined} onclick={()=>choose()}>{strings.changeLibrary}</button><button disabled={!desktop} onclick={()=>invoke('reveal_library',{path:settings.library.path}).catch(e=>validation=String(e))}>{strings.revealLibrary}</button></div>
       {#if generating}<p>{strings.finishGeneration}</p>{/if}
       <p class="version">{strings.appVersion(__APP_VERSION__)}</p>
+      <div class="actions"><button disabled={!desktop||['checking','downloading','installing'].includes(updater.phase)} onclick={()=>void checkUpdates()}>{strings.checkForUpdates}</button>
+        {#if updater.phase==='available'}<button disabled={generating} title={generating?strings.finishGeneration:undefined} onclick={()=>void installUpdate()}>{strings.installUpdate}</button>{/if}</div>
+      <p role="status" data-testid="update-status">{#if updater.phase==='checking'}{strings.checkingUpdates}{:else if updater.phase==='up-to-date'}{strings.upToDate}{:else if updater.phase==='available'}{strings.updateAvailable(updater.version)}{:else if updater.phase==='unconfigured'}{strings.updateUnconfigured}{:else if updater.phase==='downloading'}{strings.updateDownloading(updater.percent)}{:else if updater.phase==='installing'}{strings.updateInstalling}{:else if updater.phase==='failed'}{updater.message}{/if}</p>
+      <label><input type="checkbox" bind:checked={settings.updates.checkAtLaunch} onchange={changed} />{strings.checkAtLaunch}</label>
     {:else if section==='provider'}
       <div class="field"><label for="default-model">{strings.defaultModel}</label><ModelPicker id="default-model" value={settings.provider.defaultModel} label={strings.defaultModel} commit={model=>{settings.provider.defaultModel=model;validation='';changed();}} /></div>
       <label>{strings.defaultEffort}<select bind:value={settings.provider.defaultEffort} onchange={changed}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label><p>{strings.newSubjectsHint}</p>

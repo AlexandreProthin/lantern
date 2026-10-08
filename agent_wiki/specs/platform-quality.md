@@ -38,7 +38,7 @@ Source: spec workshop rounds 1–3 (2026-10-01/02). Agreed with the user 2026-10
 
 - **PQ-40** A Windows installer MUST be produced (PS-18 in [product-scope](/specs/product-scope.md)).
 - **PQ-41** The installer MUST be Prism's unsigned per-user NSIS installer, built locally.
-- **PQ-42** The Tauri updater plugin and `createUpdaterArtifacts` MUST be wired from v0.1.0, but there MUST be no update UI or update flow (auto-update UI is Later).
+- **PQ-42** The Tauri updater plugin and `createUpdaterArtifacts` MUST be wired from v0.1.0. *Superseded 2026-10-08*: the update check, notice and install now exist and are specified in [updates](/specs/updates.md); v0.1.0 to v0.1.2 shipped without them.
 
 # Acceptance
 

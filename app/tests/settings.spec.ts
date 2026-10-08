@@ -1,5 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
+test('UP-3/4/20: General offers the launch-check switch, and the manual check is desktop only', async ({page}) => {
+  await page.goto('/?study=1&subject=Updates');
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const dialog=page.getByRole('dialog');
+  const launch=dialog.getByRole('checkbox',{name:'Check for updates at launch'});
+  await expect(launch).toBeChecked();
+  await launch.uncheck();
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')??'{}').updates?.checkAtLaunch)).toBe(false);
+  await expect(dialog.getByRole('button',{name:'Check for updates',exact:true})).toBeDisabled();
+  await expect(page.getByText(/is available/)).toHaveCount(0);
+});
 test('SE-6/14/16/42: validation, scoped reset, provider health and live reduced motion', async ({page}) => {
   await page.goto('/?study=1&subject=Preferences');
   await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();

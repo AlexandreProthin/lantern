@@ -36,11 +36,20 @@ remove it after the run). Its native cached-list companion is
 
 Build the unsigned per-user Windows preview installer with `npm run installer:preview`.
 The result is under `src-tauri/target/release/bundle/nsis/`. This explicit preview
-configuration disables updater artifact signing; it does not introduce an update
-flow. The default release config wires `createUpdaterArtifacts` and the updater
-plugin, with no endpoints or UI. A future signed updater build needs the real
-public key in config and `TAURI_SIGNING_PRIVATE_KEY` supplied outside the repository.
-No signing key is generated or committed. Follow `ACCEPTANCE.md` before releasing.
+configuration disables updater artifact signing, so a preview build is never
+published. A release build (specs/updates.md, UP-40..44) needs the public key in
+`src-tauri/tauri.conf.json` and the private key supplied outside the repository:
+
+```powershell
+npx tauri signer generate -w $HOME\.tauri\lantern-updater.key   # once; keep the key out of the repo
+$env:TAURI_SIGNING_PRIVATE_KEY = Get-Content $HOME\.tauri\lantern-updater.key -Raw
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = '<the password you chose>'
+npx tauri build --bundles nsis          # writes the installer, its .sig
+node scripts/make-latest-json.mjs "What changed"   # writes latest.json
+```
+
+Upload the installer and `latest.json` to the GitHub release. A release without
+`latest.json` can never update itself. No signing key is generated or committed. Follow `ACCEPTANCE.md` before releasing.
 
 Storage tests use isolated temporary libraries and never modify real subjects.
 They cover round-trip, path safety, conflicts, cache invalidation, read-only newer

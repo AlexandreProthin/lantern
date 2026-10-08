@@ -22,6 +22,8 @@
   import type { Tone } from '../core/model';
   import { defaultSettings, validateSettings } from './settings';
   import { DebouncedWriter } from './debounced-writer';
+  import { UpdateController } from './updates.svelte';
+  import { shouldCheckAtLaunch, shouldShowNotice } from './updates';
   import SettingsPanel from './SettingsPanel.svelte';
   import ModelPicker from '../ui/ModelPicker.svelte';
   import { isValidModel } from '../core/models';
@@ -56,6 +58,13 @@
   const savedDirection = $derived.by(() => { revision; return session?.subject.rooms[room.id].direction ?? ''; });
   const anyRunning = $derived.by(() => { revision; return [...owned.values()].some(entry => !!entry.session.running); });
   const unavailable=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
+  const updater=new UpdateController();
+  const showUpdateNotice=$derived(updater.fromLaunch&&['available','downloading','installing'].includes(updater.phase)&&shouldShowNotice(settings,updater.version,anyRunning&&updater.phase==='available'));
+  /** UP-1, UP-21: a check the server answered counts, however it was started. */
+  async function checkUpdates(launch:boolean){if(await updater.check(launch)){settings.ui.lastUpdateCheck=Date.now();preferencesChanged();}}
+  /** UP-31: every pending save lands before the installer closes the app. */
+  async function installUpdate(){if(anyRunning)return;await updater.install(async()=>{for(const entry of owned.values())await entry.persistence.flush();await writer.flush();await windowMemory?.flush();});}
+  function dismissUpdate(){settings.ui.dismissedUpdate=updater.version;updater.fromLaunch=false;preferencesChanged();}
   async function checkReady(){if(anyRunning||checkingReady)return;checkingReady=true;readyController=new AbortController();
     try{if(desktop)await invoke('provider_status');readyPending=provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'haiku',effort:'low',cancel:readyController.signal},()=>{});await readyPending;}
     catch(e){if(!(e instanceof ProviderError))banner=String(e);}finally{checkingReady=false;readyPending=undefined;}
@@ -229,6 +238,7 @@
         await refreshCatalogue();
         if(desktop){const status=await invoke<{kind:string}>('provider_status');if(status.kind==='not-installed')health=new ProviderError('not-installed','');}
         preferencesChanged();
+        if(shouldCheckAtLaunch(settings,Date.now(),desktop&&!settingsReadOnly))void checkUpdates(true);
         const query=new URLSearchParams(location.search);
         // Retained deterministic Study harness for focused graph/panel tests.
         if(import.meta.env.DEV && query.has('study')) {
@@ -254,6 +264,8 @@
 {#if unavailable}<div class="banner provider-notice" role="alert"><div><strong>{strings.errorKinds[unavailable.kind]}</strong><p>{unavailable.kind==='not-installed'?strings.installInstructions:strings.signinInstructions}</p></div><button onclick={()=>{settingsSection='provider';settingsOpen=true;}}>{strings.settings}</button><button disabled={anyRunning||checkingReady} onclick={checkReady}>{strings.checkAgain}</button>{#if checkingReady}<button onclick={()=>readyController?.abort()}>{strings.cancel}</button>{/if}</div>{/if}
 {#if saveError}<div class="banner error" role="alert">{strings.saveFailed}<details><summary>{strings.details}</summary>{saveError}</details><button onclick={retrySaves}>{strings.retry}</button></div>{/if}
 {#if toast}<div class="toast" role="status">{toast}<button onclick={()=>toast=''}>{strings.close}</button></div>{/if}
+{#if showUpdateNotice}<div class="toast update-notice" role="status">{updater.phase==='downloading'?strings.updateDownloading(updater.percent):updater.phase==='installing'?strings.updateInstalling:strings.updateAvailable(updater.version)}
+  {#if updater.phase==='available'}<button disabled={anyRunning} title={anyRunning?strings.finishGeneration:undefined} onclick={installUpdate}>{strings.installUpdate}</button><button onclick={dismissUpdate}>{strings.updateLater}</button>{/if}</div>{/if}
 {#if subjectMenu && session}<div class="subject-menu">
   <input aria-label={strings.title} value={session.subject.title} maxlength="120" onkeydown={e=>{if(e.key==='Enter' && e.currentTarget.value.trim()){session!.subject.title=e.currentTarget.value.trim();session!.touch();subjectMenu=false;}}} />
   <label>{strings.tone}<select value={typeof session.subject.rooms[room.id].tone==='string'?session.subject.rooms[room.id].tone:'custom'} onchange={e=>{session!.subject.rooms[room.id].tone=e.currentTarget.value==='custom'?{custom:''}:e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['eli5','curious','student','engineer','expert','custom'] as tone}<option>{tone}</option>{/each}</select></label>
@@ -266,7 +278,7 @@
   <label>{strings.defaultEffort}<select value={session.subject.rooms[room.id].effort} onchange={e=>{session!.subject.rooms[room.id].effort=e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label>
 </div>{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#each room.spaces as item}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/if}</div>
-{#if settingsOpen}<SettingsPanel {settings} {defaults} {room} {health} {switchLibrary} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
+{#if settingsOpen}<SettingsPanel {settings} {defaults} {room} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>
   :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; } header { height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid var(--line); background:var(--surface); }
@@ -274,6 +286,7 @@
   header button { background:none; padding:5px 9px; min-width:32px; }.mark { display:flex; align-items:center; padding:4px 6px; }.mark-art, .mark-art :global(svg) { display:block; width:28px; height:28px; }.room { color:var(--accent); font-size:13px; } nav { display:flex; gap:4px; } [aria-current='page'] { border-color:var(--accent); color:var(--accent); }
   .subject { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:35vw; border:0; } header small { color:var(--ink-mute); font-size:13px; margin-left:auto; }.gear { margin-left:auto; }
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
+  .toast.update-notice { top:auto; bottom:18px; display:flex; align-items:center; gap:8px; }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
   .subject-menu { position:fixed; left:230px; top:52px; z-index:12; display:grid; gap:12px; padding:20px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }.subject-menu label,.subject-menu .field { display:grid; gap:5px; }.subject-menu .direction { width:min(360px,70vw); resize:vertical; }.direction-count { color:var(--ink-mute); font-size:12px; }.direction-count.over { color:var(--error-ink); }
   .busy-dot { font-size:24px; color:var(--accent); animation:pulse 1.8s ease-in-out infinite; }.shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; }

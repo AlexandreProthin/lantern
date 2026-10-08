@@ -24,6 +24,7 @@ the settings below only supply their **defaults**.
 | Provider | `provider.defaultEffort` | enum | `medium` | `low`/`medium`/`high`/`xhigh`/`max` | new subjects; existing subjects keep their own effort |
 | Learn room | `learn.defaultTone` | enum or text | `curious` | preset (`eli5`, `curious`, `student`, `engineer`, `expert`) or custom text up to 300 chars | new subjects; a subject's tone is changed in its subject menu (opened from the title in the header; [rooms-spaces](/specs/rooms-spaces.md) RS-15) |
 | Learn room | `learn.contextBudget` | integer (advanced) | 12000 | 2000–100000 tokens | next generation (the map part only; the CLI's own ~13k baseline is extra) |
+| General | `updates.checkAtLaunch` | boolean | true | — | next launch; off means no update request unless *Check for updates* is pressed ([updates](/specs/updates.md) UP-3) |
 | Appearance | `appearance.reduceMotion` | enum | `system` | `system`/`on`/`off` | immediate; `system` follows the OS |
 | Appearance | `appearance.showTokenStats` | boolean | true | — | immediate; hides every token and time figure (node meta line, stats hover, Gallery cards) |
 
@@ -37,6 +38,8 @@ file but has no settings control:
 | `ui.legendCollapsed` | boolean | false | legend state |
 | `ui.lastRoom` | string | `learn` | the room whose Welcome opens at launch |
 | `ui.graphLayout` | `free`/`tree` | `free` | graph layout toggle |
+| `ui.lastUpdateCheck` | number (ms since epoch) | 0 | last successful update check ([updates](/specs/updates.md) UP-1) |
+| `ui.dismissedUpdate` | string | empty | version whose launch notice the user dismissed (UP-11) |
 
 The defaults of the catalogue are model `opus`, effort `medium`, tone `curious`, layout `free`, context budget 12000 within 2000 to 100000. `opus` is the alias for the latest Opus **that the installed Claude Code CLI knows**: on 2026-10-05 the user's CLI 2.1.274 resolved it to Opus 5 (`claude-opus-5`), and Opus 5.5 (`claude-opus-5-5`) needs CLI 2.1.280 or newer. The default is not `sonnet`. A pinned id the CLI or the account cannot use (too old a CLI, or a model that needs usage credits such as Fable 5.1) fails as `model-unknown` (SE-43).
 
@@ -67,7 +70,7 @@ The last-opened times and the recents list are **not** in this file: they live i
 
 - **SE-20** The display name default MUST be the Windows user name (`USERNAME`), read at first run and stored; the user can change it. It is the author name on learner turns and edits ([domain-model](/specs/domain-model.md)).
 - **SE-21** *Reveal library in Explorer* MUST open the library folder.
-- **SE-22** The section MUST end with the app version, *Lantern 0.1.2*, taken at build time from `package.json` (kept equal to `Cargo.toml` and `tauri.conf.json`).
+- **SE-22** The section MUST end with the app version, *Lantern 0.1.2*, taken at build time from `package.json` (kept equal to `Cargo.toml` and `tauri.conf.json`), followed by the *Check for updates* button and the *Check for updates at launch* checkbox ([updates](/specs/updates.md) UP-3, UP-20).
 
 # Library folder change flow
 
