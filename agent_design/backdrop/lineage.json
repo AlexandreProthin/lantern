@@ -1,0 +1,351 @@
+{
+  "schema_version": 1,
+  "concept": "backdrop",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-06T21:41:43.282012+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "backdrop",
+        "revision": 1,
+        "saved_at": "2026-10-06T21:33:58.604272+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "draft",
+          "mode": "combine",
+          "prompt": "Add texture/depth to the background of Welcome, Graph view and Gallery. Empty canvas, no app elements. Shared base tuned per screen (Welcome/Graph/Gallery switcher). Very slow drift (30-90 s cycles) with subtle reactions: pointer, graph pan/zoom, learning events, screen changes. Round 1: 3 layered mixes of blurred light shapes, grain & atmosphere, dust/motes, subtle pattern. Palette: existing navy/amber tokens plus one muted cool companion."
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-06T22:02:27.037403+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "backdrop",
+        "revision": 2,
+        "saved_at": "2026-10-06T21:56:20.283162+00:00",
+        "based_on_round": 1,
+        "selected_ids": [],
+        "next": {
+          "phase": "draft",
+          "mode": "fresh",
+          "prompt": "I do not like the noisy/dust texture effect. Make it clear/clean.\nnot sure yet but by preference order:r001-02, r001-03,r001-01"
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-06T22:26:53.000811+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "backdrop",
+        "revision": 3,
+        "saved_at": "2026-10-06T22:20:26.907148+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r002-01",
+          "r002-02"
+        ],
+        "next": {
+          "phase": "draft",
+          "mode": "branch",
+          "prompt": "r002-01 but with the r001-01 background i prefer the idea of having far light emitting spheres orbitting arround instead of a spotlight\nr002-02 is interesting (propose two alternative: one with the same pattern and one with a new geometric patter)\nnot r002-03\n\ni want the cristal clear feeling. keep the stars/particles hanging/moving arround it adds nice details."
+        }
+      },
+      "node_ids": [
+        "r003-01",
+        "r003-02",
+        "r003-03",
+        "r003-04",
+        "r003-05",
+        "r003-06"
+      ]
+    },
+    {
+      "number": 4,
+      "created_at": "2026-10-06T22:42:55.715508+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "backdrop",
+        "revision": 5,
+        "saved_at": "2026-10-06T22:36:19.783180+00:00",
+        "based_on_round": 3,
+        "selected_ids": [
+          "r003-01",
+          "r003-04"
+        ],
+        "next": {
+          "phase": "draft",
+          "mode": "branch",
+          "prompt": "For the next round render the ui over it so i can experience the full feeling. probably the last round.\nr003-01 is fine\nr003-04 is fine too\nr003-04 but include the mesh deformation from r003-05"
+        }
+      },
+      "node_ids": [
+        "r004-01",
+        "r004-02",
+        "r004-03",
+        "r004-04",
+        "r004-05",
+        "r004-06"
+      ]
+    },
+    {
+      "number": 5,
+      "created_at": "2026-10-07T16:27:57.530031+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "backdrop",
+        "revision": 6,
+        "saved_at": "2026-10-07T16:25:59.864179+00:00",
+        "based_on_round": 4,
+        "selected_ids": [
+          "r004-03"
+        ],
+        "next": {
+          "phase": "draft",
+          "mode": "branch",
+          "prompt": "r004-03 is the one, to refine. Too much hightlight (too distracting) on node being lit. Remove the texture too.\nIn one variant strictly use the initial color palette no extra color or acccent color."
+        }
+      },
+      "node_ids": [
+        "r005-01",
+        "r005-02",
+        "r005-03"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "draft/backdrop-drf-r001-01.html",
+      "title": "Fog light",
+      "direction": "Large blurred amber and deep-teal light shapes drift far back on 38-90 s cycles, under fine film grain and a vignette. Screens recompose the shapes: a warm pool behind Welcome's field, a clear calm centre for Graph, a light band across the top of Gallery.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "draft/backdrop-drf-r001-02.html",
+      "title": "Lantern dust",
+      "direction": "Haze plus three depths of dust motes that only show where light falls: a soft beam from above on Welcome, the pointer's slow lantern pool, and lit nodes, which also push nearby dust outwards. Indigo floor haze is the cool companion; Graph drops the near layer.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "draft/backdrop-drf-r001-03.html",
+      "title": "Charted dark",
+      "direction": "Faint, slowly morphing contour lines, revealed in amber and slate teal only where light pools fall. Lit nodes send a ring through the terrain. Welcome rings a rise under the field, Graph is the faintest open terrain, and Gallery settles into horizontal strata.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r002-01",
+      "parents": [],
+      "file": "draft/backdrop-drf-r002-01.html",
+      "title": "Clear lantern dust",
+      "direction": "r001-02 with the grain removed: clean haze and a soft beam, with about half as many motes, all crisp points (the large blurry bokeh is gone). Motes still only show where light falls: the beam, the pointer's lantern pool and lit nodes, which push them gently outward.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r002-02",
+      "parents": [],
+      "file": "draft/backdrop-drf-r002-02.html",
+      "title": "Lit contours, clear",
+      "direction": "r001-03 with the grain removed: faint, slowly morphing contour lines lit in amber and slate teal by drifting light pools, plus a few crisp motes from r001-02 caught by the same light. A lit node's ring sweeps through both the lines and the motes.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r002-03",
+      "parents": [],
+      "file": "draft/backdrop-drf-r002-03.html",
+      "title": "Light veils",
+      "direction": "A clean replacement for r001-01's blurred shapes: five smooth translucent ribbons at different depths (far ones softer), each with a lit amber or teal upper edge. No particles and no texture. The pointer lifts the veils slightly, a lit node lights the veils near it and leaves the empty sky dark, and screens re-lay the ribbons: diagonal on Welcome, pushed to the edges on Graph, horizontal bands on Gallery.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r002-01"
+      ],
+      "file": "draft/backdrop-drf-r003-01.html",
+      "title": "Slow orbits",
+      "direction": "r002-01's crisp motes with r001-01's background brought back as light: five large blurred amber and teal glows orbit slowly around the screen's centre (52-120 s) instead of the spotlight beam. Motes catch their light. No grain.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r002-01"
+      ],
+      "file": "draft/backdrop-drf-r003-02.html",
+      "title": "Distant lanterns",
+      "direction": "r002-01's crisp motes around three small, clearly drawn light spheres with halos (amber, teal, cream) on tilted orbits. They grow and brighten as they swing towards you, over one wide teal glow from r001-01. A lit node makes nearby spheres flare.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r002-01"
+      ],
+      "file": "draft/backdrop-drf-r003-03.html",
+      "title": "Orrery",
+      "direction": "r002-01's crisp motes inside a small planetarium: a soft amber centre glow with seven tiny light spheres on nested orbits sharing one tilt, the outer ones slower (36-150 s). Screens move and reshape the system: centred on Welcome, spread past the edges on Graph, flattened along the top on Gallery.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r003-04",
+      "parents": [
+        "r002-02"
+      ],
+      "file": "draft/backdrop-drf-r003-04.html",
+      "title": "Contours, crystal",
+      "direction": "Same pattern as r002-02: the terrain lines, drawn finer and smoother (smaller sampling cells, hairline strokes), darker where unlit and brighter where lit, so they read like etched glass. Slightly more motes.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r003-05",
+      "parents": [
+        "r002-02"
+      ],
+      "file": "draft/backdrop-drf-r003-05.html",
+      "title": "Crystal lattice",
+      "direction": "New geometric pattern for r002-02: a fine triangular lattice of hairlines and vertex points that bulges gently, like glass, wherever a light pool or the pointer's lantern sits. Lit only where light falls; r002-02's motes kept.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r003-06",
+      "parents": [
+        "r002-02"
+      ],
+      "file": "draft/backdrop-drf-r003-06.html",
+      "title": "Astrolabe",
+      "direction": "New geometric pattern for r002-02: fine concentric rings and radial spokes turning very slowly, with two tilted orbit ellipses echoing the orbiting lights. The centre moves per screen: under the field on Welcome, off the bottom-right corner on Graph, above the top edge on Gallery (horizon arcs). Lit only where light falls; motes kept.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r004-01",
+      "parents": [
+        "r003-01"
+      ],
+      "file": "draft/backdrop-drf-r004-01.html",
+      "title": "Slow orbits, with the UI",
+      "direction": "r003-01 unchanged under a replica of the app's Welcome, Study and Gallery: blurred amber and teal lights orbit slowly and crisp motes catch their light. Surfaces stay solid, as in the app; the graph area is open to the backdrop. Clicking a node lights it, and the backdrop reacts there.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r003-01"
+      ],
+      "file": "draft/backdrop-drf-r004-02.html",
+      "title": "Orbits around your focus",
+      "direction": "r003-01 under the UI, with the orbits centred on what you are attending to: the question field on Welcome, the focused node on Graph (they follow it as you pan or pick another node), the hovered card on Gallery.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r003-01"
+      ],
+      "file": "draft/backdrop-drf-r004-03.html",
+      "title": "Slow orbits, glass UI",
+      "direction": "r003-01 under the UI, with the header, panel, cards and thumbnails as frosted glass, so the orbiting lights pass softly behind them.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r004-04",
+      "parents": [
+        "r003-04"
+      ],
+      "file": "draft/backdrop-drf-r004-04.html",
+      "title": "Contours, crystal, with the UI",
+      "direction": "r003-04 unchanged under the app's UI: fine contour hairlines lit by drifting pools, with crisp motes. Surfaces stay solid, as in the app; the graph area is open to the backdrop.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r004-05",
+      "parents": [
+        "r003-04"
+      ],
+      "file": "draft/backdrop-drf-r004-05.html",
+      "title": "Contours with lens",
+      "direction": "r003-04 under the UI with r003-05's mesh deformation: the contour lines bulge gently, like glass, around each light pool, the pointer's lantern and every node you light.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r004-06",
+      "parents": [
+        "r003-04"
+      ],
+      "file": "draft/backdrop-drf-r004-06.html",
+      "title": "Contours with lens, glass UI",
+      "direction": "r004-05 (r003-04 plus r003-05's lens) with the header, panel, cards and thumbnails as frosted glass over the lines.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r005-01",
+      "parents": [
+        "r004-03"
+      ],
+      "file": "draft/backdrop-drf-r005-01.html",
+      "title": "Calm orbits",
+      "direction": "r004-03 refined: the anti-banding texture layer is removed, and a lit node now only warms the backdrop softly (slower in and out, smaller and fainter, no sphere flare, motes barely move). Amber and teal lights, frosted-glass UI.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r005-02",
+      "parents": [
+        "r004-03"
+      ],
+      "file": "draft/backdrop-drf-r005-02.html",
+      "title": "Calm orbits, room palette only",
+      "direction": "r005-01 with the backdrop strictly in the room's own neutral tokens: lights in --ink, --ink-mute, --node-open and --line; motes in ink and ink-mute. No accent (amber) and no extra colour (teal). The UI keeps the app's accent.",
+      "phase": "draft",
+      "tag": "drf"
+    },
+    {
+      "id": "r005-03",
+      "parents": [
+        "r004-03"
+      ],
+      "file": "draft/backdrop-drf-r005-03.html",
+      "title": "Calm orbits, amber only",
+      "direction": "r005-01 without the extra colour: the teal lights become the room's own --path-muted and --line, so the backdrop is amber light on navy only. Motes in cream and ink-mute.",
+      "phase": "draft",
+      "tag": "drf"
+    }
+  ]
+}

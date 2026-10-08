@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "concept": "backdrop",
+  "revision": 6,
+  "saved_at": "2026-10-07T16:25:59.864179+00:00",
+  "based_on_round": 4,
+  "selected_ids": [
+    "r004-03"
+  ],
+  "next": {
+    "phase": "draft",
+    "mode": "branch",
+    "prompt": "r004-03 is the one, to refine. Too much hightlight (too distracting) on node being lit. Remove the texture too.\nIn one variant strictly use the initial color palette no extra color or acccent color."
+  }
+}

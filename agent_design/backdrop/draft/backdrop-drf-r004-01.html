@@ -1,0 +1,284 @@
+<!--
+  id:        r004-01
+  component: backdrop
+  phase:     draft
+  parents:   r003-01
+  direction: r003-01 unchanged under the app's UI: five large blurred amber and teal lights orbit slowly, crisp motes catch their light. Solid surfaces as in the app; the graph area is open to the backdrop.
+  request:   revision 5
+  inputs:    For the next round render the ui over it so i can experience the full feeling. probably the last round.
+             r003-01 is fine
+             r003-04 is fine too
+             r003-04 but include the mesh deformation from r003-05
+  ui:        ../assets/ui-overlay.js (shared replica of the app's Welcome, Study and Gallery) with ../backdrop-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backdrop r004-01 — Slow orbits, with the UI</title>
+<style>
+  :root {
+    --bg: #101827; --surface: #172132; --surface-2: #302b2a; --ink: #f3e9dc; --ink-mute: #aeb3bf;
+    --line: #3b4558; --accent: #e8b66e; --accent-ink: #211b14; --focus: #ffe0ab; --node-lit: #ffe1aa;
+    /* cool companion: r001-01's deep teal */
+    --cool: #3a8a8c; --cool-deep: #1f4a52;
+  }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink);
+    font: 12px/1.3 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #dither { pointer-events: none; }
+  .vignette { position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 75% at 50% 45%, transparent 55%, rgba(6, 8, 18, .4) 100%); }
+  .tag { position: fixed; top: 14px; left: 16px; color: var(--ink-mute); opacity: .55; letter-spacing: .02em; pointer-events: none; }
+  .ui { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; align-items: center;
+    padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16, 24, 39, .62);
+    backdrop-filter: blur(10px); max-width: calc(100vw - 32px); flex-wrap: wrap; justify-content: center; }
+  .ui button { font: inherit; color: var(--ink-mute); background: transparent; border: 0; border-radius: 999px; padding: 6px 11px; cursor: pointer; }
+  .ui button:hover { color: var(--ink); }
+  .ui button[aria-pressed="true"] { color: var(--node-lit); background: var(--surface-2); }
+  .ui button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  .seg { display: flex; gap: 2px; }
+  .hint { color: var(--ink-mute); opacity: .6; padding: 0 10px 0 4px; }
+</style>
+</head>
+<body>
+<canvas id="haze" aria-hidden="true"></canvas>
+<canvas id="dust" aria-hidden="true"></canvas>
+<canvas id="dither" aria-hidden="true"></canvas>
+<div class="vignette"></div>
+<div class="tag">r004-01 · Slow orbits, with the UI — <span id="screenName">Welcome</span></div>
+<div class="ui" id="ui">
+  <div class="seg">
+    <button data-s="welcome" aria-pressed="true">Welcome</button>
+    <button data-s="graph" aria-pressed="false">Graph</button>
+    <button data-s="gallery" aria-pressed="false">Gallery</button>
+  </div>
+  <button id="light">Light a node</button>
+  <button id="speed" aria-pressed="false">Preview ×8</button>
+  <span class="hint">drag pan · wheel zoom · click light · R reset</span>
+</div>
+<script src="../backdrop-data.js"></script>
+<script src="../assets/ui-overlay.js"></script>
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const haze = document.getElementById('haze'), hctx = haze.getContext('2d');
+  const dust = document.getElementById('dust'), dctx = dust.getContext('2d');
+  const dither = document.getElementById('dither'), gctx = dither.getContext('2d');
+  const HAZE_DIV = 4, DPR = Math.min(1.5, devicePixelRatio || 1);
+  let W = 0, H = 0;
+
+  const C = { amber: [232, 182, 110], cream: [255, 225, 170], glow: [255, 182, 88],
+              teal: [58, 138, 140], tealDeep: [31, 74, 82], tealLit: [150, 214, 214] };
+
+  /* ==== SPHERES ====
+     Far light-emitting spheres on slow elliptical orbits around the screen's anchor.
+     c: colour · glow: halo radius (fraction of width) · core: visible disc radius (fraction of width, 0 = halo only)
+     rx, ry: orbit radii (fractions of width / height) · tilt: how far the orbit swings towards and away from you
+     per: seconds per orbit (negative = clockwise) · ph: start angle · depth: parallax · a: strength */
+  const SPHERES = [
+    { c: 'amber',    glow: .30, core: 0, rx: .20, ry: .13, tilt: .4, per: 80,   ph: 0.0, depth: .6, a: .24 },
+    { c: 'teal',     glow: .40, core: 0, rx: .36, ry: .22, tilt: .3, per: -96,  ph: 2.2, depth: .35, a: .20 },
+    { c: 'tealDeep', glow: .48, core: 0, rx: .42, ry: .30, tilt: .2, per: 120,  ph: 4.0, depth: .2, a: .30 },
+    { c: 'cream',    glow: .11, core: 0, rx: .11, ry: .08, tilt: .6, per: -52,  ph: 1.1, depth: .8, a: .10 },
+    { c: 'glow',     glow: .22, core: 0, rx: .30, ry: .26, tilt: .5, per: 70,   ph: 3.3, depth: .5, a: .10 }
+  ];
+  /* ==== /SPHERES ==== */
+
+  // Per-screen tuning: where the orbits are centred (cx, cy), how they are stretched (sx, sy),
+  // overall strength, how many motes show, and the pointer's lantern pool.
+  const PRESETS = {
+    welcome: { cx: .5, cy: .45, sx: 1.0, sy: 1.0, gain: 1,   dust: 1,   lamp: .8 },
+    graph:   { cx: .5, cy: .5,  sx: 1.9, sy: 1.7, gain: .55, dust: .5,  lamp: .4 },
+    gallery: { cx: .5, cy: .06, sx: 1.4, sy: .45, gain: .8,  dust: .75, lamp: .6 }
+  };
+  const S = { screen: 'welcome', speed: 1, t: 0, panX: 0, panY: 0, zoom: 1, sPanX: 0, sPanY: 0, sZoom: 1,
+              px: .5, py: .5, spx: .5, spy: .5, events: [] };
+  const P = { ...PRESETS.welcome };
+
+  // crisp motes at three depths; positions in 0..1 world units, wrapping around
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const LAYERS = [
+    { key: 'far',  n: 80, depth: .25, size: [.6, 1.0], alpha: [.30, .60], rise: 1 / 260 },
+    { key: 'mid',  n: 34, depth: .55, size: [1.1, 1.6], alpha: [.45, .85], rise: 1 / 170 },
+    { key: 'near', n: 9,  depth: 1.0, size: [2.0, 2.8], alpha: [.55, .90], rise: 1 / 110 }
+  ];
+  LAYERS.forEach(L => {
+    L.motes = Array.from({ length: L.n }, () => ({
+      x: Math.random(), y: Math.random(), s: rnd(...L.size), a: rnd(...L.alpha),
+      ph: rnd(0, 6.28), wob: rnd(30, 80), drift: rnd(-.3, .3), warm: Math.random() < .7
+    }));
+  });
+  function sprite(c) {
+    const s = document.createElement('canvas'); s.width = s.height = 64;
+    const x = s.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, `rgba(${c},1)`); g.addColorStop(.35, `rgba(${c},.55)`); g.addColorStop(1, `rgba(${c},0)`);
+    x.fillStyle = g; x.fillRect(0, 0, 64, 64); return s;
+  }
+  const SPR_WARM = sprite('255,214,150'), SPR_COOL = sprite('170,222,222');
+
+  const tile = document.createElement('canvas'); tile.width = tile.height = 180;
+  (() => {
+    const tc = tile.getContext('2d'), img = tc.createImageData(180, 180);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const c = Math.random() > .5 ? 255 : 0;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = c;
+      img.data[i + 3] = 2;   // ~1% : breaks up 8-bit banding in the dark gradients, not visible as texture
+    }
+    tc.putImageData(img, 0, 0);
+  })();
+  const pattern = gctx.createPattern(tile, 'repeat');
+  function resize() {
+    W = Math.max(1, innerWidth); H = Math.max(1, innerHeight);
+    haze.width = Math.ceil(W / HAZE_DIV); haze.height = Math.ceil(H / HAZE_DIV);
+    dust.width = W * DPR; dust.height = H * DPR; dctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    dither.width = W; dither.height = H; gctx.fillStyle = pattern; gctx.fillRect(0, 0, W, H);
+  }
+  addEventListener('resize', resize); resize();
+
+  // ---- input (prototype stand-ins for the app's signals) ----
+  let drag = null;
+  addEventListener('pointerdown', e => { if (e.target.closest('.ui, .lx-hit')) return; drag = { x: e.clientX, y: e.clientY, moved: 0 }; });
+  addEventListener('pointermove', e => {
+    S.px = e.clientX / W; S.py = e.clientY / H;
+    if (drag) { const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      S.panX += dx; S.panY += dy; drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY; }
+  });
+  addEventListener('pointerup', e => { if (drag && drag.moved < 5 && !e.target.closest('.ui, .lx-hit, .lx-nolight')) light(e.clientX, e.clientY); drag = null; });
+  addEventListener('wheel', e => { if (e.target.closest && e.target.closest('.lx-scroll')) return; S.zoom = Math.min(2.5, Math.max(.5, S.zoom * Math.exp(-e.deltaY * .0012))); }, { passive: true });
+  addEventListener('keydown', e => {
+    if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    if (e.key === 'r' || e.key === 'R') { S.panX = S.panY = 0; S.zoom = 1; }
+    if (e.key >= '1' && e.key <= '3') setScreen(['welcome', 'graph', 'gallery'][e.key - 1]);
+  });
+  function light(x, y) { S.events.push({ x, y, t0: performance.now() / 1000 }); }
+  document.addEventListener('lx:light', e => light(e.detail.x, e.detail.y));   // a node lit in the UI
+  document.getElementById('light').onclick = () => light(W * (.25 + Math.random() * .5), H * (.25 + Math.random() * .5));
+  const speedBtn = document.getElementById('speed');
+  speedBtn.onclick = () => { S.speed = S.speed === 1 ? 8 : 1; speedBtn.setAttribute('aria-pressed', S.speed > 1); };
+  document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => setScreen(b.dataset.s));
+  function setScreen(s) {
+    S.screen = s; S.panX = S.panY = 0; S.zoom = 1;
+    document.dispatchEvent(new CustomEvent('lx:screen', { detail: s }));
+    document.querySelectorAll('[data-s]').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s));
+    document.getElementById('screenName').textContent = s[0].toUpperCase() + s.slice(1);
+    if (reduce) Object.assign(P, PRESETS[s]);
+  }
+
+  const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(0, a)})`;
+  const smooth = x => x * x * (3 - 2 * x);
+  function envelope(age) {
+    if (reduce) return age < 2 ? 1 : 0;
+    if (age < .7) return smooth(age / .7);
+    return Math.max(0, 1 - (age - .7) / 4.5);
+  }
+
+  // where each sphere is now: an ellipse around the anchor, swinging towards (bigger, brighter) and away from you
+  function placeSpheres(t, evs) {
+    return SPHERES.map(Sp => {
+      const th = 6.2832 * t / Sp.per + Sp.ph, z = Math.sin(th) * Sp.tilt;
+      const zoom = 1 + (S.sZoom - 1) * .3 * Sp.depth, near = 1 + .35 * z;
+      let x = (P.cx + Sp.rx * Math.cos(th) * P.sx) * W, y = (P.cy + Sp.ry * Math.sin(th) * P.sy) * H;
+      x = W / 2 + (x - W / 2) * zoom + S.sPanX * .08 * Sp.depth - (S.spx - .5) * W * .03 * Sp.depth;
+      y = H / 2 + (y - H / 2) * zoom + S.sPanY * .08 * Sp.depth - (S.spy - .5) * H * .03 * Sp.depth;
+      // a lit node nearby makes a sphere flare briefly
+      let flare = 0;
+      for (const ev of evs) flare += ev.e * Math.exp(-(((x - ev.x) ** 2 + (y - ev.y) ** 2) / (W * .25) ** 2));
+      return { Sp, x, y, near, z, a: Sp.a * P.gain * (.75 + .25 * z) * (1 + 1.2 * flare), glow: Sp.glow * W * near * zoom, core: Sp.core * W * near * zoom };
+    });
+  }
+
+  let lampX = W / 2, lampY = H / 2;
+  function lightAt(x, y, sph, evs) {
+    let L = 0;
+    for (const s of sph) { const dx = (x - s.x) / (s.glow * .55), dy = (y - s.y) / (s.glow * .55); L += 3.2 * s.a * Math.exp(-(dx * dx + dy * dy)); }
+    const lx = (x - lampX) / (W * .16), ly = (y - lampY) / (W * .16);
+    L += P.lamp * .9 * Math.exp(-(lx * lx + ly * ly));
+    for (const ev of evs) { const ex = (x - ev.x) / (W * .14), ey = (y - ev.y) / (W * .14); L += 2.2 * ev.e * Math.exp(-(ex * ex + ey * ey)); }
+    return L;
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    if (innerWidth && innerHeight && (innerWidth !== W || innerHeight !== H)) resize();
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (!reduce) S.t += dt * S.speed;
+    const kv = 1 - Math.exp(-dt * 2.2);
+    S.sPanX += (S.panX - S.sPanX) * kv; S.sPanY += (S.panY - S.sPanY) * kv; S.sZoom += (S.zoom - S.sZoom) * kv;
+    if (!reduce) { const kp = 1 - Math.exp(-dt * .9); S.spx += (S.px - S.spx) * kp; S.spy += (S.py - S.spy) * kp; }
+    const T = PRESETS[S.screen], kc = 1 - Math.exp(-dt * .7 * (S.speed > 1 ? 3 : 1));
+    for (const k in T) P[k] += (T[k] - P[k]) * kc;
+    const kl = reduce ? 1 : 1 - Math.exp(-dt * .7);
+    lampX += (S.px * W - lampX) * kl; lampY += (S.py * H - lampY) * kl;
+    const nowS = now / 1000, t = S.t;
+    S.events = S.events.filter(ev => nowS - ev.t0 < 5.4);
+    const evs = S.events.map(ev => ({ x: ev.x, y: ev.y, e: envelope(nowS - ev.t0), age: nowS - ev.t0 }));
+    const sph = placeSpheres(t, evs).sort((a, b) => a.z - b.z);     // far ones first
+
+    // ---- haze: the spheres' halos, quarter resolution ----
+    const hw = haze.width, hh = haze.height, d = HAZE_DIV;
+    hctx.globalCompositeOperation = 'source-over'; hctx.fillStyle = '#101827'; hctx.fillRect(0, 0, hw, hh);
+    hctx.globalCompositeOperation = 'screen';
+    for (const s of sph) {
+      const g = hctx.createRadialGradient(s.x / d, s.y / d, 0, s.x / d, s.y / d, s.glow / d);
+      g.addColorStop(0, rgba(C[s.Sp.c], s.a)); g.addColorStop(.3, rgba(C[s.Sp.c], s.a * .5)); g.addColorStop(1, rgba(C[s.Sp.c], 0));
+      hctx.fillStyle = g; hctx.fillRect(0, 0, hw, hh);
+    }
+    const pools = [[lampX, lampY, W * .2, C.glow, .045 * P.lamp]].concat(evs.map(e => [e.x, e.y, W * (.08 + .1 * Math.min(1, e.age / 2)), C.cream, .13 * e.e]));
+    pools.forEach(([x, y, r, c, a]) => {
+      const g = hctx.createRadialGradient(x / d, y / d, 0, x / d, y / d, r / d);
+      g.addColorStop(0, rgba(c, a)); g.addColorStop(1, rgba(c, 0)); hctx.fillStyle = g; hctx.fillRect(0, 0, hw, hh);
+    });
+
+    // ---- spheres' visible cores (full resolution, so they stay clean) ----
+    dctx.clearRect(0, 0, W, H);
+    dctx.globalCompositeOperation = 'screen';
+    for (const s of sph) {
+      if (s.core < .5) continue;
+      const col = C[s.Sp.c], a = Math.min(1, s.a * 3.2);
+      const g = dctx.createRadialGradient(s.x - s.core * .25, s.y - s.core * .3, 0, s.x, s.y, s.core);
+      g.addColorStop(0, rgba(C.cream, a)); g.addColorStop(.55, rgba(col, a * .8)); g.addColorStop(.9, rgba(col, a * .25)); g.addColorStop(1, rgba(col, 0));
+      dctx.fillStyle = g; dctx.beginPath(); dctx.arc(s.x, s.y, s.core, 0, 6.2832); dctx.fill();
+    }
+    dctx.globalCompositeOperation = 'source-over';
+
+    // ---- motes: they only show where light falls ----
+    const pdx = (S.spx - .5), pdy = (S.spy - .5);
+    LAYERS.forEach(L => {
+      const vis = L.key === 'near' ? Math.max(0, P.dust * 1.6 - .6) : P.dust; if (vis < .01) return;
+      const z = 1 + (S.sZoom - 1) * .4 * L.depth;
+      const offX = S.sPanX * .25 * L.depth - pdx * W * .03 * L.depth, offY = S.sPanY * .25 * L.depth - pdy * H * .03 * L.depth;
+      L.motes.forEach((m, i) => {
+        const shown = Math.min(1, Math.max(0, vis * L.n - i)); if (shown <= 0) return;
+        const wx = m.x + m.drift * t / 400 + .012 * Math.sin(t * 6.28 / m.wob + m.ph);
+        const wy = m.y - t * L.rise + .008 * Math.cos(t * 6.28 / (m.wob * 1.3) + m.ph);
+        let x = ((wx * W + offX) % W + W) % W, y = ((wy * H + offY) % H + H) % H;
+        x = W / 2 + (x - W / 2) * z; y = H / 2 + (y - H / 2) * z;
+        for (const ev of evs) {                       // lit nodes push nearby motes gently outwards
+          const ex = x - ev.x, ey = y - ev.y, dd = Math.hypot(ex, ey) + 1, reach = W * .18;
+          if (dd < reach) { const push = 28 * L.depth * ev.e * (1 - dd / reach); x += ex / dd * push; y += ey / dd * push; }
+        }
+        const tw = .78 + .22 * Math.sin(t * 1.3 + m.ph * 3);
+        const a = Math.min(1, m.a * (.3 + lightAt(x, y, sph, evs)) * tw * shown * P.gain);
+        if (a < .012) return;
+        if (L.key === 'near') {
+          const s = m.s * z * 5; dctx.globalAlpha = a * .35;
+          dctx.drawImage(m.warm ? SPR_WARM : SPR_COOL, x - s / 2, y - s / 2, s, s);
+          dctx.globalAlpha = a; dctx.fillStyle = m.warm ? '#ffe3b0' : '#c2e6e6';
+          dctx.beginPath(); dctx.arc(x, y, m.s * z, 0, 6.283); dctx.fill();
+        } else {
+          dctx.globalAlpha = a; dctx.fillStyle = m.warm ? '#ffdca0' : '#b4dede';
+          dctx.beginPath(); dctx.arc(x, y, m.s * z, 0, 6.283); dctx.fill();
+        }
+      });
+    });
+    dctx.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+<script>LX_UI.mount({ glass: false });</script>
+</body>
+</html>

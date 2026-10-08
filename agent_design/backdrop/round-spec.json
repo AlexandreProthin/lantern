@@ -1,0 +1,11 @@
+{
+  "selection_revision": 6,
+  "proposals": [
+    {"id": "r005-01", "parents": ["r004-03"], "file": "draft/backdrop-drf-r005-01.html", "title": "Calm orbits",
+     "direction": "r004-03 refined: the anti-banding texture layer is removed, and a lit node now only warms the backdrop softly (slower in and out, smaller and fainter, no sphere flare, motes barely move). Amber and teal lights, frosted-glass UI."},
+    {"id": "r005-02", "parents": ["r004-03"], "file": "draft/backdrop-drf-r005-02.html", "title": "Calm orbits, room palette only",
+     "direction": "r005-01 with the backdrop strictly in the room's own neutral tokens: lights in --ink, --ink-mute, --node-open and --line; motes in ink and ink-mute. No accent (amber) and no extra colour (teal). The UI keeps the app's accent."},
+    {"id": "r005-03", "parents": ["r004-03"], "file": "draft/backdrop-drf-r005-03.html", "title": "Calm orbits, amber only",
+     "direction": "r005-01 without the extra colour: the teal lights become the room's own --path-muted and --line, so the backdrop is amber light on navy only. Motes in cream and ink-mute."}
+  ]
+}

@@ -1,0 +1,269 @@
+<!--
+  id:        r003-06
+  component: backdrop
+  phase:     draft
+  parents:   r002-02
+  direction: Astrolabe: a new geometric pattern for r002-02. Fine concentric rings and radial spokes, like a polar chart, turning very slowly, with two tilted orbit ellipses that echo the r002-01 branch's orbiting lights. Each screen moves the centre: under the field on Welcome, off the bottom-right corner on Graph, above the top edge on Gallery so the rings read as horizon arcs. Lit only where the light falls, with r002-02's motes
+  request:   revision 3
+  inputs:    r002-01 but with the r001-01 background i prefer the idea of having far light emitting spheres orbitting arround instead of a spotlight
+             r002-02 is interesting (propose two alternative: one with the same pattern and one with a new geometric patter)
+             not r002-03
+             i want the cristal clear feeling. keep the stars/particles hanging/moving arround it adds nice details.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backdrop r003-06 — Astrolabe</title>
+<style>
+  :root {
+    --bg: #101827; --surface: #172132; --surface-2: #302b2a; --ink: #f3e9dc; --ink-mute: #aeb3bf;
+    --line: #3b4558; --accent: #e8b66e; --accent-ink: #211b14; --focus: #ffe0ab; --node-lit: #ffe1aa;
+    /* cool companion proposed here: slate teal, a little greyer than r001-01's */
+    --cool: #4f7f86; --cool-deep: #22404a;
+  }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink);
+    font: 12px/1.3 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #dither { pointer-events: none; }
+  .vignette { position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 78% 72% at 50% 48%, transparent 48%, rgba(6, 9, 17, .6) 100%); }
+  .tag { position: fixed; top: 14px; left: 16px; color: var(--ink-mute); opacity: .55; letter-spacing: .02em; pointer-events: none; }
+  .ui { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; align-items: center;
+    padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16, 24, 39, .62);
+    backdrop-filter: blur(10px); max-width: calc(100vw - 32px); flex-wrap: wrap; justify-content: center; }
+  .ui button { font: inherit; color: var(--ink-mute); background: transparent; border: 0; border-radius: 999px; padding: 6px 11px; cursor: pointer; }
+  .ui button:hover { color: var(--ink); }
+  .ui button[aria-pressed="true"] { color: var(--node-lit); background: var(--surface-2); }
+  .ui button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  .seg { display: flex; gap: 2px; }
+  .hint { color: var(--ink-mute); opacity: .6; padding: 0 10px 0 4px; }
+</style>
+</head>
+<body>
+<canvas id="map" aria-hidden="true"></canvas>
+<canvas id="dither" aria-hidden="true"></canvas>
+<div class="vignette"></div>
+<div class="tag">r003-06 · Astrolabe — <span id="screenName">Welcome</span></div>
+<div class="ui" id="ui">
+  <div class="seg">
+    <button data-s="welcome" aria-pressed="true">Welcome</button>
+    <button data-s="graph" aria-pressed="false">Graph</button>
+    <button data-s="gallery" aria-pressed="false">Gallery</button>
+  </div>
+  <button id="light">Light a node</button>
+  <button id="speed" aria-pressed="false">Preview ×8</button>
+  <span class="hint">drag pan · wheel zoom · click light · R reset</span>
+</div>
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const map = document.getElementById('map'), mctx = map.getContext('2d');
+  const dither = document.getElementById('dither'), gctx = dither.getContext('2d');
+  const DPR = Math.min(1.5, devicePixelRatio || 1);
+  const lines = document.createElement('canvas'), lctx = lines.getContext('2d');   // contour lines, white
+  const lit = document.createElement('canvas'), ictx = lit.getContext('2d');       // lines coloured by the light
+  let W = 0, H = 0;
+
+  const C = { amber: [232, 182, 110], cream: [255, 225, 170], glow: [255, 182, 88], cool: [79, 127, 134], coolDeep: [34, 64, 74] };
+
+  // Per-screen tuning. cx, cy: centre of the chart (fractions, may sit off screen); spacing: ring step in px;
+  // base/litA: how visible the unlit/lit lines are. pools: [x, y, r, colour, strength] — the light sources
+  const PRESETS = {
+    welcome: { cx: .5,  cy: .45,  spacing: 62, base: .035, litA: .75, wash: 1,  dust: 1,   pools: [[.5, .45, .30, 'amber', 1], [.15, .2, .35, 'cool', .8], [.85, .85, .3, 'cool', .5]] },
+    graph:   { cx: 1.0, cy: 1.05, spacing: 86, base: .024, litA: .5,  wash: .6, dust: .45, pools: [[.88, .14, .22, 'amber', .5], [.1, .85, .4, 'cool', .7], [.6, .6, .2, 'cool', 0]] },
+    gallery: { cx: .5,  cy: -.5,  spacing: 54, base: .03,  litA: .65, wash: .8, dust: .75, pools: [[.3, .05, .35, 'amber', .7], [.78, .04, .4, 'cool', .7], [.5, 1.0, .4, 'cool', .4]] }
+  };
+  const S = { screen: 'welcome', speed: 1, t: 0, panX: 0, panY: 0, zoom: 1, sPanX: 0, sPanY: 0, sZoom: 1,
+              px: .5, py: .5, spx: .5, spy: .5, events: [] };
+  const P = JSON.parse(JSON.stringify(PRESETS.welcome));
+
+  // ---- astrolabe: concentric rings, radial spokes and two tilted orbits, turning very slowly ----
+  let SRC = [];
+  function computePattern() {
+    const sp = P.spacing * Math.pow(S.sZoom, .6), cx = P.cx * W + S.sPanX * .4, cy = P.cy * H + S.sPanY * .4, t = S.t;
+    const maxR = Math.hypot(Math.max(cx, W - cx, 0), Math.max(cy, H - cy, 0)) + sp, rot = t * 6.2832 / 160;
+    const minR = Math.max(sp, Math.hypot(Math.max(0, -cx, cx - W), Math.max(0, -cy, cy - H)) - sp);  // skip rings wholly off screen
+    lctx.setTransform(DPR, 0, 0, DPR, 0, 0); lctx.clearRect(0, 0, W, H);
+    lctx.strokeStyle = '#fff'; lctx.lineCap = 'round';
+    for (const thick of [false, true]) {
+      lctx.beginPath();
+      for (let k = Math.max(1, Math.floor(minR / sp)); k * sp < maxR; k++) {
+        if ((k % 4 === 0) !== thick) continue;
+        const r = k * sp * (1 + .006 * Math.sin(t * 6.2832 / 70 + k));           // the rings breathe a hair
+        lctx.moveTo(cx + r, cy); lctx.arc(cx, cy, r, 0, 6.2832);
+      }
+      lctx.lineWidth = thick ? .95 : .55; lctx.globalAlpha = thick ? 1 : .75; lctx.stroke();
+    }
+    lctx.beginPath();                                           // spokes: every third one reaches further in
+    const n = 48;
+    for (let i = 0; i < n; i++) {
+      const a = rot + i * 6.2832 / n, r0 = sp * (i % 3 === 0 ? 1 : 2.5);
+      lctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); lctx.lineTo(cx + Math.cos(a) * maxR, cy + Math.sin(a) * maxR);
+    }
+    lctx.lineWidth = .45; lctx.globalAlpha = .5; lctx.stroke();
+    lctx.beginPath();                                           // two tilted orbits, counter-rotating
+    lctx.ellipse(cx, cy, sp * 5.5, sp * 2.1, -rot * 1.6 + .4, 0, 6.2832);
+    lctx.moveTo(cx + Math.cos(rot * 1.2 - .8) * sp * 8.5, cy + Math.sin(rot * 1.2 - .8) * sp * 8.5);
+    lctx.ellipse(cx, cy, sp * 8.5, sp * 3.2, rot * 1.2 - .8, 0, 6.2832);
+    lctx.lineWidth = .8; lctx.globalAlpha = .9; lctx.stroke(); lctx.globalAlpha = 1;
+  }
+
+  const tile = document.createElement('canvas'); tile.width = tile.height = 180;
+  (() => {
+    const tc = tile.getContext('2d'), img = tc.createImageData(180, 180);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = Math.random(), c = v > .5 ? 255 : 0;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = c; img.data[i + 3] = 2;   // ~1% : breaks up 8-bit banding in the dark gradients, not visible as texture
+    }
+    tc.putImageData(img, 0, 0);
+  })();
+  const pattern = gctx.createPattern(tile, 'repeat');
+  function drawDither() {          // static: drawn once per resize, never animated
+    gctx.clearRect(0, 0, W, H); gctx.fillStyle = pattern; gctx.fillRect(0, 0, W, H);
+  }
+  function resize() {
+    W = Math.max(1, innerWidth); H = Math.max(1, innerHeight);
+    for (const cv of [map, lines, lit]) { cv.width = W * DPR; cv.height = H * DPR; }
+    mctx.setTransform(DPR, 0, 0, DPR, 0, 0); ictx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    dither.width = W; dither.height = H; drawDither(); computePattern();
+  }
+  addEventListener('resize', resize); resize();
+
+  // ---- input (prototype stand-ins for the app's signals) ----
+  let drag = null;
+  addEventListener('pointerdown', e => { if (e.target.closest('.ui')) return; drag = { x: e.clientX, y: e.clientY, moved: 0 }; });
+  addEventListener('pointermove', e => {
+    S.px = e.clientX / W; S.py = e.clientY / H;
+    if (drag) { const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      S.panX += dx; S.panY += dy; drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY; }
+  });
+  addEventListener('pointerup', e => { if (drag && drag.moved < 5 && !e.target.closest('.ui')) light(e.clientX, e.clientY); drag = null; });
+  addEventListener('wheel', e => { S.zoom = Math.min(2.5, Math.max(.5, S.zoom * Math.exp(-e.deltaY * .0012))); }, { passive: true });
+  addEventListener('keydown', e => {
+    if (e.key === 'r' || e.key === 'R') { S.panX = S.panY = 0; S.zoom = 1; }
+    if (e.key >= '1' && e.key <= '3') setScreen(['welcome', 'graph', 'gallery'][e.key - 1]);
+  });
+  function light(x, y) { S.events.push({ x, y, t0: performance.now() / 1000 }); }
+  document.getElementById('light').onclick = () => light(W * (.25 + Math.random() * .5), H * (.25 + Math.random() * .5));
+  const speedBtn = document.getElementById('speed');
+  speedBtn.onclick = () => { S.speed = S.speed === 1 ? 8 : 1; speedBtn.setAttribute('aria-pressed', S.speed > 1); };
+  document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => setScreen(b.dataset.s));
+  function setScreen(s) {
+    S.screen = s; S.panX = S.panY = 0; S.zoom = 1;
+    document.querySelectorAll('[data-s]').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s));
+    document.getElementById('screenName').textContent = s[0].toUpperCase() + s.slice(1);
+    if (reduce) Object.assign(P, JSON.parse(JSON.stringify(PRESETS[s])));
+  }
+
+  // a few crisp motes in front of the map; they only show where the same light falls
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const LAYERS = [
+    { n: 55, depth: .35, size: [.6, 1.0], alpha: [.35, .65], rise: 1 / 240 },
+    { n: 22, depth: .7,  size: [1.1, 1.6], alpha: [.5, .9],  rise: 1 / 150 },
+    { n: 6,  depth: 1.1, size: [1.9, 2.6], alpha: [.6, .95], rise: 1 / 100 }
+  ];
+  LAYERS.forEach(L => L.motes = Array.from({ length: L.n }, () => ({
+    x: Math.random(), y: Math.random(), s: rnd(...L.size), a: rnd(...L.alpha), ph: rnd(0, 6.28), wob: rnd(30, 80), warm: Math.random() < .7 })));
+  function lightAt(x, y, src, rings) {
+    let L = 0;
+    for (const s of src) { const dx = (x - s.x) / (s.r * .7), dy = (y - s.y) / (s.r * .7); L += s.a * Math.exp(-(dx * dx + dy * dy)); }
+    for (const r of rings) { const d = Math.hypot(x - r.x, y - r.y); L += 2.2 * r.a * Math.exp(-(((d - r.R) / (r.band)) ** 2)) + 1.5 * r.a * Math.exp(-((d / (r.R * .5 + 40)) ** 2)); }
+    return L;
+  }
+  function drawDust(src, rings) {
+    const vis = P.dust, t = S.t;
+    LAYERS.forEach(L => {
+      const z = 1 + (S.sZoom - 1) * .4 * L.depth;
+      const offX = S.sPanX * .3 * L.depth - (S.spx - .5) * W * .03 * L.depth, offY = S.sPanY * .3 * L.depth - (S.spy - .5) * H * .03 * L.depth;
+      L.motes.forEach((m, i) => {
+        const shown = Math.min(1, Math.max(0, vis * L.n - i)); if (shown <= 0) return;
+        const wx = m.x + .012 * Math.sin(t * 6.28 / m.wob + m.ph), wy = m.y - t * L.rise + .008 * Math.cos(t * 6.28 / (m.wob * 1.3) + m.ph);
+        let x = ((wx * W + offX) % W + W) % W, y = ((wy * H + offY) % H + H) % H;
+        x = W / 2 + (x - W / 2) * z; y = H / 2 + (y - H / 2) * z;
+        const a = Math.min(1, m.a * (.12 + lightAt(x, y, src, rings)) * shown * (.8 + .2 * Math.sin(t * 1.3 + m.ph * 3)));
+        if (a < .015) return;
+        mctx.globalAlpha = a; mctx.fillStyle = m.warm ? '#ffe3b0' : '#b9dde0';
+        mctx.beginPath(); mctx.arc(x, y, m.s * z, 0, 6.283); mctx.fill();
+      });
+    });
+    mctx.globalAlpha = 1;
+  }
+
+  const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(0, a)})`;
+
+  let last = performance.now(), lampX = W / 2, lampY = H / 2;
+  function frame(now) {
+    if (innerWidth && innerHeight && (innerWidth !== W || innerHeight !== H)) resize();
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (!reduce) S.t += dt * S.speed;
+    const kv = 1 - Math.exp(-dt * 2.2);
+    S.sPanX += (S.panX - S.sPanX) * kv; S.sPanY += (S.panY - S.sPanY) * kv; S.sZoom += (S.zoom - S.sZoom) * kv;
+    if (!reduce) { const kp = 1 - Math.exp(-dt * .9); S.spx += (S.px - S.spx) * kp; S.spy += (S.py - S.spy) * kp; }
+    const T = PRESETS[S.screen], kc = 1 - Math.exp(-dt * .75 * (S.speed > 1 ? 3 : 1));
+    for (const k of ['cx', 'cy', 'spacing', 'base', 'litA', 'wash', 'dust']) P[k] += (T[k] - P[k]) * kc;
+    P.pools.forEach((p, i) => { for (const j of [0, 1, 2, 4]) p[j] += (T.pools[i][j] - p[j]) * kc; p[3] = T.pools[i][3]; });
+    const kl = reduce ? 1 : 1 - Math.exp(-dt * .6);
+    lampX += (S.px * W - lampX) * kl; lampY += (S.py * H - lampY) * kl;
+
+    // light sources: drifting pools, the pointer's lantern, ripples from lit nodes
+    const t = S.t, nowS = now / 1000, src = [];
+    P.pools.forEach((p, i) => {
+      const w = t * 6.28 / (60 + i * 13) + i * 2.1;
+      src.push({ x: (p[0] + .04 * Math.sin(w)) * W + S.sPanX * .15, y: (p[1] + .03 * Math.cos(w * .8)) * H + S.sPanY * .15,
+                 r: p[2] * W, c: C[p[3]], a: p[4] });
+    });
+    src.push({ x: lampX, y: lampY, r: W * .15, c: C.amber, a: .55 });
+    S.events = S.events.filter(ev => nowS - ev.t0 < 4.8);
+    SRC = src; computePattern();                    // the pattern follows the light every frame
+
+    // 1. the wash: very soft colour under everything
+    mctx.globalCompositeOperation = 'source-over'; mctx.fillStyle = '#101827'; mctx.fillRect(0, 0, W, H);
+    mctx.globalCompositeOperation = 'screen';
+    for (const s of src) {
+      const g = mctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 1.3);
+      g.addColorStop(0, rgba(s.c, .075 * s.a * P.wash)); g.addColorStop(1, rgba(s.c, 0));
+      mctx.fillStyle = g; mctx.fillRect(0, 0, W, H);
+    }
+    // 2. the whole map, barely there
+    mctx.globalCompositeOperation = 'source-over';
+    mctx.globalAlpha = P.base; mctx.drawImage(lines, 0, 0, W, H); mctx.globalAlpha = 1;
+    // 3. the lines again, coloured by the light that falls on them
+    ictx.globalCompositeOperation = 'source-over'; ictx.clearRect(0, 0, W, H);
+    ictx.drawImage(lines, 0, 0, W, H);
+    ictx.globalCompositeOperation = 'source-in';
+    ictx.fillStyle = '#000'; ictx.fillRect(0, 0, W, H);
+    ictx.globalCompositeOperation = 'lighter';
+    // source-in leaves black lines; light them additively, clipped back to the line mask afterwards
+    for (const s of src) {
+      const g = ictx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r);
+      g.addColorStop(0, rgba(s.c, s.a)); g.addColorStop(1, rgba(s.c, 0));
+      ictx.fillStyle = g; ictx.fillRect(0, 0, W, H);
+    }
+    const rings = [];
+    for (const ev of S.events) {                    // a lit node sends one ring outward through the terrain
+      const age = nowS - ev.t0, k = reduce ? .4 : Math.min(1, age / 4.2);
+      const R = W * (.02 + .32 * k), band = W * .05, fadeA = reduce ? (age < 2 ? 1 : 0) : (1 - k) * Math.min(1, age / .3);
+      rings.push({ x: ev.x, y: ev.y, R, band, a: fadeA });
+      const g = ictx.createRadialGradient(ev.x, ev.y, Math.max(0, R - band), ev.x, ev.y, R + band);
+      g.addColorStop(0, rgba(C.cream, 0)); g.addColorStop(.5, rgba(C.cream, .95 * fadeA)); g.addColorStop(1, rgba(C.cream, 0));
+      ictx.fillStyle = g; ictx.fillRect(0, 0, W, H);
+      const core = ictx.createRadialGradient(ev.x, ev.y, 0, ev.x, ev.y, W * .1);
+      core.addColorStop(0, rgba(C.glow, .8 * fadeA)); core.addColorStop(1, rgba(C.glow, 0));
+      ictx.fillStyle = core; ictx.fillRect(0, 0, W, H);
+    }
+    ictx.globalCompositeOperation = 'destination-in';
+    ictx.drawImage(lines, 0, 0, W, H);
+    mctx.globalCompositeOperation = 'screen'; mctx.globalAlpha = P.litA; mctx.drawImage(lit, 0, 0, W, H);
+    mctx.globalAlpha = 1; mctx.globalCompositeOperation = 'source-over';
+    drawDust(src, rings);
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

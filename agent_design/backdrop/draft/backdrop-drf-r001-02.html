@@ -1,0 +1,269 @@
+<!--
+  id:        r001-02
+  component: backdrop
+  phase:     draft
+  parents:   none
+  direction: Lantern dust: layered haze and dust motes at three depths that catch the light; the light comes from the screen, the pointer and lit nodes
+  request:   revision 1
+  inputs:    Add texture/depth to the background of Welcome, Graph view and Gallery. Empty canvas, no app elements. Shared base tuned per screen (Welcome/Graph/Gallery switcher). Very slow drift (30-90 s cycles) with subtle reactions: pointer, graph pan/zoom, learning events, screen changes. Round 1: 3 layered mixes of blurred light shapes, grain & atmosphere, dust/motes, subtle pattern. Palette: existing navy/amber tokens plus one muted cool companion.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backdrop r001-02 — Lantern dust</title>
+<style>
+  :root {
+    --bg: #101827; --surface: #172132; --surface-2: #302b2a; --ink: #f3e9dc; --ink-mute: #aeb3bf;
+    --line: #3b4558; --accent: #e8b66e; --accent-ink: #211b14; --focus: #ffe0ab; --node-lit: #ffe1aa;
+    /* cool companion proposed here: muted dusk indigo */
+    --cool: #4a4f8c; --cool-deep: #23264a;
+  }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink);
+    font: 12px/1.3 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #grain { pointer-events: none; opacity: .5; }
+  .vignette { position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 75% at 50% 45%, transparent 50%, rgba(6, 8, 18, .55) 100%); }
+  .tag { position: fixed; top: 14px; left: 16px; color: var(--ink-mute); opacity: .55; letter-spacing: .02em; pointer-events: none; }
+  .ui { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; align-items: center;
+    padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16, 24, 39, .62);
+    backdrop-filter: blur(10px); max-width: calc(100vw - 32px); flex-wrap: wrap; justify-content: center; }
+  .ui button { font: inherit; color: var(--ink-mute); background: transparent; border: 0; border-radius: 999px; padding: 6px 11px; cursor: pointer; }
+  .ui button:hover { color: var(--ink); }
+  .ui button[aria-pressed="true"] { color: var(--node-lit); background: var(--surface-2); }
+  .ui button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  .seg { display: flex; gap: 2px; }
+  .hint { color: var(--ink-mute); opacity: .6; padding: 0 10px 0 4px; }
+</style>
+</head>
+<body>
+<canvas id="haze" aria-hidden="true"></canvas>
+<canvas id="dust" aria-hidden="true"></canvas>
+<canvas id="grain" aria-hidden="true"></canvas>
+<div class="vignette"></div>
+<div class="tag">r001-02 · Lantern dust — <span id="screenName">Welcome</span></div>
+<div class="ui" id="ui">
+  <div class="seg">
+    <button data-s="welcome" aria-pressed="true">Welcome</button>
+    <button data-s="graph" aria-pressed="false">Graph</button>
+    <button data-s="gallery" aria-pressed="false">Gallery</button>
+  </div>
+  <button id="light">Light a node</button>
+  <button id="speed" aria-pressed="false">Preview ×8</button>
+  <span class="hint">drag pan · wheel zoom · click light · R reset</span>
+</div>
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const haze = document.getElementById('haze'), hctx = haze.getContext('2d');
+  const dust = document.getElementById('dust'), dctx = dust.getContext('2d');
+  const grain = document.getElementById('grain'), gctx = grain.getContext('2d');
+  const HAZE_DIV = 4, DPR = Math.min(1.5, devicePixelRatio || 1);
+  let W = 0, H = 0;
+
+  const C = { amber: [232, 182, 110], cream: [255, 225, 170], glow: [255, 182, 88],
+              indigo: [74, 79, 140], indigoDeep: [35, 38, 74] };
+
+  // Per-screen tuning. beam: a soft shaft of light from above; floor: indigo haze rising from the bottom;
+  // far/mid/near: share of each dust layer that is visible; lamp: strength of the pointer's lantern pool.
+  const PRESETS = {
+    welcome: { beam: .15, beamX: .5, beamW: .26, floor: .20, top: .05, far: 1, mid: 1, near: 1, lamp: .9, gain: 1 },
+    graph:   { beam: 0,   beamX: .5, beamW: .40, floor: .12, top: .03, far: .7, mid: .45, near: 0, lamp: .45, gain: .6 },
+    gallery: { beam: .05, beamX: .5, beamW: .70, floor: .30, top: .10, far: .9, mid: .7, near: .35, lamp: .7, gain: .85 }
+  };
+  const S = { screen: 'welcome', speed: 1, t: 0, panX: 0, panY: 0, zoom: 1, sPanX: 0, sPanY: 0, sZoom: 1,
+              px: .5, py: .5, spx: .5, spy: .5, events: [] };
+  const P = { ...PRESETS.welcome };
+
+  // three layers of dust; positions are in 0..1 world units and wrap around
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const LAYERS = [
+    { key: 'far',  n: 170, depth: .25, size: [.5, 1.0], alpha: [.28, .55], rise: 1 / 260 },
+    { key: 'mid',  n: 70,  depth: .55, size: [1.0, 1.8], alpha: [.40, .80], rise: 1 / 170 },
+    { key: 'near', n: 14,  depth: 1.0, size: [7, 16],   alpha: [.09, .20], rise: 1 / 110 }
+  ];
+  LAYERS.forEach(L => {
+    L.motes = Array.from({ length: L.n }, () => ({
+      x: Math.random(), y: Math.random(), s: rnd(...L.size), a: rnd(...L.alpha),
+      ph: rnd(0, 6.28), wob: rnd(30, 80), drift: rnd(-.3, .3), warm: Math.random() < .75
+    }));
+  });
+
+  // soft round sprites for bokeh motes
+  function sprite(c) {
+    const s = document.createElement('canvas'); s.width = s.height = 64;
+    const x = s.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, `rgba(${c},1)`); g.addColorStop(.35, `rgba(${c},.55)`); g.addColorStop(1, `rgba(${c},0)`);
+    x.fillStyle = g; x.fillRect(0, 0, 64, 64); return s;
+  }
+  const SPR_WARM = sprite('255,214,150'), SPR_COOL = sprite('150,158,220');
+
+  const tile = document.createElement('canvas'); tile.width = tile.height = 180;
+  (() => {
+    const tc = tile.getContext('2d'), img = tc.createImageData(180, 180);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = Math.random(), c = v > .5 ? 255 : 0;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = c; img.data[i + 3] = Math.abs(v - .5) * 2 * 30;
+    }
+    tc.putImageData(img, 0, 0);
+  })();
+  const pattern = gctx.createPattern(tile, 'repeat');
+  function drawGrain() {
+    gctx.clearRect(0, 0, W, H); gctx.save(); gctx.translate(-Math.random() * 180, -Math.random() * 180);
+    gctx.fillStyle = pattern; gctx.fillRect(0, 0, W + 180, H + 180); gctx.restore();
+  }
+  function resize() {
+    W = Math.max(1, innerWidth); H = Math.max(1, innerHeight);
+    haze.width = Math.ceil(W / HAZE_DIV); haze.height = Math.ceil(H / HAZE_DIV);
+    dust.width = W * DPR; dust.height = H * DPR; dctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    grain.width = W; grain.height = H; drawGrain();
+  }
+  addEventListener('resize', resize); resize();
+
+  // ---- input (prototype stand-ins for the app's signals) ----
+  let drag = null;
+  addEventListener('pointerdown', e => { if (e.target.closest('.ui')) return; drag = { x: e.clientX, y: e.clientY, moved: 0 }; });
+  addEventListener('pointermove', e => {
+    S.px = e.clientX / W; S.py = e.clientY / H;
+    if (drag) { const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      S.panX += dx; S.panY += dy; drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY; }
+  });
+  addEventListener('pointerup', e => { if (drag && drag.moved < 5 && !e.target.closest('.ui')) light(e.clientX, e.clientY); drag = null; });
+  addEventListener('wheel', e => { S.zoom = Math.min(2.5, Math.max(.5, S.zoom * Math.exp(-e.deltaY * .0012))); }, { passive: true });
+  addEventListener('keydown', e => {
+    if (e.key === 'r' || e.key === 'R') { S.panX = S.panY = 0; S.zoom = 1; }
+    if (e.key >= '1' && e.key <= '3') setScreen(['welcome', 'graph', 'gallery'][e.key - 1]);
+  });
+  function light(x, y) { S.events.push({ x, y, t0: performance.now() / 1000 }); }
+  document.getElementById('light').onclick = () => light(W * (.25 + Math.random() * .5), H * (.25 + Math.random() * .5));
+  const speedBtn = document.getElementById('speed');
+  speedBtn.onclick = () => { S.speed = S.speed === 1 ? 8 : 1; speedBtn.setAttribute('aria-pressed', S.speed > 1); };
+  document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => setScreen(b.dataset.s));
+  function setScreen(s) {
+    S.screen = s; S.panX = S.panY = 0; S.zoom = 1;
+    document.querySelectorAll('[data-s]').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s));
+    document.getElementById('screenName').textContent = s[0].toUpperCase() + s.slice(1);
+    if (reduce) Object.assign(P, PRESETS[s]);
+  }
+
+  const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(0, a)})`;
+  const smooth = x => x * x * (3 - 2 * x);
+  function envelope(age) {
+    if (reduce) return age < 2 ? 1 : 0;
+    if (age < .7) return smooth(age / .7);
+    return Math.max(0, 1 - (age - .7) / 4.5);
+  }
+
+  // how much light falls on a point (screen px): the beam, the pointer's lantern and lit nodes
+  let lampX = W / 2, lampY = H / 2, evs = [];
+  function lightAt(x, y) {
+    let L = 0;
+    if (P.beam > .001) {
+      const bx = P.beamX * W, spread = P.beamW * W * (.35 + .9 * y / H);
+      const dx = (x - bx) / spread; L += P.beam * 5 * Math.exp(-dx * dx * 2.2) * (1 - .55 * y / H);
+    }
+    const lx = (x - lampX) / (W * .16), ly = (y - lampY) / (W * .16);
+    L += P.lamp * .9 * Math.exp(-(lx * lx + ly * ly));
+    for (const ev of evs) {
+      const ex = (x - ev.x) / (W * .14), ey = (y - ev.y) / (W * .14);
+      L += 2.2 * ev.e * Math.exp(-(ex * ex + ey * ey));
+    }
+    return L;
+  }
+
+  let last = performance.now(), grainClock = 0;
+  function frame(now) {
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (!reduce) S.t += dt * S.speed;
+    const kv = 1 - Math.exp(-dt * 2.2);
+    S.sPanX += (S.panX - S.sPanX) * kv; S.sPanY += (S.panY - S.sPanY) * kv; S.sZoom += (S.zoom - S.sZoom) * kv;
+    if (!reduce) { const kp = 1 - Math.exp(-dt * .9); S.spx += (S.px - S.spx) * kp; S.spy += (S.py - S.spy) * kp; }
+    const T = PRESETS[S.screen], kc = 1 - Math.exp(-dt * .8 * (S.speed > 1 ? 3 : 1));
+    for (const k in T) P[k] += (T[k] - P[k]) * kc;
+    // the lantern pool trails the pointer slowly
+    const kl = reduce ? 1 : 1 - Math.exp(-dt * .7);
+    lampX += (S.px * W - lampX) * kl; lampY += (S.py * H - lampY) * kl;
+    const nowS = now / 1000;
+    S.events = S.events.filter(ev => nowS - ev.t0 < 5.4);
+    evs = S.events.map(ev => ({ x: ev.x, y: ev.y, e: envelope(nowS - ev.t0), age: nowS - ev.t0 }));
+
+    // ---- haze (quarter resolution) ----
+    const hw = haze.width, hh = haze.height, d = HAZE_DIV, t = S.t;
+    hctx.globalCompositeOperation = 'source-over'; hctx.fillStyle = '#101827'; hctx.fillRect(0, 0, hw, hh);
+    hctx.globalCompositeOperation = 'screen';
+    const g0 = P.gain;
+    // floor haze, indigo, breathing on a 70 s cycle
+    let g = hctx.createLinearGradient(0, hh, 0, hh * .35);
+    g.addColorStop(0, rgba(C.indigo, P.floor * g0 * (1 + .15 * Math.sin(t * 6.28 / 70))));
+    g.addColorStop(1, rgba(C.indigo, 0)); hctx.fillStyle = g; hctx.fillRect(0, 0, hw, hh);
+    // two wandering haze banks, far back
+    [[.25, .55, .45, C.indigoDeep, .55, 83, 0], [.75, .35, .40, C.amber, .06, 61, 2.4]].forEach(([bx, by, br, c, a, per, ph]) => {
+      const w = t * 6.28 / per + ph;
+      const x = (bx + .08 * Math.sin(w)) * W + S.sPanX * .03, y = (by + .05 * Math.cos(w * .8)) * H + S.sPanY * .03;
+      const gr = hctx.createRadialGradient(x / d, y / d, 0, x / d, y / d, br * W / d);
+      gr.addColorStop(0, rgba(c, a * g0)); gr.addColorStop(1, rgba(c, 0)); hctx.fillStyle = gr; hctx.fillRect(0, 0, hw, hh);
+    });
+    // top light
+    g = hctx.createLinearGradient(0, 0, 0, hh * .5);
+    g.addColorStop(0, rgba(C.glow, P.top * g0)); g.addColorStop(1, rgba(C.glow, 0)); hctx.fillStyle = g; hctx.fillRect(0, 0, hw, hh);
+    // beam: a soft shaft from above that sways a little
+    if (P.beam > .002) {
+      const sway = .015 * Math.sin(t * 6.28 / 90), bx = (P.beamX + sway) * W / d, top = P.beamW * W * .3 / d, bot = P.beamW * W * 1.2 / d;
+      const lg = hctx.createLinearGradient(0, 0, 0, hh);
+      lg.addColorStop(0, rgba(C.glow, P.beam * g0)); lg.addColorStop(.75, rgba(C.glow, P.beam * .25 * g0)); lg.addColorStop(1, rgba(C.glow, 0));
+      hctx.save(); hctx.filter = `blur(${Math.round(18 / d * 4)}px)`; hctx.fillStyle = lg;
+      hctx.beginPath(); hctx.moveTo(bx - top, -10); hctx.lineTo(bx + top, -10); hctx.lineTo(bx + bot, hh + 10); hctx.lineTo(bx - bot, hh + 10);
+      hctx.closePath(); hctx.fill(); hctx.restore();
+    }
+    // lantern pool + lit nodes
+    const pools = [[lampX, lampY, W * .2, C.glow, .05 * P.lamp]].concat(evs.map(e => [e.x, e.y, W * (.08 + .1 * Math.min(1, e.age / 2)), C.cream, .14 * e.e]));
+    pools.forEach(([x, y, r, c, a]) => {
+      const gr = hctx.createRadialGradient(x / d, y / d, 0, x / d, y / d, r / d);
+      gr.addColorStop(0, rgba(c, a)); gr.addColorStop(1, rgba(c, 0)); hctx.fillStyle = gr; hctx.fillRect(0, 0, hw, hh);
+    });
+
+    // ---- dust ----
+    dctx.clearRect(0, 0, W, H);
+    const pdx = (S.spx - .5), pdy = (S.spy - .5);
+    LAYERS.forEach(L => {
+      const vis = P[L.key]; if (vis < .01) return;
+      const z = 1 + (S.sZoom - 1) * .4 * L.depth;
+      const offX = S.sPanX * .25 * L.depth - pdx * W * .03 * L.depth, offY = S.sPanY * .25 * L.depth - pdy * H * .03 * L.depth;
+      L.motes.forEach((m, i) => {
+        const shown = Math.min(1, Math.max(0, vis * L.n - i)); if (shown <= 0) return;
+        // slow rise plus a lazy sideways wobble
+        let wx = m.x + m.drift * t / 400 + .012 * Math.sin(t * 6.28 / m.wob + m.ph);
+        let wy = m.y - t * L.rise + .008 * Math.cos(t * 6.28 / (m.wob * 1.3) + m.ph);
+        let x = ((wx * W + offX) % W + W) % W, y = ((wy * H + offY) % H + H) % H;
+        x = W / 2 + (x - W / 2) * z; y = H / 2 + (y - H / 2) * z;
+        // lit nodes push nearby dust gently outwards
+        for (const ev of evs) {
+          const ex = x - ev.x, ey = y - ev.y, dd = Math.hypot(ex, ey) + 1, reach = W * .18;
+          if (dd < reach) { const push = 28 * L.depth * ev.e * (1 - dd / reach); x += ex / dd * push; y += ey / dd * push; }
+        }
+        const lit = lightAt(x, y);
+        const tw = .75 + .25 * Math.sin(t * 1.3 + m.ph * 3);
+        const a = Math.min(1, m.a * (.35 + lit) * tw * shown * P.gain);
+        if (a < .01) return;
+        if (L.key === 'near') {
+          const s = m.s * z * 2; dctx.globalAlpha = a;
+          dctx.drawImage(m.warm ? SPR_WARM : SPR_COOL, x - s / 2, y - s / 2, s, s);
+        } else {
+          dctx.globalAlpha = a; dctx.fillStyle = m.warm ? '#ffdca0' : '#a9b0e6';
+          const s = m.s * z; dctx.beginPath(); dctx.arc(x, y, s, 0, 6.283); dctx.fill();
+        }
+      });
+    });
+    dctx.globalAlpha = 1;
+
+    grainClock += dt;
+    if (!reduce && grainClock > .09) { grainClock = 0; drawGrain(); }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
