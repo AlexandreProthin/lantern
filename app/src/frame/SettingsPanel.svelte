@@ -95,6 +95,7 @@
       <p>{strings.updateFolderHint}</p>
     {:else}
       <label>{strings.reduceMotion}<select bind:value={settings.appearance.reduceMotion} onchange={changed}><option value="system">{strings.followSystem}</option><option value="on">{strings.alwaysReduce}</option></select></label>
+      <label><input type="checkbox" bind:checked={settings.appearance.backdrop} onchange={changed} />{strings.backdrop}</label>
       <label><input type="checkbox" bind:checked={settings.appearance.showTokenStats} onchange={changed} />{strings.showTokens}</label>
     {/if}
       {#if validation}<p class="invalid" role="alert">{validation}</p>{/if}

@@ -53,7 +53,7 @@ export const strings = {
   lightingNode: (title: string) => `Lighting ${title}`, optionsReady: (count: number) => `${count} options ready`, largeGraph: 'Free layout is off for large graphs',
   askSelection: 'Ask about this', nodeSelection: 'Make it a node', copy: 'Copy code', copied: 'Copied',
   diagramFailed: 'Diagram could not be drawn', providerBusy: 'A generation is running',
-  showTokens: 'Show token stats', displayName: 'Display name', appliesNext: 'Applies to your next message',
+  showTokens: 'Show token stats', backdrop: 'Backdrop: slow lights behind the spaces', displayName: 'Display name', appliesNext: 'Applies to your next message',
   errorKinds: {
     'not-installed': 'Claude Code is not installed.', 'not-logged-in': 'Claude Code is installed but not signed in.',
     'usage-limit': 'Your Claude usage limit was reached.', 'model-unknown': 'The selected model is not available.',

@@ -29,6 +29,7 @@
   import { SpawnMotion } from './spawn-motion';
   import { nodeActions, runNodeAction, type NodeAction, type PanelRequest } from './actions';
   import { searchNodes, stepMatch } from './graph-search';
+  import { backdropLight, backdropPan } from '../../frame/backdrop-signals';
 
   let { session, revision, settings, preferencesChanged, navigate = () => {}, visible = true, openInPanel = () => {}, library, linkPreview = null }: { library?: LibrarySpaces; linkPreview?: string | null; session: LearnSession; revision: number; settings: Settings; preferencesChanged: () => void; navigate?: (space: string) => void; visible?: boolean; openInPanel?: (kind: PanelRequest['kind'], nodeId: string) => void } = $props();
 
@@ -611,6 +612,23 @@
     });
   });
 
+  // RS-34: a node that becomes lit warms the backdrop where it sits on screen.
+  let litSubject = '', litSeen = new Set<string>();
+  $effect(() => {
+    revision;
+    untrack(() => {
+      const lit = Object.entries(session.visit.nodes).filter(([, n]) => n.state === 'lit').map(([id]) => id);
+      if (session.subject.id !== litSubject) { litSubject = session.subject.id; litSeen = new Set(lit); return; }
+      for (const id of lit) {
+        if (litSeen.has(id)) continue;
+        litSeen.add(id);
+        const p = simNodes.get(id);
+        if (!visible || !p || !host) continue;
+        const r = host.getBoundingClientRect();
+        backdropLight(r.left + width / 2 + transform.x + (p.x ?? 0) * transform.k, r.top + height / 2 + transform.y + (p.y ?? 0) * transform.k);
+      }
+    });
+  });
   $effect(() => { settings.appearance.reduceMotion;untrack(()=>{
     stopPan();if(motionReduced()){spawn.stop();stopTravel();sim.stop();cancelAnimationFrame(settlingFrame);for(let i=0;sim.alpha()>sim.alphaMin()&&i<300;i++)sim.tick();tick++;}
     else if(visible&&sim.alpha()>sim.alphaMin()){if(halfRate)halfStep();else sim.restart();}
@@ -629,7 +647,7 @@
     zoomer = zoom<HTMLDivElement, unknown>()
       .scaleExtent([0.1, 3])
       .on('start',e=>{if(e.sourceEvent)stopPan();})
-      .on('zoom', (e) => (transform = e.transform));
+      .on('zoom', (e) => { const t = e.transform; backdropPan(t.x - transform.x, t.y - transform.y, t.k / transform.k); transform = t; });
     select(host).call(zoomer).on('dblclick.zoom', null);
     const onMotion = () => { if (motionReduced()) { spawn.stop();stopTravel(); } applyLayout(); };
     const initialFit = setTimeout(reset, 500);
@@ -779,7 +797,8 @@
     height: 100%;
     overflow: hidden;
     cursor: grab;
-    background: var(--bg);
+    /* RS-34: the backdrop shows through the graph's ground. */
+    background: transparent;
     font-family: system-ui, sans-serif;
   }
   .graph:active {
@@ -944,7 +963,8 @@
   }
   .layout-controls { left:auto; right:20px; }
   .controls button {
-    background: var(--surface);
+    background: var(--glass);
+    backdrop-filter: var(--glass-blur);
     border: 1px solid var(--line);
     color: var(--ink-mute);
     width: 32px;
@@ -959,7 +979,7 @@
     border-color: var(--line);
     color: var(--accent);
   }
-  .search { display:flex; align-items:center; gap:8px; height:32px; padding:0 0 0 12px; background:var(--surface); border:1px solid var(--line); border-radius:16px; }
+  .search { display:flex; align-items:center; gap:8px; height:32px; padding:0 0 0 12px; background:var(--glass); backdrop-filter:var(--glass-blur); border:1px solid var(--line); border-radius:16px; }
   .search input { width:200px; border:0; background:none; color:var(--ink); font-size:13px; outline:none; }
   .search-count { font-size:12px; color:var(--ink-mute); white-space:nowrap; }
   .search button { border:0; background:none; }

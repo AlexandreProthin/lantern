@@ -57,6 +57,6 @@
   .study { display:flex; width:100%; height:100%; overflow:hidden; } .hidden { display:none; } .dragging { user-select:none; cursor:col-resize; }
   .graph-side { min-width:0; height:100%; }.panel-side { min-width:0; flex:1; height:100%; }.panel-side.collapsed { flex:0 0 28px; }
   .kept-space { height:100%; }
-  .divider { width:8px; flex:0 0 8px; background:var(--line); cursor:col-resize; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px; z-index:3; }
+  .divider { width:8px; flex:0 0 8px; background:var(--glass-line); cursor:col-resize; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px; z-index:3; }
   .divider button { border:0; padding:2px; width:20px; height:28px; font-size:12px; }.rail { width:28px; height:100%; padding:0; border-radius:0; }
 </style>

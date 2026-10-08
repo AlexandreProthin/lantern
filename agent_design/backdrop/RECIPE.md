@@ -131,7 +131,10 @@ app, prefer a higher-precision canvas or a GPU shader over bringing the noise ba
 
 ## Implementation notes
 
-- **Spec conflict, to resolve before implementing: RS-33** says “no animation runs in the frame except hover/press
+- **Integrated 2026-10-08.** RS-33 was amended by the user and RS-34 describes the backdrop; the code is
+  `app/src/frame/backdrop.ts`. The app follows the notes below, plus: the lights' pan parallax is bounded to one
+  width, a lit node's flare is capped at +20 %, and reduced motion is one still frame with no reactions.
+- **Spec conflict (resolved 2026-10-08, see above): RS-33** says “no animation runs in the frame except hover/press
   feedback and the pulses of RS-25”. The backdrop animates continuously (very slowly). Either RS-33 is amended to
   allow the backdrop as a slow ambient layer under the reduced-motion rules (GV-100 to GV-103), or the backdrop runs
   only on demand. Not changed in the wiki: the user decides.

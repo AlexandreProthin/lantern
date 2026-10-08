@@ -3,7 +3,7 @@ export interface Settings {
   format: 'lantern-settings/1'; library: { path: string; [key: string]: unknown }; user: { displayName: string; [key: string]: unknown };
   provider: { defaultModel: string; defaultEffort: Effort; [key: string]: unknown };
   learn: { defaultTone: Tone; contextBudget: number; [key: string]: unknown };
-  appearance: { reduceMotion: 'system' | 'on'; showTokenStats: boolean; [key: string]: unknown };
+  appearance: { reduceMotion: 'system' | 'on'; backdrop: boolean; showTokenStats: boolean; [key: string]: unknown };
   updates: { checkAtLaunch: boolean; [key: string]: unknown };
   developer: { updateFolder: string; [key: string]: unknown };
   ui: { studySplitPercent: number; studyCollapsed: 'none' | 'graph' | 'panel'; legendCollapsed: boolean; lastRoom: string; graphLayout: 'free' | 'tree'; textLinks: boolean; lastUpdateCheck: number; dismissedUpdate: string; [key: string]: unknown };
@@ -11,7 +11,7 @@ export interface Settings {
 }
 export function defaultSettings(library = '', name = ''): Settings {
   return { format: 'lantern-settings/1', library: { path: library }, user: { displayName: name }, provider: { defaultModel: 'opus', defaultEffort: 'medium' },
-    learn: { defaultTone: 'curious', contextBudget: 12000 }, appearance: { reduceMotion: 'system', showTokenStats: true },
+    learn: { defaultTone: 'curious', contextBudget: 12000 }, appearance: { reduceMotion: 'system', backdrop: true, showTokenStats: true },
     updates: { checkAtLaunch: true }, developer: { updateFolder: '' },
     ui: { studySplitPercent: 44, studyCollapsed: 'none', legendCollapsed: false, lastRoom: 'learn', graphLayout: 'free', textLinks: true, lastUpdateCheck: 0, dismissedUpdate: '' } };
 }
@@ -32,6 +32,7 @@ export function validateSettings(input: unknown, defaults = defaultSettings()): 
   if (!Number.isInteger(l.contextBudget) || l.contextBudget < 2000 || l.contextBudget > 100000) l.contextBudget = defaults.learn.contextBudget;
   // GV-100 forbids overriding an OS reduced-motion preference with "never reduce".
   if (!['system','on'].includes(a.reduceMotion)) a.reduceMotion = 'system';
+  if (typeof a.backdrop !== 'boolean') a.backdrop = defaults.appearance.backdrop;
   if (typeof a.showTokenStats !== 'boolean') a.showTokenStats = defaults.appearance.showTokenStats;
   if (typeof u.studySplitPercent !== 'number' || u.studySplitPercent < 20 || u.studySplitPercent > 80) u.studySplitPercent = 44;
   if (!['none','graph','panel'].includes(u.studyCollapsed)) u.studyCollapsed = 'none';

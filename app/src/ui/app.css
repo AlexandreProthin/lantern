@@ -20,6 +20,18 @@
   color-scheme: dark;
 }
 
+/* RS-34: frosted glass over the backdrop; solid surfaces when the backdrop is off. */
+:root {
+  --glass: color-mix(in srgb, var(--surface) 55%, transparent);
+  --glass-line: color-mix(in srgb, var(--ink-mute) 16%, transparent);
+  --glass-blur: blur(20px) saturate(135%);
+}
+:root[data-backdrop='off'] {
+  --glass: var(--surface);
+  --glass-line: var(--line);
+  --glass-blur: none;
+}
+
 html,
 body {
   margin: 0;

@@ -146,8 +146,23 @@ Space navigation is not necessarily tabs; it must be intuitive.
   is a defect. Status colours not in the token set (error) MUST be tokens too (`--error`,
   `#d86a5a`, text `#f0a598`, as in the PoC).
 - **RS-33** The look is a calm, warm light in a peaceful place: no animation runs in the frame
-  except hover/press feedback and the pulses of RS-25; the frame honours the reduced-motion rules
-  of [graph-view](/specs/graph-view.md) GV-100 to GV-103.
+  except hover/press feedback, the pulses of RS-25 and the ambient backdrop of RS-34; the frame
+  honours the reduced-motion rules of [graph-view](/specs/graph-view.md) GV-100 to GV-103.
+  *Amended 2026-10-08 by the user to admit the backdrop.*
+- **RS-34** *Backdrop.* Behind every space the frame draws one ambient layer, the final `backdrop`
+  design (`agent_design/backdrop/RECIPE.md`, r005-03 *Calm orbits, amber only*): five soft lights
+  orbit slowly (52–120 s per turn) around an anchor set per space, and fine motes drift upward,
+  visible only where light falls. Its colours come only from the room tokens (`--bg`, `--accent`,
+  `--node-lit`, `--glow-far`, `--path-muted`, `--line`, `--ink-mute`, and `--code` for the
+  vignette), so another room re-tints it. It reacts gently to the space (each has its own anchor
+  and strength, eased over about 1.5 s), the pointer (a faint lantern pool and a slight
+  parallax), graph pan and zoom (parallax), and a node becoming lit (a soft warm pool for about
+  5 s). The header, the Study panel and divider, the graph's controls, the Gallery cards and
+  toolbar controls, and thumbnails are frosted glass (`--surface` at 55 % over a 20 px blur, with
+  `--ink-mute` hairlines at 16 %) so the lights pass behind them. The backdrop never intercepts
+  input, draws at most 30 frames per second and stops while the window is hidden. In reduced
+  motion (GV-100) it is one still frame with no pointer, pan or lit-node reaction. *Appearance →
+  Backdrop* off ([settings](/specs/settings.md)) removes it: plain `--bg` and solid surfaces.
 
 # The legend
 

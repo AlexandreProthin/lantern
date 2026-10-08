@@ -27,6 +27,7 @@ the settings below only supply their **defaults**.
 | General | `updates.checkAtLaunch` | boolean | true | — | next launch; off means no update request unless *Check for updates* is pressed ([updates](/specs/updates.md) UP-3) |
 | Developer (hidden) | `developer.updateFolder` | absolute path | empty | empty, or an existing folder | replaces GitHub as the update source ([updates](/specs/updates.md) UP-60 to UP-66) |
 | Appearance | `appearance.reduceMotion` | enum | `system` | `system`/`on`/`off` | immediate; `system` follows the OS |
+| Appearance | `appearance.backdrop` | boolean | true | — | immediate; off removes the ambient backdrop and its glass ([rooms-spaces](/specs/rooms-spaces.md) RS-34) |
 | Appearance | `appearance.showTokenStats` | boolean | true | — | immediate; hides every token and time figure (node meta line, stats hover, Gallery cards) |
 
 Everything is stored under the keys above, except the following **UI memory**, which is stored in the same

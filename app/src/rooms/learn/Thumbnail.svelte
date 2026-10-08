@@ -30,5 +30,5 @@
   {#if failed}<span class="failed">{strings.thumbnailFailed}</span>{/if}
 </div>
 <style>
-  .thumbnail{position:relative;aspect-ratio:16/9;width:100%;background:var(--surface);border-radius:8px;overflow:hidden}svg{display:block;width:100%;height:100%}line{stroke:var(--path-muted);stroke-width:1}circle{stroke-width:1}.open{fill:var(--bg);stroke:var(--node-open);stroke-dasharray:1.2 1.5}.lit{fill:var(--surface-2);stroke:var(--node-lit)}.understood{fill:var(--node-understood);stroke:var(--node-understood)}.overflow{position:absolute;right:8px;bottom:5px;font-size:11px;color:var(--ink-mute)}.failed{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:var(--ink-mute)}
+  .thumbnail{position:relative;aspect-ratio:16/9;width:100%;background:var(--glass);backdrop-filter:var(--glass-blur);border-radius:8px;overflow:hidden}svg{display:block;width:100%;height:100%}line{stroke:var(--path-muted);stroke-width:1}circle{stroke-width:1}.open{fill:var(--bg);stroke:var(--node-open);stroke-dasharray:1.2 1.5}.lit{fill:var(--surface-2);stroke:var(--node-lit)}.understood{fill:var(--node-understood);stroke:var(--node-understood)}.overflow{position:absolute;right:8px;bottom:5px;font-size:11px;color:var(--ink-mute)}.failed{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:var(--ink-mute)}
 </style>

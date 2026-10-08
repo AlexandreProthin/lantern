@@ -25,6 +25,7 @@
   import { UpdateController } from './updates.svelte';
   import { shouldCheckAtLaunch, shouldShowNotice } from './updates';
   import SettingsPanel from './SettingsPanel.svelte';
+  import Backdrop from './Backdrop.svelte';
   import ModelPicker from '../ui/ModelPicker.svelte';
   import { isValidModel } from '../core/models';
   const desktop = '__TAURI_INTERNALS__' in window;
@@ -74,6 +75,7 @@
     settings = validateSettings(settings,defaults);
     writer.schedule(settings);
     document.documentElement.dataset.reduceMotion = settings.appearance.reduceMotion === 'on' ? 'on' : 'system';
+    document.documentElement.dataset.backdrop = settings.appearance.backdrop ? 'on' : 'off';
     for (const entry of owned.values()) { entry.session.displayName = settings.user.displayName; entry.session.budgetTokens = settings.learn.contextBudget; }
   }
   async function navigate(next: string) {
@@ -253,6 +255,7 @@
   });
 </script>
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
+{#if !loading && settings.appearance.backdrop}<Backdrop {space} reduceSetting={settings.appearance.reduceMotion} />{/if}
 <header>
   <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}><span class="mark-art" aria-hidden="true">{@html lanternMark}</span></button><span class="room">{room.name}</span>
   <nav>{#each room.spaces as item}<button aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space===item.id?'page':undefined} disabled={item.id!=='welcome' && !subjectCount} onclick={()=>navigate(item.id)}>{item.icon}</button>{/each}</nav>
@@ -281,8 +284,10 @@
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {room} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>
-  :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; } header { height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid var(--line); background:var(--surface); }
+  :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; } header { height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid var(--glass-line); background:var(--glass); backdrop-filter:var(--glass-blur); }
   :global(#app) {display:flex;flex-direction:column;} header {flex-shrink:0;} .banner {flex-shrink:0;}
+  /* RS-34: the frame's layers sit above the backdrop (z-index 0). */
+  header, .banner, .spaces { position:relative; z-index:1; }
   header button { background:none; padding:5px 9px; min-width:32px; }.mark { display:flex; align-items:center; padding:4px 6px; }.mark-art, .mark-art :global(svg) { display:block; width:28px; height:28px; }.room { color:var(--accent); font-size:13px; } nav { display:flex; gap:4px; } [aria-current='page'] { border-color:var(--accent); color:var(--accent); }
   .subject { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:35vw; border:0; } header small { color:var(--ink-mute); font-size:13px; margin-left:auto; }.gear { margin-left:auto; }
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
