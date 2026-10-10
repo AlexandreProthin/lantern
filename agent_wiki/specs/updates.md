@@ -3,7 +3,7 @@ type: Spec
 title: Updates
 description: How the installed app finds a newer release, tells the user quietly, installs it on request, and what a release must publish for that to work.
 tags: [updates, installer, release, settings]
-status: draft
+status: stable
 generated: { by: claude-code/sonnet-5.5, at: 2026-10-08T09:00:00Z }
 ---
 
