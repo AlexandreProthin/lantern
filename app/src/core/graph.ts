@@ -1,5 +1,5 @@
 import { checkedTitle, newId, normalizeTitle, now } from './model';
-import type { Author, GraphNode, NodeKind, NodeState, RoomVisit, Turn } from './model';
+import type { Author, GraphNode, Role, RoomVisit, Turn } from './model';
 
 export function nodeOf(v: RoomVisit, id: string): GraphNode {
   if (!Object.hasOwn(v.nodes, id)) throw new Error('Node does not exist');
@@ -15,24 +15,16 @@ export function pathTo(v: RoomVisit, id: string): GraphNode[] {
   }
   return path;
 }
-export function addChild(v: RoomVisit, parentId: string, input: { title: string; hook?: string; kind: NodeKind; createdBy: 'tutor' | 'learner'; author?: Author }): GraphNode {
-  const parent = nodeOf(v, parentId), title = checkedTitle(input.title);
-  if (!['lit', 'understood'].includes(parent.state)) throw new Error('Parent must be lit');
+/** The room decides when a child may be added and its first state (Learn: LR rules in rooms/learn/rules.ts). */
+export function addChild(v: RoomVisit, parentId: string, input: { title: string; hook?: string; kind: string; state: string; createdBy: Role; author?: Author }): GraphNode {
+  nodeOf(v, parentId); const title = checkedTitle(input.title);
   if ((input.hook ?? '').length > 200) throw new Error('Hook is too long');
-  const candidates = input.createdBy === 'learner' ? childrenOf(v, parentId) : Object.values(v.nodes);
+  const candidates = input.createdBy === 'user' ? childrenOf(v, parentId) : Object.values(v.nodes);
   if (candidates.some(n => normalizeTitle(n.title) === normalizeTitle(title))) throw new Error('Duplicate title');
   let id = newId(); while (Object.hasOwn(v.nodes, id)) id = newId();
   const node: GraphNode = { id, parents: [parentId], title, hook: input.hook?.trim() ?? '', kind: input.kind,
-    state: 'open', understoodBy: null, content: '', author: input.author, dialogue: [], createdAt: now(), createdBy: input.createdBy };
+    state: input.state, content: '', author: input.author, dialogue: [], createdAt: now(), createdBy: input.createdBy };
   v.nodes[id] = node; return node;
-}
-export function setState(v: RoomVisit, id: string, state: NodeState, understoodBy: GraphNode['understoodBy'] = null): void {
-  const n = nodeOf(v, id);
-  const valid = (n.state === 'open' && ['lit', 'dismissed'].includes(state)) || (n.state === 'dismissed' && state === 'open')
-    || (n.state === 'lit' && state === 'understood') || (n.state === 'understood' && state === 'lit')
-    || (n.state === 'understood' && state === 'understood' && understoodBy === 'demonstrated');
-  if (!valid || ((state === 'understood') !== (understoodBy === 'self' || understoodBy === 'demonstrated'))) throw new Error('Invalid state transition');
-  n.state = state; n.understoodBy = understoodBy;
 }
 export function subtreeIds(v: RoomVisit, id: string): string[] {
   nodeOf(v, id);
@@ -58,12 +50,11 @@ export function editLabel(n: GraphNode, field: 'title' | 'hook', text: string, b
 }
 export function editText(target: GraphNode | Turn, text: string, by: string, at = now()): void {
   if (!text.trim()) throw new Error('Text is empty');
-  if ('role' in target && target.role !== 'tutor') throw new Error('Learner turns are not editable');
-  if ('state' in target && !['lit', 'understood'].includes(target.state)) throw new Error('Node must be lit');
+  if ('role' in target && target.role !== 'model') throw new Error('User turns are not editable'); // DM-63
   const field = 'role' in target ? 'text' : 'content';
   if (target.author?.kind === 'model' && target.previous === undefined) target.previous = target[field as keyof typeof target] as string;
   if ('role' in target) target.text = text; else target.content = text;
-  target.edited = { by, at }; // Keep the model author; edited identifies the learner's correction.
+  target.edited = { by, at }; // Keep the model author; edited identifies the user's correction.
 }
 export function revertText(target: GraphNode | Turn): void {
   if (target.previous === undefined) throw new Error('No original text');

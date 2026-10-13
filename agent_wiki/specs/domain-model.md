@@ -101,9 +101,9 @@ field into a `data` object. Rules DM-1 to DM-55 still hold, read with the change
 | record | `tone` | required; the tone the call used (DM-30, LR-19) |
 
   Learn's `kind`, `state` and `task` values are those of DM-12, DM-13 and DM-30.
-- **DM-66** **Validation is split.** The core (DM-60 to DM-64, the invariants DM-50 to DM-55, the
-  authors of DM-17) is checked both by the Rust storage layer, before every write and on every
-  read, and by TypeScript. The room's values (`kind`, `state`, `task` and everything in `data`) are
+- **DM-66** **Validation is split.** The core (DM-60 to DM-64 and the invariants DM-50 to DM-55) is checked
+  by the Rust storage layer before every write and on every read (structure, ids, parents, roles,
+  required fields), and in full by TypeScript, which also checks the authors of DM-17. The room's values (`kind`, `state`, `task` and everything in `data`) are
   checked by the room definition in TypeScript, on load and before every save; the Rust layer knows
   no room. A visit whose room id the app does not know is validated as core only, kept untouched
   on save, and shown in no room.

@@ -1,16 +1,16 @@
 import { expect, test } from 'vitest';
-import { createSubject } from '../../core/model';
+import { newLearnSubject } from './rules';
 import { addChild } from '../../core/graph';
 import { searchNodes, stepMatch } from './graph-search';
 
 function subject() {
-  const v = createSubject('Ocean tides').rooms.learn;
+  const v = newLearnSubject('Ocean tides').rooms.learn;
   v.nodes[v.rootId].state = 'lit';
-  const moon = addChild(v, v.rootId, { title: 'The Moon', hook: 'Its pull', kind: 'axis', createdBy: 'tutor' });
-  const sun = addChild(v, v.rootId, { title: 'The Sun', hook: '', kind: 'axis', createdBy: 'tutor' });
+  const moon = addChild(v, v.rootId, { title: 'The Moon', hook: 'Its pull', kind: 'axis', state: 'open', createdBy: 'model' });
+  const sun = addChild(v, v.rootId, { title: 'The Sun', hook: '', kind: 'axis', state: 'open', createdBy: 'model' });
   moon.state = 'lit'; moon.content = 'The near side is pulled  MORE strongly.';
-  const bulge = addChild(v, moon.id, { title: 'Tidal bulge', hook: '', kind: 'deeper', createdBy: 'tutor' });
-  sun.dialogue.push({ role: 'learner', text: 'Why is the Sun’s effect weaker? Éloigné ?', at: '', author: { kind: 'user', by: 'Me' } });
+  const bulge = addChild(v, moon.id, { title: 'Tidal bulge', hook: '', kind: 'deeper', state: 'open', createdBy: 'model' });
+  sun.dialogue.push({ role: 'user', text: 'Why is the Sun’s effect weaker? Éloigné ?', at: '', author: { kind: 'user', by: 'Me' } });
   return { v, moon, sun, bulge };
 }
 

@@ -1,4 +1,4 @@
-import type { Tone } from '../core/model';
+import type { Tone, VisitSummary } from '../core/model';
 
 /** WG-35/68: the storage summary is sufficient even for an expanded card. */
 export interface SubjectSummary {
@@ -6,7 +6,7 @@ export interface SubjectSummary {
   total?: number; lit?: number; understood?: number; demonstrated?: number; self?: number; dark?: number;
   input?: number; output?: number; tokens?: number; generations?: number;
   mainModel?: string | null; modelOutputs?: Record<string, number>;
-  readOnly?: boolean; unreadable?: boolean; error?: string;
+  readOnly?: boolean; unreadable?: boolean; error?: string; rooms?: Record<string, VisitSummary>;
   modifiedNs?: string; size?: number;
 }
 export interface LibraryState { recents: string[]; lastOpenedAt: Record<string, string> }

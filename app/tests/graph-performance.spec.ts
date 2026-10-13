@@ -8,10 +8,10 @@ test('GV-110: idle-machine 500-node pan and zoom frame budget',async({page})=>{
   }));console.log(`GV-110: empty-view frame median=${baseline.toFixed(2)}ms`);
   await page.evaluate(async()=>{
     // Browser dev harness imports the same domain operations used by Study.
-    const {createSubject}=await import('/src/core/model.ts' as string);
+    const {newLearnSubject}=await import('/src/rooms/learn/rules.ts' as string);
     const {addChild}=await import('/src/core/graph.ts' as string);
-    const s=createSubject('500-node performance'),v=s.rooms.learn;v.nodes[v.rootId].state='lit';
-    for(let i=1;i<500;i++)addChild(v,v.rootId,{title:`Node ${i}`,kind:'axis',createdBy:'tutor'});
+    const s=newLearnSubject('500-node performance'),v=s.rooms.learn;v.nodes[v.rootId].state='lit';
+    for(let i=1;i<500;i++)addChild(v,v.rootId,{title:`Node ${i}`,kind:'axis',state: 'open', createdBy: 'model'});
     localStorage.setItem(`lantern.subject.${s.id}`,JSON.stringify(s));localStorage.setItem('lantern.recents',JSON.stringify([s.id]));
     localStorage.setItem('lantern.settings',JSON.stringify({appearance:{reduceMotion:'on'}}));
   });

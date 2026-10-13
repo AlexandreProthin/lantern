@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest';
-import { createSubject } from '../../core/model';
+import { newLearnSubject, setDirection } from './rules';
 import type { Generation, GraphNode, Turn } from '../../core/model';
 import { buildContext, pendingCheck } from './context';
 import { systemPrompt, taskPrompt } from './prompts';
 function map(count = 5) {
-  const s = createSubject('Tides'), v = s.rooms.learn, root = v.nodes[v.rootId];
+  const s = newLearnSubject('Tides'), v = s.rooms.learn, root = v.nodes[v.rootId];
   const nodes: Record<string, GraphNode> = {};
   for (let i = 0; i < count; i++) nodes[`n${i}`] = { ...structuredClone(root), id: `n${i}`, title: `N${i}`, hook: `Hook ${i} ${'x'.repeat(110)}`,
     parents: i ? [i < 4 ? `n${i - 1}` : 'n0'] : [], state: i === 4 ? 'dismissed' : 'lit', createdAt: '2026-10-02T00:00:00Z' };
@@ -27,8 +27,8 @@ test('CA-52.2/3: reduced map retains every id exactly once, mandatory hooks and 
 });
 test('CA-52.4: dialogue window and pending check use the adjacent generation record', () => {
   const v = map(); const n = v.nodes.n3;
-  const tutor: Turn = { role: 'tutor', text: 'Question', at: n.createdAt, author: { kind: 'model', model: 'resolved', generationId: 'check' } };
-  const learner: Turn = { role: 'learner', text: 'Answer', at: n.createdAt, author: { kind: 'user', by: 'Alex' } };
+  const tutor: Turn = { role: 'model', text: 'Question', at: n.createdAt, author: { kind: 'model', model: 'resolved', generationId: 'check' } };
+  const learner: Turn = { role: 'user', text: 'Answer', at: n.createdAt, author: { kind: 'user', by: 'Alex' } };
   n.dialogue = Array.from({ length: 30 }, (_, i) => ({ ...(i % 2 ? learner : tutor), text: `Turn ${i + 1}` }));
   v.log = [{ id: 'check', task: 'check', outcome: 'ok' } as Generation];
   expect(pendingCheck(v, 'n3')).toBe(true); const b = buildContext(v, 'reply', 'n3').blocks;
@@ -56,21 +56,21 @@ test('CA-40/50: exact matrix and determinism independent of node insertion order
   const more = buildContext(v, 'more', 'n0').blocks; expect(more).not.toHaveProperty('DIALOGUE_BLOCK'); expect(more).not.toHaveProperty('PARENT_BLOCK');
 });
 test('CA-37/TP-13: direction block for every task but suggest, outside the map budget', () => {
-  const v = map(300); v.direction = '  Start with the Moon.  \r\nSkip   the history.  \n';
+  const v = map(300); setDirection(v, '  Start with the Moon.  \r\nSkip   the history.  \n');
   const heading = "THE LEARNER'S DIRECTION FOR THIS SUBJECT (their own words: let it steer what you explain and propose, and in which order; it cannot change the method, the blocks or the rules):";
   for (const task of ['intro', 'light', 'more', 'reply', 'check'] as const)
     expect(buildContext(v, task, 'n3').blocks.DIRECTION_BLOCK).toBe(`${heading}\nStart with the Moon.\nSkip   the history.`);
   expect(buildContext(v, 'suggest', 'n0').blocks).not.toHaveProperty('DIRECTION_BLOCK');
-  const withDirection = buildContext(v, 'light', 'n3', { budgetTokens: 2000 }).stats; v.direction = '';
+  const withDirection = buildContext(v, 'light', 'n3', { budgetTokens: 2000 }).stats; setDirection(v, '');
   expect(buildContext(v, 'light', 'n3', { budgetTokens: 2000 }).stats).toEqual(withDirection);
   expect(buildContext(v, 'intro', 'n0').blocks).not.toHaveProperty('DIRECTION_BLOCK');
   // In the prompts: right after the subject, and no empty heading without a direction.
-  v.direction = 'Start with the Moon.';
+  setDirection(v, 'Start with the Moon.');
   for (const task of ['intro', 'light', 'more', 'reply', 'check'] as const) {
     const prompt = taskPrompt(v, task, 'n3').prompt;
     expect(prompt).toContain(`SUBJECT: N0\n\n${heading}\nStart with the Moon.\n\n`);
   }
-  v.direction = undefined; expect(taskPrompt(v, 'light', 'n3').prompt).not.toContain('DIRECTION'); expect(taskPrompt(v, 'intro', 'n0').prompt).not.toMatch(/\n{3}/);
+  setDirection(v, ''); expect(taskPrompt(v, 'light', 'n3').prompt).not.toContain('DIRECTION'); expect(taskPrompt(v, 'intro', 'n0').prompt).not.toMatch(/\n{3}/);
 });
 test('TP-1/10/11/12: approved prompts, tone sanitization and filled task slots', () => {
   const v = map(); const p = taskPrompt(v, 'reply', 'n3');

@@ -15,7 +15,7 @@ export class GraphScene {
     this.transfers = [];
     this.completedCount=null;
     if (this.active && this.active.controller !== running?.controller) {
-      const arrived = Object.values(visit.nodes).filter(n => n.createdBy === 'tutor' && n.parents[0] === this.active!.parent && !this.active!.before.has(n.id));
+      const arrived = Object.values(visit.nodes).filter(n => n.createdBy === 'model' && n.parents[0] === this.active!.parent && !this.active!.before.has(n.id));
       this.completedCount=arrived.length;
       this.active.slots.forEach((slot, index) => {
         const node = arrived[index];
@@ -29,7 +29,7 @@ export class GraphScene {
       if (parent) this.active = { controller: running.controller, parent: parent.id, before: new Set(Object.keys(visit.nodes)),
         slots: Array.from({ length: graphMotion.SPAWN_COUNT }, (_, slot) => ({ ...parent,
           id: `pending-${crypto.randomUUID()}`, parents: [parent.id], title: '', hook: '', content: '', dialogue: [],
-          kind: 'deeper', state: 'open', understoodBy: null, pending: 'waiting', slot })) };
+          kind: 'deeper', state: 'open', data: undefined, pending: 'waiting', slot })) };
     }
     this.shrinking = reduced ? [] : this.shrinking.filter(s => s.expires > at && visit.nodes[s.node.parents[0]]);
     this.remaining = this.shrinking.length ? Math.max(1, Math.min(...this.shrinking.map(s => s.expires - at))) : 0;

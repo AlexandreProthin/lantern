@@ -1,4 +1,5 @@
-import { createSubject, normalizeTitle } from '../../core/model';
+import { normalizeTitle } from '../../core/model';
+import { newLearnSubject } from './rules';
 import type { Tone } from '../../core/model';
 import { ProviderError } from '../../frame/provider';
 import type { InferenceProvider } from '../../frame/provider';
@@ -24,7 +25,7 @@ export class SubjectSuggestions {
     const controller = new AbortController(); this.controller = controller;
     this.running = true; this.error = null; this.options = []; this.changed();
     try {
-      const visit = createSubject('Suggestions', 'learn', { tone, model: settings.provider.defaultModel,
+      const visit = newLearnSubject('Suggestions', { tone, model: settings.provider.defaultModel,
         effort: settings.provider.defaultEffort }).rooms.learn;
       const request = taskPrompt(visit, 'suggest', visit.rootId, { hint, existingSubjects: existingTitles });
       const result = await this.provider.stream({ requestId: crypto.randomUUID(), system: request.system,

@@ -1,8 +1,9 @@
 import { childrenOf, nodeOf, pathTo } from '../../core/graph';
+import { directionOf, understoodBy } from './rules';
 import type { GraphNode, RoomVisit } from '../../core/model';
 import { clip } from './protocol';
 import type { Task } from './protocol';
-const mark = (n: GraphNode) => n.state === 'understood' ? `understood:${n.understoodBy}` : n.state;
+const mark = (n: GraphNode) => n.state === 'understood' ? `understood:${understoodBy(n)}` : n.state;
 const singleLine = (text: string) => text.replace(/\s*\n\s*/g, ' ').trimEnd();
 const title = (n: GraphNode) => clip(singleLine(n.title), 80);
 const hook = (n: GraphNode) => n.hook ? ` — ${clip(singleLine(n.hook), 120)}` : '';
@@ -11,9 +12,9 @@ export const DIRECTION_HEADING = "THE LEARNER'S DIRECTION FOR THIS SUBJECT (thei
 const byCreated = (a: GraphNode, b: GraphNode) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id);
 export function pendingCheck(v: RoomVisit, id: string): boolean {
   const n = nodeOf(v, id), turns = n.dialogue;
-  if (!['lit', 'understood'].includes(n.state) || turns.at(-1)?.role !== 'learner') return false;
+  if (!['lit', 'understood'].includes(n.state) || turns.at(-1)?.role !== 'user') return false;
   const previous = turns.at(-2);
-  if (!previous || previous.role !== 'tutor' || previous.author.kind !== 'model') return false;
+  if (!previous || previous.role !== 'model' || previous.author.kind !== 'model') return false;
   const generationId = previous.author.generationId;
   return v.log.some(g => g.id === generationId && g.task === 'check' && g.outcome === 'ok');
 }
@@ -27,7 +28,7 @@ export function buildContext(v: RoomVisit, task: Task, focusId: string, { budget
   if (task === 'suggest') { blocks.EXISTING_SUBJECTS = existingSubjects.slice(0, 30).map(singleLine).join('; ') || 'none'; return { blocks, stats }; }
   blocks.SUBJECT_BLOCK = `SUBJECT: ${singleLine(nodeOf(v, v.rootId).title)}`;
   // CA-37: outside the map part and its budget; never clipped (DM-41 caps it at 500 characters).
-  const direction = (v.direction ?? '').trim().split(/\r?\n/).map(line => line.trimEnd()).join('\n');
+  const direction = directionOf(v).trim().split(/\r?\n/).map(line => line.trimEnd()).join('\n');
   if (direction) blocks.DIRECTION_BLOCK = `${DIRECTION_HEADING}\n${direction}`;
   if (task === 'intro') return { blocks, stats };
   const focus = nodeOf(v, focusId), path = pathTo(v, focusId);
@@ -94,7 +95,7 @@ export function buildContext(v: RoomVisit, task: Task, focusId: string, { budget
   if (['reply', 'check'].includes(task) && focus.dialogue.length) {
     stats.omittedTurns = Math.max(0, focus.dialogue.length - 12);
     blocks.DIALOGUE_BLOCK = [stats.omittedTurns ? `(${stats.omittedTurns} earlier turn${stats.omittedTurns === 1 ? '' : 's'} omitted)` : '', 'DIALOGUE ON THIS NODE:',
-      ...focus.dialogue.slice(-12).map(t => `${t.role === 'learner' ? 'LEARNER' : `TUTOR${t.edited ? ' (corrected by the learner)' : ''}`}: ${t.text}`)].filter(Boolean).join('\n');
+      ...focus.dialogue.slice(-12).map(t => `${t.role === 'user' ? 'LEARNER' : `TUTOR${t.edited ? ' (corrected by the learner)' : ''}`}: ${t.text}`)].filter(Boolean).join('\n');
   }
   if (task === 'reply') blocks.PENDING_CHECK = pendingCheck(v, focusId) ? 'yes' : 'no';
   if (task === 'more') blocks.EXISTING_CHILDREN = childrenOf(v, focusId).map(n => `${n.id} "${title(n)}" [${mark(n)}]`).join('; ') || 'none';

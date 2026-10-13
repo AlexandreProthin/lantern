@@ -3,7 +3,8 @@
   import Markdown from '../../ui/Markdown.svelte';
   import { strings } from '../../ui/strings';
   import { modelLabel,durationLabel } from '../../ui/format';
-  import { childrenOf, pathTo, addChild, deleteSubtree, editLabel, editText, revertText, setState, subtreeIds } from '../../core/graph';
+  import { childrenOf, pathTo, deleteSubtree, editLabel, revertText, subtreeIds } from '../../core/graph';
+  import { addLearnChild, editLearnText, setState, understoodBy } from './rules';
   import type { GraphNode, Turn } from '../../core/model';
   import type { LearnSession } from './session';
   import { nodeActions, runNodeAction, type NodeActionId, type PanelRequest } from './actions';
@@ -46,7 +47,7 @@
     const field = editors[node.id], draft = editDrafts[node.id];
     perform(() => {
       if (field === 'labels') { editLabel(node, 'title', draft.title, session.displayName); editLabel(node, 'hook', draft.hook, session.displayName); }
-      else editText(field === 'content' ? node : node.dialogue[Number(field.split(':')[1])], draft.text, session.displayName);
+      else editLearnText(field === 'content' ? node : node.dialogue[Number(field.split(':')[1])], draft.text, session.displayName);
       delete editors[node.id]; delete editDrafts[node.id];
     });
   }
@@ -56,7 +57,7 @@
   }
   function send() { const message = drafts[node.id]?.trim(); if (!message || running) return; drafts[node.id] = ''; void session.run('reply', node.id, message); }
   function addOwn() {
-    perform(() => { addChild(visit, node.id, { title: ownTitle, hook: ownHook, kind: 'own', createdBy: 'learner', author: { kind: 'user', by: session.displayName } }); adding = false; ownTitle = ownHook = ''; });
+    perform(() => { addLearnChild(visit, node.id, { title: ownTitle, hook: ownHook, kind: 'own', createdBy: 'user', author: { kind: 'user', by: session.displayName } }); adding = false; ownTitle = ownHook = ''; });
   }
   async function remove() {
     if (!deleting) return;
@@ -112,7 +113,7 @@
 <aside class="panel" tabindex="-1">
   <div class="scroll" bind:this={scroller} onscroll={() => { selection = ''; nearBottom=scroller.scrollHeight-scroller.clientHeight-scroller.scrollTop<48; }}>
     <nav class="crumbs">{#each path.slice(0,-1) as parent (parent.id)}<button onclick={() => session.setFocus(parent.id)}>{parent.title}</button><span>›</span>{/each}</nav>
-    <div class="meta">{kindLabels[node.kind]} · <span class="state-chip" data-state={node.state}>{node.understoodBy==='self'?strings.selfState:node.understoodBy==='demonstrated'?strings.demonstratedState:node.state}</span>{node.content ? ` · ${provenance(node)}` : ''}</div>
+    <div class="meta">{kindLabels[node.kind]} · <span class="state-chip" data-state={node.state}>{understoodBy(node)==='self'?strings.selfState:understoodBy(node)==='demonstrated'?strings.demonstratedState:node.state}</span>{node.content ? ` · ${provenance(node)}` : ''}</div>
     {#if editors[node.id] === 'labels'}
       <input aria-label={strings.title} data-field="title" bind:value={editDrafts[node.id].title} onkeydown={editKey} maxlength="120" />
       <textarea aria-label={strings.hook} bind:value={editDrafts[node.id].hook} onkeydown={editKey} maxlength="200"></textarea>
@@ -162,9 +163,9 @@
       <section><h2>{strings.dialogue}</h2>{#each node.dialogue as turn, i (i)}
         <div class="turn {turn.role}" title={provenance(turn)}>
           {#if editors[node.id] === `turn:${i}`}<textarea class="markdown-edit" aria-label={strings.edit} bind:value={editDrafts[node.id].text} onkeydown={editKey}></textarea><button onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button>
-          {:else}<Markdown text={turn.text} {visit} focus={id => session.setFocus(id)} {preview} />{#if turn.role === 'tutor'}<button class="quiet" disabled={busy} onclick={() => beginEdit(`turn:${i}`,turn)}>{strings.edit}</button>{/if}{#if turn.edited}<small>{strings.editedBy(turn.edited.by)}</small>{/if}{#if turn.previous !== undefined}<button class="quiet" onclick={() => compare = turn}>{strings.previousVersion}</button>{/if}{/if}
+          {:else}<Markdown text={turn.text} {visit} focus={id => session.setFocus(id)} {preview} />{#if turn.role === 'model'}<button class="quiet" disabled={busy} onclick={() => beginEdit(`turn:${i}`,turn)}>{strings.edit}</button>{/if}{#if turn.edited}<small>{strings.editedBy(turn.edited.by)}</small>{/if}{#if turn.previous !== undefined}<button class="quiet" onclick={() => compare = turn}>{strings.previousVersion}</button>{/if}{/if}
         </div>{/each}
-        {#if busy && ['reply','check'].includes(running!.task)}<div class="turn tutor"><Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>{/if}
+        {#if busy && ['reply','check'].includes(running!.task)}<div class="turn model"><Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>{/if}
       </section>
     {/if}
   </div>
@@ -186,7 +187,7 @@
   .hook { font-style:italic; color:var(--ink-mute); }.quiet { font-size:11px; background:none; border:0; padding:4px 6px; color:var(--ink-mute); }
   .option { display:grid; text-align:left; width:100%; margin:8px 0; gap:5px; }.option strong { font-weight:500; }.option span,.option small { color:var(--ink-mute); font-size:12px; }
   .actions { display:flex; gap:6px; flex-wrap:wrap; margin:16px 0; }.actions button { font-size:12px; }
-  .turn { padding:10px 14px; margin:10px 0; }.turn.tutor { border-left:2px solid var(--accent); }.turn.learner { margin-left:30px; background:var(--surface-2); border-radius:8px; }
+  .turn { padding:10px 14px; margin:10px 0; }.turn.model { border-left:2px solid var(--accent); }.turn.user { margin-left:30px; background:var(--surface-2); border-radius:8px; }
   footer { padding:12px 20px; border-top:1px solid var(--line); } footer textarea { width:100%; box-sizing:border-box; resize:vertical; max-height:180px; } footer .actions { margin:8px 0 0; }
   .markdown-edit { width:100%; box-sizing:border-box; font-family:monospace; max-height:50vh; } .error { color:var(--error-ink); }.notice { padding:12px; border:1px solid var(--line); border-radius:8px; }
   dialog { color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:10px; max-width:min(800px,85vw); } dialog::backdrop { background:var(--code); opacity:.75; }.compare { display:grid; grid-template-columns:1fr 1fr; gap:20px; }

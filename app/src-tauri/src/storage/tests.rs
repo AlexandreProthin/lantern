@@ -1,5 +1,6 @@
 use super::*;
-fn subject(count: usize) -> Value {
+/// A lantern/1 subject as v0.1.x wrote it.
+fn subject_v1(count: usize) -> Value {
     let mut nodes = serde_json::Map::new();
     for i in 0..count {
         nodes.insert(format!("n{i}"), json!({"id":format!("n{i}"), "parents":if i == 0 {vec![]} else {vec!["n0"]},
@@ -10,12 +11,64 @@ fn subject(count: usize) -> Value {
     json!({"format":"lantern/1", "id":"tides-k3f9", "title":"Tides", "createdAt":"2026-10-02T12:00:00Z",
         "rooms":{"learn":{"rootId":"n0", "focusId":"n0", "tone":"curious", "model":"opus", "effort":"medium", "nodes":nodes, "log":[]}}})
 }
+fn subject(count: usize) -> Value { convert_v1(&subject_v1(count)).unwrap() }
 #[test]
-fn direction_is_optional_and_at_most_500_characters() {
+fn core_validation_checks_roles_data_and_effort_but_no_room_values() {
     let mut s = subject(2); assert!(validate_subject(&s, "tides-k3f9").is_ok());
-    s["rooms"]["learn"]["direction"] = json!("é".repeat(500)); assert!(validate_subject(&s, "tides-k3f9").is_ok());
-    s["rooms"]["learn"]["direction"] = json!("x".repeat(501)); assert!(validate_subject(&s, "tides-k3f9").is_err());
-    s["rooms"]["learn"]["direction"] = json!(3); assert!(validate_subject(&s, "tides-k3f9").is_err());
+    s["rooms"]["learn"]["nodes"]["n1"]["kind"] = json!("product"); s["rooms"]["learn"]["nodes"]["n1"]["state"] = json!("shortlisted");
+    assert!(validate_subject(&s, "tides-k3f9").is_ok(), "kinds and states belong to the room (DM-66)");
+    for (path, bad) in [("createdBy", json!("tutor")), ("data", json!("x")), ("kind", json!(""))] {
+        let mut t = subject(2); t["rooms"]["learn"]["nodes"]["n1"][path] = bad; assert!(validate_subject(&t, "tides-k3f9").is_err(), "{path}");
+    }
+    let mut t = subject(2); t["rooms"]["learn"]["effort"] = json!("huge"); assert!(validate_subject(&t, "tides-k3f9").is_err());
+    let mut t = subject(2); t["rooms"]["learn"]["nodes"]["n0"]["dialogue"] = json!([{"role":"learner","text":"hi"}]); assert!(validate_subject(&t, "tides-k3f9").is_err());
+    let mut t = subject(2); t["rooms"]["future"] = t["rooms"]["learn"].clone(); assert!(validate_subject(&t, "tides-k3f9").is_ok(), "an unknown room is core only");
+}
+#[test]
+fn conversion_moves_learn_fields_into_data_and_keeps_unknown_fields() {
+    let mut v1 = subject_v1(3);
+    let visit = &mut v1["rooms"]["learn"]; visit["direction"] = json!("Start from the Moon"); visit["futureVisit"] = json!(1);
+    visit["nodes"]["n1"]["state"] = json!("understood"); visit["nodes"]["n1"]["understoodBy"] = json!("self");
+    visit["nodes"]["n0"]["createdBy"] = json!("learner"); visit["nodes"]["n0"]["futureNode"] = json!(true);
+    visit["nodes"]["n0"]["dialogue"] = json!([{"role":"learner","text":"Why?","at":"x","author":{"kind":"user","by":"alex"}},{"role":"tutor","text":"Because","at":"y","author":{"kind":"unknown"}}]);
+    visit["log"] = json!([{"id":"g1","nodeId":"n0","task":"intro","tone":"engineer","model":"m","usage":{"input":1,"output":2}}]);
+    let v2 = convert_v1(&v1).unwrap(); let visit = &v2["rooms"]["learn"];
+    assert_eq!(v2["format"], "lantern/2"); validate_subject(&v2, "tides-k3f9").unwrap();
+    assert_eq!(visit["data"], json!({"tone":"curious","direction":"Start from the Moon"}));
+    assert!(visit.get("tone").is_none() && visit.get("direction").is_none()); assert_eq!(visit["futureVisit"], 1);
+    assert_eq!(visit["nodes"]["n1"]["data"], json!({"understoodBy":"self"})); assert!(visit["nodes"]["n1"].get("understoodBy").is_none());
+    assert!(visit["nodes"]["n2"].get("data").is_none() && visit["nodes"]["n2"].get("understoodBy").is_none());
+    assert_eq!(visit["nodes"]["n0"]["createdBy"], "user"); assert_eq!(visit["nodes"]["n2"]["createdBy"], "model"); assert_eq!(visit["nodes"]["n0"]["futureNode"], true);
+    assert_eq!(visit["nodes"]["n0"]["dialogue"][0]["role"], "user"); assert_eq!(visit["nodes"]["n0"]["dialogue"][1]["role"], "model");
+    assert_eq!(visit["log"][0]["data"], json!({"tone":"engineer"})); assert!(visit["log"][0].get("tone").is_none());
+}
+#[test]
+fn first_read_converts_with_backup_once_and_bad_files_stay_untouched() {
+    let dir = tempfile::tempdir().unwrap(); let config = tempfile::tempdir().unwrap();
+    let path = subject_path(dir.path(), "tides-k3f9").unwrap(); write_json(&path, &subject_v1(3)).unwrap(); let original = fs::read(&path).unwrap();
+    let listed = list_subjects(dir.path(), config.path()).unwrap(); assert!(listed[0]["unreadable"].is_null());
+    let backup = dir.path().join("subjects/.lantern1-backup/tides-k3f9.json"); assert_eq!(fs::read(&backup).unwrap(), original);
+    let loaded = load_subject(dir.path(), "tides-k3f9").unwrap(); assert_eq!(loaded.subject, subject(3)); assert!(!loaded.read_only);
+    let converted = fs::read(&path).unwrap(); load_subject(dir.path(), "tides-k3f9").unwrap();
+    assert_eq!(fs::read(&path).unwrap(), converted, "a lantern/2 file is never converted again"); assert_eq!(fs::read(&backup).unwrap(), original);
+    let mut broken = subject_v1(2); broken["id"] = json!("broken-a1b2"); broken["rooms"]["learn"]["nodes"]["n1"]["createdBy"] = json!("someone");
+    let broken_path = subject_path(dir.path(), "broken-a1b2").unwrap(); write_json(&broken_path, &broken).unwrap(); let broken_bytes = fs::read(&broken_path).unwrap();
+    let listed = list_subjects(dir.path(), config.path()).unwrap();
+    assert_eq!(listed.iter().filter(|s| s["unreadable"] == true).count(), 1, "ST-34: shown as unreadable, the rest still listed");
+    assert_eq!(fs::read(&broken_path).unwrap(), broken_bytes); assert!(!dir.path().join("subjects/.lantern1-backup/broken-a1b2.json").exists());
+}
+#[test]
+fn summaries_are_per_room_and_old_cache_entries_are_discarded() {
+    let dir = tempfile::tempdir().unwrap(); let config = tempfile::tempdir().unwrap();
+    let mut s = subject(3); s["rooms"]["learn"]["nodes"]["n1"]["state"] = json!("understood"); s["rooms"]["learn"]["nodes"]["n1"]["data"] = json!({"understoodBy":"demonstrated"});
+    s["rooms"]["learn"]["data"]["direction"] = json!("x".repeat(600));
+    save_subject(dir.path(), &s, None, true).unwrap();
+    let key = crate::paths::canonical(&subject_path(dir.path(), "tides-k3f9").unwrap()).unwrap().to_string_lossy().to_string();
+    write_json(&config.path().join("summaries.json"), &json!({ key.clone(): {"modifiedNs": 0, "size": 0, "summary": {"stale": true}} })).unwrap();
+    let listed = list_subjects(dir.path(), config.path()).unwrap(); let learn = &listed[0]["rooms"]["learn"];
+    assert!(listed[0]["stale"].is_null());
+    assert_eq!(learn["states"], json!({"lit":1,"understood":1,"open":1})); assert_eq!(learn["nodeData"], json!({"understoodBy":{"demonstrated":1}}));
+    assert_eq!(learn["data"], json!({"tone":"curious"}), "a long direction stays out of the summary");
 }
 #[test]
 fn paths_reject_traversal_and_windows_devices() {
@@ -108,7 +161,7 @@ fn external_change_reloads_clean_or_preserves_dirty_as_conflict() {
 }
 #[test]
 fn higher_major_is_read_only_and_invalid_graph_is_rejected() {
-    let dir = tempfile::tempdir().unwrap(); let mut s = subject(2); s["format"] = json!("lantern/2");
+    let dir = tempfile::tempdir().unwrap(); let mut s = subject(2); s["format"] = json!("lantern/3");
     write_json(&subject_path(dir.path(), "tides-k3f9").unwrap(), &s).unwrap();
     assert!(load_subject(dir.path(), "tides-k3f9").unwrap().read_only);
     assert!(save_subject(dir.path(), &subject(2), None, true).is_err());
@@ -119,10 +172,10 @@ fn higher_major_is_read_only_and_invalid_graph_is_rejected() {
 fn summary_cache_invalidates_and_can_be_rebuilt() {
     let dir = tempfile::tempdir().unwrap(); let config = tempfile::tempdir().unwrap(); let s = subject(4);
     save_subject(dir.path(), &s, None, true).unwrap();
-    let first = list_subjects(dir.path(), config.path()).unwrap(); assert_eq!(first[0]["total"], 4);
+    let first = list_subjects(dir.path(), config.path()).unwrap(); assert_eq!(first[0]["rooms"]["learn"]["states"]["open"], 3);
     let mut s = s; s["rooms"]["learn"]["nodes"]["n1"]["state"] = json!("dismissed");
     write_json(&subject_path(dir.path(), "tides-k3f9").unwrap(), &s).unwrap();
-    let second = list_subjects(dir.path(), config.path()).unwrap(); assert_eq!(second[0]["total"], 3);
+    let second = list_subjects(dir.path(), config.path()).unwrap(); assert_eq!(second[0]["rooms"]["learn"]["states"]["dismissed"], 1);
     fs::write(config.path().join("summaries.json"), b"corrupt").unwrap();
     assert_eq!(list_subjects(dir.path(), config.path()).unwrap(), second);
 }
@@ -131,7 +184,7 @@ fn thumbnail_is_bounded_and_excludes_dialogue_and_dismissed_nodes() {
     let dir=tempfile::tempdir().unwrap();let mut s=subject(75);
     s["rooms"]["learn"]["nodes"]["n1"]["state"]=json!("dismissed");
     save_subject(dir.path(),&s,None,true).unwrap();
-    let graph=thumbnail(dir.path(),"tides-k3f9").unwrap();
+    let graph=thumbnail(dir.path(),"tides-k3f9","learn").unwrap(); assert!(thumbnail(dir.path(),"tides-k3f9","choose").is_err());
     assert_eq!(graph["nodes"].as_object().unwrap().len(),60);
     assert_eq!(graph["omitted"],14);assert!(graph["nodes"].get("n1").is_none());
     assert!(graph["nodes"].get("n0").is_some());
@@ -150,7 +203,7 @@ fn fifty_cached_summaries_meet_wg43() {
 }
 #[test]
 fn poc_import_backup_idempotence_and_reopen() {
-    let dir = tempfile::tempdir().unwrap(); let s = subject(3); let v = &s["rooms"]["learn"];
+    let dir = tempfile::tempdir().unwrap(); let s = subject_v1(3); let v = &s["rooms"]["learn"];
     let mut nodes = v["nodes"].as_object().unwrap().clone();
     for n in nodes.values_mut() { let p = n["parents"][0].clone(); let o = n.as_object_mut().unwrap(); o.remove("parents"); o.remove("author"); o.remove("understoodBy"); o.remove("createdBy"); o.insert("parentId".into(), p); }
     let poc = json!({"format":"lantern-poc/1", "id":s["id"], "title":s["title"], "createdAt":s["createdAt"], "room":"learn", "rootId":"n0", "focusId":"n1", "nodes":nodes});
@@ -158,7 +211,8 @@ fn poc_import_backup_idempotence_and_reopen() {
     assert_eq!(import_poc(dir.path()).unwrap(), ["tides-k3f9"]);
     let loaded = load_subject(dir.path(), "tides-k3f9").unwrap();
     assert_eq!(loaded.subject["rooms"]["learn"]["nodes"]["n1"]["parents"], json!(["n0"]));
-    assert_eq!(loaded.subject["rooms"]["learn"]["nodes"]["n0"]["author"]["kind"], "unknown");
+    assert_eq!(loaded.subject["rooms"]["learn"]["nodes"]["n0"]["author"]["kind"], "unknown"); assert_eq!(loaded.subject["format"], "lantern/2");
+    assert_eq!(loaded.subject["rooms"]["learn"]["nodes"]["n0"]["createdBy"], "user"); assert_eq!(loaded.subject["rooms"]["learn"]["data"]["tone"], "curious");
     assert_eq!(fs::read(dir.path().join("subjects/.poc-backup/tides-k3f9.json")).unwrap(), original);
     assert!(import_poc(dir.path()).unwrap().is_empty());
     assert_eq!(load_subject(dir.path(), "tides-k3f9").unwrap().subject, loaded.subject);
@@ -216,8 +270,8 @@ fn real_poc_subjects_import_validate_and_round_trip() {
     }
     assert!(import_poc(library.path()).unwrap().is_empty(), "second import is idempotent");
     let list = list_subjects(library.path(), config.path()).unwrap();
-    assert_eq!(list.len(), originals.len()); assert!(list.iter().all(|s| s["unreadable"].is_null() && s["total"].as_u64().unwrap() > 0));
-    for s in &list { let t = thumbnail(library.path(), s["id"].as_str().unwrap()).unwrap(); assert!(t["nodes"].as_object().unwrap().len() > 0); }
+    assert_eq!(list.len(), originals.len()); assert!(list.iter().all(|s| s["unreadable"].is_null() && !s["rooms"]["learn"]["states"].as_object().unwrap().is_empty()));
+    for s in &list { let t = thumbnail(library.path(), s["id"].as_str().unwrap(), "learn").unwrap(); assert!(t["nodes"].as_object().unwrap().len() > 0); }
 }
 #[cfg(windows)]
 #[test]
@@ -254,4 +308,21 @@ fn disk_paths_never_carry_the_verbatim_prefix() {
     assert!(!list_subjects(dir.path(),config.path()).unwrap()[0]["path"].as_str().unwrap().starts_with(r"\\?\"));
     assert_eq!(crate::paths::plain_path(r"\\?\C:\Users\alexp\Documents\Lantern"),if cfg!(windows){r"C:\Users\alexp\Documents\Lantern"}else{r"\\?\C:\Users\alexp\Documents\Lantern"});
     assert_eq!(crate::paths::plain_path(r"C:\Users\alexp"),r"C:\Users\alexp");
+}
+#[test]
+#[ignore = "ST-32..36 real library evidence: set LANTERN_LIBRARY_COPY to a COPY of a library folder; it is converted in place"]
+fn real_library_copy_converts_lists_and_keeps_backups() {
+    let library = PathBuf::from(std::env::var("LANTERN_LIBRARY_COPY").expect("LANTERN_LIBRARY_COPY"));
+    let config = tempfile::tempdir().unwrap(); let folder = library.join("subjects");
+    let originals: HashMap<String, Vec<u8>> = fs::read_dir(&folder).unwrap().filter_map(|e| { let p = e.unwrap().path();
+        (p.extension().is_some_and(|x| x == "json")).then(|| (p.file_stem().unwrap().to_string_lossy().to_string(), fs::read(&p).unwrap())) }).collect();
+    let listed = list_subjects(&library, config.path()).unwrap();
+    assert_eq!(listed.len(), originals.len()); assert!(listed.iter().all(|s| s["unreadable"].is_null()), "{listed:?}");
+    for (id, bytes) in &originals {
+        let loaded = load_subject(&library, id).unwrap(); assert_eq!(loaded.subject["format"], "lantern/2"); assert!(!loaded.read_only);
+        if serde_json::from_slice::<Value>(bytes).unwrap()["format"] == "lantern/1" { assert_eq!(&fs::read(folder.join(".lantern1-backup").join(format!("{id}.json"))).unwrap(), bytes, "{id} backup"); }
+        let SaveResult::Saved { .. } = save_subject(&library, &loaded.subject, Some(&loaded.stamp), true).unwrap() else { panic!("{id} not saved") };
+        assert_eq!(load_subject(&library, id).unwrap().subject, loaded.subject, "{id} round trip");
+        println!("{id}: converted, listed, round trip equal");
+    }
 }

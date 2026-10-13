@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { createSubject } from '../../core/model';
+import { newLearnSubject } from './rules';
 import { nodeLinks, parseReply, visibleText } from './protocol';
 test('TP-31: first parseable block wins, fences and unknown keys tolerated', () => {
   const raw = 'Explanation\n<options>bad</options>\n<options>\n```json\n[{"title":"A","hook":"a","extra":true},{"title":"B","kind":"unknown"},{"hook":"skip"}]\n```\n</options>\nTrailing prose';
@@ -24,7 +24,7 @@ test('TP-30/34/35: task gating, malformed prose survives and empty explanations 
   expect(parseReply('Ignored prose<options>[]</options>', 'more').text).toBe('');
 });
 test('TP-33/DM-22: link resolution changes after deletion without rewriting text', () => {
-  const s = createSubject('Tides'); const v = s.rooms.learn; const id = v.rootId;
+  const s = newLearnSubject('Tides'); const v = s.rooms.learn; const id = v.rootId;
   const text = `[Tides](node:${id}) [Ghost](node:missing)`;
   expect(nodeLinks(text, v).map(l => l.exists)).toEqual([true, false]);
   delete v.nodes[id]; expect(nodeLinks(text, v).map(l => l.exists)).toEqual([false, false]);

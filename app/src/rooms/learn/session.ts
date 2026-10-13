@@ -1,4 +1,5 @@
-import { addChild, nodeOf, setState } from '../../core/graph';
+import { nodeOf } from '../../core/graph';
+import { addLearnChild, setState, toneOf } from './rules';
 import { newId, normalizeTitle, now, cloneJson } from '../../core/model';
 import type { Generation, RoomVisit, Subject } from '../../core/model';
 import { ProviderError, zeroUsage } from '../../frame/provider';
@@ -30,11 +31,11 @@ export class LearnSession {
     if (task === 'light' && id === v.rootId) task = 'intro';
     if (task === 'reply' && !retry) {
       if (!message?.trim()) throw new Error('Message is empty');
-      node.dialogue.push({ role: 'learner', text: message.trim(), at: now(), author: { kind: 'user', by: this.displayName } });
+      node.dialogue.push({ role: 'user', text: message.trim(), at: now(), author: { kind: 'user', by: this.displayName } });
       this.changed();
     }
     const check = checkOverride ?? pendingCheck(v, id);
-    const config = cloneJson({ tone: v.tone, model: v.model, effort: v.effort });
+    const config = cloneJson({ tone: toneOf(v), model: v.model, effort: v.effort });
     const prompts = taskPrompt(v, task, id, { budgetTokens: this.budgetTokens });
     const generationId = newId(), startedAt = now(), started = performance.now();
     const controller = new AbortController(); this.running = { nodeId: id, task, text: '', controller }; this.notice = null; this.render();
@@ -54,22 +55,22 @@ export class LearnSession {
       const next = cloneJson(this.visit), target = nodeOf(next, id);
       const author = { kind: 'model' as const, model: result.model, effort: config.effort, generationId };
       if (task === 'intro' || task === 'light') { target.content = parsed.text; target.author = author; setState(next, id, 'lit'); }
-      if (task === 'reply' || task === 'check') target.dialogue.push({ role: 'tutor', text: parsed.text, at: now(), author });
+      if (task === 'reply' || task === 'check') target.dialogue.push({ role: 'model', text: parsed.text, at: now(), author });
       if (parsed.understood) setState(next, id, 'understood', 'demonstrated');
       let count = 0;
       for (const opt of parsed.options) {
         if (count === 3) break;
         if (Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(opt.title))) continue;
-        addChild(next, id, { ...opt, kind: task === 'intro' ? 'axis' : opt.kind ?? 'deeper', createdBy: 'tutor' }); count++;
+        addLearnChild(next, id, { ...opt, kind: task === 'intro' ? 'axis' : opt.kind ?? 'deeper', createdBy: 'model' }); count++;
       }
-      if (parsed.branch && !Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(parsed.branch!.title))) addChild(next, id, { ...parsed.branch, kind: 'question', createdBy: 'tutor' });
-      record = { id: generationId, nodeId: id, task, ...config, model: result.model, promptVersion: prompts.promptVersion, startedAt,
+      if (parsed.branch && !Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(parsed.branch!.title))) addLearnChild(next, id, { ...parsed.branch, kind: 'question', createdBy: 'model' });
+      record = { id: generationId, nodeId: id, task, effort: config.effort, data: { tone: config.tone }, model: result.model, promptVersion: prompts.promptVersion, startedAt,
         durationMs: result.durationMs, usage: result.usage, ...(result.costUsd !== undefined ? { costUsd: result.costUsd } : {}), outcome: 'ok' };
       next.log.push(record); this.subject.rooms.learn = next;
       if (['intro', 'light', 'more'].includes(task) && count < 3) this.notice = { nodeId: id, kind: 'directions', count, retry: () => this.run('more', id) };
     } catch (e) {
       const error = e instanceof ProviderError ? e : new ProviderError('protocol', String(e));
-      this.visit.log.push({ id: generationId, nodeId: id, task, ...config, model: error.model || 'unknown', promptVersion: prompts.promptVersion, startedAt,
+      this.visit.log.push({ id: generationId, nodeId: id, task, effort: config.effort, data: { tone: config.tone }, model: error.model || 'unknown', promptVersion: prompts.promptVersion, startedAt,
         durationMs: error.durationMs || Math.round(performance.now() - started), usage: error.usage ?? zeroUsage(), outcome: error.kind === 'cancelled' ? 'cancelled' : 'error' });
       if (error.kind !== 'cancelled') this.notice = { nodeId: id, kind: 'error', error, retry: retryCall };
     } finally { this.running = null; this.changed(); this.render(); }

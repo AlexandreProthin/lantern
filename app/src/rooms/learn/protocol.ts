@@ -1,4 +1,5 @@
-import type { NodeKind, RoomVisit } from '../../core/model';
+import type { RoomVisit } from '../../core/model';
+import type { NodeKind } from './rules';
 export type Task = 'intro' | 'light' | 'more' | 'reply' | 'check' | 'suggest';
 export interface Option { title: string; hook: string; kind?: NodeKind }
 export const clip = (text: string, max: number) => text.length > max ? text.slice(0, max) + '…' : text;

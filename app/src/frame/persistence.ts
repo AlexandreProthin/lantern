@@ -27,11 +27,13 @@ export class SubjectPersistence {
   private revision = 0;
   private closed = false;
   constructor(private storage: Storage, private library: string, private loaded: Loaded | null,
-    private onResult: (result: SaveResult) => void, private onError: (error: unknown) => void, private delay = 300) {}
+    private onResult: (result: SaveResult) => void, private onError: (error: unknown) => void, private delay = 300,
+    private validate: (subject: Subject) => void = () => {}) {}
   schedule(subject: Subject): void {
     if (this.closed || this.loaded?.readOnly) throw new Error('Subject is read-only');
     if (this.loaded && subject.id !== this.loaded.subject.id) throw new Error('Persistence controller belongs to another subject');
-    this.pending = cloneJson(parseSubject(subject)); this.revision++;
+    const checked = parseSubject(subject); this.validate(checked);
+    this.pending = cloneJson(checked); this.revision++;
     clearTimeout(this.timer);
     this.timer = setTimeout(() => { this.flush().catch(this.onError); }, this.delay);
   }

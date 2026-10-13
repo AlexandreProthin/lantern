@@ -1,6 +1,7 @@
-import type { RoomVisit } from './model';
+import type { RoomVisit } from '../../core/model';
+import { understoodBy } from './rules';
 
-/** WG-30..36: shared by all spaces; never persist totals in the subject. */
+/** WG-30..36: Learn's stats for its spaces; never persist totals in the subject. */
 export function stats(v: RoomVisit) {
   const nodes = Object.values(v.nodes).filter(n => n.state !== 'dismissed');
   const understood = nodes.filter(n => n.state === 'understood');
@@ -20,8 +21,8 @@ export function stats(v: RoomVisit) {
     for (const m of [...shares].sort((a, b) => b.remainder - a.remainder)) if (missing-- > 0) m.share++;
   }
   return { total: nodes.length, lit: nodes.filter(n => ['lit', 'understood'].includes(n.state)).length,
-    understood: understood.length, demonstrated: understood.filter(n => n.understoodBy === 'demonstrated').length,
-    self: understood.filter(n => n.understoodBy === 'self').length, dark: nodes.filter(n => n.state === 'open').length,
+    understood: understood.length, demonstrated: understood.filter(n => understoodBy(n) === 'demonstrated').length,
+    self: understood.filter(n => understoodBy(n) === 'self').length, dark: nodes.filter(n => n.state === 'open').length,
     progress: nodes.length ? understood.length / nodes.length : 0, input, output, tokens: input + output,
     durationMs, generations: v.log.length, mainModel: ranked[0]?.[0] ?? null,
     models: shares.map(({ remainder: _, ...m }) => ({ ...m, share: output ? m.share : null })) };

@@ -33,8 +33,8 @@ pub fn delete_subject(app: AppHandle, library: PathBuf, id: String, lock: State<
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::delete_subject(&library, &config(&app)?, &id)
 }
 #[tauri::command]
-pub fn subject_thumbnail(library: PathBuf, id: String, lock: State<StorageLock>) -> Result<Value, String> {
-    let _guard=lock.0.lock().map_err(|e|e.to_string())?; storage::thumbnail(&library,&id)
+pub fn subject_thumbnail(library: PathBuf, id: String, room: String, lock: State<StorageLock>) -> Result<Value, String> {
+    let _guard=lock.0.lock().map_err(|e|e.to_string())?; storage::thumbnail(&library,&id,&room)
 }
 #[tauri::command]
 pub fn reveal_subject(library: PathBuf, id: String) -> Result<(), String> {

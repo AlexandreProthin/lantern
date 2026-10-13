@@ -38,7 +38,7 @@ Data side: [domain-model](/specs/domain-model.md). The three Learn spaces are sp
   component rendered under Settings → the room's name); `prompts` (builders and versions);
   `nodeKinds` and `nodeStates` (labels, glyphs, legend rows); `statsSummary(subject)` (the
   header's compact stats text and hover); `legend` (legend rows, RS-35); and `newSubject(title,
-  tone)` (creates the room visit's initial graph). The frame MUST call only these members.
+  tone)` (creates the room visit's initial graph). The frame MUST call only these members. *(Amended 2026-10-13, v0.2.0 A2.)* Also: `validate(visit)` (the room's values, DM-66), `summarize(visitSummary)` (its Welcome and Gallery stats from the storage summary, ST-7), and, until the subject menu moves into the room (A3), `subjectTone` and `subjectDirection` accessors for RS-15/RS-19.
 - **RS-4** v0.1.0 MUST register exactly one room, Learn, with spaces Welcome, Study, Gallery in
   that order, and default space Study. *(Amended 2026-10-12, round 5, for v0.2.0.)* The rooms are registered in one list, in this
   order: Learn, then [Choose](/specs/choose-room.md). The frame MUST NOT name a room anywhere else

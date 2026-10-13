@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createSubject } from '../src/core/model';
+import { newLearnSubject } from '../src/rooms/learn/rules';
 import { addChild } from '../src/core/graph';
 
 test('WG-2/3/5/60..67: create, return, continue, rename and recycle through the library', async ({page})=>{
@@ -14,7 +14,7 @@ test('WG-2/3/5/60..67: create, return, continue, rename and recycle through the 
   await page.getByRole('button',{name:'Carry the lantern in'}).click();
   await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
   const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem(Object.keys(localStorage).find(k=>k.startsWith('lantern.subject.'))!)!));
-  expect(stored.rooms.learn.model).toBe('sonnet');expect(stored.rooms.learn.tone).toBe('engineer');
+  expect(stored.rooms.learn.model).toBe('sonnet');expect(stored.rooms.learn.data.tone).toBe('engineer');
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')!).provider.defaultModel)).toBe('opus');
   await page.locator('.panel').getByRole('button',{name:'Mechanism 1',exact:false}).click();
   await page.keyboard.press('Control+1');
@@ -86,15 +86,15 @@ test('WG-9..11/RS-19: the direction opens with Shift+Enter, is validated, stored
   await direction.focus();await direction.press('Enter');
   await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
   const stored=()=>page.evaluate(()=>JSON.parse(localStorage.getItem(Object.keys(localStorage).find(k=>k.startsWith('lantern.subject.'))!)!).rooms.learn);
-  expect((await stored()).direction).toBe('Start from one grain,\nthen clouds.');await expect.poll(async()=>(await stored()).log[0]?.promptVersion).toBe('learn-2');
+  expect((await stored()).data.direction).toBe('Start from one grain,\nthen clouds.');await expect.poll(async()=>(await stored()).log[0]?.promptVersion).toBe('learn-2');
   // RS-19: edited in the subject menu, applied on blur; emptying it removes the direction.
   await page.locator('header .subject').click();
   const menuDirection=page.locator('.subject-menu textarea.direction');
   await expect(menuDirection).toHaveValue('Start from one grain,\nthen clouds.');
   await menuDirection.fill('Only the maths.');await page.locator('.subject-menu').getByRole('textbox',{name:'Title',exact:true}).focus();
-  await expect.poll(async()=>(await stored()).direction).toBe('Only the maths.');
+  await expect.poll(async()=>(await stored()).data.direction).toBe('Only the maths.');
   await menuDirection.fill('');await page.locator('.subject-menu').getByRole('textbox',{name:'Title',exact:true}).focus();
-  await expect.poll(async()=>'direction' in (await stored())).toBe(false);
+  await expect.poll(async()=>'direction' in (await stored()).data).toBe(false);
   // An empty direction closes when focus leaves Welcome's field.
   await page.keyboard.press('Escape');await page.keyboard.press('Control+1');
   await subject.focus();await subject.fill('Another');await subject.press('Shift+Enter');await expect(direction).toBeFocused();
@@ -102,7 +102,7 @@ test('WG-9..11/RS-19: the direction opens with Shift+Enter, is validated, stored
 });
 
 test('WG-53..55/68: gallery filter survives navigation and detailed usage respects settings',async({page})=>{
-  const subjects=['Alpha','Beta','Gamma'].map(title=>createSubject(title));
+  const subjects=['Alpha','Beta','Gamma'].map(title=>newLearnSubject(title));
   await page.addInitScript(subjects=>{for(const s of subjects)localStorage.setItem(`lantern.subject.${s.id}`,JSON.stringify(s));},subjects);
   await page.goto('/');await page.keyboard.press('Control+3');
   await page.getByRole('textbox',{name:'Filter subjects'}).fill('BET');
@@ -120,8 +120,8 @@ test('WG-53..55/68: gallery filter survives navigation and detailed usage respec
 });
 
 test('WG-41/66: previews are capped and deleting a running subject cannot resurrect it',async({page})=>{
-  const subject=createSubject('Large map');const visit=subject.rooms.learn;visit.nodes[visit.rootId].state='lit';
-  for(let i=0;i<69;i++)addChild(visit,visit.rootId,{title:`Node ${i}`,hook:'',kind:'axis',createdBy:'tutor'});
+  const subject=newLearnSubject('Large map');const visit=subject.rooms.learn;visit.nodes[visit.rootId].state='lit';
+  for(let i=0;i<69;i++)addChild(visit,visit.rootId,{title:`Node ${i}`,hook:'',kind:'axis',state: 'open', createdBy: 'model'});
   await page.addInitScript(subject=>localStorage.setItem(`lantern.subject.${subject.id}`,JSON.stringify(subject)),subject);
   await page.goto('/?delay=300');await expect(page.locator('.welcome circle')).toHaveCount(60);await expect(page.locator('.welcome .overflow')).toHaveText('+10');
   await page.getByRole('textbox',{name:'What do you want to learn?'}).fill('Cancel and delete');await page.getByRole('button',{name:'Carry the lantern in'}).click();

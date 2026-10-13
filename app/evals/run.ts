@@ -69,7 +69,7 @@ for (let run = 1; run <= runs; run++) {
   console.log(`Run ${run}: ${passed}/${fixtures.length} (${(100 * passed / fixtures.length).toFixed(1)}%)`);
 }
 // Informational, not gated: does a reply with a direction visibly pick up its theme (harbours, sailing)?
-const steered = results.filter(r => { const c = fixtures.find(f => f.id === r.id)!; return c.subject.rooms.learn.direction && ['intro', 'light', 'more'].includes(c.task) && typeof r.text === 'string'; });
+const steered = results.filter(r => { const c = fixtures.find(f => f.id === r.id)!; return c.subject.rooms.learn.data?.direction && ['intro', 'light', 'more'].includes(c.task) && typeof r.text === 'string'; });
 const reflects = steered.filter(r => /harbo|port|sail|boat|ship|navig|bateau|voil|marin|naviga/i.test(r.text as string));
 console.log(`Direction reflected (informational): ${reflects.length}/${steered.length} intro/light/more replies mention harbours or sailing`);
 const folder = join(import.meta.dirname, 'results'); mkdirSync(folder, { recursive: true });

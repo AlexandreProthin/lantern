@@ -81,7 +81,7 @@ pub fn switch_library(old: &Path, destination: &Path, install: &Path, mode: &str
             let mut target = subject_path(&destination,id)?;
             let mut target_bytes = bytes.clone();
             if target.exists() {
-                if subject["format"] != "lantern/1" { return Err(format!("{}: newer-format collision cannot be renamed",path.display())); }
+                if subject["format"] != crate::storage::FORMAT { return Err(format!("{}: newer-format collision cannot be renamed",path.display())); }
                 let mut suffix = index;
                 loop { let new_id = format!("{id}-{nonce:x}-{suffix:x}"); target=subject_path(&destination,&new_id)?;
                     if !target.exists() { subject["id"]=json!(new_id); collisions.push(json!({"oldId":id,"newId":new_id})); break; } suffix+=1; }

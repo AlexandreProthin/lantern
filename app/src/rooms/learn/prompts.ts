@@ -1,6 +1,7 @@
 // TP-1..22: learn-2 text is copied verbatim from the approved tutor protocol (learn-2 adds DIRECTION_BLOCK, TP-13).
 import type { RoomVisit, Tone } from '../../core/model';
 import { childrenOf, nodeOf } from '../../core/graph';
+import { toneOf } from './rules';
 import { buildContext } from './context';
 import type { Task } from './protocol';
 export const promptVersion = 'learn-2';
@@ -37,5 +38,5 @@ export function taskPrompt(v: RoomVisit, task: Task, focusId: string, options: {
   if (task === 'reply') template = template.replace('{{SUBJECT_BLOCK}} {{DIRECTION_BLOCK}} {{MAP_BLOCK}} {{PATH_BLOCK}} {{PARENT_BLOCK}} {{FOCUS_BLOCK}} {{DIALOGUE_BLOCK}}', ordered.map(key => b[key]).filter(Boolean).join('\n\n'));
   template = template.replace('{{blocks as for reply}}', ordered.map(key => b[key]).filter(Boolean).join('\n\n'));
   const prompt = template.replace(/\{\{([^}]+)\}\}/g, (_, key: string) => slots[key] ?? '').replace(/\n{3,}/g, '\n\n').trim();
-  return { system: systemPrompt(v.tone), prompt, promptVersion, stats: context.stats };
+  return { system: systemPrompt(toneOf(v)), prompt, promptVersion, stats: context.stats };
 }

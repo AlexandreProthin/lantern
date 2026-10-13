@@ -1,5 +1,5 @@
 import type { GraphNode, RoomVisit } from '../../core/model';
-import { setState } from '../../core/graph';
+import { setState } from './rules';
 import { strings } from '../../ui/strings';
 import type { LearnSession } from './session';
 

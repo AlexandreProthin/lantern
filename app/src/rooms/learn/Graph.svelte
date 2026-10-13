@@ -29,6 +29,7 @@
   import { SpawnMotion } from './spawn-motion';
   import { nodeActions, runNodeAction, type NodeAction, type PanelRequest } from './actions';
   import { searchNodes, stepMatch } from './graph-search';
+  import { understoodBy } from './rules';
   import { backdropLight, backdropPan } from '../../frame/backdrop-signals';
 
   let { session, revision, settings, preferencesChanged, navigate = () => {}, visible = true, openInPanel = () => {}, library, linkPreview = null }: { library?: LibrarySpaces; linkPreview?: string | null; session: LearnSession; revision: number; settings: Settings; preferencesChanged: () => void; navigate?: (space: string) => void; visible?: boolean; openInPanel?: (kind: PanelRequest['kind'], nodeId: string) => void } = $props();
@@ -697,12 +698,12 @@
         class:unmatched={searching && !n.pending && !matchSet.has(n.id)}
         data-id={n.id}
         data-state={n.state}
-        data-understood={n.understoodBy}
+        data-understood={understoodBy(n)}
         data-pending={n.pending}
         data-growing={!n.pending&&scene.key(n.id)===n.id&&Date.parse(n.createdAt)>openedAt ? 'true' : undefined}
         style="left: {n.x}px; top: {n.y}px;--slot:{n.slot ?? 0};--back-x:{n.backX}px;--back-y:{n.backY}px"
         aria-pressed={focused}
-        aria-label="{title(n.title)} · {n.kind} · {n.state}{n.understoodBy ? ' · '+(n.understoodBy==='self'?strings.understoodByYou:strings.demonstratedState) : ''}{busy ? ' · '+strings.preparing : ''}"
+        aria-label="{title(n.title)} · {n.kind} · {n.state}{understoodBy(n) ? ' · '+(understoodBy(n)==='self'?strings.understoodByYou:strings.demonstratedState) : ''}{busy ? ' · '+strings.preparing : ''}"
         title="{title(n.title)} · {n.state}"
         onclick={() => session.setFocus(n.id)}
         oncontextmenu={(e) => { if (!n.pending) openMenu(e, n.id); }}

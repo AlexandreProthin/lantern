@@ -1,7 +1,6 @@
 import type { Storage, Stamp, Loaded } from './persistence';
-import { parseSubject } from '../core/model';
+import { convertV1, parseSubject, visitSummary } from '../core/model';
 import type { Subject } from '../core/model';
-import { stats } from '../core/stats';
 import type { LibraryState, SubjectSummary } from './catalogue';
 const key = (id: string) => `lantern.subject.${id}`;
 const stamp = (text: string): Stamp => ({ size: text.length, modifiedNs: '0', hash: text });
@@ -9,13 +8,13 @@ const stamp = (text: string): Stamp => ({ size: text.length, modifiedNs: '0', ha
 export const browserStorage: Storage = {
   async load(_, id) {
     const raw = localStorage.getItem(key(id)); if (!raw) throw new Error('Subject not found');
-    return { subject: parseSubject(JSON.parse(raw)), stamp: stamp(raw), readOnly: false };
+    return { subject: parseSubject(convertV1(JSON.parse(raw))), stamp: stamp(raw), readOnly: false };
   },
   async save(_, subject, expected, dirty) {
     const raw = localStorage.getItem(key(subject.id));
     if ((raw ? stamp(raw).hash : null) !== (expected?.hash ?? null)) {
       if (!raw) throw new Error('Subject removed externally');
-      const loaded: Loaded = { subject: parseSubject(JSON.parse(raw)), stamp: stamp(raw), readOnly: false };
+      const loaded: Loaded = { subject: parseSubject(convertV1(JSON.parse(raw))), stamp: stamp(raw), readOnly: false };
       if (!dirty) return { kind: 'reloaded', loaded };
       const conflictPath = key(subject.id) + `.conflict-${Date.now()}`; localStorage.setItem(conflictPath, JSON.stringify(subject));
       return { kind: 'conflict', loaded, conflictPath };
@@ -29,15 +28,15 @@ export function browserSubjects(): Subject[] {
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i)!;
     if (!k.startsWith('lantern.subject.') || k.includes('.conflict-')) continue;
-    try { subjects.push(parseSubject(JSON.parse(localStorage.getItem(k)!))); } catch { /* unreadable entries stay on disk */ }
+    try { subjects.push(parseSubject(convertV1(JSON.parse(localStorage.getItem(k)!)))); } catch { /* unreadable entries stay on disk */ }
   }
   return subjects;
 }
 export function browserSummaries(): SubjectSummary[] {
   return browserSubjects().map(subject => {
-    const s = stats(subject.rooms.learn), raw = localStorage.getItem(key(subject.id))!;
-    return { ...s, id: subject.id, title: subject.title, path: key(subject.id), createdAt: subject.createdAt,
-      tone: subject.rooms.learn.tone, modelOutputs: Object.fromEntries(s.models.map(m => [m.model, m.output])),
+    const raw = localStorage.getItem(key(subject.id))!;
+    return { id: subject.id, title: subject.title, path: key(subject.id), createdAt: subject.createdAt,
+      rooms: Object.fromEntries(Object.entries(subject.rooms).map(([room, visit]) => [room, visitSummary(visit)])),
       modifiedNs: raw, size: raw.length };
   });
 }
