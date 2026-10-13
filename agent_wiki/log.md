@@ -2,6 +2,7 @@
 
 ## 2026-10-13
 
+* **v0.2.0 A1 written** (awaiting the user): the `lantern/2` field list in [domain-model](/specs/domain-model.md) DM-60 to DM-68 with an example (core fields; `data` on visits, nodes and log records; neutral `user`/`model` roles; `task` a string; `toolCalls`; Learn's `data`: `tone`, `direction`, `understoodBy`), validation split (Rust core only, room values in TypeScript), and conversion in [subject-storage](/specs/subject-storage.md) ST-32 to ST-36 (first read, backup in `subjects/.lantern1-backup/`, idempotent, cache discarded) with a per-room summary cache (ST-7).
 * **Plan**: [v0.2.0](/plans/v0-2-0.md), in two parts: A (format field list, lantern/2 storage and core, the room list in the frame, the web-tools spike, release v0.2.0 with Learn unchanged) and B (design rounds, finishing the Choose spec and its `choose-1` prompts, tools and model per call, the room module, tests, eval gate and the 3D printer acceptance session). [roadmap](/plans/roadmap.md) step 8.
 
 ## 2026-10-12

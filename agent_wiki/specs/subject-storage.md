@@ -17,13 +17,13 @@ Content of the file: [domain-model](/specs/domain-model.md).
 
 ## Format and location
 
-- **ST-1** Each subject MUST be one JSON file with `"format": "lantern/1"`. *(Amended 2026-10-12, round 6, for v0.2.0.)* From v0.2.0 the format is `lantern/2` ([decision](/decisions/format-lantern-2.md)); a `lantern/1` file is converted on first open, with a backup (ST-31).
+- **ST-1** Each subject MUST be one JSON file with `"format": "lantern/1"`. *(Amended 2026-10-12, round 6, for v0.2.0.)* From v0.2.0 the format is `lantern/2` ([decision](/decisions/format-lantern-2.md), [domain-model](/specs/domain-model.md) DM-60 to DM-68); `lantern/1` files are converted as ST-32 to ST-36 say.
 - **ST-2** Subjects MUST live at `<library>/subjects/<id>.json`, where `<library>` is a folder the user chooses; the default is `Documents/Lantern`. This is the same place as the PoC, so the default library already contains PoC files. Files in `subjects/` whose name is not a valid `<id>.json` (for example uppercase letters or reserved names) are foreign: the app MUST ignore them everywhere (listing, import, library transfer), neither listing nor modifying them, and MUST NOT report an error.
 - **ST-3** App settings and app state MUST be stored app-side (OS config directory) and MUST NOT be stored in the library.
 - **ST-4** A subject id MUST be the slug of its title plus 4 random characters, using only `[a-z0-9-]`, and MUST be validated before it becomes a path.
 - **ST-5** Renaming a subject MUST change the title only, never the id or the filename.
 - **ST-6** `lastOpenedAt` and the recents list MUST be kept **app-side**, in the app state file `%APPDATA%/Lantern/state.json` (separate from `settings.json`; [settings](/specs/settings.md) SE-50), keyed by subject id. Opening a subject MUST NOT modify its file. *(Amended 2026-10-12, round 5, for v0.2.0.)* Each room's Welcome shows the recents among its own subjects (DM-1); the stored list stays one list.
-- **ST-7** Gallery and Welcome statistics MUST come from an **app-side summary cache**, keyed by file path and invalidated by the file's mtime and size, holding: title, counts, tokens, main model, `createdAt`, the tone, the output tokens per resolved model and the generation count (definitions in [welcome-gallery](/specs/welcome-gallery.md) WG-30 to WG-32 and WG-36; they feed the detailed stats of a selected Gallery card, WG-68). It is derived data: it can be deleted at any time and is rebuilt by reading the subject files. It MUST NOT be stored in a subject file.
+- **ST-7** Gallery and Welcome statistics MUST come from an **app-side summary cache**, keyed by file path and invalidated by the file's mtime and size, holding: title, counts, tokens, main model, `createdAt`, the tone, the output tokens per resolved model and the generation count (definitions in [welcome-gallery](/specs/welcome-gallery.md) WG-30 to WG-32 and WG-36; they feed the detailed stats of a selected Gallery card, WG-68). It is derived data: it can be deleted at any time and is rebuilt by reading the subject files. It MUST NOT be stored in a subject file. *(Amended 2026-10-13 for v0.2.0.)* The cache holds, per subject, the title, `createdAt` and **one summary per room visit**: the number of nodes per `state`, the count of each short string value per node `data` key (for example Learn's `understoodBy`), the visit's short `data` values (strings of at most 64 characters, numbers, booleans, a tone object), the token totals, the output tokens per resolved model and the generation count. It knows no room: each room turns its visit summary into its Welcome and Gallery stats (WG-30 to WG-36 for Learn). Thumbnails (WG-40) take the room id.
 - **ST-8** Deleting a subject MUST move its file to the Windows Recycle Bin, never remove it permanently, and MUST drop its entries from the state file and the summary cache.
 
 ## Write safety
@@ -40,10 +40,25 @@ Content of the file: [domain-model](/specs/domain-model.md).
 
 - **ST-30** A reader MUST open a file with a higher major format read-only and show a message.
 - **ST-31** Migrations MUST be forward-only and MUST keep a backup of the previous file.
+- **ST-32** *(v0.2.0.)* A `lantern/1` file MUST be converted to `lantern/2` (DM-68) **the first time
+  the app reads it**: when the library is listed at launch, when a subject is opened, and when a
+  library is moved or copied. In practice the whole library converts at the first launch of v0.2.0.
+- **ST-33** Before replacing a file, its original bytes MUST be written to
+  `<library>/subjects/.lantern1-backup/<id>.json` (kept if it already exists). The converted
+  subject MUST pass core validation (DM-66) before it replaces the original, through the atomic
+  write of ST-20.
+- **ST-34** A file that fails to convert MUST be left untouched and shown as unreadable with the
+  error, like any other unreadable file; it MUST NOT block the rest of the library.
+- **ST-35** Conversion MUST be idempotent: a `lantern/2` file is never converted again, and a
+  second run changes nothing.
+- **ST-36** The summary cache (ST-7) is versioned; a cache written by v0.1.x MUST be discarded, so
+  every file is read (and converted) once. An app older than v0.2.0 opens a `lantern/2` file
+  read-only with a message (ST-30, already the case in v0.1.5); the backups allow going back by
+  hand.
 
 ## PoC import
 
-- **ST-40** On first launch, `lantern-poc/1` files in `<library>/subjects/` MUST be converted to `lantern/1`: the graph moves under `rooms.learn`, `parentId` becomes `parents`, missing provenance is marked unknown.
+- **ST-40** *(From v0.2.0 the result is `lantern/2`: the PoC conversion is followed by ST-32 in the same step.)* On first launch, `lantern-poc/1` files in `<library>/subjects/` MUST be converted to `lantern/1`: the graph moves under `rooms.learn`, `parentId` becomes `parents`, missing provenance is marked unknown.
 - **ST-41** Originals MUST be kept in `<library>/subjects/.poc-backup/`.
 - **ST-42** The import MUST be idempotent: running it again changes nothing.
 
