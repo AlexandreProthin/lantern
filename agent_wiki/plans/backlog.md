@@ -9,6 +9,18 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T00:30:00Z }
 
 Entries move out of here into a versioned plan when the user schedules them. Newest first.
 
+# Future rooms: Think, Explore, Interview
+
+- **Added:** 2026-10-12, on the user's request, when the Choose room was picked as the second room.
+- **What:** three rooms after Choose, no order fixed yet:
+  - **Think**: "make me think", the user does the reasoning and Lantern is the foil (product-scope
+    already lists *the Think room* as Later).
+  - **Explore**: close to Learn but without the learning angle; what it is exactly is still to be
+    determined.
+  - **Interview**: resume, skills and experience, to prepare a job interview and find job
+    opportunities.
+- **Needs:** each one a spec workshop round, on top of the room-generic frame the Choose room brings.
+
 # Export a subject
 
 - **Added:** 2026-10-07, on the user's request.

@@ -50,6 +50,11 @@
       "id": "settings",
       "title": "Settings",
       "blurb": "What is configurable, and where."
+    },
+    {
+      "id": "buy",
+      "title": "Choose room",
+      "blurb": "The second room: help me choose (and buy) something I know nothing about yet."
     }
   ],
   "rounds": [
@@ -72,6 +77,16 @@
       "number": 4,
       "created_at": "2026-10-02T11:00:00+00:00",
       "intro": "**Specs step closed (2026-10-02).** All 13 specs are agreed and marked *stable* in the wiki; the v0.1.0 implementation plan is `agent_wiki/plans/v0-1-0.md` (Specs tab). No questions this round. This workshop stays available: a spec change during implementation goes through a new round here, so the reasoning stays on record."
+    },
+    {
+      "number": 5,
+      "created_at": "2026-10-12T12:00:00+00:00",
+      "intro": "**Round 5: the Choose room.** Lantern gets its second room, **Choose** (name picked in chat on 2026-10-12 over *Buy*, *Weigh* and *Seek*): it helps you choose and buy something you know nothing about yet (your example: a 3D printer).\n\nAlready decided in chat (2026-10-12) and recorded in the wiki: Welcome and Gallery belong to each room; no Home page for now (maybe later); the app opens on the room you were in. Think, Explore and Interview are in the backlog as the rooms after Choose.\n\nThis round has two parts:\n\n- **Frame** (5 questions): what changes in the app so it can hold more than one room. Today the code still assumes Learn in a few places (the shell, the Gallery stats in Rust, the settings, and the node kinds and states in the core model).\n- **Choose room** (11 questions): what the room is for, how a session goes, what is in the graph, and where facts like prices come from.\n\nAs before, my take is collapsed: answer first. Anything you are not sure about, flag it to discuss."
+    },
+    {
+      "number": 6,
+      "created_at": "2026-10-12T22:30:00+00:00",
+      "intro": "**Round 6: Choose room details.** Round 5 is folded in: the new spec **Choose room** is in the Specs tab (draft), and the frame changes are amendments marked *round 5* in Rooms and spaces, Domain model, Product scope, Settings and Subject storage.\n\nThis round settles what round 5 left open: the graph space's name, where the decision board lives, the subject status, what the web is used for and which sources count, Compare, the recommendation, tone, the room's settings, the file format, and one contradiction between two of your answers (*Open in Learn*).\n\nWhen this round is answered the Choose room spec can go to review, then I write the v0.2.0 plan (frame release first)."
     }
   ],
   "questions": [
@@ -2188,6 +2203,999 @@
       "settled": {
         "summary": "All twelve accepted.",
         "spec": "specs/learn-room.md"
+      }
+    },
+    {
+      "id": "q-r5-open-space",
+      "round": 5,
+      "area": "rooms",
+      "title": "On launch, where exactly in the last room do you land?",
+      "context": "You said the app shows the room you were in. Today (RS-10) it opens on that room's **Welcome**, never straight into a subject.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "a",
+          "label": "That room's Welcome",
+          "detail": "As today. You pick a recent subject or start one."
+        },
+        {
+          "id": "b",
+          "label": "Where you left off",
+          "detail": "The same space and the same open subject (Study on your 3D printer subject, for example). Welcome if that subject is gone."
+        }
+      ],
+      "allow_other": true,
+      "take": "**a**, unless you often close in the middle of something. Welcome is one click from a recent subject and is the calmer start. **b** is easy to build if you prefer it.",
+      "settled": {
+        "summary": "The app opens on the last room's **Welcome** (RS-10 amended).",
+        "spec": "specs/rooms-spaces.md"
+      }
+    },
+    {
+      "id": "q-r5-switch",
+      "round": 5,
+      "area": "rooms",
+      "title": "How do you change room?",
+      "context": "The header's room chip (*Learn*) is a label today; RS-12 already says it becomes the switcher when a second room ships.",
+      "kind": "multi",
+      "options": [
+        {
+          "id": "chip",
+          "label": "Click the room chip: a small menu of rooms",
+          "detail": "Each with its name and its lantern colour.",
+          "recommended": true
+        },
+        {
+          "id": "keys",
+          "label": "A shortcut",
+          "detail": "For example Ctrl+Shift+1 / 2 for rooms (Ctrl+1/2/3 already pick spaces)."
+        },
+        {
+          "id": "mark",
+          "label": "The Lantern mark opens the room menu",
+          "detail": "Instead of going to the current room's Welcome."
+        }
+      ],
+      "allow_other": true,
+      "take": "**Chip menu + a shortcut.** Keep the Lantern mark as it is (to Welcome). Switching room opens that room's Welcome (or where you left it, per the previous question).",
+      "settled": {
+        "summary": "The room chip opens a room menu; **Ctrl+Shift+1/2…** open a room's Welcome (RS-12, RS-23, GV-76).",
+        "spec": "specs/rooms-spaces.md"
+      }
+    },
+    {
+      "id": "q-r5-cross-room",
+      "round": 5,
+      "area": "rooms",
+      "title": "Can one subject live in several rooms?",
+      "context": "The file format already allows it: a subject holds one *visit* per room, each with its own graph ([graph-per-room-visit](/wiki/decisions/graph-per-room-visit.md)). Example: you learn about 3D printing in Learn, then want to buy one.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "a",
+          "label": "No: each room has its own subjects",
+          "detail": "Buying a 3D printer and learning 3D printing are two subjects. Simplest."
+        },
+        {
+          "id": "b",
+          "label": "Yes, now",
+          "detail": "From a subject in one room you can open it in another; each room keeps its own graph. Galleries show which rooms a subject has."
+        },
+        {
+          "id": "c",
+          "label": "Not now, keep the door open",
+          "detail": "Ship **a**; the format keeps allowing **b**, which goes to the backlog."
+        }
+      ],
+      "allow_other": true,
+      "take": "**c**. The format already allows it, so there is nothing to lose by waiting, and it is clearer to see how two rooms are used before linking them.",
+      "settled": {
+        "summary": "Not now: a subject belongs to the room it was created in; the format keeps allowing several (DM-1, Later in PS).",
+        "spec": "specs/domain-model.md"
+      }
+    },
+    {
+      "id": "q-r5-node-model",
+      "round": 5,
+      "area": "rooms",
+      "title": "Let each room define its own node kinds and states in the file format?",
+      "context": "The decision was already that each room defines its own node kinds, states and actions. But the core model and the Rust validator hard-code Learn's (kinds *axis, deeper, exercise…*, states *open, lit, understood, dismissed*, roles *tutor/learner*). A Choose room needs other ones (for example a product that is *shortlisted* or *rejected*).",
+      "kind": "single",
+      "options": [
+        {
+          "id": "a",
+          "label": "Yes: the shared shape stays in the core, kinds and states belong to the room",
+          "detail": "Core keeps id, parents, title, content, authorship, edits, dialogue, log. Each room validates its own kinds, states and extra fields. Learn files stay readable as they are.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "No: map Choose onto Learn's kinds and states",
+          "detail": "No format work, but Choose has to pretend a product is *lit* or *understood*."
+        }
+      ],
+      "allow_other": true,
+      "take": "**a**. It is a one-time change, and it is what makes 'adding a room does not change the storage format' (PS-3) actually true for Think, Explore and Interview later. Existing subjects need no migration if the format version is kept or bumped with a read-old rule.",
+      "settled": {
+        "summary": "Shared node core; kinds, states and extra fields belong to the room (DM-4).",
+        "spec": "specs/domain-model.md"
+      }
+    },
+    {
+      "id": "q-r5-release",
+      "round": 5,
+      "area": "rooms",
+      "title": "How should this ship?",
+      "context": "Two pieces of work: making the frame room-generic (with Learn unchanged), and the Choose room itself.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "a",
+          "label": "Two steps: a frame-only release, then Choose",
+          "detail": "Learn must look and behave exactly the same after step 1; all current tests pass. Then Choose lands on top.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "One release with both",
+          "detail": "Fewer releases, but a regression in Learn and a new room arrive together."
+        }
+      ],
+      "allow_other": true,
+      "take": "**a**. You use Learn every day: the generic frame should prove it changed nothing before a new room depends on it. Both could still be in one version plan (v0.2.0 with two slices).",
+      "settled": {
+        "summary": "Two steps: a room-generic frame release with Learn unchanged, then Choose (RS-4, PS-1).",
+        "spec": "specs/product-scope.md"
+      }
+    },
+    {
+      "id": "q-buy-name",
+      "round": 5,
+      "area": "buy",
+      "title": "What is the room called?",
+      "context": "The room chip shows it, and it will sit next to Learn, Think, Explore and Interview.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "buy",
+          "label": "Buy",
+          "detail": "Plain and clear."
+        },
+        {
+          "id": "choose",
+          "label": "Choose",
+          "detail": "Covers choosing without buying too (a service, a school…)."
+        },
+        {
+          "id": "shop",
+          "label": "Shop"
+        },
+        {
+          "id": "decide",
+          "label": "Decide",
+          "detail": "Broader: any decision, not only purchases."
+        }
+      ],
+      "allow_other": true,
+      "take": "**Buy**: it says exactly what the room is for, in one syllable like *Learn* and *Think*. *Decide* is tempting, but it overlaps with Think.",
+      "settled": {
+        "summary": "**Choose**, decided in chat on 2026-10-12 (over Buy, Weigh, Seek): it names the outcome, a reasoned choice, and also fits things you don't buy, such as an insurance or a school.",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-buy-goal",
+      "round": 5,
+      "area": "buy",
+      "title": "What should you walk away with?",
+      "context": "Tick everything the room should get you to. This drives what is in the graph and what the last step looks like.",
+      "kind": "multi",
+      "options": [
+        {
+          "id": "understand",
+          "label": "Enough understanding of the field to choose",
+          "detail": "What the words mean and which differences matter (for 3D printers: FDM vs resin, bed slinger vs CoreXY, enclosure…).",
+          "recommended": true
+        },
+        {
+          "id": "needs",
+          "label": "A clear list of my needs and constraints",
+          "detail": "What I'll make, budget, space, noise, country…",
+          "recommended": true
+        },
+        {
+          "id": "criteria",
+          "label": "The criteria that matter, ranked for me",
+          "detail": "And the ones that don't matter for me.",
+          "recommended": true
+        },
+        {
+          "id": "shortlist",
+          "label": "A shortlist of real products",
+          "detail": "Named models with their key facts.",
+          "recommended": true
+        },
+        {
+          "id": "compare",
+          "label": "A side-by-side comparison",
+          "detail": "Shortlist against my criteria.",
+          "recommended": true
+        },
+        {
+          "id": "pick",
+          "label": "A recommendation with its reasons",
+          "detail": "Which one, and why it fits me; what I'd give up.",
+          "recommended": true
+        },
+        {
+          "id": "where",
+          "label": "Where to buy and at what price, now",
+          "detail": "Needs fresh data, see the web question."
+        },
+        {
+          "id": "after",
+          "label": "After the purchase",
+          "detail": "Setup, first steps, accessories and consumables to get."
+        }
+      ],
+      "allow_other": true,
+      "take": "Everything from *understanding* to *a recommendation with its reasons*. *Where and price* only if the web question goes that way. *After the purchase* fits better as Later, or as a handoff to Learn.",
+      "settled": {
+        "summary": "Everything from understanding to a reasoned recommendation (CR-1); your web note goes to q-r6-web-tasks.",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-buy-shape",
+      "round": 5,
+      "area": "buy",
+      "title": "What is the overall shape of a session?",
+      "context": "Learn is a free graph you explore. Buying has a natural end point (a decision), so it may want more structure.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "a",
+          "label": "Fixed stages",
+          "detail": "Understand → My needs → Options → Compare → Decide, one after the other, like a wizard."
+        },
+        {
+          "id": "b",
+          "label": "A free graph, like Learn",
+          "detail": "With Choose's own node kinds (concept, need, criterion, product…); you explore in any order."
+        },
+        {
+          "id": "c",
+          "label": "A graph plus a decision board",
+          "detail": "You explore freely in the graph; a board collects what has been settled as you go: needs, ranked criteria, shortlist, the pick. The board shows what is still missing before a decision.",
+          "recommended": true
+        }
+      ],
+      "allow_other": true,
+      "take": "**c**. The graph keeps what is good about Learn (go where your curiosity goes) and the board gives the session a direction and an end. Its look would be a design task in `agent_design`, as Welcome was.",
+      "settled": {
+        "summary": "A free graph plus a decision board (CR-10).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-buy-spaces",
+      "round": 5,
+      "area": "buy",
+      "title": "Which spaces does the Choose room have?",
+      "context": "Welcome and Gallery are per room (decided). Learn's middle space is Study.",
+      "kind": "multi",
+      "options": [
+        {
+          "id": "welcome",
+          "label": "Welcome",
+          "detail": "Start a purchase (what do you want to buy?) or continue a recent one.",
+          "recommended": true
+        },
+        {
+          "id": "explore",
+          "label": "The graph + reading panel (like Study)",
+          "detail": "Name to be decided.",
+          "recommended": true
+        },
+        {
+          "id": "compare",
+          "label": "Compare: a table of the shortlist against my criteria",
+          "detail": "Its own space, full width.",
+          "recommended": true
+        },
+        {
+          "id": "gallery",
+          "label": "Gallery",
+          "detail": "All your purchases, with their status (exploring, decided, bought).",
+          "recommended": true
+        }
+      ],
+      "allow_other": true,
+      "take": "All four. The decision board could live in the panel of the graph space rather than as its own space; the **Compare** table is wide enough to need its own.",
+      "settled": {
+        "summary": "Welcome, graph space, Compare, Gallery (CR-11).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-buy-nodes",
+      "round": 5,
+      "area": "buy",
+      "title": "What kinds of nodes are in a Choose graph?",
+      "context": "Tick the kinds you want. Each would have its own glyph and legend row.",
+      "kind": "multi",
+      "options": [
+        {
+          "id": "concept",
+          "label": "Concept",
+          "detail": "A thing to understand to choose well (*What is a heated bed?*).",
+          "recommended": true
+        },
+        {
+          "id": "need",
+          "label": "Need (a question to me)",
+          "detail": "*What will you print? How much can you spend?* Answered by you; feeds the criteria.",
+          "recommended": true
+        },
+        {
+          "id": "criterion",
+          "label": "Criterion",
+          "detail": "Something to compare on (*build volume*, *noise*), with why it matters for you.",
+          "recommended": true
+        },
+        {
+          "id": "family",
+          "label": "Product family",
+          "detail": "A group of similar products (*enclosed CoreXY around 600 €*).",
+          "recommended": true
+        },
+        {
+          "id": "product",
+          "label": "Product",
+          "detail": "A real model, with key facts and sources.",
+          "recommended": true
+        },
+        {
+          "id": "tradeoff",
+          "label": "Trade-off",
+          "detail": "*Speed vs. print quality*, *price vs. ecosystem lock-in*."
+        },
+        {
+          "id": "own",
+          "label": "My own node",
+          "detail": "As in Learn."
+        }
+      ],
+      "allow_other": true,
+      "take": "Concept, need, criterion, family, product, plus *my own node* as in Learn. A trade-off can be a concept, so it doesn't need its own kind.",
+      "settled": {
+        "summary": "subject, concept, need, criterion, family, product, own (CR-20).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-buy-states",
+      "round": 5,
+      "area": "buy",
+      "title": "Which states should nodes have?",
+      "context": "Learn has *open → lit → understood*, plus *dismissed*. Here is a proposal; untick what you don't want or say what you'd change in the notes.",
+      "kind": "multi",
+      "options": [
+        {
+          "id": "open-lit",
+          "label": "Concepts: open → lit, as in Learn",
+          "detail": "No *understood*/test step: this room is not about testing you.",
+          "recommended": true
+        },
+        {
+          "id": "need",
+          "label": "Needs: open → answered",
+          "detail": "Your answer is stored and shown on the board.",
+          "recommended": true
+        },
+        {
+          "id": "crit",
+          "label": "Criteria: open → must / nice / doesn't matter",
+          "detail": "That sets the ranking on the board.",
+          "recommended": true
+        },
+        {
+          "id": "product",
+          "label": "Products: candidate → shortlisted → chosen, or rejected (with a reason)",
+          "recommended": true
+        },
+        {
+          "id": "bought",
+          "label": "The subject: exploring → decided → bought",
+          "detail": "Shown in the Gallery.",
+          "recommended": true
+        },
+        {
+          "id": "dismissed",
+          "label": "Dismissed for any node, as in Learn",
+          "recommended": true
+        }
+      ],
+      "allow_other": true,
+      "take": "All of them. The header stats would then read something like *4 needs · 6 criteria · 3 shortlisted*.",
+      "settled": {
+        "summary": "All proposed states (CR-21, CR-24, CR-25).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-buy-needs",
+      "round": 5,
+      "area": "buy",
+      "title": "How does the room find out what you need?",
+      "context": "To recommend anything it has to know your use, budget and constraints, but you may not know them at the start (that's the point of the room).",
+      "kind": "multi",
+      "options": [
+        {
+          "id": "welcome",
+          "label": "A few questions on Welcome",
+          "detail": "Optional field like Learn's direction: *budget ~500 €, I want to print figurines for my kids*."
+        },
+        {
+          "id": "nodes",
+          "label": "Need nodes that appear as you explore",
+          "detail": "Asked at the moment they become meaningful (*enclosure matters if you print ABS; will you?*).",
+          "recommended": true
+        },
+        {
+          "id": "chat",
+          "label": "From what you say in the dialogue",
+          "detail": "The tutor proposes recording a need when you mention one; you confirm.",
+          "recommended": true
+        },
+        {
+          "id": "profile",
+          "label": "A needs card on the board you can edit at any time",
+          "recommended": true
+        }
+      ],
+      "allow_other": true,
+      "take": "Need nodes + the dialogue + an editable card on the board. A Welcome direction field (as in Learn) for whatever you already know. Not a questionnaire up front: you don't know enough yet to answer it.",
+      "settled": {
+        "summary": "Welcome direction, need nodes, dialogue, editable needs card (CR-30 to CR-32).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-buy-web",
+      "round": 5,
+      "area": "buy",
+      "title": "Where do product facts and prices come from?",
+      "context": "Product facts go out of date fast, and the model only knows what it was trained on. Today the CLI runs with **no tools at all** (`--tools \"\"`, IP-60), so it cannot look anything up. Turning on web search and page fetching only (still no file access) is possible, but slower and uses more tokens, and it changes the security posture.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "a",
+          "label": "The model's knowledge only",
+          "detail": "Every product fact is marked with the model's knowledge date; you check prices yourself. No change to the provider."
+        },
+        {
+          "id": "b",
+          "label": "Web search for product and price steps",
+          "detail": "Only those calls can search and fetch pages; every fact links its source and date. Concept explanations stay offline.",
+          "recommended": true
+        },
+        {
+          "id": "c",
+          "label": "You bring the data",
+          "detail": "You paste links or specs; the room reads what you give it."
+        },
+        {
+          "id": "d",
+          "label": "b and c"
+        }
+      ],
+      "allow_other": true,
+      "take": "**b** (or **d**). A buying advisor that doesn't know this year's models would let you down on exactly the step that matters. Restrict it to the product tasks, show sources and dates, and keep everything else offline. This needs its own decision (it changes [claude-cli-provider-flags](/wiki/decisions/claude-cli-provider-flags.md)) and a check of how the CLI reports web usage and cost.",
+      "settled": {
+        "summary": "Web search and fetch for research steps, with sources (CR-40 to CR-43); details in round 6.",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-buy-learn-depth",
+      "round": 5,
+      "area": "buy",
+      "title": "How much teaching happens in Choose?",
+      "context": "You know nothing about 3D printers yet. The room has to explain, but it isn't Learn.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "a",
+          "label": "Just enough to decide",
+          "detail": "Short explanations aimed at the choice; each concept says why it matters for buying.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "As deep as I want",
+          "detail": "Like Learn, without the tests."
+        },
+        {
+          "id": "c",
+          "label": "Just enough, plus an *Open in Learn* handoff",
+          "detail": "Depends on the cross-room question; Later if that is Later."
+        }
+      ],
+      "allow_other": true,
+      "take": "**a** now; **c** when subjects can live in several rooms. Keeping explanations aimed at the decision is what makes Choose feel different from Learn."
+    },
+    {
+      "id": "q-buy-accent",
+      "round": 5,
+      "area": "buy",
+      "title": "What colour is the Choose lantern?",
+      "context": "Each room has its own accent (PS-7). Learn is amber. The final look is a design task; this is only the direction. The gold used across this page is Learn's amber, for comparison.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "green",
+          "label": "Sage / jade green",
+          "detail": "Calm, 'go'.",
+          "tint": "#7cc49a"
+        },
+        {
+          "id": "teal",
+          "label": "Teal",
+          "detail": "Cool and clear, far from amber.",
+          "tint": "#4fc1c0"
+        },
+        {
+          "id": "copper",
+          "label": "Copper / rose gold",
+          "detail": "Warm like amber, but distinct.",
+          "tint": "#d9967a"
+        },
+        {
+          "id": "violet",
+          "label": "Soft violet",
+          "tint": "#ad98e6"
+        }
+      ],
+      "allow_other": true,
+      "take": "**Teal**: the most distinct from amber while staying calm, and it leaves green for a later room. But this is your taste, and the design round decides it.",
+      "settled": {
+        "summary": "**Teal** (CR-70); copper / rose gold kept in mind for a future room.",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-buy-story",
+      "round": 5,
+      "area": "buy",
+      "title": "In your own words: how should the 3D printer session go?",
+      "context": "Describe it from the first screen to the moment you order, including anything I haven't asked about (things that annoy you on comparison sites, what you'd trust, what you'd never want).",
+      "kind": "text",
+      "settled": {
+        "summary": "Objective facts, not sponsored (CR-2, CR-42).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-learn-handoff",
+      "round": 6,
+      "area": "buy",
+      "title": "Open in Learn: now or later?",
+      "context": "In round 5 you picked *Just enough, plus an Open in Learn handoff* for teaching, and *Not now, keep the door open* for subjects living in several rooms. The handoff needs the second one (the subject would open in Learn with its own graph).",
+      "kind": "single",
+      "options": [
+        {
+          "id": "later",
+          "label": "Just enough now; Open in Learn comes later with subjects in several rooms",
+          "recommended": true
+        },
+        {
+          "id": "now",
+          "label": "Bring in what the handoff needs now",
+          "detail": "Only this case: a Choose subject can also get a Learn visit, opened from a concept node. Everything else about cross-room subjects stays Later."
+        }
+      ],
+      "allow_other": true,
+      "take": "**Later**. It keeps v0.2.0 smaller, and you'll know better how you use both rooms before linking them. In the meantime you can start a Learn subject by hand.",
+      "settled": {
+        "summary": "Later, with subjects in several rooms (CR-3).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-space-name",
+      "round": 6,
+      "area": "buy",
+      "title": "What is the graph space called?",
+      "context": "Learn's is *Study*. It shows in the header tooltip and the shortcut table. *Explore* is taken by a future room.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "survey",
+          "label": "Survey",
+          "detail": "Look over the field before deciding. Pairs with Study."
+        },
+        {
+          "id": "scout",
+          "label": "Scout",
+          "detail": "Going ahead to see what's out there."
+        },
+        {
+          "id": "map",
+          "label": "Map",
+          "detail": "The graph is your map of the field."
+        },
+        {
+          "id": "weigh",
+          "label": "Weigh",
+          "detail": "Where needs and options are weighed."
+        }
+      ],
+      "allow_other": true,
+      "take": "**Survey**: it says what you do there (look over the field) and sits well next to Study. *Scout* is close to Explore.",
+      "settled": {
+        "summary": "**Survey** (CR-11).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-board",
+      "round": 6,
+      "area": "buy",
+      "title": "Where does the decision board live?",
+      "context": "The board collects needs, ranked criteria, shortlist and the pick, and shows what is still missing. It is a design task anyway; this picks the place.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "strip",
+          "label": "A slim strip next to the graph, expandable",
+          "detail": "Always visible: a few counters and what's missing; click to open it full height. The reading panel stays for nodes.",
+          "recommended": true
+        },
+        {
+          "id": "panel",
+          "label": "In the reading panel when no node is selected",
+          "detail": "No extra room on screen, but hidden while you read a node."
+        },
+        {
+          "id": "tab",
+          "label": "A tab of the reading panel",
+          "detail": "Board / Node."
+        },
+        {
+          "id": "space",
+          "label": "Its own space",
+          "detail": "A fifth space next to Compare."
+        }
+      ],
+      "allow_other": true,
+      "take": "**A slim strip**: the board gives the session its direction, so it should stay in sight while you explore. The exact look goes to an `agent_design` round.",
+      "settled": {
+        "summary": "A slim strip next to the graph, expandable (CR-14).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-status",
+      "round": 6,
+      "area": "buy",
+      "title": "How does a subject's status move, and what is it called?",
+      "context": "Statuses agreed: *exploring → decided → bought*. Choose also fits things you don't buy (a school, an insurance).",
+      "kind": "single",
+      "options": [
+        {
+          "id": "a",
+          "label": "Decided when a product is chosen; Bought is your action",
+          "detail": "*Mark as bought* on the chosen product. Un-choosing goes back to exploring.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "Same, but the last step is *Done*",
+          "detail": "Fits non-purchases."
+        },
+        {
+          "id": "c",
+          "label": "All three by hand"
+        }
+      ],
+      "allow_other": true,
+      "take": "**a**. Most Choose subjects will be purchases; *bought* is clearer than *done*. For a non-purchase you can simply stay at *decided*.",
+      "settled": {
+        "summary": "Decided when a product is chosen; *Mark as bought* (CR-24).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-web-tasks",
+      "round": 6,
+      "area": "buy",
+      "title": "What may the room search the web for?",
+      "context": "Round 5 agreed the room may use web search and page fetching. Your note asked for fact checks, alternatives, recent products and a price idea. Searching makes a call slower and uses more tokens.",
+      "kind": "multi",
+      "options": [
+        {
+          "id": "products",
+          "label": "Finding products and families",
+          "detail": "Recent models, what's on the market now.",
+          "recommended": true
+        },
+        {
+          "id": "facts",
+          "label": "Product facts",
+          "detail": "Specs, known issues, firmware, ecosystem.",
+          "recommended": true
+        },
+        {
+          "id": "price",
+          "label": "A price idea",
+          "detail": "A range at a date, with where it was seen.",
+          "recommended": true
+        },
+        {
+          "id": "alt",
+          "label": "Alternatives to a product",
+          "detail": "*What else at this price?*",
+          "recommended": true
+        },
+        {
+          "id": "check",
+          "label": "Fact-check any claim, on request",
+          "detail": "A *Check this* action on a node or a reply.",
+          "recommended": true
+        },
+        {
+          "id": "compare",
+          "label": "Filling Compare cells",
+          "recommended": true
+        },
+        {
+          "id": "concepts",
+          "label": "Explaining concepts",
+          "detail": "Usually stable knowledge; searching here mostly adds wait."
+        }
+      ],
+      "allow_other": true,
+      "take": "Everything except explaining concepts, which stays offline unless you ask for a check. A setting can turn web use off for the room.",
+      "settled": {
+        "summary": "Everything but concept explanations; *Check this* on request (CR-40, CR-44).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-sources",
+      "round": 6,
+      "area": "buy",
+      "title": "Source rules: tick the ones you accept",
+      "context": "You trust objective facts, not sponsored ones. Proposed rules for the tutor and for what the app shows.",
+      "kind": "multi",
+      "options": [
+        {
+          "id": "maker",
+          "label": "Manufacturer specifications are the source for specs",
+          "recommended": true
+        },
+        {
+          "id": "indep",
+          "label": "Independent measurements and reviews are preferred for performance and quality",
+          "recommended": true
+        },
+        {
+          "id": "community",
+          "label": "User communities (forums, Reddit…) count as experience reports, marked as opinion",
+          "recommended": true
+        },
+        {
+          "id": "affiliate",
+          "label": "Affiliate 'best of' lists and sponsored rankings are never the basis of a recommendation",
+          "recommended": true
+        },
+        {
+          "id": "mark",
+          "label": "A source known to be sponsored or affiliate is marked as such",
+          "recommended": true
+        },
+        {
+          "id": "date",
+          "label": "Every product fact shows its source and the date it was read",
+          "recommended": true
+        },
+        {
+          "id": "conflict",
+          "label": "When sources disagree, the room says so instead of picking one silently",
+          "recommended": true
+        }
+      ],
+      "allow_other": true,
+      "take": "All of them.",
+      "settled": {
+        "summary": "All seven rules (CR-42).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-web-spike",
+      "round": 6,
+      "area": "buy",
+      "title": "May I run a short web-tools spike before the decision?",
+      "context": "Turning tools on in the CLI is a change to a recorded decision. The CLI 2.1.290 accepts `--tools \"WebSearch,WebFetch\"` in safe mode. A spike is a few real calls on your subscription to measure time, tokens and how web use is reported, and to check that no other tool can run.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "now",
+          "label": "Yes, during the frame release",
+          "detail": "Results go into a decision before any Choose code.",
+          "recommended": true
+        },
+        {
+          "id": "later",
+          "label": "Yes, but only when Choose work starts"
+        },
+        {
+          "id": "no",
+          "label": "No spike; decide on paper"
+        }
+      ],
+      "allow_other": true,
+      "take": "**Now**: it is cheap, and if web calls turn out too slow or too costly, the Choose spec should know before it is agreed.",
+      "settled": {
+        "summary": "During the frame release; web searches can go to a cheaper model, default same (CR-43, CR-45).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-compare",
+      "round": 6,
+      "area": "buy",
+      "title": "How is the Compare table filled?",
+      "context": "Columns are the shortlisted products, rows the criteria (must first, then nice).",
+      "kind": "single",
+      "options": [
+        {
+          "id": "a",
+          "label": "The room fills a column when a product is shortlisted; you can edit any cell",
+          "detail": "An edited cell is marked as yours and keeps the room's value, as edits do in Learn.",
+          "recommended": true
+        },
+        {
+          "id": "b",
+          "label": "The room fills it; read-only"
+        },
+        {
+          "id": "c",
+          "label": "Filled on demand: a *Fill* button per column or row",
+          "detail": "Fewer calls, more clicks."
+        }
+      ],
+      "allow_other": true,
+      "take": "**a**. Shortlisting is the moment you care about a product, so filling then feels natural, and editing lets you correct a wrong spec. A new criterion fills its row for the shortlisted products.",
+      "settled": {
+        "summary": "Filled on shortlist, every cell editable (CR-51).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-recommend",
+      "round": 6,
+      "area": "buy",
+      "title": "When can you ask for the recommendation?",
+      "context": "The recommendation names one product, why it fits, and what you give up.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "any",
+          "label": "Any time; it says what's missing and how sure it is",
+          "recommended": true
+        },
+        {
+          "id": "gate",
+          "label": "Only when the board is complete enough",
+          "detail": "For example: one answered need, one must criterion, two shortlisted products."
+        },
+        {
+          "id": "offer",
+          "label": "Any time, and the room offers it when the board looks complete"
+        }
+      ],
+      "allow_other": true,
+      "take": "**Any time**: a gate feels like a form. A recommendation that says *I'd still need to know your budget* is more useful than a disabled button.",
+      "settled": {
+        "summary": "Any time, offered when the board looks complete (CR-61).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-tone",
+      "round": 6,
+      "area": "buy",
+      "title": "Does Choose have a tone setting?",
+      "context": "Learn has tone presets (ELI5, Curious, Student, Engineer, Expert, or your own text).",
+      "kind": "single",
+      "options": [
+        {
+          "id": "same",
+          "label": "The same presets as Learn",
+          "detail": "The same component; you start knowing nothing, so the level still matters.",
+          "recommended": true
+        },
+        {
+          "id": "none",
+          "label": "No tone: one plain advisor voice",
+          "detail": "The Welcome direction covers the rest."
+        }
+      ],
+      "allow_other": true,
+      "take": "**The same presets**. They are about explanation level, which matters here too, and the component already exists.",
+      "settled": {
+        "summary": "Same presets as Learn (CR-81).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-settings",
+      "round": 6,
+      "area": "buy",
+      "title": "Choose room settings: tick the ones you want",
+      "context": "Settings → Choose room submenu (one per room, SE-12 amended).",
+      "kind": "multi",
+      "options": [
+        {
+          "id": "country",
+          "label": "Country, for shops and prices",
+          "detail": "Default: Windows' region.",
+          "recommended": true
+        },
+        {
+          "id": "currency",
+          "label": "Currency",
+          "detail": "Default: the country's.",
+          "recommended": true
+        },
+        {
+          "id": "tone",
+          "label": "Default tone",
+          "detail": "If the previous question keeps tones.",
+          "recommended": true
+        },
+        {
+          "id": "web",
+          "label": "Use the web (on by default)",
+          "detail": "Off: the room works from the model's knowledge only, with dates marked.",
+          "recommended": true
+        }
+      ],
+      "allow_other": true,
+      "take": "All four. Model and effort defaults stay in Provider, shared by rooms.",
+      "settled": {
+        "summary": "Country, currency, tone, web on/off, web model (CR-90).",
+        "spec": "specs/choose-room.md"
+      }
+    },
+    {
+      "id": "q-r6-format",
+      "round": 6,
+      "area": "rooms",
+      "title": "Keep the file format at lantern/1?",
+      "context": "A Learn file does not change at all. A Choose subject has a `choose` visit instead of `learn`. Today's app (v0.1.5) would treat it as unreadable; a format number bump would make it open read-only with a message (ST-30). Only your machine has these files.",
+      "kind": "single",
+      "options": [
+        {
+          "id": "keep",
+          "label": "Keep lantern/1",
+          "detail": "New apps read both; v0.1.x may list a Choose file as unreadable, which only matters if you downgrade.",
+          "recommended": true
+        },
+        {
+          "id": "bump",
+          "label": "lantern/2 for every file",
+          "detail": "Cleaner for old apps, but every Learn file is rewritten on its next save."
+        }
+      ],
+      "allow_other": true,
+      "take": "**Keep lantern/1**. Nothing about Learn files changes, and in-app updates mean you won't run an old app against new files.",
+      "settled": {
+        "summary": "**lantern/2**, discussed in chat: neutral user/model roles, a `data` container for room fields, Learn files converted with a backup.",
+        "spec": "specs/domain-model.md"
       }
     }
   ]

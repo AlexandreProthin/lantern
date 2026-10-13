@@ -29,7 +29,11 @@
         "q-scope-purpose",
         "q-r3-review",
         "q-r3-nav",
-        "q-r3-menu"
+        "q-r3-menu",
+        "q-r5-open-space",
+        "q-r5-switch",
+        "q-r5-cross-room",
+        "q-r5-release"
       ]
     },
     {
@@ -47,7 +51,10 @@
         "q-r2-provenance",
         "q-r2-usage-display",
         "q-r3-review",
-        "q-r3-links"
+        "q-r3-links",
+        "q-r5-node-model",
+        "q-r5-cross-room",
+        "q-r6-format"
       ]
     },
     {
@@ -235,6 +242,38 @@
       "summary": "Milestones M0–M6 plus the Welcome design track, exit checks, early risks.",
       "questions": [
         "q-ship-done"
+      ]
+    },
+    {
+      "id": "choose-room",
+      "title": "Choose room",
+      "area": "buy",
+      "status": "review",
+      "file": "specs/choose-room.md",
+      "summary": "The second room: from knowing nothing to a reasoned purchase (needs, criteria, shortlist, decision).",
+      "questions": [
+        "q-buy-name",
+        "q-buy-goal",
+        "q-buy-shape",
+        "q-buy-spaces",
+        "q-buy-nodes",
+        "q-buy-states",
+        "q-buy-needs",
+        "q-buy-web",
+        "q-buy-learn-depth",
+        "q-buy-accent",
+        "q-buy-story",
+        "q-r6-learn-handoff",
+        "q-r6-space-name",
+        "q-r6-board",
+        "q-r6-status",
+        "q-r6-web-tasks",
+        "q-r6-sources",
+        "q-r6-web-spike",
+        "q-r6-compare",
+        "q-r6-recommend",
+        "q-r6-tone",
+        "q-r6-settings"
       ]
     }
   ]

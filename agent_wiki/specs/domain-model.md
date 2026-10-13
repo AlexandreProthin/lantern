@@ -18,8 +18,9 @@ Successor of the PoC model in [subject-model](/components/subject-model.md). Sto
 Library (a folder) → Subject → RoomVisit (one per room the subject visited) → its own graph
 ([decision](/decisions/graph-per-room-visit.md)).
 
-- **DM-1** A subject MUST hold a map of room visits keyed by room id; v0.1.0 only has `learn`.
+- **DM-1** A subject MUST hold a map of room visits keyed by room id; v0.1.0 only has `learn`. *(Amended 2026-10-12, round 5, for v0.2.0.)* From v0.2.0 a subject is created in one room and holds that room's visit only; the format keeps allowing several, which is Later (q-r5-cross-room). A room's Welcome, Gallery and recents list only the subjects that have its visit.
 - **DM-2** Each room visit MUST own exactly one graph; a concept relevant in two rooms exists twice.
+- **DM-4** *(Amended 2026-10-12, round 5, for v0.2.0.)* **The node core is shared; kinds, states and extra fields belong to the room** (q-r5-node-model). The core, validated for every room, is: `id`, `parents`, `title`, `hook`, `kind` (a string), `state` (a string), `content`, `author`, `previous`, `edited`, `dialogue`, `createdAt`, `createdBy`, the invariants DM-50 to DM-55 and the generation log's shape (DM-30, with `task` a string). The room definition validates the values of `kind`, `state`, `task` and its own extra fields (Learn: `understoodBy`; Choose: a need's answer, a rejected product's reason, sources). DM-12 to DM-15 and the dialogue roles of DM-18 are **Learn's** rules. Learn files stay valid as they are. **Format: `lantern/2`** ([decision](/decisions/format-lantern-2.md), q-r6-format): roles `user`/`model`, a `data` object on nodes and visits for room-owned fields, `task` a string; Learn files are converted on first open with a backup.
 - **DM-3** Rooms MUST be built into the app (a Room definition supplies the AI role and prompts, node kinds, states, actions, spaces, settings sections) and MUST NOT be stored in the subject.
 
 # Node
@@ -116,6 +117,6 @@ The values are illustrative (this example uses a sonnet model); the app's defaul
 
 # Open
 
-None for v0.1.0.
+None for v0.1.0. For v0.2.0: the exact `lantern/2` field list (which fields move into `data`), written with the v0.2.0 plan.
 
 Related: [subject-storage](/specs/subject-storage.md), [learn-room](/specs/learn-room.md), [tutor-protocol](/specs/tutor-protocol.md), [inference-provider](/specs/inference-provider.md), [settings](/specs/settings.md).

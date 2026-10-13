@@ -107,6 +107,16 @@ a { color: var(--accent); }
 .opt[aria-checked="true"] .mark::after { content: ""; width: .35rem; height: .35rem; background: var(--accent-ink); border-radius: inherit; }
 .opt-label { font-weight: 600; }
 .opt-detail { grid-column: 2; font-size: .9rem; color: var(--ink-mute); }
+/* An option with a tint shows its colour as a lantern glow (e.g. room accents). */
+.opt.tinted { position: relative; overflow: hidden; border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: radial-gradient(120% 160% at 0% 50%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--surface-2); }
+.opt.tinted:hover { border-color: var(--accent); }
+.opt.tinted[aria-checked="true"] { background: radial-gradient(140% 180% at 0% 50%, color-mix(in srgb, var(--accent) 38%, transparent), transparent 70%), color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
+.opt.tinted .opt-label { color: color-mix(in srgb, var(--accent) 70%, var(--ink)); }
+.opt.tinted .mark::after { background: var(--bg); }
+.lamp { display: inline-block; width: .7rem; height: .7rem; margin-right: .5rem; border-radius: 50%; vertical-align: -.05em;
+  background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--accent) 35%, white), var(--accent) 60%);
+  box-shadow: 0 0 .5rem .15rem color-mix(in srgb, var(--accent) 60%, transparent), 0 0 1.6rem .4rem color-mix(in srgb, var(--accent) 25%, transparent); }
 .rec-tag { font-size: .7rem; margin-left: .5rem; padding: .02rem .5rem; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 600; vertical-align: .1em; }
 textarea, .other-input { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: .5rem .65rem; resize: vertical; }
 textarea.big { min-height: 9rem; }

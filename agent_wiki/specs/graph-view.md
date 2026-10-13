@@ -199,6 +199,7 @@ Active when the graph has focus (Tab reaches the focused node; the graph is one 
 | Ctrl+1 / Ctrl+2 / Ctrl+3 | anywhere, any focus | Welcome / Study / Gallery; Ctrl+2 with no subject open opens the most recent one |
 | Alt+A / Alt+N | with a text selection | *Ask about this* / *Make it a node* (the selection popover) |
 | ? | anywhere outside a text field | Show or hide the shortcuts |
+| Ctrl+Shift+1 / Ctrl+Shift+2 | anywhere, any focus | Learn / Choose room, on its Welcome (RS-23, from v0.2.0) |
 | Ctrl+, | anywhere | Open Settings |
 | Ctrl+F | Study | Search the subject's nodes; in the field, Enter / Shift+Enter: next / previous match, Esc: close (GV-57) |
 

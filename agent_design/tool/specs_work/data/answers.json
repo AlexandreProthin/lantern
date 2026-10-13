@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 14,
-  "saved_at": "2026-10-01T22:36:36.902791+00:00",
+  "revision": 20,
+  "saved_at": "2026-10-12T21:54:15.937469+00:00",
   "answers": {
     "q-poc-off": {
       "notes": "missing: \n- node content author (model name who wrote it, thinking effort if available + user name if he edited it), this i a node metadata like the state (\"LIT\", ...) tag\n- token count as generation go (to know how many the graph cost to reach a given state)\n- side pannel need to be resizable\n- generation time i am ok to wait no a constraint here (keep the live stream as tokens arrive)\n- Exactly 3 options is too restrictive: i want to be able to dismiss one, ask for others, or add my own\n- i want a way to edit/correct a node content (to influence, orient or adjust the next one generation context), will be handy in case the model halucinate wrong/false info\n- delete or regenerate a node and a cancel while it streams => yes\n- home screen needs more work to be welcoming, allow edits, see progress ...\n- need the ability to choose/change llm model (even mid session)\n- a room setting pannel (sub menu in the global app setting)\n- a proper prompt engineer pre-prompt and an optimized context managment\n- ctrl + clic multiple node to generate a new node merging the ideas\n- settings pannel: to connect the llm provider (v0.1.0 is focused to work with a claude code subscription plan but later codex or other provider even api key suport, when implemented we will have a focus on security here (probably nex version))\nLantern is like Prism, the lantern app (will) have multiple room to do different things. Each room can have multiple spaces.\nLantern spaces example:\n- learning space (the poc)\n- welcome (landing) space to start a new subject or pick a recent one to continue a previous session (up to 3 most recent session)\n- gallery to browse the knowlege exploration with associated stats ",
@@ -438,6 +438,215 @@
         "l"
       ],
       "updated_at": "2026-10-01T22:36:29.276Z"
+    },
+    "q-r5-open-space": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-12T20:58:36.898Z"
+    },
+    "q-r5-switch": {
+      "choice": [
+        "chip",
+        "keys"
+      ],
+      "updated_at": "2026-10-12T20:59:51.515Z"
+    },
+    "q-r5-cross-room": {
+      "choice": [
+        "c"
+      ],
+      "updated_at": "2026-10-12T21:00:53.245Z"
+    },
+    "q-r5-node-model": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-12T21:03:30.173Z"
+    },
+    "q-r5-release": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-12T21:03:58.556Z"
+    },
+    "q-buy-name": {
+      "choice": [
+        "choose"
+      ],
+      "updated_at": "2026-10-12T21:04:28.340Z"
+    },
+    "q-buy-goal": {
+      "choice": [
+        "understand",
+        "needs",
+        "criteria",
+        "shortlist",
+        "compare",
+        "pick",
+        "other"
+      ],
+      "updated_at": "2026-10-12T21:07:58.825Z",
+      "other": "web access may be needed to fact check, look for alternatives, find recent products, get price idea, ..."
+    },
+    "q-buy-shape": {
+      "choice": [
+        "c"
+      ],
+      "updated_at": "2026-10-12T21:08:59.962Z"
+    },
+    "q-buy-spaces": {
+      "choice": [
+        "welcome",
+        "explore",
+        "compare",
+        "gallery"
+      ],
+      "updated_at": "2026-10-12T21:10:07.444Z"
+    },
+    "q-buy-nodes": {
+      "choice": [
+        "concept",
+        "need",
+        "criterion",
+        "family",
+        "product",
+        "own"
+      ],
+      "updated_at": "2026-10-12T21:12:01.756Z"
+    },
+    "q-buy-states": {
+      "choice": [
+        "open-lit",
+        "need",
+        "crit",
+        "product",
+        "bought",
+        "dismissed"
+      ],
+      "updated_at": "2026-10-12T21:13:40.588Z"
+    },
+    "q-buy-needs": {
+      "choice": [
+        "nodes",
+        "chat",
+        "profile",
+        "welcome"
+      ],
+      "updated_at": "2026-10-12T21:15:29.183Z"
+    },
+    "q-buy-web": {
+      "choice": [
+        "b"
+      ],
+      "updated_at": "2026-10-12T21:16:37.400Z"
+    },
+    "q-buy-learn-depth": {
+      "choice": [
+        "c"
+      ],
+      "updated_at": "2026-10-12T21:18:28.310Z"
+    },
+    "q-buy-accent": {
+      "choice": [
+        "teal"
+      ],
+      "updated_at": "2026-10-12T21:26:18.813Z",
+      "notes": "i like the copper / rose gold will probably be picked for a future room"
+    },
+    "q-buy-story": {
+      "flag": null,
+      "updated_at": "2026-10-12T21:30:09.398Z",
+      "notes": "what i trust: objective facts not sponsored"
+    },
+    "q-r6-learn-handoff": {
+      "choice": [
+        "later"
+      ],
+      "updated_at": "2026-10-12T21:41:39.566Z"
+    },
+    "q-r6-space-name": {
+      "choice": [
+        "survey"
+      ],
+      "updated_at": "2026-10-12T21:42:22.767Z"
+    },
+    "q-r6-board": {
+      "choice": [
+        "strip"
+      ],
+      "updated_at": "2026-10-12T21:42:54.981Z"
+    },
+    "q-r6-status": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-12T21:43:59.063Z"
+    },
+    "q-r6-web-tasks": {
+      "choice": [
+        "products",
+        "facts",
+        "price",
+        "alt",
+        "check",
+        "compare"
+      ],
+      "updated_at": "2026-10-12T21:44:39.977Z"
+    },
+    "q-r6-sources": {
+      "choice": [
+        "maker",
+        "indep",
+        "community",
+        "affiliate",
+        "mark",
+        "date",
+        "conflict"
+      ],
+      "updated_at": "2026-10-12T21:45:56.877Z"
+    },
+    "q-r6-web-spike": {
+      "choice": [
+        "now"
+      ],
+      "updated_at": "2026-10-12T21:48:04.190Z",
+      "notes": "web search can be performed by a cheat model (haiku 5.5 for example). its a choose room option to delegate web search to cheap model default is same model for all "
+    },
+    "q-r6-compare": {
+      "choice": [
+        "a"
+      ],
+      "updated_at": "2026-10-12T21:48:27.435Z"
+    },
+    "q-r6-recommend": {
+      "choice": [
+        "offer"
+      ],
+      "updated_at": "2026-10-12T21:49:17.104Z"
+    },
+    "q-r6-tone": {
+      "choice": [
+        "same"
+      ],
+      "updated_at": "2026-10-12T21:49:59.702Z"
+    },
+    "q-r6-settings": {
+      "choice": [
+        "country",
+        "currency",
+        "tone",
+        "web"
+      ],
+      "updated_at": "2026-10-12T21:50:57.233Z"
+    },
+    "q-r6-format": {
+      "choice": [
+        "keep"
+      ],
+      "updated_at": "2026-10-12T21:54:07.358Z",
+      "flag": "discuss",
+      "notes": "is it worth upgrading the file format ? i do not mind converting old files. in other word will we be limited by lantern/1 "
     }
   }
 }

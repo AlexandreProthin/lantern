@@ -40,15 +40,22 @@ Data side: [domain-model](/specs/domain-model.md). The three Learn spaces are sp
   header's compact stats text and hover); `legend` (legend rows, RS-35); and `newSubject(title,
   tone)` (creates the room visit's initial graph). The frame MUST call only these members.
 - **RS-4** v0.1.0 MUST register exactly one room, Learn, with spaces Welcome, Study, Gallery in
-  that order, and default space Study.
+  that order, and default space Study. *(Amended 2026-10-12, round 5, for v0.2.0.)* The rooms are registered in one list, in this
+  order: Learn, then [Choose](/specs/choose-room.md). The frame MUST NOT name a room anywhere else
+  (q-r5-node-model, RS-2). The first release of v0.2.0 is the room-generic frame with Learn alone
+  and unchanged; Choose follows (q-r5-release).
 - **RS-5** There MUST be no app-level home in v0.1.0. The frame MUST NOT draw a room switcher
-  (the room chip is a label, RS-12).
+  (the room chip is a label, RS-12). *(Amended 2026-10-12, round 5, for v0.2.0.)* Still no app-level home; one may come if a need
+  shows up ([decision](/decisions/spaces-per-room-no-home.md)). With two or more rooms registered
+  the room chip is the switcher (RS-12).
 
 # Startup
 
 - **RS-10** The app MUST open on the **Welcome of the last used room**. The last used room id is
   stored app-side in the OS config directory ([settings](/specs/settings.md)). With one room it is
-  always Learn; if the stored id is unknown the frame MUST fall back to Learn.
+  always Learn; if the stored id is unknown the frame MUST fall back to Learn. *(Amended 2026-10-12, round 5, for v0.2.0.)* Confirmed
+  with several rooms: the app opens on that room's **Welcome**, not inside a subject (q-r5-open-space);
+  the fallback is the first registered room.
 - **RS-11** On first run there are no subjects: Welcome shows its first-run state
   ([welcome-gallery](/specs/welcome-gallery.md) WG-12) and the Gallery and Study icons are
   disabled until a subject exists.
@@ -62,7 +69,10 @@ the open subject; it is rarely touched. The stats stay secondary.
   1. **Lantern mark**: leads to the current room's Welcome. Tooltip *Welcome*. Drawn with the
      ember favicon of the accepted identity release `lantern-identity-v0.2` (RS-53), not a text glyph.
   2. **Room chip**: the room name (*Learn*) in the room accent. A label with no action in
-     v0.1.0; it becomes the room switcher when a second room ships.
+     v0.1.0; it becomes the room switcher when a second room ships. *(Amended 2026-10-12, round 5, for v0.2.0.)* With two or more
+     rooms, clicking it opens a small menu of the rooms, each with its name and its lantern colour,
+     the current one marked; choosing one opens that room's Welcome (q-r5-switch). Each room keeps
+     its own open subject for the session, so coming back to a room's graph space shows it again.
   3. **Space navigation** (RS-20): icon buttons for the room's spaces, the active one marked.
   4. **Subject title**: the open subject's title, truncated with an ellipsis, full text in the
      tooltip. Absent when no subject is open (Welcome and Gallery before any choice).
@@ -116,7 +126,9 @@ Space navigation is not necessarily tabs; it must be intuitive.
   Every space MUST be reachable from every other in at most one action.
 - **RS-23** Space shortcuts (Ctrl+1 Welcome, Ctrl+2 Study, Ctrl+3 Gallery) are listed in the
   canonical shortcut table of [graph-view](/specs/graph-view.md) GV-76, which this spec does not
-  restate. They MUST work from any focus, including text inputs. Ctrl+2 with no open subject
+  restate. They MUST work from any focus, including text inputs. *(Amended 2026-10-12, round 5, for v0.2.0.)* Room shortcuts **Ctrl+Shift+1**, **Ctrl+Shift+2**… follow the
+  registration order (RS-4) and open that room's Welcome (q-r5-switch); they are added to GV-76.
+  Ctrl+1/2/3 address the current room's spaces in its own order. Ctrl+2 with no open subject
   opens the most recently opened subject (from the app-side recents, [subject-storage](/specs/subject-storage.md)
   ST-6), or does nothing when there is none.
 - **RS-24** State kept across switching: the open subject and its focused node (`focusId`, DM-40)
@@ -211,7 +223,8 @@ Space navigation is not necessarily tabs; it must be intuitive.
 
 # Open
 
-None for v0.1.0.
+None for v0.1.0. For v0.2.0: whether the room menu shows a room that has no subject yet the same
+way (assumed yes).
 
 Related: [welcome-gallery](/specs/welcome-gallery.md), [graph-view](/specs/graph-view.md),
 [node-panel](/specs/node-panel.md), [product-scope](/specs/product-scope.md),

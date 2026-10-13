@@ -17,12 +17,12 @@ Content of the file: [domain-model](/specs/domain-model.md).
 
 ## Format and location
 
-- **ST-1** Each subject MUST be one JSON file with `"format": "lantern/1"`.
+- **ST-1** Each subject MUST be one JSON file with `"format": "lantern/1"`. *(Amended 2026-10-12, round 6, for v0.2.0.)* From v0.2.0 the format is `lantern/2` ([decision](/decisions/format-lantern-2.md)); a `lantern/1` file is converted on first open, with a backup (ST-31).
 - **ST-2** Subjects MUST live at `<library>/subjects/<id>.json`, where `<library>` is a folder the user chooses; the default is `Documents/Lantern`. This is the same place as the PoC, so the default library already contains PoC files. Files in `subjects/` whose name is not a valid `<id>.json` (for example uppercase letters or reserved names) are foreign: the app MUST ignore them everywhere (listing, import, library transfer), neither listing nor modifying them, and MUST NOT report an error.
 - **ST-3** App settings and app state MUST be stored app-side (OS config directory) and MUST NOT be stored in the library.
 - **ST-4** A subject id MUST be the slug of its title plus 4 random characters, using only `[a-z0-9-]`, and MUST be validated before it becomes a path.
 - **ST-5** Renaming a subject MUST change the title only, never the id or the filename.
-- **ST-6** `lastOpenedAt` and the recents list MUST be kept **app-side**, in the app state file `%APPDATA%/Lantern/state.json` (separate from `settings.json`; [settings](/specs/settings.md) SE-50), keyed by subject id. Opening a subject MUST NOT modify its file.
+- **ST-6** `lastOpenedAt` and the recents list MUST be kept **app-side**, in the app state file `%APPDATA%/Lantern/state.json` (separate from `settings.json`; [settings](/specs/settings.md) SE-50), keyed by subject id. Opening a subject MUST NOT modify its file. *(Amended 2026-10-12, round 5, for v0.2.0.)* Each room's Welcome shows the recents among its own subjects (DM-1); the stored list stays one list.
 - **ST-7** Gallery and Welcome statistics MUST come from an **app-side summary cache**, keyed by file path and invalidated by the file's mtime and size, holding: title, counts, tokens, main model, `createdAt`, the tone, the output tokens per resolved model and the generation count (definitions in [welcome-gallery](/specs/welcome-gallery.md) WG-30 to WG-32 and WG-36; they feed the detailed stats of a selected Gallery card, WG-68). It is derived data: it can be deleted at any time and is rebuilt by reading the subject files. It MUST NOT be stored in a subject file.
 - **ST-8** Deleting a subject MUST move its file to the Windows Recycle Bin, never remove it permanently, and MUST drop its entries from the state file and the summary cache.
 

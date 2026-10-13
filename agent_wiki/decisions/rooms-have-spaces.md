@@ -29,6 +29,8 @@ Whether welcome and gallery belong to each room or to the app level is open: q-r
 proposal is per room. See [learn-room](/specs/learn-room.md) and
 [product-scope](/specs/product-scope.md).
 
+**Resolved 2026-10-12:** per room, with no app-level Home for now: [spaces-per-room-no-home](/decisions/spaces-per-room-no-home.md).
+
 # Consequences
 
 "Room" stays a place and "space" is a part of that place; the header shows both (see

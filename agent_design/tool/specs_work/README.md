@@ -76,7 +76,7 @@ Write JSON as UTF-8 (a BOM is tolerated). The server re-reads the files on every
     "title": "Which rooms ship in v0.1.0?",
     "context": "markdown: why this matters, what we know",
     "kind": "single | multi | text | scope | rank",
-    "options": [{"id": "a", "label": "short", "detail": "markdown", "recommended": true}],
+    "options": [{"id": "a", "label": "short", "detail": "markdown", "recommended": true, "tint": "#4fc1c0"}],
     "allow_other": true,
     "items": [{"id": "x", "label": "short", "detail": "markdown"}],
     "buckets": [{"id": "v010", "label": "v0.1.0"}, {"id": "later", "label": "Later"}],
@@ -88,7 +88,8 @@ Write JSON as UTF-8 (a BOM is tolerated). The server re-reads the files on every
 ```
 
 `options` for single/multi; `items` + `buckets` for scope; `items` for rank; text has neither.
-`take`, `illustration`, `settled` and `allow_other` are optional. `illustration` is a relative path
+`take`, `illustration`, `settled` and `allow_other` are optional. An option's optional `tint`
+(a `#rrggbb` colour) draws its card in that colour, for questions about colour. `illustration` is a relative path
 inside this folder.
 
 ### answers.json (written by the server)

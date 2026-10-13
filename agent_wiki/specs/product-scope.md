@@ -21,10 +21,12 @@ components are a requirement, not a nicety.
 
 ## Rooms and spaces
 
-- **PS-1** The app MUST ship exactly one room in v0.1.0: Learn.
+- **PS-1** The app MUST ship exactly one room in v0.1.0: Learn. *(Amended 2026-10-12, round 5, for v0.2.0.)* v0.2.0 adds the second room,
+  **Choose** ([choose-room](/specs/choose-room.md)), after a first release that makes the frame
+  room-generic with Learn unchanged. Rooms planned after it: Think, Explore, Interview ([backlog](/plans/backlog.md)).
 - **PS-2** Rooms MUST exist in the data model and in the UI frame; a Room definition supplies the AI role and prompts, node kinds, states, actions, spaces and settings sections.
 - **PS-3** Room-specific logic MUST NOT live in the app core; adding a room MUST NOT require changing the storage format ([domain-model](/specs/domain-model.md)).
-- **PS-4** A room MUST own a set of spaces ([decision](/decisions/rooms-have-spaces.md), [rooms-spaces](/specs/rooms-spaces.md)). Learn MUST have three: **Welcome** (start a subject or continue one of the 3 most recent), **Study** (the graph and the reading panel) and **Gallery** (browse all subjects with stats). Spaces belong to the room; there is no app-level home in v0.1.0.
+- **PS-4** A room MUST own a set of spaces ([decision](/decisions/rooms-have-spaces.md), [rooms-spaces](/specs/rooms-spaces.md)). Learn MUST have three: **Welcome** (start a subject or continue one of the 3 most recent), **Study** (the graph and the reading panel) and **Gallery** (browse all subjects with stats). Spaces belong to the room; there is no app-level home in v0.1.0. *(Amended 2026-10-12, round 5, for v0.2.0.)* Choose has Welcome, its graph space, Compare and Gallery; every room has its own Welcome and Gallery ([decision](/decisions/spaces-per-room-no-home.md)).
 - **PS-5** UI parts SHOULD be reusable components, not Learn-specific code, wherever another room could use them.
 - **PS-6** The app MUST open on the **last used room's Welcome**. The Lantern mark in the header leads to the current room's Welcome.
 - **PS-7** Each room MUST have its own accent (its own lantern); frame, typography and structure are shared. Learn keeps the amber lantern.
@@ -57,7 +59,7 @@ components are a requirement, not a nicety.
 Merge (Ctrl+click, several parents) and **regenerate** (*More options* covers the options case),
 parallel generation, Anthropic API, local and other providers (with a security focus when they
 come), search, export (for example the graph as an OKF bundle), undo and history, spaced review,
-learner profile, bring-your-own material, the Think room and an app-level home or room switcher,
+learner profile, bring-your-own material, the Think, Explore and Interview rooms, an app-level home, one subject in several rooms with an *Open in Learn* handoff (q-r5-cross-room),
 auto-update UI, light theme, French UI. *Lantern opens the Claude Code sign-in for you* is also Later: v0.1.0 only shows step-by-step instructions ([decision](/decisions/cli-signin-instructions-only.md)). Options-first protocol, a cheaper model for cheap tasks
 and summary calls are also later ([decision](/decisions/latency-masked-not-reduced.md)). Never:
 nothing yet.

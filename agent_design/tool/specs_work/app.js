@@ -499,9 +499,10 @@ function optionsInput(q, a, takeOpen) {
   const box = h("div", { class: "options", role: multi ? "group" : "radiogroup", "aria-label": q.title });
   for (const o of q.options || []) {
     const on = choice.includes(o.id);
-    box.append(h("button", { class: "opt" + (multi ? " multi" : ""), role: multi ? "checkbox" : "radio", "aria-checked": String(on), "data-fid": `opt-${q.id}-${o.id}`, onclick: () => toggle(o.id) },
+    const tint = /^#[0-9a-f]{6}$/i.test(o.tint || "") ? o.tint : null; // only a hex colour reaches the style attribute
+    box.append(h("button", { class: "opt" + (multi ? " multi" : "") + (tint ? " tinted" : ""), style: tint ? `--accent:${tint}` : null, role: multi ? "checkbox" : "radio", "aria-checked": String(on), "data-fid": `opt-${q.id}-${o.id}`, onclick: () => toggle(o.id) },
       h("span", { class: "mark" }),
-      h("span", { class: "opt-label" }, o.label, o.recommended && takeOpen ? h("span", { class: "rec-tag" }, "Claude recommends") : null),
+      h("span", { class: "opt-label" }, tint ? h("span", { class: "lamp", "aria-hidden": "true" }) : null, o.label, o.recommended && takeOpen ? h("span", { class: "rec-tag" }, "Claude recommends") : null),
       o.detail ? h("div", { class: "opt-detail", md: o.detail }) : null));
   }
   if (q.allow_other) {
