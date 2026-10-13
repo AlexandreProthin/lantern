@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-10-13
+
+* **Plan**: [v0.2.0](/plans/v0-2-0.md), in two parts: A (format field list, lantern/2 storage and core, the room list in the frame, the web-tools spike, release v0.2.0 with Learn unchanged) and B (design rounds, finishing the Choose spec and its `choose-1` prompts, tools and model per call, the room module, tests, eval gate and the 3D printer acceptance session). [roadmap](/plans/roadmap.md) step 8.
+
 ## 2026-10-12
 
 * **Format lantern/2** (q-r6-format, discussed in chat): new decision [format-lantern-2](/decisions/format-lantern-2.md); [domain-model](/specs/domain-model.md) DM-4 and [subject-storage](/specs/subject-storage.md) ST-1 amended. [choose-room](/specs/choose-room.md) is ready for review.
