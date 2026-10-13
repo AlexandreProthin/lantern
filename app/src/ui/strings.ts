@@ -32,7 +32,7 @@ export const strings = {
   diskReloaded: 'Subject reloaded after a change on disk.',
   conflict: 'A local copy was saved because the subject also changed on disk.',
   readOnly: 'This file was created by a newer Lantern version and is read-only.'
-  , welcome: 'Welcome', study: 'Study', gallery: 'Gallery', learn: 'Learn', settings: 'Settings',
+  , welcome: 'Welcome', study: 'Study', gallery: 'Gallery', learn: 'Learn', settings: 'Settings', rooms: 'Rooms', roomShortcuts: 'Ctrl+Shift+1 / Ctrl+Shift+2 — change room (its Welcome)',
   graphNavigation: 'Graph navigation', nodeActions: (title: string) => `Actions for ${title}`, previousView: 'Previous view', recenter: 'Recenter',
   treeLayout: 'Tree layout', freeLayout: 'Free layout', zoomIn: 'Zoom in', zoomOut: 'Zoom out', searchHint: 'Search nodes · Ctrl+F', searchNodes: 'Search nodes', closeSearch: 'Close search',
   noNodeMatches: 'No matches', matchCount: (n: number) => n === 1 ? '1 match' : `${n} matches`, matchOf: (k: number, n: number) => `${k} of ${n}`, untitledQuestion: 'Untitled question',

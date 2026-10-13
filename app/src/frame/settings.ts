@@ -1,35 +1,38 @@
-import type { Effort, Tone } from '../core/model';
+import type { Effort } from '../core/model';
+/** SE-12: each room checks its own group, stored under its id. */
+export interface RoomSettingsSpec { id: string; settings: { defaults: Record<string, unknown>; validate: (stored: Record<string, unknown>) => Record<string, unknown> } }
 export interface Settings {
   format: 'lantern-settings/1'; library: { path: string; [key: string]: unknown }; user: { displayName: string; [key: string]: unknown };
   provider: { defaultModel: string; defaultEffort: Effort; [key: string]: unknown };
-  learn: { defaultTone: Tone; contextBudget: number; [key: string]: unknown };
   appearance: { reduceMotion: 'system' | 'on'; backdrop: boolean; showTokenStats: boolean; [key: string]: unknown };
   updates: { checkAtLaunch: boolean; [key: string]: unknown };
   developer: { updateFolder: string; [key: string]: unknown };
   ui: { studySplitPercent: number; studyCollapsed: 'none' | 'graph' | 'panel'; legendCollapsed: boolean; lastRoom: string; graphLayout: 'free' | 'tree'; textLinks: boolean; lastUpdateCheck: number; dismissedUpdate: string; [key: string]: unknown };
   [key: string]: unknown;
 }
-export function defaultSettings(library = '', name = ''): Settings {
-  return { format: 'lantern-settings/1', library: { path: library }, user: { displayName: name }, provider: { defaultModel: 'opus', defaultEffort: 'medium' },
-    learn: { defaultTone: 'curious', contextBudget: 12000 }, appearance: { reduceMotion: 'system', backdrop: true, showTokenStats: true },
+export function defaultSettings(library = '', name = '', rooms: readonly RoomSettingsSpec[] = []): Settings {
+  return { ...Object.fromEntries(rooms.map(room => [room.id, { ...room.settings.defaults }])), format: 'lantern-settings/1', library: { path: library }, user: { displayName: name }, provider: { defaultModel: 'opus', defaultEffort: 'medium' },
+    appearance: { reduceMotion: 'system', backdrop: true, showTokenStats: true },
     updates: { checkAtLaunch: true }, developer: { updateFolder: '' },
-    ui: { studySplitPercent: 44, studyCollapsed: 'none', legendCollapsed: false, lastRoom: 'learn', graphLayout: 'free', textLinks: true, lastUpdateCheck: 0, dismissedUpdate: '' } };
+    ui: { studySplitPercent: 44, studyCollapsed: 'none', legendCollapsed: false, lastRoom: rooms[0]?.id ?? '', graphLayout: 'free', textLinks: true, lastUpdateCheck: 0, dismissedUpdate: '' } };
 }
-export function validateSettings(input: unknown, defaults = defaultSettings()): Settings {
+export function validateSettings(input: unknown, defaults = defaultSettings(), rooms: readonly RoomSettingsSpec[] = []): Settings {
   const raw = input && typeof input === 'object' && !Array.isArray(input) ? input as Record<string, any> : {};
   const out = { ...raw, format: defaults.format } as Settings;
-  for (const group of ['library','user','provider','learn','appearance','updates','developer','ui'] as const) {
+  for (const group of ['library','user','provider','appearance','updates','developer','ui'] as const) {
     const stored = raw[group] && typeof raw[group] === 'object' && !Array.isArray(raw[group]) ? raw[group] : {};
     (out[group] as object) = { ...defaults[group], ...stored };
   }
-  const p = out.provider, l = out.learn, a = out.appearance, u = out.ui, up = out.updates;
+  for (const room of rooms) {
+    const stored = raw[room.id] && typeof raw[room.id] === 'object' && !Array.isArray(raw[room.id]) ? raw[room.id] : {};
+    out[room.id] = room.settings.validate({ ...room.settings.defaults, ...stored });
+  }
+  const p = out.provider, a = out.appearance, u = out.ui, up = out.updates;
   if (typeof out.library.path !== 'string') out.library.path = defaults.library.path;
   if (typeof out.user.displayName !== 'string' || out.user.displayName.trim().length > 40 || !out.user.displayName.trim()) out.user.displayName = defaults.user.displayName;
   else out.user.displayName = out.user.displayName.trim();
   if (typeof p.defaultModel !== 'string' || !/^[A-Za-z0-9._:-]{1,100}$/.test(p.defaultModel)) p.defaultModel = defaults.provider.defaultModel;
   if (!['low','medium','high','xhigh','max'].includes(p.defaultEffort)) p.defaultEffort = defaults.provider.defaultEffort;
-  if (!['eli5','curious','student','engineer','expert'].includes(l.defaultTone as string) && !(l.defaultTone && typeof l.defaultTone === 'object' && typeof l.defaultTone.custom === 'string' && l.defaultTone.custom.length <= 300)) l.defaultTone = defaults.learn.defaultTone;
-  if (!Number.isInteger(l.contextBudget) || l.contextBudget < 2000 || l.contextBudget > 100000) l.contextBudget = defaults.learn.contextBudget;
   // GV-100 forbids overriding an OS reduced-motion preference with "never reduce".
   if (!['system','on'].includes(a.reduceMotion)) a.reduceMotion = 'system';
   if (typeof a.backdrop !== 'boolean') a.backdrop = defaults.appearance.backdrop;
@@ -43,5 +46,7 @@ export function validateSettings(input: unknown, defaults = defaultSettings()): 
   if (typeof out.developer.updateFolder !== 'string' || out.developer.updateFolder.length > 1000) out.developer.updateFolder = '';
   if (typeof u.lastUpdateCheck !== 'number' || !Number.isFinite(u.lastUpdateCheck) || u.lastUpdateCheck < 0) u.lastUpdateCheck = 0;
   if (typeof u.dismissedUpdate !== 'string' || u.dismissedUpdate.length > 40) u.dismissedUpdate = '';
-  u.lastRoom = 'learn'; return out;
+  // RS-10: an unknown room id falls back to the first registered room.
+  if (typeof u.lastRoom !== 'string' || (rooms.length && !rooms.some(room => room.id === u.lastRoom))) u.lastRoom = rooms[0]?.id ?? '';
+  return out;
 }

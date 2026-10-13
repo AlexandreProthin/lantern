@@ -1,0 +1,21 @@
+/* Development-only sample room: Learn's tokens with a teal accent, so frame tests can see the room change. */
+:root[data-room='sample'] {
+  --bg: #101827;
+  --surface: #172132;
+  --surface-2: #302b2a;
+  --ink: #f3e9dc;
+  --ink-mute: #aeb3bf;
+  --line: #3b4558;
+  --accent: #4fc1c0;
+  --accent-ink: #211b14;
+  --focus: #ffe0ab;
+  --node-open: #969ca7;
+  --node-lit: #ffe1aa;
+  --node-understood: #4fc1c0;
+  --glow-near: rgba(255, 199, 118, 0.34);
+  --glow-far: rgba(255, 182, 88, 0.15);
+  --path-muted: #6f5c42;
+  --code: #0c1320;
+  color-scheme: dark;
+}
+:root[data-room='sample'] { --error:#d86a5a; --error-ink:#f0a598; }

@@ -9,12 +9,14 @@
   import ModelPicker from '../ui/ModelPicker.svelte';
   import type { UpdateController } from './updates.svelte';
   import { REVEAL_CLICKS, revealsDeveloper } from './updates';
-  let { settings, defaults, room, provider, health=null, initialSection='general', changed, close, switchLibrary, updater, checkUpdates, installUpdate, generating=false, readonly=false }: {
-    settings:Settings; defaults:Settings; room:RoomDefinition; provider:InferenceProvider; health?:Completion|ProviderError|null;
+  let { settings, defaults, rooms, provider, health=null, initialSection='general', changed, close, switchLibrary, updater, checkUpdates, installUpdate, generating=false, readonly=false }: {
+    settings:Settings; defaults:Settings; rooms:readonly RoomDefinition[]; provider:InferenceProvider; health?:Completion|ProviderError|null;
     updater:UpdateController; checkUpdates:()=>Promise<void>; installUpdate:()=>Promise<void>;
     changed:()=>void;close:()=>void;switchLibrary:(destination:string,mode:string)=>Promise<void>;initialSection?:string;generating?:boolean;readonly?:boolean
   }=$props();
   const desktop='__TAURI_INTERNALS__' in window;
+  /** SE-11/12: one submenu per registered room, after Provider, in registration order. */
+  const roomOf=(id:string)=>rooms.find(r=>`room:${r.id}`===id);
   let dialog:HTMLDialogElement, section=$state('general'), testing=$state(false), status=$state(strings.notTested), details=$state(''), errorKind=$state('');
   let located=$state(''), version=$state(''), found=$state<boolean|null>(null), validation=$state(''), resetting=$state(false);
   let destination=$state(''), transferring=$state(false), typedPath=$state('');
@@ -43,7 +45,7 @@
   async function transfer(mode:string) {transferring=true;try{await switchLibrary(destination,mode);destination='';validation='';}catch(e){validation=String(e);}finally{transferring=false;}}
   async function reset() {
     if(section==='general') {settings.user={...settings.user,...defaults.user};settings.updates={...settings.updates,...defaults.updates};changed();if(desktop&&settings.library.path!==defaults.library.path)await choose(defaults.library.path);}
-    else if(section==='room'){settings.learn={...settings.learn,...defaults.learn};changed();}
+    else if(roomOf(section)){const id=roomOf(section)!.id;settings[id]={...(settings[id] as object),...(defaults[id] as object)};changed();}
     else if(section==='provider'){settings.provider={...settings.provider,...defaults.provider};changed();}
     else if(section==='developer'){settings.developer={...settings.developer,...defaults.developer};changed();}
     else {settings.appearance={...settings.appearance,...defaults.appearance};changed();}
@@ -66,7 +68,7 @@
 </script>
 <dialog class="settings" bind:this={dialog} oncancel={close}>
   <header><h2>{strings.settings}</h2><button aria-label={strings.close} onclick={close}>×</button></header>
-  <div class="body"><nav>{#each [{id:'general',label:strings.general},{id:'provider',label:strings.provider},{id:'room',label:room.name},{id:'appearance',label:strings.appearance},...(developerShown?[{id:'developer',label:strings.developer}]:[])] as item}<button aria-current={section===item.id?'page':undefined} onclick={()=>{section=item.id;validation='';resetting=false;}}>{item.label}</button>{/each}</nav>
+  <div class="body"><nav>{#each [{id:'general',label:strings.general},{id:'provider',label:strings.provider},...rooms.map(r=>({id:`room:${r.id}`,label:r.name})),{id:'appearance',label:strings.appearance},...(developerShown?[{id:'developer',label:strings.developer}]:[])] as item}<button aria-current={section===item.id?'page':undefined} onclick={()=>{section=item.id;validation='';resetting=false;}}>{item.label}</button>{/each}</nav>
     <section><fieldset disabled={readonly||transferring}>
     {#if section==='general'}
       <label>{strings.displayName}<input value={settings.user.displayName} onblur={e=>text(e,'name')} onkeydown={e=>{if(e.key==='Enter')text(e,'name');}} /></label><p>{strings.appliesNext}</p>
@@ -88,7 +90,7 @@
       {#if errorKind==='not-logged-in'}<p>{strings.signinInstructions}</p><button disabled={testing||generating} onclick={test}>{strings.checkAgain}</button>{/if}
       {#if errorKind==='model-unknown'}<button onclick={()=>document.getElementById('default-model')?.focus()}>{strings.chooseModel}</button>{/if}
       {#if details}<details><summary>{strings.details}</summary><pre>{details}</pre><button onclick={()=>navigator.clipboard.writeText(details)}>{strings.copyDetails}</button></details>{/if}
-    {:else if section==='room'}{@const RoomSettings=room.settingsMenu}<RoomSettings {settings} {changed} />
+    {:else if roomOf(section)}{@const RoomSettings=roomOf(section)!.settingsMenu}<RoomSettings {settings} {changed} />
     {:else if section==='developer'}
       <label>{strings.updateFolder}<input value={settings.developer.updateFolder} readonly spellcheck="false" /></label>
       <div class="actions"><button disabled={!desktop} onclick={pickFolder}>{strings.changeLibrary}</button><button disabled={!settings.developer.updateFolder} onclick={()=>{settings.developer.updateFolder='';changed();}}>{strings.clearFolder}</button></div>

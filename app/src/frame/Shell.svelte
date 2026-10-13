@@ -8,9 +8,8 @@
   import { providerMode } from './provider-mode';
   import { DesktopProvider, ObservedProvider, ProviderError } from './provider';
   import type { Completion, ErrorKind } from './provider';
-  import { FakeProvider } from '../rooms/learn/fake-provider';
-  import { learnRoom } from '../rooms/learn/definition';
-  import type { RoomSession } from './room';
+  import { rooms as baseRooms, roomsWithDevSample } from '../rooms';
+  import type { RoomDefinition, RoomSession } from './room';
   import { desktopStorage, SubjectPersistence } from './persistence';
   import type { Loaded } from './persistence';
   import { browserStorage, browserSummaries, browserLibraryState, browserRecordOpen, browserDelete } from './browser-storage';
@@ -18,7 +17,7 @@
   import type { SubjectSummary, LibraryState } from './catalogue';
   import { thumbnailGraph } from './library-spaces';
   import type { LibrarySpaces, ThumbnailGraph } from './library-spaces';
-  import { checkedTitle, checkedDirection, DIRECTION_LIMIT } from '../core/model';
+  import { checkedTitle, checkedDirection } from '../core/model';
   import type { Subject, Tone } from '../core/model';
   import { defaultSettings, validateSettings } from './settings';
   import { DebouncedWriter } from './debounced-writer';
@@ -32,15 +31,28 @@
   const fake = providerMode(desktop, import.meta.env.VITE_PROVIDER) === 'fake';
   let health = $state<Completion | ProviderError | null>(null);
   const fakeError=new URLSearchParams(location.search).get('error');
-  const room = learnRoom, provider = new ObservedProvider(fake ? new FakeProvider(Number(new URLSearchParams(location.search).get('delay') ?? 12),import.meta.env.DEV&&fakeError&&Object.hasOwn(strings.errorKinds,fakeError)?fakeError as ErrorKind:undefined) : new DesktopProvider(), value => health=value);
+  /** RS-4: the registered rooms; RS-10: the current one (settings.ui.lastRoom). */
+  let rooms = $state<readonly RoomDefinition[]>(baseRooms), roomId = $state(baseRooms[0].id);
+  const room = $derived(rooms.find(r => r.id === roomId) ?? rooms[0]);
+  const fakeDelay = Number(new URLSearchParams(location.search).get('delay') ?? 12);
+  const fakeKind = import.meta.env.DEV&&fakeError&&Object.hasOwn(strings.errorKinds,fakeError)?fakeError as ErrorKind:undefined;
+  const desktopProvider = fake ? null : new ObservedProvider(new DesktopProvider(), value => health=value);
+  const fakeProviders = new Map<string, ObservedProvider>();
+  /** One CLI provider for every room; in the browser build each room brings its own fake (IP-71). */
+  function providerFor(r: RoomDefinition): ObservedProvider {
+    if (desktopProvider) return desktopProvider;
+    let p = fakeProviders.get(r.id); if (!p) { p = new ObservedProvider(r.fakeProvider(fakeDelay, fakeKind), value => health=value); fakeProviders.set(r.id, p); }
+    return p;
+  }
+  const provider = $derived(providerFor(room));
   const storage = desktop ? desktopStorage : browserStorage;
-  let settings = $state(defaultSettings());
-  let defaults = $state(defaultSettings());
+  let settings = $state(defaultSettings('', '', baseRooms));
+  let defaults = $state(defaultSettings('', '', baseRooms));
   let switchingLibrary = $state(false);
   let windowMemory: Awaited<ReturnType<typeof import('./window-memory').rememberWindow>>|undefined;
   let revision = $state(0), space = $state('welcome'), session = $state<RoomSession | null>(null);
-  let settingsOpen = $state(false), shortcutsOpen = $state(false), subjectMenu = $state(false);
-  let settingsSection=$state('general'),checkingReady=$state(false),directionDraft=$state('');
+  let settingsOpen = $state(false), shortcutsOpen = $state(false), subjectMenu = $state(false), roomMenu = $state(false);
+  let settingsSection=$state('general'),checkingReady=$state(false);
   let readyController:AbortController|undefined,readyPending:Promise<Completion>|undefined;
   let loading = $state(true), banner = $state(''), toast = $state(''), saveError = $state(''), conflictPath = $state('');
   let readonlyFile = $state<unknown>(null), settingsReadOnly = $state(false);
@@ -49,14 +61,14 @@
   const catalogue = new Catalogue(() => revision++);
   const thumbnailCache = new Map<string, {stamp:string;value:Promise<ThumbnailGraph>}>();
   const deleting = new Set<string>();
-  const owned = new Map<string, { session: RoomSession; persistence: SubjectPersistence }>();
+  const owned = new Map<string, { session: RoomSession; persistence: SubjectPersistence; room: string }>();
+  /** RS-12: each room keeps its own open subject for the session. */
+  const openByRoom: Record<string, string | null> = {};
   const writer = new DebouncedWriter(async value => {
     if (desktop) await invoke('save_settings',{ document:value }); else localStorage.setItem('lantern.settings',JSON.stringify(value));
   }, error => saveError = String(error));
   const summary = $derived.by(() => { revision; return session ? room.statsSummary(session.subject) : null; });
   const running = $derived.by(() => { revision; return session?.running ? {...session.running} : null; });
-  /** RS-19: the open subject's direction, as stored. */
-  const savedDirection = $derived.by(() => { revision; return session ? room.subjectDirection.get(session.subject.rooms[room.id]) : ''; });
   const anyRunning = $derived.by(() => { revision; return [...owned.values()].some(entry => !!entry.session.running); });
   const unavailable=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
   const updater=new UpdateController();
@@ -72,11 +84,12 @@
   }
   function preferencesChanged() {
     if (settingsReadOnly) return;
-    settings = validateSettings(settings,defaults);
+    settings = validateSettings(settings,defaults,rooms);
     writer.schedule(settings);
     document.documentElement.dataset.reduceMotion = settings.appearance.reduceMotion === 'on' ? 'on' : 'system';
     document.documentElement.dataset.backdrop = settings.appearance.backdrop ? 'on' : 'off';
-    for (const entry of owned.values()) { entry.session.displayName = settings.user.displayName; entry.session.budgetTokens = settings.learn.contextBudget; }
+    for (const entry of owned.values()) rooms.find(r => r.id === entry.room)?.applySettings(entry.session, settings);
+    document.documentElement.dataset.room = room.id;
   }
   async function navigate(next: string) {
     if (next === room.defaultSpace && !session && recentIds[0]) await open(recentIds[0]);
@@ -95,12 +108,13 @@
       }
       session = entry.session; readonlyFile = null; revision++; space=room.defaultSpace;
       const at = new Date().toISOString();
-      if (desktop) { const state = await invoke<{ recents:string[] }>('record_open',{id,at}); recentIds=state.recents; }
-      else { recentIds=browserRecordOpen(id,at).recents; }
+      const recents = desktop ? (await invoke<{ recents:string[] }>('record_open',{id,at})).recents : browserRecordOpen(id,at).recents;
+      // ST-6: the stored list is shared; each room uses its own subjects from it.
+      recentIds=recents.filter(r => r===id || catalogue.summaries.some(s => s.id===r));
     } catch (e) { banner=String(e); }
   }
   /** DM-66: each known room checks its own values; a visit to an unknown room is kept as it is. */
-  const validateRooms = (subject: Subject) => { if (subject.rooms[room.id]) room.validate(subject.rooms[room.id]); };
+  const validateRooms = (subject: Subject) => { for (const r of rooms) if (subject.rooms[r.id]) r.validate(subject.rooms[r.id]); };
   function own(loaded: Loaded) {
     validateRooms(loaded.subject);
     let controller: RoomSession;
@@ -114,8 +128,9 @@
       saveError='';
     }, error=>saveError=String(error), 300, validateRooms);
     const reactiveSubject = $state(loaded.subject);
-    controller=room.prompts.createSession(reactiveSubject,provider,()=> { persistence.schedule(controller.subject); revision++; },()=>revision++,settings);
-    return {session:controller,persistence};
+    const owner = room;
+    controller=owner.prompts.createSession(reactiveSubject,providerFor(owner),()=> { persistence.schedule(controller.subject); revision++; },()=>revision++,settings);
+    return {session:controller,persistence,room:owner.id};
   }
   async function createSubject(title: string, tone: Tone, model: string, direction = '') {
     if (!libraryAvailable || unavailable) throw new Error(strings.cliNotReady);
@@ -134,7 +149,7 @@
     try {
       const raw = desktop ? await invoke<SubjectSummary[]>('list_subjects',{library}) : browserSummaries();
       // ST-7: the room reads its own part of each summary; unreadable files have no room part.
-      const summaries = raw.map(s => s.rooms?.[room.id] ? {...s,...room.summarize(s.rooms[room.id])} : s);
+      const summaries = raw.filter(s => !s.rooms || s.rooms[room.id]).map(s => s.rooms?.[room.id] ? {...s,...room.summarize(s.rooms[room.id])} : s);
       const state = desktop ? await invoke<LibraryState>('read_state') : browserLibraryState();
       catalogue.replace(summaries,state); subjectCount=summaries.length;
       recentIds=catalogue.recent.map(s=>s.id); libraryAvailable=true;
@@ -157,23 +172,25 @@
       if(desktop)await invoke('delete_subject',{library,id});else browserDelete(id);
       await entry?.persistence.close();owned.delete(id);
       if(session?.subject.id===id)session=null;
+      for (const r in openByRoom) if (openByRoom[r]===id) openByRoom[r]=null;
       readonlyFile=null;revision++;await refreshCatalogue();
     } finally {deleting.delete(id);}
   }
   const librarySpaces: LibrarySpaces = {
-    catalogue,provider,get available(){return libraryAvailable;},get providerReady(){return !unavailable;},
+    catalogue,get provider(){return provider;},get available(){return libraryAvailable;},get providerReady(){return !unavailable;},
     create:createSubject,open,rename:renameSubject,remove:removeSubject,
     async reveal(id){if(desktop)await invoke('reveal_subject',{library,id});else {await storage.load(library,id);throw new Error(strings.explorerDesktop);}},
     async filePath(id){if(desktop)return invoke<string>('subject_file',{library,id});throw new Error(strings.explorerDesktop);},
     thumbnail(summary){
       const stamp=JSON.stringify([summary.modifiedNs,summary.size]);
-      let cached=thumbnailCache.get(summary.path);
+      const cacheKey=`${room.id}:${summary.path}`;
+      let cached=thumbnailCache.get(cacheKey);
       if(cached?.stamp!==stamp){
         const value=desktop?invoke<ThumbnailGraph>('subject_thumbnail',{library,id:summary.id,room:room.id}):storage.load(library,summary.id).then(({subject})=>thumbnailGraph(subject.rooms[room.id].rootId,subject.rooms[room.id].nodes));
         cached={stamp,value};
         if(thumbnailCache.size>=100)thumbnailCache.delete(thumbnailCache.keys().next().value!);
-        thumbnailCache.set(summary.path,cached);
-        value.catch(()=>{if(thumbnailCache.get(summary.path)?.value===value)thumbnailCache.delete(summary.path);});
+        thumbnailCache.set(cacheKey,cached);
+        value.catch(()=>{if(thumbnailCache.get(cacheKey)?.value===value)thumbnailCache.delete(cacheKey);});
       }
       return cached!.value;
     },
@@ -190,7 +207,7 @@
       for (const entry of owned.values()) await entry.persistence.flush(); await writer.flush();
       const result=await invoke<{path:string;collisions:{oldId:string;newId:string}[]}>('switch_library',{old:library,destination,mode,document:settings});
       for (const entry of owned.values()) await entry.persistence.close();
-      owned.clear(); session=null; readonlyFile=null; recentIds=[]; library=result.path; settings.library.path=result.path;
+      owned.clear(); for (const r in openByRoom) openByRoom[r]=null; session=null; readonlyFile=null; recentIds=[]; library=result.path; settings.library.path=result.path;
       space='welcome'; banner='';thumbnailCache.clear();await refreshCatalogue();
       toast=strings.libraryChanged(result.path)+(result.collisions.length ? ' '+strings.collisionsRenamed(result.collisions.length) : '');
       revision++;
@@ -202,27 +219,40 @@
     while([...owned.values()].some(entry=>entry.session.running)) await new Promise(resolve=>setTimeout(resolve,10));
     for(const entry of owned.values()) await entry.persistence.close(); await writer.flush(); await windowMemory?.flush();
   }
+  /** RS-12/RS-23: open a room on its Welcome; its own open subject comes back. */
+  async function switchRoom(id: string) {
+    roomMenu=false;
+    if (id===room.id || !rooms.some(r => r.id===id)) return;
+    openByRoom[room.id]=session?.subject.id ?? null;
+    roomId=id; settings.ui.lastRoom=id; preferencesChanged();
+    const keep=openByRoom[id]; session=(keep && owned.get(keep)?.session) || null;
+    space='welcome'; readonlyFile=null; subjectMenu=false; revision++;
+    await refreshCatalogue();
+  }
   // RS-15: a press anywhere outside the menu (graph, read view, header) closes it; capture
   // phase, because d3-zoom stops propagation inside the graph.
   function outside(e: PointerEvent) {
     if(subjectMenu && e.target instanceof Element && !e.target.closest('.subject-menu, header .subject')) subjectMenu=false;
+    if(roomMenu && e.target instanceof Element && !e.target.closest('.room-chip')) roomMenu=false;
   }
   function key(e: KeyboardEvent) {
-    if(e.ctrlKey && ['1','2','3'].includes(e.key)) {e.preventDefault(); void navigate(room.spaces[Number(e.key)-1].id);}
+    if(e.ctrlKey && e.shiftKey && /^Digit[1-9]$/.test(e.code) && rooms.length>1) {const target=rooms[Number(e.code.slice(5))-1]; if(target){e.preventDefault(); void switchRoom(target.id);}}
+    else if(e.ctrlKey && !e.shiftKey && ['1','2','3'].includes(e.key)) {const target=room.spaces.find(item=>item.shortcutIndex===Number(e.key)); if(target){e.preventDefault(); void navigate(target.id);}}
     else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsSection='general';settingsOpen=true;}
     else if(e.key==='Escape') {
       if(document.querySelector('dialog[open]')) return;
-      if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(subjectMenu) subjectMenu=false; else if(space===room.defaultSpace)session?.cancel();
+      if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(roomMenu) roomMenu=false; else if(subjectMenu) subjectMenu=false; else if(space===room.defaultSpace)session?.cancel();
     } else if(e.key==='?' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) shortcutsOpen=!shortcutsOpen;
   }
   onMount(()=> {
     let unlisten: (()=>void) | undefined, refresh: ReturnType<typeof setInterval> | undefined;
     void (async()=> {
       try {
+        rooms=await roomsWithDevSample();
         if(desktop) {
           const loaded=await invoke<{document:unknown;readOnly:boolean;recovered:boolean;transferRecovered?:boolean;defaultLibrary:string;defaultName:string}>('load_settings');
-          defaults=defaultSettings(loaded.defaultLibrary,loaded.defaultName);
-          settings=validateSettings(loaded.document,defaults); settingsReadOnly=loaded.readOnly;
+          defaults=defaultSettings(loaded.defaultLibrary,loaded.defaultName,rooms);
+          settings=validateSettings(loaded.document,defaults,rooms); settingsReadOnly=loaded.readOnly;
           if(loaded.recovered) toast=strings.settingsRecovered; if(loaded.readOnly) banner=strings.readOnly;
           if(loaded.transferRecovered)toast=strings.transferRecovered;
           library=settings.library.path;
@@ -236,11 +266,12 @@
           const {getCurrentWindow}=await import('@tauri-apps/api/window'); const window=getCurrentWindow();
           unlisten=await window.onCloseRequested(async e=> {e.preventDefault();try {await flushClose();await window.destroy();}catch(error){saveError=String(error);}});
         } else {
-          defaults=defaultSettings('browser','Learner');
-          try {settings=validateSettings(JSON.parse(localStorage.getItem('lantern.settings')??'{}'),defaultSettings('browser','Learner'));}catch{settings=defaultSettings('browser','Learner');}
+          defaults=defaultSettings('browser','Learner',rooms);
+          try {settings=validateSettings(JSON.parse(localStorage.getItem('lantern.settings')??'{}'),defaults,rooms);}catch{settings=defaultSettings('browser','Learner',rooms);}
           library='browser';
           try {recentIds=JSON.parse(localStorage.getItem('lantern.recents')??'[]');}catch{recentIds=[];}
         }
+        roomId=settings.ui.lastRoom;
         await refreshCatalogue();
         if(desktop){const status=await invoke<{kind:string}>('provider_status');if(status.kind==='not-installed')health=new ProviderError('not-installed','');}
         preferencesChanged();
@@ -248,7 +279,7 @@
         const query=new URLSearchParams(location.search);
         // Retained deterministic Study harness for focused graph/panel tests.
         if(import.meta.env.DEV && query.has('study')) {
-          if(query.has('resume') && recentIds[0]) await open(recentIds[0]); else await createSubject(query.get('subject')||'Ocean tides',settings.learn.defaultTone,settings.provider.defaultModel);
+          if(query.has('resume') && recentIds[0]) await open(recentIds[0]); else await createSubject(query.get('subject')||'Ocean tides',room.defaultTone(settings),settings.provider.defaultModel);
         }
         refresh=setInterval(()=> { if(!switchingLibrary) for(const [id,entry] of owned) if(!deleting.has(id)&&!entry.session.running) entry.persistence.refresh().catch(e=>saveError=String(e)); },1000);
       }catch(e){banner=String(e);}finally{loading=false;}
@@ -261,7 +292,7 @@
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
 {#if !loading && settings.appearance.backdrop}<Backdrop {space} reduceSetting={settings.appearance.reduceMotion} />{/if}
 <header>
-  <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}><span class="mark-art" aria-hidden="true">{@html lanternMark}</span></button><span class="room">{room.name}</span>
+  <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}><span class="mark-art" aria-hidden="true">{@html lanternMark}</span></button>{#if rooms.length>1}<span class="room-chip"><button class="room" aria-haspopup="menu" aria-expanded={roomMenu} title={strings.rooms} onclick={()=>roomMenu=!roomMenu}>{room.name}</button>{#if roomMenu}<div class="room-menu" role="menu" aria-label={strings.rooms}>{#each rooms as r, i (r.id)}<button role="menuitemradio" aria-checked={r.id===room.id} title={`Ctrl+Shift+${i+1}`} onclick={()=>switchRoom(r.id)}><span class="swatch" style:background={r.accent['--accent']}></span>{r.name}</button>{/each}</div>{/if}</span>{:else}<span class="room">{room.name}</span>{/if}
   <nav>{#each room.spaces as item}<button aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space===item.id?'page':undefined} disabled={item.id!=='welcome' && !subjectCount} onclick={()=>navigate(item.id)}>{item.icon}</button>{/each}</nav>
   {#if session && space!=='welcome'}<button class="subject" onclick={()=>subjectMenu=!subjectMenu} title={session.subject.title}>{session.subject.title}{#if running}<span class="busy-dot">·</span>{/if}</button>{/if}
   {#if summary && space!=='welcome'}<small title={settings.appearance.showTokenStats?summary.tooltip:undefined}>{summary.text}</small>{/if}
@@ -275,29 +306,28 @@
   {#if updater.phase==='available'}<button disabled={anyRunning} title={anyRunning?strings.finishGeneration:undefined} onclick={installUpdate}>{strings.installUpdate}</button><button onclick={dismissUpdate}>{strings.updateLater}</button>{/if}</div>{/if}
 {#if subjectMenu && session}<div class="subject-menu">
   <input aria-label={strings.title} value={session.subject.title} maxlength="120" onkeydown={e=>{if(e.key==='Enter' && e.currentTarget.value.trim()){session!.subject.title=e.currentTarget.value.trim();session!.touch();subjectMenu=false;}}} />
-  <label>{strings.tone}<select value={typeof room.subjectTone.get(session.subject.rooms[room.id])==='string'?room.subjectTone.get(session.subject.rooms[room.id]):'custom'} onchange={e=>{room.subjectTone.set(session!.subject.rooms[room.id],e.currentTarget.value==='custom'?{custom:''}:e.currentTarget.value as any);session!.touch();toast=strings.appliesNext;}}>{#each ['eli5','curious','student','engineer','expert','custom'] as tone}<option>{tone}</option>{/each}</select></label>
-  {#if typeof room.subjectTone.get(session.subject.rooms[room.id])==='object'}<textarea aria-label={strings.customTone} maxlength="300" value={(room.subjectTone.get(session.subject.rooms[room.id]) as {custom:string}).custom} onblur={e=>{room.subjectTone.set(session!.subject.rooms[room.id],{custom:e.currentTarget.value});session!.touch();}}></textarea>{/if}
-  <label>{strings.direction}<textarea class="direction" rows="3" placeholder={strings.directionPlaceholder} value={savedDirection}
-    oninput={e=>directionDraft=e.currentTarget.value} onfocus={e=>directionDraft=e.currentTarget.value}
-    onblur={e=>{const value=e.currentTarget.value;if([...value].length>DIRECTION_LIMIT)return;const next=checkedDirection(value);if(next===savedDirection)return;room.subjectDirection.set(session!.subject.rooms[room.id],next);session!.touch();toast=strings.appliesNext;}}></textarea></label>
-  {#if [...directionDraft].length>=400}<small class="direction-count" class:over={[...directionDraft].length>DIRECTION_LIMIT} role="status">{[...directionDraft].length} / {DIRECTION_LIMIT}{[...directionDraft].length>DIRECTION_LIMIT?' · '+strings.directionOver([...directionDraft].length-DIRECTION_LIMIT,DIRECTION_LIMIT):''}</small>{/if}
+  <room.subjectMenu visit={session.subject.rooms[room.id]} {revision} changed={appliesNext=>{session!.touch();if(appliesNext)toast=strings.appliesNext;}} />
   <div class="field"><label for="subject-model">{strings.defaultModel}</label><ModelPicker id="subject-model" value={session.subject.rooms[room.id].model} label={strings.defaultModel} commit={model=>{session!.subject.rooms[room.id].model=model;session!.touch();toast=strings.appliesNext;}} /></div>
   <label>{strings.defaultEffort}<select value={session.subject.rooms[room.id].effort} onchange={e=>{session!.subject.rooms[room.id].effort=e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label>
 </div>{/if}
-<div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#each room.spaces as item}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/if}</div>
-{#if settingsOpen}<SettingsPanel {settings} {defaults} {room} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
-{#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
+<div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
+{#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
+{#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts:''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>
   :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; } header { height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid var(--glass-line); background:var(--glass); backdrop-filter:var(--glass-blur); }
   :global(#app) {display:flex;flex-direction:column;} header {flex-shrink:0;} .banner {flex-shrink:0;}
   /* RS-34: the frame's layers sit above the backdrop (z-index 0). */
   header, .banner, .spaces { position:relative; z-index:1; }
+  /* The room menu opens from the header, so the header sits above the spaces. */
+  header { z-index:2; }
   header button { background:none; padding:5px 9px; min-width:32px; }.mark { display:flex; align-items:center; padding:4px 6px; }.mark-art, .mark-art :global(svg) { display:block; width:28px; height:28px; }.room { color:var(--accent); font-size:13px; } nav { display:flex; gap:4px; } [aria-current='page'] { border-color:var(--accent); color:var(--accent); }
   .subject { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:35vw; border:0; } header small { color:var(--ink-mute); font-size:13px; margin-left:auto; }.gear { margin-left:auto; }
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast.update-notice { top:auto; bottom:18px; display:flex; align-items:center; gap:8px; }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
-  .subject-menu { position:fixed; left:230px; top:52px; z-index:12; display:grid; gap:12px; padding:20px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }.subject-menu label,.subject-menu .field { display:grid; gap:5px; }.subject-menu .direction { width:min(360px,70vw); resize:vertical; }.direction-count { color:var(--ink-mute); font-size:12px; }.direction-count.over { color:var(--error-ink); }
+  .subject-menu { position:fixed; left:230px; top:52px; z-index:12; display:grid; gap:12px; padding:20px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }.subject-menu label,.subject-menu .field { display:grid; gap:5px; }
+  .room-chip { position:relative; }.room-chip .room { border:0; padding:4px 6px; }.room-menu { position:absolute; left:0; top:36px; z-index:13; display:grid; gap:4px; min-width:160px; padding:8px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }
+  .room-menu button { display:flex; align-items:center; gap:8px; text-align:left; }.room-menu [aria-checked='true'] { border-color:var(--accent); }.swatch { width:10px; height:10px; border-radius:50%; box-shadow:0 0 8px currentColor; }
   .busy-dot { font-size:24px; color:var(--accent); animation:pulse 1.8s ease-in-out infinite; }.shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; }
   @keyframes pulse { 50% {opacity:.4;} } @media(max-width:1100px) { header small {display:none;} }
   @media(prefers-reduced-motion:reduce) { .busy-dot {animation:none;} }

@@ -9,6 +9,7 @@
   import { isValidModel } from '../../core/models';
   import ModelPicker from '../../ui/ModelPicker.svelte';
   import { SubjectSuggestions } from './suggestions';
+  import { learnSettings } from './settings';
   import { WelcomeEmbers } from './embers';
   import Thumbnail from './Thumbnail.svelte';
   let { visible, settings, library, revision, navigate }: SpaceProps = $props();
@@ -35,7 +36,7 @@
   const shape=$derived<Shape>(open?'two':focused||title.trim()?'cap':'rest');
   $effect(()=>{const next=shape,show=focused;untrack(()=>capsule?.apply(next,show));});
   $effect(()=>{
-    if(visible){untrack(()=>{tone=cloneJson(settings.learn.defaultTone);model=settings.provider.defaultModel;});
+    if(visible){untrack(()=>{tone=cloneJson(learnSettings(settings).defaultTone);model=settings.provider.defaultModel;});
       void tick().then(()=>{capsule?.measure();capsule?.reposition();field?.focus();if(!arrived){motion?.arrival(field);arrived=true;}});
     }else{suggestions.cancel();motion?.clear();}
   });
