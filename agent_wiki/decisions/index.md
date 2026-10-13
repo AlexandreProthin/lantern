@@ -23,4 +23,5 @@ mark it `status: deprecated` and have the replacement link back to it.
 * [Prompts are app-internal and versioned](prompts-internal-versioned.md) - Each generation records its prompt version; evals guard changes.
 * [Sign-in is instructions only in v0.1.0](cli-signin-instructions-only.md) - Step-by-step instructions plus Check again; Lantern opening the sign-in is Later.
 * [Welcome and Gallery belong to each room](spaces-per-room-no-home.md) - No Home yet; the app reopens the last room.
+* [Choose research calls may search the web](choose-web-tools.md) - WebSearch and WebFetch only, for Choose research tasks; no cheaper web model.
 * [lantern/2 makes the format room-neutral](format-lantern-2.md) - Neutral roles, a data container for room fields; Learn files converted.

@@ -37,3 +37,5 @@ About 3 s of fixed overhead per call; an introduction takes about 12 s and light
 about 25 s. See [llm-latency](/issues/llm-latency.md).
 
 Implemented in [inference-provider](/components/inference-provider.md).
+
+Amended 2026-10-13 for the Choose room's research tasks only: [choose-web-tools](/decisions/choose-web-tools.md).

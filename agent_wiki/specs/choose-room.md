@@ -118,13 +118,12 @@ DM-4).
 - **CR-43** This changes the provider's no-tools rule (IP-20, IP-60,
   [claude-cli-provider-flags](/decisions/claude-cli-provider-flags.md)) for this room only. It needs
   its own decision and a spike first: the CLI 2.1.290 accepts `--tools "WebSearch,WebFetch"` with
-  `--allowedTools` in safe mode. The spike runs **during the frame release** (q-r6-web-spike): a few
-  real calls on the user's subscription to measure latency and token use, see how web use is
-  reported, and check that no other tool can run. Its results go into a decision before any Choose
-  code.
-- **CR-45** Web searches MAY be delegated to a cheaper model (for example Haiku 5.5): a Choose room
-  setting, default *same model as the subject* (q-r6-web-spike note; relates to the backlog entry
-  *Cheaper model for cheap tasks*). The generation log records the model each call used (DM-30).
+  `--allowedTools` in safe mode. **Done 2026-10-13**: [choose-web-tools](/decisions/choose-web-tools.md).
+  Only WebSearch and WebFetch can run; a research call takes 40–65 s and about ten times a plain
+  call's cost; the wait shows progress from the stream's tool events (IP-20).
+- **CR-45** ~~Web searches MAY be delegated to a cheaper model.~~ Withdrawn 2026-10-13 by the user: in
+  the spike Haiku was slower, not cheaper, and broke the source rules
+  ([decision](/decisions/choose-web-tools.md)). Research calls use the subject's model.
 
 # Compare
 
@@ -161,12 +160,11 @@ DM-4).
 
 - **CR-90** Settings → **Choose room** (SE-12 amended), keys under `choose.*` (q-r6-settings):
   country, for shops and prices (default: Windows' region); currency (default: the country's);
-  default tone; *Use the web* (default on, CR-44); the model for web searches (default: same as the
-  subject, CR-45). Model and effort defaults stay in Provider, shared by rooms.
+  default tone; *Use the web* (default on, CR-44). Model and effort defaults stay in Provider, shared
+  by rooms.
 
 # Open
 
-- The web-tools decision, after the spike (CR-43).
 - The board's and the teal palette's look: `agent_design` rounds (CR-10, CR-70).
 - Which Choose fields go in `data` under `lantern/2` ([decision](/decisions/format-lantern-2.md)), with the v0.2.0 plan.
 

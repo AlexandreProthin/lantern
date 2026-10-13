@@ -67,7 +67,7 @@ Implementation of the contract for v0.1.0. It is the only provider.
 
 ## Process
 
-- **IP-20** The call MUST run `claude -p --output-format stream-json --verbose --include-partial-messages --safe-mode --strict-mcp-config --no-session-persistence --tools "" --system-prompt <system>`, plus `--model <model>` when a model is set and `--effort <level>` when an effort is set.
+- **IP-20** The call MUST run `claude -p --output-format stream-json --verbose --include-partial-messages --safe-mode --strict-mcp-config --no-session-persistence --tools "" --system-prompt <system>`, plus `--model <model>` when a model is set and `--effort <level>` when an effort is set. *(Amended 2026-10-13, v0.2.0 A4, [decision](/decisions/choose-web-tools.md).)* A call that allows web tools (the Choose room's research tasks, CR-40) runs `--tools "WebSearch,WebFetch" --allowedTools WebSearch WebFetch` instead of `--tools ""`; the provider counts the stream's tool-use events per tool name into `toolCalls` (DM-64) and reports them as progress while the call runs.
 - **IP-21** The prompt MUST be written to stdin and stdin closed; it MUST NOT be passed as an argument.
 - **IP-22** The working directory MUST be the OS temp directory; on Windows the child MUST be created with `CREATE_NO_WINDOW`.
 - **IP-23** The executable MUST be the one located by detection (IP-40), not a bare `claude` lookup at every call, once detection has found it.
@@ -109,7 +109,7 @@ Used by the Settings status and by the first-call error path.
 
 # Security
 
-- **IP-60** The CLI MUST run with no tools, in safe mode, with strict MCP config and from a temp directory, so it can read nothing of the user's files and runs no user configuration.
+- **IP-60** The CLI MUST run with no tools, in safe mode, with strict MCP config and from a temp directory, so it can read nothing of the user's files and runs no user configuration. *(Amended 2026-10-13, v0.2.0 A4, [decision](/decisions/choose-web-tools.md).)* The one exception is IP-20's web tools for the Choose room's research tasks: WebSearch and WebFetch only, never a file, shell or MCP tool.
 - **IP-61** Prompts MUST NOT contain secrets: they hold only the subject content and the app's own prompt text. The app MUST NOT put the display name or paths into prompts beyond what the room specs define.
 - **IP-62** Raw stderr and results MUST NOT be sent anywhere; they are shown locally under *Details* only.
 - **IP-63** API keys are Later. They get their own security spec (storage in the OS credential store, never in settings.json or subject files) before any API provider ships.
