@@ -1,0 +1,82 @@
+<!--
+  id:        r004-02
+  component: choose-gallery
+  phase:     motion
+  parents:   r001-03, r001-02, r001-01, r002-01, r002-03, r003-01
+  direction: Unfold from the band. choose-board's language (r005-02 Unfold from the spine): the same easings (out .2,.7,.2,1 / in .5,0,.8,.4) and timings. Arrival: cards rise 12 px and fade in reading order, 280 ms, 30 ms apart (capped at 12), then each steps bar fills from the left, 360 ms. Sort, filter, delete, Open moving a card to the front: cards glide, 280 ms; entering cards grow from 96%, leaving ones shrink and fade, 220 / 200 ms. Selecting: the lifted card unfolds downward from its status band (clip, 320 ms out) and its sections slide 12 px in and fade, 220 ms from 120 ms, 40 ms apart; folding closes back up into the band, 240 ms in. A status change fills the band from the left, 360 ms, as a chosen product's card does on the board; tab counts roll like the rail's counters, 280 ms. Open: a teal ring spreads from the card, 360 ms. Reduced motion: everything instant. Colour, type and form are r003-01 unchanged.
+  request:   revision 5
+  inputs:    go motion
+  shared:    ../assets/gallery-kit.js, ../assets/form-structure.js (structure), ../assets/color-base.js (tokens, type, form),
+             ../assets/gallery-motion.js (motion engine and the Reduce motion / Replay arrival prototype controls),
+             ../assets/backdrop.js, ../choose-gallery-data.js. The CSS block is r003-01's, unchanged.
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r004-02 — Unfold from the band</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script src="../assets/form-structure.js"></script>
+<script src="../assets/color-base.js"></script>
+<script src="../assets/gallery-motion.js"></script>
+<script>
+const M = GALLERY_MOTION;
+const O = M.EASE_OUT, I = M.EASE_IN;
+const bandH = k => (k.querySelector('.lift > .top') || k.querySelector('.top'))?.offsetHeight || 34;
+const hooks = {
+  arrive: cards => cards.forEach((k, i) => {
+    const d = Math.min(i, 12) * 30;
+    k.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 280, delay: d, easing: O, fill: 'backwards' });
+    k.querySelectorAll('.step i b').forEach(b => (b.style.transformOrigin = 'left', b).animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: 360, delay: d + 200, easing: O, fill: 'backwards', composite: 'replace' }));
+  }),
+  move: (k, dx, dy) => k.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 280, easing: O }),
+  enter: (k, i) => k.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 220, delay: Math.min(i, 12) * 25, easing: O, fill: 'backwards' }),
+  leave: g => g.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.96)' }], { duration: 200, easing: I, fill: 'forwards' }).onfinish = () => g.remove(),
+  lift: l => {
+    const h = l.offsetHeight, b = bandH(l);
+    l.animate([{ clipPath: `inset(0 -80px ${h - b}px -80px round 14px)` }, { clipPath: 'inset(0 -80px -80px -80px round 14px)' }], { duration: 320, easing: O });
+    [l.querySelector(':scope > .ttl, :scope > .rn'), ...l.querySelectorAll('.uf > *')].filter(Boolean).forEach((s, i) =>
+      s.animate([{ opacity: 0, transform: 'translateY(-12px)' }, { opacity: 1, transform: 'none' }], { duration: 220, delay: 120 + i * 40, easing: O, fill: 'backwards' }));
+  },
+  fold: g => {
+    const l = g.querySelector('.lift'); if (!l) return g.remove();
+    const h = l.offsetHeight, b = bandH(l);
+    l.animate([{ clipPath: 'inset(0 -80px -80px -80px round 14px)' }, { clipPath: `inset(0 -80px ${h - b}px -80px round 14px)`, opacity: 0 }], { duration: 240, easing: I, fill: 'forwards' }).onfinish = () => g.remove();
+    setTimeout(() => g.remove(), 450);
+  },
+  status: k => k.querySelector('.top')?.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 360, easing: O }),
+  count: n => n.animate([{ transform: 'translateY(60%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: O }),
+  open: k => k.animate([{ boxShadow: '0 0 0 0 var(--accent)' }, { boxShadow: '0 0 0 14px transparent' }], { duration: 360, easing: O })
+};
+GALLERY_KIT.mount({
+  id: 'r004-02', title: 'Unfold from the band',
+  css: FORM_STRUCTURE.css + COLOR_BASE.css + `
+  .tab.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); } .tab.on .tl-l { font-weight: 600; } .tab.on .n { color: var(--accent-ink); opacity: .75; }
+  .st::before { border: 1px dashed var(--accent); } .st[data-s=decided]::before { border: 1.5px solid var(--focus); } .st[data-s=bought]::before { background: var(--accent); border-color: var(--accent); }
+  .tab.on .st.dot::before { border-color: var(--accent-ink); } .tab.on .st.dot[data-s=bought]::before { background: var(--accent-ink); }
+  .card .top { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .card:has(.pick.ready) .top { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .card.st-decided .top { background: var(--surface-2); color: var(--focus); border-bottom-color: transparent; } .card.st-decided .when { color: color-mix(in srgb, var(--focus) 70%, transparent); }
+  .card.st-bought .top { background: var(--accent); color: var(--accent-ink); border-bottom-color: transparent; } .card.st-bought .when { color: color-mix(in srgb, var(--accent-ink) 75%, transparent); }
+  .card.st-bought .top .st::before { background: var(--accent-ink); border-color: var(--accent-ink); }
+  .card:hover { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .step i b { background: color-mix(in srgb, var(--accent) 55%, transparent); } .step.full i b { background: var(--accent); }
+  .pick.ready b { color: var(--accent); }
+  .lift { border-color: color-mix(in srgb, var(--accent) 50%, transparent); box-shadow: 0 0 40px 6px var(--glow-far), 0 24px 60px color-mix(in srgb, var(--code) 80%, transparent); }
+  .acts .pri { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; } .acts .pri:hover { background: var(--focus); border-color: var(--focus); }
+  .sec h3 { color: var(--accent); }
+  .vt li.d::before { border: 2px solid var(--focus); background: var(--surface-2); } .vt li.b::before { background: var(--accent); border-color: var(--accent); } .vt li.u::before { border-color: var(--ink-mute); }
+  .bar input:focus { border-color: var(--accent); }
+`,
+  render: M.wrap((el, c) => FORM_STRUCTURE.render(el, c, { unfold: 'float', thumb: 'steps' }), hooks)
+});
+M.controls();
+</script>
+<script src="../assets/backdrop.js"></script>
+<script>document.dispatchEvent(new CustomEvent('lx:screen', { detail: 'gallery' }));</script>
+</body>
+</html>

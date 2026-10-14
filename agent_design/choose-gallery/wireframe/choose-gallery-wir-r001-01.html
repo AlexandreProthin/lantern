@@ -1,0 +1,120 @@
+<!--
+  id:        r001-01
+  component: choose-gallery
+  phase:     wireframe
+  parents:   none
+  direction: Status lanes. The status IS the layout: three lanes side by side, Exploring | Decided | Bought, each with its count and its own scroll. Filtering by status = clicking a lane's head, which widens that lane and folds the other two into slim strips (click a strip to unfold). An exploring card leads with the subject and how much is missing; a decided card leads with the chosen product; bought subjects are compact one-line receipts. A subject un-chosen on the board drops back into Exploring with a "was Desk C" mark. Text filter and sort (inside each lane) sit above.
+  request:   revision 1
+  inputs:    Gallery space of the Choose room (CR-11, CR-12, CR-24, CR-25, CR-14; Learn's Gallery in welcome-gallery WG-51 to WG-71): the list of all Choose subjects with their status (exploring → decided → bought), what each entry shows (e.g. the chosen product, compact stats like "4 needs · 6 criteria · 3 shortlisted", last opened), and how you sort, filter by status and open, rename or delete a subject. Hard cases: empty, one subject, many (50+), several bought, long names, a decided subject whose product is later un-chosen. Welcome's recent cards and Gallery should look like one family (choose-welcome, designed in parallel).
+  shared:    ../assets/gallery-kit.js (model, frame, rename/delete/keyboard flows) with ../choose-gallery-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r001-01 — Status lanes</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script>
+GALLERY_KIT.mount({
+  id: 'r001-01', title: 'Status lanes',
+  css: `
+  .wrap { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+  .bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--hair); flex-wrap: wrap; }
+  .bar h1 { margin: 0; font-size: 15px; font-weight: 600; } .bar .sp { flex: 1; } .bar input { width: 220px; max-width: 100%; }
+  .lanes { display: flex; min-height: 0; }
+  .lane { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; border-right: 1px solid var(--hair); transition: flex-basis .2s; }
+  .lane:last-child { border-right: 0; } .lane.solo { flex: 4 1 0; }
+  .lane .lh { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 0; border-bottom: 1px solid var(--hair); border-radius: 0; background: none; text-align: left; width: 100%; }
+  .lane .lh b { font-weight: 600; } .lane .lh .n { color: var(--mute); } .lane .lh .hint { margin-left: auto; font-size: 11px; color: var(--faint); }
+  .lane .lh:hover { background: var(--fill); }
+  .lane .scroll { flex: 1; overflow: auto; padding: 10px 10px 80px; display: grid; gap: 8px; align-content: start; }
+  .lane.solo .scroll { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  .lane.fold { flex: 0 0 44px; } .lane.fold .lh { writing-mode: vertical-rl; height: 100%; border-bottom: 0; padding: 14px 0; justify-content: flex-start; align-items: center; }
+  .lane.fold .lh .hint { display: none; } .lane.fold .scroll { display: none; }
+  .card { border: 1px solid var(--hair); padding: 10px 12px; display: grid; gap: 4px; cursor: default; min-width: 0; }
+  .card:hover { border-color: var(--mute); } .card.sel { border: 2px solid var(--fg); padding: 9px 11px; }
+  .card .top { display: flex; gap: 8px; align-items: baseline; min-width: 0; } .card .top .ttl { flex: 1; font-weight: 600; }
+  .card.sel .ttl { white-space: normal; overflow-wrap: anywhere; }
+  .card .ttl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .card .when { font-size: 11px; color: var(--faint); white-space: nowrap; }
+  .card .stats { font-size: 12px; color: var(--mute); } .card .miss { font-size: 12px; }
+  .card .miss.ready::before { content: '◆ '; } .card .back { font-size: 12px; border-left: 2px solid var(--fg); padding-left: 6px; }
+  .card .run { font-size: 11px; } .card .run::before { content: '● '; }
+  .card.dec .prod { font-weight: 600; font-size: 14px; } .card.dec .of { font-size: 12px; color: var(--mute); }
+  .card.dec .prod, .card.dec .of { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card.sel.dec .prod { white-space: normal; }
+  .card .fact { font-size: 12px; color: var(--mute); }
+  .rcpt { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; border: 0; border-bottom: 1px dashed var(--hair); padding: 6px 4px; }
+  .rcpt.sel { border: 2px solid var(--fg); padding: 6px 8px; }
+  .rcpt .prod { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .rcpt .of { font-size: 12px; color: var(--mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rcpt .when { grid-row: 1; grid-column: 2; }
+  .more { display: grid; gap: 6px; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--hair); grid-column: 1 / -1; }
+  .more dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 12px; } .more dt { color: var(--faint); } .more dd { margin: 0; overflow-wrap: anywhere; }
+  .acts { display: flex; gap: 6px; flex-wrap: wrap; } .acts button { font-size: 12px; } .acts .pri { background: var(--fg); color: var(--bg); }
+  .nomatch { padding: 18px 4px; font-size: 12px; text-align: left; }
+  @media (max-width: 760px) {
+    .lanes { flex-direction: column; overflow: auto; } .lane { flex: 0 0 auto !important; border-right: 0; border-bottom: 1px solid var(--hair); }
+    .lane.fold .lh { writing-mode: horizontal-tb; height: auto; padding: 10px 14px; } .lane .scroll { overflow: visible; padding-bottom: 12px; }
+    .lane.solo .scroll { grid-template-columns: 1fr; } .bar input { width: 100%; } }`,
+  render(el, c) {
+    const { st, esc, fmt, model } = c;
+    const LBL = { exploring: 'Exploring', decided: 'Decided', bought: 'Bought' };
+    const HINT = { exploring: 'still choosing', decided: 'a product is chosen', bought: 'marked as bought' };
+    const tab = s => st.sel === s.id || (!st.sel && s === c.list[0]) ? 0 : -1;
+    const more = s => {
+      const t = model.stats(s), m = model.missing(s);
+      return `<div class="more keep">
+        ${c.thumb(s, 220, 70)}
+        <dl>
+          ${s.chosen ? `<dt>Pick</dt><dd>${esc(s.chosen.name)}, ${esc(s.chosen.fact)}. ${esc(s.chosen.price)}, seen at ${esc(s.chosen.priceSource)} ${fmt.date(s.chosen.priceSeenAt)}</dd>` : ''}
+          <dt>Needs</dt><dd>${t.answered} of ${t.needs} answered</dd>
+          <dt>Criteria</dt><dd>${t.must} must · ${t.nice} nice · ${t.open} to rank · ${t.irrelevant} irrelevant</dd>
+          <dt>Products</dt><dd>${t.shortlisted} shortlisted · ${t.candidates} candidates · ${t.rejected} rejected</dd>
+          ${m.length ? `<dt>Missing</dt><dd>${esc(m.join(' · '))}</dd>` : ''}
+          ${s.direction ? `<dt>Direction</dt><dd>${esc(s.direction)}</dd>` : ''}
+          <dt>History</dt><dd>${s.history.map(h => `${h.unchosen ? 'un-chosen ' + esc(h.product) : h.status === 'exploring' ? 'started' : h.status + (h.product && h.status === 'decided' ? ' on ' + esc(h.product) : '')} ${fmt.date(h.at)}`).join(' → ')}</dd>
+          <dt>Last opened</dt><dd>${fmt.time(s.lastOpened)}</dd>
+          <dt>Tone · model</dt><dd>${esc(s.tone)} · ${esc(s.model)} · ${s.generations} generations · ${fmt.k(s.tokens.in)} in / ${fmt.k(s.tokens.out)} out</dd>
+        </dl>
+        <div class="acts"><button class="pri" data-open="${s.id}">Open</button><button data-rn="${s.id}">Rename</button><button data-reveal="${s.id}">Reveal in Explorer</button><button data-del="${s.id}">Delete…</button></div></div>`;
+    };
+    const card = s => {
+      const sel = st.sel === s.id, m = model.missing(s), un = model.unchosen(s);
+      if (s.status === 'bought' && !sel) return `<div class="rcpt" data-id="${s.id}" tabindex="${tab(s)}">
+        <span class="prod">${esc(s.chosen.name)}</span><span class="when">bought ${fmt.rel(model.boughtAt(s))}</span><span class="of" title="${esc(s.title)}">${esc(s.title)}</span></div>`;
+      if (s.status === 'bought' || s.status === 'decided') return `<div class="card dec ${sel ? 'sel' : ''}" data-id="${s.id}" tabindex="${tab(s)}">
+        <div class="top"><span class="prod ttl" title="${esc(s.chosen.name)}">${esc(s.chosen.name)}</span><span class="when">${s.status} ${fmt.rel(model.since(s))}</span></div>
+        <div class="of">for ${c.title(s)}</div>
+        <div class="fact">${esc(s.chosen.price)} · ${esc(s.chosen.fact)}</div>
+        ${sel ? more(s) : `<div class="stats">${model.summary(s)} · opened ${fmt.rel(s.lastOpened)}</div>`}</div>`;
+      return `<div class="card ${sel ? 'sel' : ''}" data-id="${s.id}" tabindex="${tab(s)}">
+        <div class="top">${c.title(s)}<span class="when">${fmt.rel(s.lastOpened)}</span></div>
+        <div class="stats">${model.summary(s)}</div>
+        ${un ? `<div class="back">Was decided on <b>${esc(un.product)}</b>, un-chosen ${fmt.hours(un.at)}</div>` : ''}
+        <div class="miss ${m.length ? '' : 'ready'}">${m.length ? `${m.length} missing before a decision` : 'Ready: the room can recommend'}</div>
+        ${s.running ? '<div class="run">generating…</div>' : ''}
+        ${sel ? more(s) : ''}</div>`;
+    };
+    // the visual order for keyboard: lanes left to right; list is used for the first tab stop only
+    c.list = c.groups.flatMap(g => st.status === 'all' || st.status === g.status ? g.items : []);
+    el.innerHTML = `<div class="wrap">
+      <div class="bar"><h1>Your choices</h1><span class="mute num">${c.total}</span><span class="sp"></span>
+        <input type="search" data-k="q" placeholder="Filter by name" value="${esc(st.q)}" aria-label="Filter by name">
+        <label class="mute">Sort <select data-sortsel>${Object.entries(c.SORTS).filter(([k]) => k !== 'status').map(([k, v]) => `<option value="${k}" ${k === st.sort ? 'selected' : ''}>${v.label}</option>`).join('')}</select></label>
+        <button data-dir aria-label="Reverse order">${st.dir > 0 ? '↓' : '↑'}</button></div>
+      <div class="lanes">${c.groups.map(g => {
+        const solo = st.status === g.status, fold = st.status !== 'all' && !solo;
+        return `<section class="lane ${solo ? 'solo' : ''} ${fold ? 'fold' : ''}">
+          <button class="lh" data-status="${solo ? 'all' : g.status}" aria-pressed="${solo}" title="${solo ? 'Show all three lanes' : 'Show only ' + g.status}">
+            <span class="st" data-s="${g.status}"></span><b>${LBL[g.status]}</b><span class="n num">${st.q ? `${g.items.length} of ${g.total}` : g.total}</span><span class="hint">${solo ? 'show all' : HINT[g.status]}</span></button>
+          <div class="scroll" data-scroll="${g.status}">${g.items.length ? g.items.map(card).join('') : `<div class="nomatch">${st.q ? `No ${g.status} subject matches "${esc(st.q)}". <a data-clear>Clear filter</a>` : `None ${g.status === 'bought' ? 'bought' : g.status} yet.`}</div>`}</div>
+        </section>`; }).join('')}</div></div>`;
+  }
+});
+</script>
+</body>
+</html>

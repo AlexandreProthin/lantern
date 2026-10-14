@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "concept": "choose-gallery",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-14T21:26:44.528541+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-gallery",
+        "revision": 1,
+        "saved_at": "2026-10-14T21:20:16.063382+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "Gallery space of the Choose room (CR-11, CR-12, CR-24, CR-25, CR-14; Learn's Gallery in welcome-gallery WG-51 to WG-71): the list of all Choose subjects with their status (exploring → decided → bought), what each entry shows (e.g. the chosen product, compact stats like \"4 needs · 6 criteria · 3 shortlisted\", last opened), and how you sort, filter by status and open, rename or delete a subject. Hard cases: empty, one subject, many (50+), several bought, long names, a decided subject whose product is later un-chosen. Welcome's recent cards and Gallery should look like one family (choose-welcome, designed in parallel)."
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-14T21:56:33.443175+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-gallery",
+        "revision": 3,
+        "saved_at": "2026-10-14T21:52:47.579490+00:00",
+        "based_on_round": 1,
+        "selected_ids": [
+          "r001-03",
+          "r001-02",
+          "r001-01"
+        ],
+        "next": {
+          "phase": "form",
+          "mode": "combine",
+          "prompt": "r001-02 with the history of r001-03 from its right side pannel in place of the mini graph view from an unfolded card of r001-01. Selecting a card opens not in full-width but card width"
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-14T22:13:39.635744+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-gallery",
+        "revision": 4,
+        "saved_at": "2026-10-14T22:10:30.096119+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r001-03",
+          "r001-02",
+          "r001-01",
+          "r002-01",
+          "r002-03"
+        ],
+        "next": {
+          "phase": "color",
+          "mode": "combine",
+          "prompt": "r002-03 but r002-01 card size. We skip Type round, just take the same as the one we already selected from the choose-board design. next step color"
+        }
+      },
+      "node_ids": [
+        "r003-01",
+        "r003-02",
+        "r003-03"
+      ]
+    },
+    {
+      "number": 4,
+      "created_at": "2026-10-14T22:22:37.664365+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-gallery",
+        "revision": 5,
+        "saved_at": "2026-10-14T22:18:15.933975+00:00",
+        "based_on_round": 3,
+        "selected_ids": [
+          "r001-03",
+          "r001-02",
+          "r001-01",
+          "r002-01",
+          "r002-03",
+          "r003-01"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": "go motion"
+        }
+      },
+      "node_ids": [
+        "r004-01",
+        "r004-02",
+        "r004-03"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "wireframe/choose-gallery-wir-r001-01.html",
+      "title": "Status lanes",
+      "direction": "Status lanes. The status IS the layout: three lanes side by side, Exploring | Decided | Bought, each with its count and its own scroll. Filtering by status = clicking a lane's head, which widens that lane and folds the other two into slim strips (click a strip to unfold). An exploring card leads with the subject and how much is missing; a decided card leads with the chosen product; bought subjects are compact one-line receipts. A subject un-chosen on the board drops back into Exploring with a \"was Desk C\" mark. Text filter and sort (inside each lane) sit above.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "wireframe/choose-gallery-wir-r001-02.html",
+      "title": "Learn's grid, told in status",
+      "direction": "Learn's grid, told in status. The same mechanism as Learn's Gallery (WG-51 to WG-68), so Welcome's recent cards and Gallery stay one family: equal cards in a responsive grid under a toolbar with status tabs (All · Exploring · Decided · Bought, each with its count), a name filter, sort and the count. Every card has the same slots: status and last opened, the title on one line, a board thumbnail (needs, criteria, products as dots), the \"pick line\" (the chosen product with its price, or how much is missing, or \"Desk C un-chosen\"), and the CR-25 stats. Selecting a card opens a full-width detail row right under its row: the status history as a timeline, the pick with its source, the board's numbers, and Open / Rename / Reveal / Delete.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "wireframe/choose-gallery-wir-r001-03.html",
+      "title": "Ledger with a side sheet",
+      "direction": "Ledger with a side sheet. One line per subject in a table whose column heads sort (subject, status, pick, needs, criteria, shortlist, missing, last opened); a second click reverses. Grouped by status by default, each group head with its count folds the group, and a Group toggle flattens it into one sorted list, so 50+ subjects read at a glance. Status filter chips and the name filter sit above. The selected row fills a side sheet on the right (a bottom sheet when narrow): the full title, the pick with its source, the status history as a vertical timeline, the board's numbers, and the actions. Nothing selected, the sheet sums up the library.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-01",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01"
+      ],
+      "file": "form/choose-gallery-frm-r002-01.html",
+      "title": "Quiet shelf",
+      "direction": "Quiet shelf. Roomy and calm, closest to a Welcome shelf: three or four wide cards per row, soft filled surfaces without outlines, big margins. Hierarchy is title > pick > the rest: a 17 px title, the pick line in full ink, status, date and stats whispered. The board thumbnail is large. The selected card unfolds in place and grows its row downward; the neighbours stay top-aligned and quiet, so the unfolded card reads as one tall page: pick, actions, then the history timeline (from r001-03) where the thumbnail was, then the board and the subject in two airy blocks. Structure from r001-02 (grid, toolbar, card slots), unfold from r001-01, history from r001-03.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r002-02",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01"
+      ],
+      "file": "form/choose-gallery-frm-r002-02.html",
+      "title": "Dense index",
+      "direction": "Dense index. Built for 50+: five to seven small outlined cards per row at desktop, tight 8 px gutters, 12–13 px type, a flat thumbnail strip, so a full screen shows about thirty choices. Hierarchy is flat and even; scanning by column does the work. The toolbar is one compact line with a segmented status control. The selected card unfolds in place at card width and spans as many rows as it needs; the cards after it flow around it and fill the space, so nothing leaves a hole. Inside, everything is set tight in a small, even grid: pick, actions, history timeline (from r001-03) where the thumbnail was, board and subject. Structure from r001-02, unfold from r001-01, history from r001-03.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r002-03",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01"
+      ],
+      "file": "form/choose-gallery-frm-r002-03.html",
+      "title": "Outcome first",
+      "direction": "Outcome first. Same slots, different hierarchy: the status is a band across the top of each card (outlined while exploring, grey once decided, solid once bought), so a row of cards reads as where each choice stands, and the pick line is the largest text on the card (the product, or \"3 missing\", or \"Ready\"); the title sits above it, smaller. The thumbnail is drawn as a four-step decision bar (needs, criteria, shortlist, pick), the same content as the dots and in line with choose-welcome r001-01's cards. The selected card lifts and unfolds downward at card width over the cards below, which dim; the grid never moves, Esc or a click outside folds it back. Structure from r001-02, unfold from r001-01, history from r001-03.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01",
+        "r002-01",
+        "r002-03"
+      ],
+      "file": "color/choose-gallery-col-r003-01.html",
+      "title": "Teal states",
+      "direction": "Teal states. The status band speaks the board's status chip, so a status looks the same in Gallery as on the board's rail: exploring = teal outline and text, ready = a light teal wash, decided = the teal-grey --surface-2 with --focus text, bought = solid --accent with --accent-ink. The steps bar fills in teal, the selected status tab is filled teal, Open in Survey is the teal button, and the lifted card carries a teal hairline with a soft --glow-far halo. Glass cards over the backdrop. Form: r002-03 at r002-01's card size; type: choose-board r003-01; palette: CR-70.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01",
+        "r002-01",
+        "r002-03"
+      ],
+      "file": "color/choose-gallery-col-r003-02.html",
+      "title": "Ink first, teal for decisions",
+      "direction": "Ink first, teal for decisions. The gallery stays in ink and glass; teal appears only where a product has been chosen. Exploring bands are neutral (ink-faint on a hairline), decided and bought bands are teal text, bought with a solid teal dot; the chosen product's name on the card is teal, so scanning the grid, teal = decided. The steps bar is ink except the Pick step, teal once chosen; ready is a --focus diamond. Tabs select in --surface-2, the lifted card has a --line-strong edge, and Open in Survey is the only teal button. Form: r002-03 at r002-01's card size; type: choose-board r003-01; palette: CR-70.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01",
+        "r002-01",
+        "r002-03"
+      ],
+      "file": "color/choose-gallery-col-r003-03.html",
+      "title": "Node light",
+      "direction": "Node light. A choice's status is drawn in the graph's own light, so Gallery reads like the nodes in Survey: exploring = an open node (dotted --node-open, neutral band), decided = lit (--node-lit text on --surface-2, a faint --glow-far under the band), bought = understood (solid --node-understood, its band washed in teal). Cards rest dimmed, as Welcome's recents do, and come to full light on hover with a --glow-far halo; the steps bar goes --node-lit while partial and teal when full. The lifted card is the lantern: a 2 px teal edge on top and a --glow-near halo. Form: r002-03 at r002-01's card size; type: choose-board r003-01; palette: CR-70.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-01",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01",
+        "r002-01",
+        "r002-03",
+        "r003-01"
+      ],
+      "file": "motion/choose-gallery-mot-r004-01.html",
+      "title": "Quiet fades",
+      "direction": "Quiet fades. The calmest language: opacity and very short travel only, nothing glows or runs. Arrival: all cards fade in together, 240 ms. Sort, filter, delete and a subject jumping to the front after Open: cards glide to their new place, 220 ms ease-out; cards entering or leaving fade, 180 / 160 ms. Selecting: the lifted card fades in rising 4 px, 200 ms, while the others dim (200 ms); folding fades it out, 160 ms. A status change cross-fades the band, 240 ms; a tab count blinks once. Open: one --focus ring breathes out from the card, 320 ms, then the handoff. Reduced motion: everything instant. Colour, type and form are r003-01 unchanged.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01",
+        "r002-01",
+        "r002-03",
+        "r003-01"
+      ],
+      "file": "motion/choose-gallery-mot-r004-02.html",
+      "title": "Unfold from the band",
+      "direction": "Unfold from the band. choose-board's language (r005-02 Unfold from the spine): the same easings (out .2,.7,.2,1 / in .5,0,.8,.4) and timings. Arrival: cards rise 12 px and fade in reading order, 280 ms, 30 ms apart (capped at 12), then each steps bar fills from the left, 360 ms. Sort, filter, delete, Open moving a card to the front: cards glide, 280 ms; entering cards grow from 96%, leaving ones shrink and fade, 220 / 200 ms. Selecting: the lifted card unfolds downward from its status band (clip, 320 ms out) and its sections slide 12 px in and fade, 220 ms from 120 ms, 40 ms apart; folding closes back up into the band, 240 ms in. A status change fills the band from the left, 360 ms, as a chosen product's card does on the board; tab counts roll like the rail's counters, 280 ms. Open: a teal ring spreads from the card, 360 ms. Reduced motion: everything instant. Colour, type and form are r003-01 unchanged.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01",
+        "r002-01",
+        "r002-03",
+        "r003-01"
+      ],
+      "file": "motion/choose-gallery-mot-r004-03.html",
+      "title": "Lantern light",
+      "direction": "Lantern light. The learning node's light, as in Learn's Welcome (welcome RECIPE, Embers): a light travels at 1250 px/s (each run 160–650 ms) with a comet trail, and ends in a fan of 16 embers, pale --node-lit for the first 40% of their life, then teal --accent; all on one fixed, pointer-transparent canvas. Arrival: one light runs along the status tabs to the selected tab and fans; the cards fade in, 200 ms. Hovering a card: a light runs through its steps bar, once per entry. Selecting: a light runs along the bottom of the card's band, and the card unfolds behind it (timer-driven, 320 ms); folding fades, 180 ms. A status change fans 10 embers from the band. Open: a light runs from the card's band into the header's Survey tab and bursts; the handoff follows 260 ms after it arrives. Sort, filter and delete glide and fade plainly (260 / 180 ms). Reduced motion: the canvas is hidden and everything is instant. Colour, type and form are r003-01 unchanged.",
+      "phase": "motion",
+      "tag": "mot"
+    }
+  ]
+}

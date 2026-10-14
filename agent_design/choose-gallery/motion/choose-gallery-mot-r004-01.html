@@ -1,0 +1,67 @@
+<!--
+  id:        r004-01
+  component: choose-gallery
+  phase:     motion
+  parents:   r001-03, r001-02, r001-01, r002-01, r002-03, r003-01
+  direction: Quiet fades. The calmest language: opacity and very short travel only, nothing glows or runs. Arrival: all cards fade in together, 240 ms. Sort, filter, delete and a subject jumping to the front after Open: cards glide to their new place, 220 ms ease-out; cards entering or leaving fade, 180 / 160 ms. Selecting: the lifted card fades in rising 4 px, 200 ms, while the others dim (200 ms); folding fades it out, 160 ms. A status change cross-fades the band, 240 ms; a tab count blinks once. Open: one --focus ring breathes out from the card, 320 ms, then the handoff. Reduced motion: everything instant. Colour, type and form are r003-01 unchanged.
+  request:   revision 5
+  inputs:    go motion
+  shared:    ../assets/gallery-kit.js, ../assets/form-structure.js (structure), ../assets/color-base.js (tokens, type, form),
+             ../assets/gallery-motion.js (motion engine and the Reduce motion / Replay arrival prototype controls),
+             ../assets/backdrop.js, ../choose-gallery-data.js. The CSS block is r003-01's, unchanged.
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r004-01 — Quiet fades</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script src="../assets/form-structure.js"></script>
+<script src="../assets/color-base.js"></script>
+<script src="../assets/gallery-motion.js"></script>
+<script>
+const M = GALLERY_MOTION;
+const D = { arrive: 240, move: 220, enter: 180, leave: 160, lift: 200, fold: 160 };
+const hooks = {
+  arrive: cards => cards.forEach(k => k.animate([{ opacity: 0 }, { opacity: 1 }], { duration: D.arrive, easing: 'ease-out' })),
+  move: (k, dx, dy) => k.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: D.move, easing: M.EASE_OUT }),
+  enter: k => k.animate([{ opacity: 0 }, { opacity: 1 }], { duration: D.enter, easing: 'ease-out' }),
+  leave: g => g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: D.leave, easing: 'ease-in' }).onfinish = () => g.remove(),
+  lift: l => l.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: D.lift, easing: M.EASE_OUT }),
+  fold: g => g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: D.fold, easing: 'ease-in' }).onfinish = () => g.remove(),
+  status: k => k.querySelector('.top')?.animate([{ opacity: .2 }, { opacity: 1 }], { duration: 240, easing: 'ease-out' }),
+  count: n => n.animate([{ opacity: .2 }, { opacity: 1 }], { duration: 200 }),
+  open: k => k.animate([{ boxShadow: '0 0 0 0 var(--focus)' }, { boxShadow: '0 0 0 10px transparent' }], { duration: 320, easing: 'ease-out' })
+};
+GALLERY_KIT.mount({
+  id: 'r004-01', title: 'Quiet fades',
+  css: FORM_STRUCTURE.css + COLOR_BASE.css + `
+  .tab.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); } .tab.on .tl-l { font-weight: 600; } .tab.on .n { color: var(--accent-ink); opacity: .75; }
+  .st::before { border: 1px dashed var(--accent); } .st[data-s=decided]::before { border: 1.5px solid var(--focus); } .st[data-s=bought]::before { background: var(--accent); border-color: var(--accent); }
+  .tab.on .st.dot::before { border-color: var(--accent-ink); } .tab.on .st.dot[data-s=bought]::before { background: var(--accent-ink); }
+  .card .top { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .card:has(.pick.ready) .top { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .card.st-decided .top { background: var(--surface-2); color: var(--focus); border-bottom-color: transparent; } .card.st-decided .when { color: color-mix(in srgb, var(--focus) 70%, transparent); }
+  .card.st-bought .top { background: var(--accent); color: var(--accent-ink); border-bottom-color: transparent; } .card.st-bought .when { color: color-mix(in srgb, var(--accent-ink) 75%, transparent); }
+  .card.st-bought .top .st::before { background: var(--accent-ink); border-color: var(--accent-ink); }
+  .card:hover { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .step i b { background: color-mix(in srgb, var(--accent) 55%, transparent); } .step.full i b { background: var(--accent); }
+  .pick.ready b { color: var(--accent); }
+  .lift { border-color: color-mix(in srgb, var(--accent) 50%, transparent); box-shadow: 0 0 40px 6px var(--glow-far), 0 24px 60px color-mix(in srgb, var(--code) 80%, transparent); }
+  .acts .pri { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; } .acts .pri:hover { background: var(--focus); border-color: var(--focus); }
+  .sec h3 { color: var(--accent); }
+  .vt li.d::before { border: 2px solid var(--focus); background: var(--surface-2); } .vt li.b::before { background: var(--accent); border-color: var(--accent); } .vt li.u::before { border-color: var(--ink-mute); }
+  .bar input:focus { border-color: var(--accent); }
+`,
+  render: M.wrap((el, c) => FORM_STRUCTURE.render(el, c, { unfold: 'float', thumb: 'steps' }), hooks)
+});
+M.controls();
+</script>
+<script src="../assets/backdrop.js"></script>
+<script>document.dispatchEvent(new CustomEvent('lx:screen', { detail: 'gallery' }));</script>
+</body>
+</html>

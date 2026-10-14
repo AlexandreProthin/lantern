@@ -1,0 +1,71 @@
+<!--
+  id:        r002-03
+  component: choose-gallery
+  phase:     form
+  parents:   r001-03, r001-02, r001-01
+  direction: Outcome first. Same slots, different hierarchy: the status is a band across the top of each card (outlined while exploring, grey once decided, solid once bought), so a row of cards reads as where each choice stands, and the pick line is the largest text on the card (the product, or "3 missing", or "Ready"); the title sits above it, smaller. The thumbnail is drawn as a four-step decision bar (needs, criteria, shortlist, pick), the same content as the dots and in line with choose-welcome r001-01's cards. The selected card lifts and unfolds downward at card width over the cards below, which dim; the grid never moves, Esc or a click outside folds it back. Structure from r001-02, unfold from r001-01, history from r001-03.
+  request:   revision 3
+  inputs:    r001-02 with the history of r001-03 from its right side pannel in place of the mini graph view from an unfolded card of r001-01. Selecting a card opens not in full-width but card width
+  shared:    ../assets/gallery-kit.js and ../assets/form-structure.js (the frozen structure) with ../choose-gallery-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r002-03 — Outcome first</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script src="../assets/form-structure.js"></script>
+<script>
+GALLERY_KIT.mount({
+  id: 'r002-03', title: 'Outcome first',
+  css: FORM_STRUCTURE.css + `
+  :root { --bg: #101010; --fg: #ededed; --surface: #181818; --mute: #a0a0a0; --faint: #6a6a6a; --hair: #343434; --fill: #1d1d1d; }
+  .bar { padding: 14px 24px; gap: 12px; }
+  .tabs { gap: 6px; } .tab { border-radius: 999px; padding: 4px 12px; border-color: var(--hair); } .tab .n { color: var(--faint); } .tab.on .n { color: #555; }
+  .bar input { width: 210px; border-radius: 999px; padding: 5px 12px; } .sortl { color: var(--faint); font-size: 12px; } .dirb { border-radius: 999px; }
+  .count { color: var(--faint); font-size: 12px; }
+  .scroll { padding: 6px 24px 120px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--hair); border-radius: 6px; padding: 0 0 14px; gap: 8px; overflow: visible; }
+  .card > .top, .card > .ttl, .card > .steps, .card > .pick, .card > .stats, .card > .rn { margin: 0 14px; }
+  .card .top { margin: 0 !important; padding: 6px 14px; font-size: 11.5px; border-bottom: 1px dashed var(--hair); border-radius: 6px 6px 0 0; color: var(--mute); }
+  .card.st-decided .top { background: #3a3a3a; border-bottom-color: transparent; color: #e2e2e2; }
+  .card.st-bought .top { background: #dcdcdc; color: #111; border-bottom-color: transparent; }
+  .card .top .st { border: 0; padding: 0; color: inherit; font-weight: 600; font-size: 11.5px; } .card.st-bought .top .st::before { background: #111; border-color: #111; }
+  .card.st-decided .top .st::before { border-color: #e2e2e2; }
+  .card .when { color: inherit; opacity: .75; }
+  .card .ttl { font-size: 13px; color: var(--mute); font-weight: 500; margin-top: 4px !important; }
+  .pick { font-size: 18px; line-height: 1.25; color: var(--mute); order: 0; } .pick b { color: var(--fg); font-weight: 650; } .pick .verb { font-size: 12px; color: var(--faint); display: block; }
+  .pick .price { font-size: 13px; color: var(--mute); } .pick.ready b::before { content: '◆ '; } .pick.back b { text-decoration: line-through; text-decoration-thickness: 1px; color: var(--mute); }
+  .pick .run { font-size: 12px; color: var(--mute); }
+  .steps { gap: 6px; } .step i { background: #2c2c2c; } .step i b { background: #9a9a9a; } .step.full i b { background: var(--fg); }
+  .step span { font-size: 10.5px; color: var(--faint); } .step em { font-size: 11px; color: var(--mute); }
+  .stats { font-size: 11.5px; color: var(--faint); border-top: 1px solid var(--fill); padding-top: 8px; }
+  .grid:has(.card.sel) .card:not(.sel) { opacity: .4; transition: opacity .15s; }
+  .card.sel { z-index: 5; border-color: transparent; background: transparent; }
+  .card.sel .rest { visibility: hidden; display: grid; gap: 8px; }
+  .card.sel .rest > * { margin: 0 14px; } .card.sel .rest > .top { margin: 0; padding: 6px 14px; }
+  .lift { position: absolute; top: -8px; left: -10px; right: -10px; background: #1f1f1f; border: 1px solid #9a9a9a; border-radius: 8px; box-shadow: 0 18px 50px rgba(0,0,0,.7); display: grid; gap: 10px; padding-bottom: 16px; }
+  .lift > .top { padding: 8px 16px !important; border-radius: 8px 8px 0 0; }
+  .card.st-decided .lift > .top { background: #3a3a3a; } .card.st-bought .lift > .top { background: #dcdcdc; color: #111; }
+  .lift > .ttl, .lift > .rn { margin: 2px 16px 0; font-size: 16px; font-weight: 600; color: var(--fg); }
+  .lift .uf { margin: 0 16px; gap: 16px; }
+  .pk { padding: 0; gap: 2px; } .pk .verb { font-size: 12px; color: var(--faint); } .pk b { font-size: 20px; font-weight: 650; line-height: 1.2; }
+  .pk .fact { color: var(--mute); } .pk .price { font-size: 15px; } .pk .src { font-size: 11px; color: var(--faint); }
+  .acts button { border-radius: 999px; padding: 4px 12px; font-size: 12px; } .acts .pri { background: var(--fg); color: var(--bg); }
+  .sec { border-top: 1px solid var(--hair); padding-top: 10px; } .sec h3 { font-size: 11px; font-weight: 600; color: var(--faint); }
+  .vt { gap: 10px; } .vt::before { background: var(--hair); }
+  .vt li { font-size: 13px; } .vt li::before { border: 1.5px solid var(--fg); background: #1f1f1f; } .vt li.d::before { background: #777; } .vt li.b::before { background: var(--fg); } .vt li.u::before { border-style: dashed; }
+  .vt small { font-size: 11px; color: var(--faint); }
+  dl { font-size: 12px; } dt { color: var(--faint); } .sec .dir { color: var(--mute); font-size: 12.5px; }
+  .nomatch { color: var(--faint); }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } .bar, .scroll { padding-left: 16px; padding-right: 16px; } .bar input { width: 100%; } .lift { left: -4px; right: -4px; } }`,
+  render(el, c) { FORM_STRUCTURE.render(el, c, { unfold: 'float', thumb: 'steps' }); }
+});
+</script>
+</body>
+</html>

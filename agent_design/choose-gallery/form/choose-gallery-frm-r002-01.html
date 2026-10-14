@@ -1,0 +1,67 @@
+<!--
+  id:        r002-01
+  component: choose-gallery
+  phase:     form
+  parents:   r001-03, r001-02, r001-01
+  direction: Quiet shelf. Roomy and calm, closest to a Welcome shelf: three or four wide cards per row, soft filled surfaces without outlines, big margins. Hierarchy is title > pick > the rest: a 17 px title, the pick line in full ink, status, date and stats whispered. The board thumbnail is large. The selected card unfolds in place and grows its row downward; the neighbours stay top-aligned and quiet, so the unfolded card reads as one tall page: pick, actions, then the history timeline (from r001-03) where the thumbnail was, then the board and the subject in two airy blocks. Structure from r001-02 (grid, toolbar, card slots), unfold from r001-01, history from r001-03.
+  request:   revision 3
+  inputs:    r001-02 with the history of r001-03 from its right side pannel in place of the mini graph view from an unfolded card of r001-01. Selecting a card opens not in full-width but card width
+  shared:    ../assets/gallery-kit.js and ../assets/form-structure.js (the frozen structure) with ../choose-gallery-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r002-01 — Quiet shelf</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script src="../assets/form-structure.js"></script>
+<script>
+GALLERY_KIT.mount({
+  id: 'r002-01', title: 'Quiet shelf',
+  css: FORM_STRUCTURE.css + `
+  :root { --bg: #0f0f0f; --fg: #ececec; --surface: #1a1a1a; --surface-2: #232323; --mute: #a3a3a3; --faint: #6e6e6e; --hair: #333; --fill: #1a1a1a; }
+  html, body { font-size: 14px; }
+  .head { border-bottom-color: #222; }
+  .bar { padding: 22px 40px 14px; gap: 18px; }
+  .tabs { gap: 22px; } .tab { border: 0; background: none; padding: 6px 0; border-radius: 0; color: var(--faint); border-bottom: 2px solid transparent; }
+  .tab:hover { color: var(--fg); } .tab.on { color: var(--fg); background: none; border-bottom-color: var(--fg); } .tab .n { color: var(--faint); font-size: 12px; }
+  .bar input { background: var(--surface); border: 0; border-radius: 8px; padding: 7px 12px; width: 220px; }
+  .sortl { color: var(--faint); font-size: 12px; } .sortl select, .dirb { background: none; border: 0; color: var(--mute); }
+  .count { color: var(--faint); font-size: 12px; }
+  .scroll { padding: 10px 40px 100px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; align-items: start; }
+  @media (min-width: 1500px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+  .card { background: var(--surface); border-radius: 12px; padding: 18px 20px 20px; gap: 10px; border: 1px solid transparent; transition: background .15s; }
+  .card:hover { background: var(--surface-2); }
+  .card.sel { background: var(--surface-2); border-color: #8a8a8a; }
+  .card .top { font-size: 12px; color: var(--faint); }
+  .card .st { border: 0; padding: 0; color: var(--mute); font-size: 12px; gap: 7px; }
+  .card .ttl { font-size: 17px; font-weight: 600; letter-spacing: -.005em; line-height: 1.3; }
+  .card .th { margin: 4px -4px; } .card .th .thumb { height: 88px; color: #cfcfcf; }
+  .pick { font-size: 13.5px; color: var(--mute); } .pick b { color: var(--fg); font-weight: 600; } .pick .price { color: var(--faint); }
+  .pick.ready b::before { content: '◆ '; } .pick.back { border-left: 2px solid #8a8a8a; padding-left: 8px; }
+  .stats { font-size: 12px; color: var(--faint); }
+  .uf { gap: 22px; margin-top: 6px; }
+  .pk { background: var(--bg); border-radius: 10px; padding: 14px 16px; gap: 3px; }
+  .pk .verb { font-size: 12px; color: var(--faint); } .pk b { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .pk .fact { color: var(--mute); font-size: 13px; } .pk .price { font-size: 15px; margin-top: 4px; } .pk .src { font-size: 11.5px; color: var(--faint); }
+  .pk.none b { font-size: 15px; }
+  .acts button { border: 0; background: var(--surface); border-radius: 8px; padding: 7px 12px; color: var(--mute); }
+  .acts button:hover { color: var(--fg); background: #2d2d2d; } .acts .pri { background: var(--fg); color: var(--bg); } .acts .pri:hover { background: #fff; color: #000; }
+  .sec h3 { font-size: 12px; font-weight: 600; color: var(--faint); }
+  .vt { gap: 14px; } .vt::before { background: #3a3a3a; }
+  .vt li { font-size: 13.5px; } .vt li::before { border: 1.5px solid #bdbdbd; background: var(--surface-2); }
+  .vt li.d::before { border: 2.5px solid var(--fg); } .vt li.b::before { background: var(--fg); border-color: var(--fg); } .vt li.u::before { border-style: dashed; }
+  .vt small { font-size: 12px; color: var(--faint); }
+  dl { font-size: 13px; gap: 5px 16px; } dt { color: var(--faint); } .sec .dir { color: var(--mute); font-style: italic; }
+  .nomatch { color: var(--faint); }
+  @media (max-width: 640px) { .bar, .scroll { padding-left: 16px; padding-right: 16px; } .grid { grid-template-columns: 1fr; gap: 14px; } .bar input { width: 100%; } }`,
+  render(el, c) { FORM_STRUCTURE.render(el, c, { unfold: 'grow', thumb: 'dots', thumbSize: [260, 88] }); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!--
+  id:        r003-02
+  component: choose-gallery
+  phase:     color
+  parents:   r001-03, r001-02, r001-01, r002-01, r002-03
+  direction: Ink first, teal for decisions. The gallery stays in ink and glass; teal appears only where a product has been chosen. Exploring bands are neutral (ink-faint on a hairline), decided and bought bands are teal text, bought with a solid teal dot; the chosen product's name on the card is teal, so scanning the grid, teal = decided. The steps bar is ink except the Pick step, teal once chosen; ready is a --focus diamond. Tabs select in --surface-2, the lifted card has a --line-strong edge, and Open in Survey is the only teal button. Form: r002-03 at r002-01's card size; type: choose-board r003-01; palette: CR-70.
+  request:   revision 4
+  inputs:    r002-03 but r002-01 card size. We skip Type round, just take the same as the one we already selected from the choose-board design. next step color
+  shared:    ../assets/gallery-kit.js, ../assets/form-structure.js (structure), ../assets/color-base.js (palette tokens,
+             choose-board type, r002-03 form at r002-01 card size), ../assets/backdrop.js (copy of choose-board's final
+             backdrop, colours from the tokens), ../choose-gallery-data.js
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r003-02 — Ink first, teal for decisions</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script src="../assets/form-structure.js"></script>
+<script src="../assets/color-base.js"></script>
+<script>
+GALLERY_KIT.mount({
+  id: 'r003-02', title: 'Ink first, teal for decisions',
+  css: FORM_STRUCTURE.css + COLOR_BASE.css + `
+  .tab.on { background: var(--surface-2); color: var(--ink); border-color: var(--line-strong); } .tab.on .n { color: var(--ink-mute); }
+  .st::before { border: 1px dashed var(--ink-mute); } .st[data-s=decided]::before { border: 1.5px solid var(--accent); } .st[data-s=bought]::before { background: var(--accent); border-color: var(--accent); }
+  .card .top { color: var(--ink-faint); }
+  .card.st-decided .top, .card.st-bought .top { color: var(--accent); }
+  .card:hover { border-color: var(--line-strong); }
+  .step i b { background: var(--ink-mute); } .step.full i b { background: var(--ink); }
+  .step:last-child.full i b { background: var(--accent); } .step:last-child.full em { color: var(--accent); }
+  .card.st-decided .pick b, .card.st-bought .pick b { color: var(--accent); }
+  .pick.ready b { color: var(--focus); }
+  .lift { border-color: var(--line-strong); }
+  .acts .pri { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; } .acts .pri:hover { background: var(--focus); border-color: var(--focus); }
+  .card.st-decided .pk:not(.none) b, .card.st-bought .pk:not(.none) b { color: var(--accent); }
+  .vt li.d::before { border: 2px solid var(--accent); } .vt li.b::before { background: var(--accent); border-color: var(--accent); }
+  .bar input:focus { border-color: var(--line-strong); }
+`,
+  render(el, c) { FORM_STRUCTURE.render(el, c, { unfold: 'float', thumb: 'steps' }); }
+});
+</script>
+<script src="../assets/backdrop.js"></script>
+<script>document.dispatchEvent(new CustomEvent('lx:screen', { detail: 'gallery' }));</script>
+</body>
+</html>

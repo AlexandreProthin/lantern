@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "concept": "choose-gallery",
+  "revision": 6,
+  "saved_at": "2026-10-14T22:36:43.797355+00:00",
+  "based_on_round": 4,
+  "selected_ids": [
+    "r001-03",
+    "r001-02",
+    "r001-01",
+    "r002-01",
+    "r002-03",
+    "r003-01",
+    "r004-02"
+  ],
+  "next": {
+    "phase": "motion",
+    "mode": "combine",
+    "prompt": "r004-02 is the one to call final"
+  }
+}

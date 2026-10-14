@@ -1,0 +1,54 @@
+<!--
+  id:        r003-03
+  component: choose-gallery
+  phase:     color
+  parents:   r001-03, r001-02, r001-01, r002-01, r002-03
+  direction: Node light. A choice's status is drawn in the graph's own light, so Gallery reads like the nodes in Survey: exploring = an open node (dotted --node-open, neutral band), decided = lit (--node-lit text on --surface-2, a faint --glow-far under the band), bought = understood (solid --node-understood, its band washed in teal). Cards rest dimmed, as Welcome's recents do, and come to full light on hover with a --glow-far halo; the steps bar goes --node-lit while partial and teal when full. The lifted card is the lantern: a 2 px teal edge on top and a --glow-near halo. Form: r002-03 at r002-01's card size; type: choose-board r003-01; palette: CR-70.
+  request:   revision 4
+  inputs:    r002-03 but r002-01 card size. We skip Type round, just take the same as the one we already selected from the choose-board design. next step color
+  shared:    ../assets/gallery-kit.js, ../assets/form-structure.js (structure), ../assets/color-base.js (palette tokens,
+             choose-board type, r002-03 form at r002-01 card size), ../assets/backdrop.js (copy of choose-board's final
+             backdrop, colours from the tokens), ../choose-gallery-data.js
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r003-03 — Node light</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script src="../assets/form-structure.js"></script>
+<script src="../assets/color-base.js"></script>
+<script>
+GALLERY_KIT.mount({
+  id: 'r003-03', title: 'Node light',
+  css: FORM_STRUCTURE.css + COLOR_BASE.css + `
+  .tab.on { border-color: var(--accent); color: var(--accent); } .tab.on .n { color: var(--accent); opacity: .7; }
+  .st::before { border: 1.5px dotted var(--node-open); background: var(--bg); } .st[data-s=decided]::before { border: 1.5px solid var(--node-lit); background: var(--surface-2); box-shadow: 0 0 6px var(--glow-near); }
+  .st[data-s=bought]::before { background: var(--node-understood); border-color: var(--node-understood); box-shadow: 0 0 8px var(--glow-near); }
+  .card { opacity: .78; transition: opacity .2s, box-shadow .2s, border-color .2s; }
+  .card:hover, .card:focus-visible, .card.sel { opacity: 1; } .card:hover { box-shadow: 0 0 34px 4px var(--glow-far); border-color: color-mix(in srgb, var(--node-lit) 25%, transparent); }
+  .grid:has(.card.sel) .card:not(.sel) { opacity: .35; }
+  .card .top { color: var(--node-open); }
+  .card.st-decided .top { background: var(--surface-2); color: var(--node-lit); box-shadow: 0 6px 18px -8px var(--glow-far); border-bottom-color: transparent; }
+  .card.st-bought .top { background: color-mix(in srgb, var(--node-understood) 22%, transparent); color: var(--node-understood); border-bottom-color: transparent; }
+  .step i b { background: var(--node-lit); opacity: .7; } .step.full i b { background: var(--node-understood); opacity: 1; }
+  .card.st-decided .pick b { color: var(--node-lit); } .card.st-bought .pick b { color: var(--node-understood); }
+  .pick.ready b { color: var(--node-lit); text-shadow: 0 0 12px var(--glow-near); }
+  .lift { border-color: var(--glass-line); border-top: 2px solid var(--accent); box-shadow: 0 0 60px 10px var(--glow-near), 0 24px 60px color-mix(in srgb, var(--code) 80%, transparent); }
+  .acts .pri { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; box-shadow: 0 0 18px 2px var(--glow-far); } .acts .pri:hover { background: var(--focus); border-color: var(--focus); }
+  .card.st-decided .pk:not(.none) b { color: var(--node-lit); } .card.st-bought .pk:not(.none) b { color: var(--node-understood); }
+  .vt li::before { border: 1.5px dotted var(--node-open); background: var(--bg); } .vt li.d::before { border: 1.5px solid var(--node-lit); background: var(--surface-2); box-shadow: 0 0 6px var(--glow-near); }
+  .vt li.b::before { background: var(--node-understood); border: 1.5px solid var(--node-understood); box-shadow: 0 0 8px var(--glow-near); } .vt li.u::before { border-style: dashed; border-color: var(--node-open); }
+  .bar input:focus { border-color: var(--accent); box-shadow: 0 0 14px var(--glow-far); }
+`,
+  render(el, c) { FORM_STRUCTURE.render(el, c, { unfold: 'float', thumb: 'steps' }); }
+});
+</script>
+<script src="../assets/backdrop.js"></script>
+<script>document.dispatchEvent(new CustomEvent('lx:screen', { detail: 'gallery' }));</script>
+</body>
+</html>

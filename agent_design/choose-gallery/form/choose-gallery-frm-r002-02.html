@@ -1,0 +1,72 @@
+<!--
+  id:        r002-02
+  component: choose-gallery
+  phase:     form
+  parents:   r001-03, r001-02, r001-01
+  direction: Dense index. Built for 50+: five to seven small outlined cards per row at desktop, tight 8 px gutters, 12–13 px type, a flat thumbnail strip, so a full screen shows about thirty choices. Hierarchy is flat and even; scanning by column does the work. The toolbar is one compact line with a segmented status control. The selected card unfolds in place at card width and spans as many rows as it needs; the cards after it flow around it and fill the space, so nothing leaves a hole. Inside, everything is set tight in a small, even grid: pick, actions, history timeline (from r001-03) where the thumbnail was, board and subject. Structure from r001-02, unfold from r001-01, history from r001-03.
+  request:   revision 3
+  inputs:    r001-02 with the history of r001-03 from its right side pannel in place of the mini graph view from an unfolded card of r001-01. Selecting a card opens not in full-width but card width
+  shared:    ../assets/gallery-kit.js and ../assets/form-structure.js (the frozen structure) with ../choose-gallery-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r002-02 — Dense index</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script src="../assets/form-structure.js"></script>
+<script>
+const ROW = 4, GAP = 8;
+GALLERY_KIT.mount({
+  id: 'r002-02', title: 'Dense index',
+  css: FORM_STRUCTURE.css + `
+  :root { --bg: #0c0c0c; --fg: #e8e8e8; --mute: #9c9c9c; --faint: #686868; --hair: #2f2f2f; --fill: #161616; }
+  html, body { font-size: 12.5px; }
+  .bar { padding: 8px 14px; gap: 8px; border-bottom: 1px solid var(--hair); }
+  .tabs { border: 1px solid var(--hair); border-radius: 4px; overflow: hidden; }
+  .tab { border: 0; border-radius: 0; border-right: 1px solid var(--hair); padding: 3px 9px; font-size: 12px; } .tab:last-child { border-right: 0; }
+  .tab .n { opacity: .6; } .tab.on .n { opacity: .8; }
+  .bar input { width: 180px; padding: 3px 8px; font-size: 12px; } .sortl { font-size: 12px; color: var(--faint); } .sortl select, .dirb { padding: 2px 6px; font-size: 12px; }
+  .count { color: var(--faint); font-size: 12px; min-width: 52px; text-align: right; }
+  .scroll { padding: 10px 14px 90px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); grid-auto-rows: ${ROW}px; gap: 0 ${GAP}px; grid-auto-flow: row dense; align-items: start; }
+  .card { border: 1px solid var(--hair); border-radius: 3px; padding: 7px 9px 8px; gap: 4px; background: var(--bg); margin-bottom: ${GAP}px; }
+  .card:hover { border-color: #555; } .card.sel { border-color: var(--fg); background: #131313; }
+  .card .top { font-size: 10.5px; color: var(--faint); }
+  .card .st { font-size: 10.5px; line-height: 15px; padding: 0 6px; gap: 4px; } .card .st::before { width: 6px; height: 6px; }
+  .card .ttl { font-size: 13px; font-weight: 600; }
+  .card .th { border-top: 1px solid var(--fill); border-bottom: 1px solid var(--fill); padding: 2px 0; } .card .th .thumb { height: 30px; color: #bdbdbd; }
+  .pick { font-size: 12px; color: var(--mute); } .pick b { color: var(--fg); font-weight: 600; } .pick .price { color: var(--faint); }
+  .pick.ready b::before { content: '◆ '; } .pick.back { border-left: 2px solid var(--fg); padding-left: 5px; }
+  .stats { font-size: 11px; color: var(--faint); }
+  .uf { gap: 10px; margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--hair); font-size: 12px; }
+  .pk { border: 1px solid var(--hair); padding: 6px 8px; } .pk .verb { font-size: 10.5px; color: var(--faint); } .pk b { font-size: 13px; }
+  .pk .fact { color: var(--mute); } .pk .src { font-size: 10.5px; color: var(--faint); }
+  .acts { gap: 4px; } .acts button { font-size: 11.5px; padding: 2px 7px; } .acts .pri { background: var(--fg); color: var(--bg); }
+  .sec h3 { font-size: 10.5px; font-weight: 600; color: var(--faint); letter-spacing: .04em; margin-bottom: 4px; }
+  .vt { gap: 6px; padding-left: 14px; } .vt::before { background: var(--hair); left: 3px; }
+  .vt li { grid-template-columns: 1fr auto; gap: 6px; font-size: 12px; } .vt li::before { left: -14px; width: 7px; height: 7px; top: 4px; border: 1px solid var(--fg); background: var(--bg); }
+  .vt li.d::before { border-width: 2px; } .vt li.b::before { background: var(--fg); } .vt li.u::before { border-style: dashed; }
+  .vt small { font-size: 10.5px; color: var(--faint); white-space: nowrap; align-self: baseline; }
+  dl { font-size: 11.5px; gap: 1px 8px; } dt { color: var(--faint); }
+  .sec .dir { color: var(--mute); font-size: 11.5px; }
+  .nomatch { color: var(--faint); }
+  @media (max-width: 640px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } .bar input { width: 100%; } }`,
+  render(el, c) {
+    FORM_STRUCTURE.render(el, c, { unfold: 'span', thumb: 'dots', thumbSize: [200, 30] });
+    // each card spans the rows its height needs, so the unfolded one takes several rows and the others pack around it
+    const fit = () => el.querySelectorAll('.grid > .card').forEach(k => {
+      k.style.gridRowEnd = 'auto';
+      k.style.gridRowEnd = `span ${Math.ceil((k.getBoundingClientRect().height + GAP) / ROW)}`;
+    });
+    fit();
+    if (!window.__fit) { window.__fit = true; addEventListener('resize', () => document.querySelectorAll('.grid > .card').forEach(k => { k.style.gridRowEnd = `span ${Math.ceil((k.getBoundingClientRect().height + GAP) / ROW)}`; })); }
+  }
+});
+</script>
+</body>
+</html>

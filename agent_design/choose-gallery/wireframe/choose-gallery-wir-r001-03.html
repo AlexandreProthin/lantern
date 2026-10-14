@@ -1,0 +1,128 @@
+<!--
+  id:        r001-03
+  component: choose-gallery
+  phase:     wireframe
+  parents:   none
+  direction: Ledger with a side sheet. One line per subject in a table whose column heads sort (subject, status, pick, needs, criteria, shortlist, missing, last opened); a second click reverses. Grouped by status by default, each group head with its count folds the group, and a Group toggle flattens it into one sorted list, so 50+ subjects read at a glance. Status filter chips and the name filter sit above. The selected row fills a side sheet on the right (a bottom sheet when narrow): the full title, the pick with its source, the status history as a vertical timeline, the board's numbers, and the actions. Nothing selected, the sheet sums up the library.
+  request:   revision 1
+  inputs:    Gallery space of the Choose room (CR-11, CR-12, CR-24, CR-25, CR-14; Learn's Gallery in welcome-gallery WG-51 to WG-71): the list of all Choose subjects with their status (exploring → decided → bought), what each entry shows (e.g. the chosen product, compact stats like "4 needs · 6 criteria · 3 shortlisted", last opened), and how you sort, filter by status and open, rename or delete a subject. Hard cases: empty, one subject, many (50+), several bought, long names, a decided subject whose product is later un-chosen. Welcome's recent cards and Gallery should look like one family (choose-welcome, designed in parallel).
+  shared:    ../assets/gallery-kit.js (model, frame, rename/delete/keyboard flows) with ../choose-gallery-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r001-03 — Ledger with a side sheet</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script>
+const folded = { bought: false };
+let grouped = true;
+GALLERY_KIT.mount({
+  id: 'r001-03', title: 'Ledger with a side sheet',
+  css: `
+  .wrap { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-rows: auto 1fr; }
+  .bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--hair); flex-wrap: wrap; }
+  .bar .sp { flex: 1; } .bar input { width: 200px; max-width: 100%; } .chip { border-radius: 999px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; }
+  .chip .st { border: 0; padding: 0; }
+  .tbl { overflow: auto; min-width: 0; padding-bottom: 80px; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12.5px; }
+  th { position: sticky; top: 0; background: var(--bg); z-index: 1; text-align: left; font-weight: 600; font-size: 11px; color: var(--mute); padding: 0; border-bottom: 1px solid var(--hair); }
+  th button { border: 0; border-radius: 0; background: none; width: 100%; text-align: inherit; padding: 8px 8px; color: inherit; font-weight: inherit; white-space: nowrap; }
+  th button.cur { color: var(--fg); } th.r, td.r { text-align: right; }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--fill); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: baseline; }
+  tr[data-id] { cursor: default; } tr[data-id]:hover td { background: var(--fill); }
+  tr.sel td { background: var(--fill); border-top: 1px solid var(--fg); border-bottom: 1px solid var(--fg); } tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--fg); }
+  td .ttl { font-weight: 600; } td .rn { width: 100%; }
+  td .back { border: 1px dashed var(--hair); border-radius: 3px; padding: 0 4px; font-size: 11px; margin-left: 4px; }
+  td .run { font-size: 11px; margin-left: 4px; } td .run::before { content: '● '; }
+  td .ready::before { content: '◆ '; }
+  tr.gh td { padding: 0; border-bottom: 1px solid var(--hair); }
+  tr.gh button { border: 0; border-radius: 0; background: none; width: 100%; text-align: left; padding: 12px 8px 6px; display: flex; gap: 8px; align-items: center; font-weight: 600; }
+  tr.gh .n { color: var(--mute); font-weight: 400; }
+  col.c-sub { width: 30%; } col.c-st { width: 92px; } col.c-pick { width: 22%; } col.c-n { width: 62px; } col.c-ms { width: 74px; } col.c-lo { width: 96px; }
+  .sheet { border-left: 1px solid var(--hair); overflow: auto; padding: 16px 18px 80px; display: grid; gap: 14px; align-content: start; }
+  .sheet h2 { margin: 0; font-size: 16px; overflow-wrap: anywhere; } .sheet h3 { margin: 0 0 6px; font-size: 11px; color: var(--mute); text-transform: uppercase; letter-spacing: .06em; }
+  .sheet .pk { border: 1px solid var(--fg); padding: 10px 12px; } .sheet .pk b { overflow-wrap: anywhere; } .sheet .pk .src { font-size: 11px; color: var(--faint); }
+  .vt { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 1px solid var(--hair); display: grid; gap: 10px; }
+  .vt li { position: relative; font-size: 12px; } .vt li::before { content: ''; position: absolute; left: -19px; top: 4px; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--fg); background: var(--bg); }
+  .vt li.d::before { border-width: 2px; } .vt li.b::before { background: var(--fg); } .vt li.u::before { border-style: dashed; }
+  .vt li small { display: block; color: var(--faint); }
+  .bars { display: grid; gap: 6px; font-size: 12px; } .bars div { display: grid; grid-template-columns: 70px 1fr auto; gap: 8px; align-items: center; }
+  .bars i { height: 6px; border: 1px solid var(--hair); position: relative; } .bars i b { position: absolute; inset: 0 auto 0 0; background: var(--fg); }
+  dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 12px; } dt { color: var(--faint); } dd { margin: 0; overflow-wrap: anywhere; }
+  .acts { display: flex; gap: 6px; flex-wrap: wrap; } .acts .pri { background: var(--fg); color: var(--bg); }
+  .sum { display: grid; gap: 8px; color: var(--mute); } .sum b { color: var(--fg); }
+  .sum .row { display: flex; gap: 8px; align-items: center; }
+  @media (max-width: 900px) { col.c-pick, col.c-n, td.hn, th.hn { display: none; } }
+  @media (max-width: 760px) {
+    .wrap { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; } .sheet { border-left: 0; border-top: 1px solid var(--fg); max-height: 46vh; padding-bottom: 60px; }
+    .sheet.idle { display: none; } col.c-lo, td.hl, th.hl { display: none; } col.c-sub { width: auto; } }`,
+  render(el, c) {
+    const { st, esc, fmt, model } = c;
+    const cols = [['title', 'Subject', ''], ['status', 'Status', ''], [null, 'Pick', 'hn'], [null, 'Needs', 'r hn'], [null, 'Criteria', 'r hn'], [null, 'Shortlist', 'r hn'], ['nearest', 'Missing', 'r'], ['lastOpened', 'Last opened', 'r hl']];
+    const head = `<tr>${cols.map(([k, l, cls]) => `<th class="${cls}">${k ? `<button class="${st.sort === k ? 'cur' : ''}" data-sort="${k}" aria-sort="${st.sort === k ? (st.dir > 0 ? 'descending' : 'ascending') : 'none'}">${l}${st.sort === k ? (st.dir > 0 ? ' ↓' : ' ↑') : ''}</button>` : `<button disabled style="opacity:1;cursor:default">${l}</button>`}</th>`).join('')}</tr>`;
+    let first = true;
+    const row = s => {
+      const t = model.stats(s), m = model.missing(s), un = model.unchosen(s), sel = st.sel === s.id;
+      const ti = sel || (!st.sel && first) ? 0 : -1; first = false;
+      return `<tr data-id="${s.id}" class="${sel ? 'sel' : ''}" tabindex="${ti}" aria-selected="${sel}">
+        <td>${c.title(s)}${s.running ? '<span class="run">generating</span>' : ''}</td>
+        <td>${c.statusChip(s)}</td>
+        <td class="hn" title="${esc(s.chosen?.name || '')}">${s.chosen ? esc(s.chosen.name) : un ? `<span class="faint">—</span><span class="back" title="Was decided on ${esc(un.product)}">was ${esc(un.product)}</span>` : '<span class="faint">—</span>'}</td>
+        <td class="r num hn">${t.answered}/${t.needs}</td><td class="r num hn">${t.criteria}</td><td class="r num hn">${t.shortlisted}</td>
+        <td class="r num">${s.status !== 'exploring' ? '<span class="faint">—</span>' : m.length ? m.length : '<span class="ready">ready</span>'}</td>
+        <td class="r hl" title="${fmt.time(s.lastOpened)}">${fmt.rel(s.lastOpened)}</td></tr>`;
+    };
+    const visible = g => st.status === 'all' || st.status === g.status;
+    let rows = '';
+    if (grouped && st.sort !== 'status') {
+      c.groups.filter(visible).forEach(g => {
+        const f = folded[g.status];
+        rows += `<tr class="gh"><td colspan="8"><button data-fold="${g.status}" aria-expanded="${!f}">${f ? '▸' : '▾'} ${c.statusChip({ status: g.status })} <span class="n num">${st.q ? `${g.items.length} of ${g.total}` : g.total}</span></button></td></tr>`;
+        if (!f) rows += g.items.length ? g.items.map(row).join('') : `<tr><td colspan="8" class="faint">${st.q ? 'No match here.' : `Nothing ${g.status} yet.`}</td></tr>`;
+      });
+    } else rows = c.list.map(row).join('');
+    const s = c.sel;
+    let sheet;
+    if (s) {
+      const t = model.stats(s), m = model.missing(s);
+      const bar = (l, a, b) => `<div><span class="mute">${l}</span><i><b style="width:${b ? Math.round(100 * a / b) : 0}%"></b></i><span class="num">${a}/${b}</span></div>`;
+      sheet = `<aside class="sheet keep" aria-label="Selected subject">
+        <div>${c.statusChip(s)} <span class="faint">· opened ${fmt.time(s.lastOpened)}</span></div>
+        <h2>${esc(s.title)}</h2>
+        ${s.chosen ? `<div class="pk"><span class="mute">${s.status === 'bought' ? 'Bought' : 'Chosen'}</span><br><b>${esc(s.chosen.name)}</b><br>${esc(s.chosen.fact)}<br>${esc(s.chosen.price)} <span class="src">seen at ${esc(s.chosen.priceSource)}, ${fmt.date(s.chosen.priceSeenAt)}</span></div>`
+          : `<div class="pk" style="border-style:dashed"><span class="mute">No pick yet</span><br>${m.length ? `${m.length} missing: ${esc(m.join(' · '))}` : '<b>Ready</b>: the board is complete, the room can recommend.'}</div>`}
+        <div class="acts"><button class="pri" data-open="${s.id}">Open in Survey</button><button data-rn="${s.id}">Rename</button><button data-reveal="${s.id}">Reveal</button><button data-del="${s.id}">Delete…</button></div>
+        <div><h3>History</h3><ul class="vt">${[...s.history].reverse().map(h => `<li class="${h.unchosen ? 'u' : h.status === 'exploring' ? '' : h.status[0]}">${h.unchosen ? `Un-chose ${esc(h.product)}; exploring again` : h.status === 'exploring' ? 'Started' : h.status === 'decided' ? `Chose ${esc(h.product)}` : `Marked as bought`}<small>${fmt.time(h.at)}</small></li>`).join('')}</ul></div>
+        <div><h3>Board</h3><div class="bars">${bar('Needs', t.answered, t.needs)}${bar('Ranked', t.criteria - t.open, t.criteria)}<div><span class="mute">Products</span><span>${t.shortlisted} shortlisted · ${t.candidates} cand. · ${t.rejected} rej.</span><span></span></div></div></div>
+        <dl>${s.direction ? `<dt>Direction</dt><dd>“${esc(s.direction)}”</dd>` : ''}<dt>Created</dt><dd>${fmt.date(s.createdAt)}</dd><dt>Nodes</dt><dd>${s.nodes}</dd><dt>Tone</dt><dd>${esc(s.tone)}</dd><dt>Model</dt><dd>${esc(s.model)}</dd><dt>Generations</dt><dd>${s.generations}${s.running ? ' · one running' : ''}</dd><dt>Tokens</dt><dd>${fmt.k(s.tokens.in)} in / ${fmt.k(s.tokens.out)} out</dd></dl>
+      </aside>`;
+    } else {
+      const all = c.subjects, n = k => all.filter(x => x.status === k).length;
+      const ready = all.filter(model.ready).length, recent = c.sorted(all, 'lastOpened', 1)[0];
+      sheet = `<aside class="sheet idle"><div class="sum">
+        <h2>${c.total} choice${c.total === 1 ? '' : 's'}</h2>
+        <div class="row"><span class="st" data-s="exploring">exploring</span><b class="num">${n('exploring')}</b>${ready ? `<span>· ${ready} ready to recommend</span>` : ''}</div>
+        <div class="row"><span class="st" data-s="decided">decided</span><b class="num">${n('decided')}</b></div>
+        <div class="row"><span class="st" data-s="bought">bought</span><b class="num">${n('bought')}</b></div>
+        <p>Last opened: <b>${esc(recent.title)}</b>, ${fmt.rel(recent.lastOpened)}.</p>
+        <p class="faint">Click a row to see it here; double-click or Enter opens it in Survey. F2 renames, Del deletes.</p></div></aside>`;
+    }
+    const chip = (k, l, n) => `<button class="chip ${st.status === k ? 'on' : ''}" data-status="${k}" aria-pressed="${st.status === k}">${k !== 'all' ? `<span class="st" data-s="${k}"></span>` : ''}${l} <span class="num">${n}</span></button>`;
+    el.innerHTML = `<div class="wrap">
+      <div class="bar">${chip('all', 'All', c.counts.all)}${chip('exploring', 'Exploring', c.counts.exploring)}${chip('decided', 'Decided', c.counts.decided)}${chip('bought', 'Bought', c.counts.bought)}
+        <span class="sp"></span><label class="mute"><input type="checkbox" data-group ${grouped ? 'checked' : ''}> Group by status</label>
+        <input type="search" data-k="q" placeholder="Filter by name" value="${esc(st.q)}" aria-label="Filter by name"></div>
+      <div class="tbl" data-scroll="tbl">${c.list.length ? `<table><colgroup><col class="c-sub"><col class="c-st"><col class="c-pick"><col class="c-n"><col class="c-n"><col class="c-n"><col class="c-ms"><col class="c-lo"></colgroup><thead>${head}</thead><tbody>${rows}</tbody></table>` : c.noMatch()}</div>
+      ${sheet}</div>`;
+    el.querySelectorAll('[data-fold]').forEach(b => b.onclick = e => { e.stopPropagation(); folded[b.dataset.fold] = !folded[b.dataset.fold]; c.set({}); });
+    const g = el.querySelector('[data-group]'); if (g) g.onchange = () => { grouped = g.checked; c.set({}); };
+  }
+});
+</script>
+</body>
+</html>

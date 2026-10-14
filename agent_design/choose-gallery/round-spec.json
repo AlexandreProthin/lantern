@@ -1,0 +1,47 @@
+{
+  "selection_revision": 5,
+  "proposals": [
+    {
+      "id": "r004-01",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01",
+        "r002-01",
+        "r002-03",
+        "r003-01"
+      ],
+      "file": "motion/choose-gallery-mot-r004-01.html",
+      "title": "Quiet fades",
+      "direction": "Quiet fades. The calmest language: opacity and very short travel only, nothing glows or runs. Arrival: all cards fade in together, 240 ms. Sort, filter, delete and a subject jumping to the front after Open: cards glide to their new place, 220 ms ease-out; cards entering or leaving fade, 180 / 160 ms. Selecting: the lifted card fades in rising 4 px, 200 ms, while the others dim (200 ms); folding fades it out, 160 ms. A status change cross-fades the band, 240 ms; a tab count blinks once. Open: one --focus ring breathes out from the card, 320 ms, then the handoff. Reduced motion: everything instant. Colour, type and form are r003-01 unchanged."
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01",
+        "r002-01",
+        "r002-03",
+        "r003-01"
+      ],
+      "file": "motion/choose-gallery-mot-r004-02.html",
+      "title": "Unfold from the band",
+      "direction": "Unfold from the band. choose-board's language (r005-02 Unfold from the spine): the same easings (out .2,.7,.2,1 / in .5,0,.8,.4) and timings. Arrival: cards rise 12 px and fade in reading order, 280 ms, 30 ms apart (capped at 12), then each steps bar fills from the left, 360 ms. Sort, filter, delete, Open moving a card to the front: cards glide, 280 ms; entering cards grow from 96%, leaving ones shrink and fade, 220 / 200 ms. Selecting: the lifted card unfolds downward from its status band (clip, 320 ms out) and its sections slide 12 px in and fade, 220 ms from 120 ms, 40 ms apart; folding closes back up into the band, 240 ms in. A status change fills the band from the left, 360 ms, as a chosen product's card does on the board; tab counts roll like the rail's counters, 280 ms. Open: a teal ring spreads from the card, 360 ms. Reduced motion: everything instant. Colour, type and form are r003-01 unchanged."
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r001-03",
+        "r001-02",
+        "r001-01",
+        "r002-01",
+        "r002-03",
+        "r003-01"
+      ],
+      "file": "motion/choose-gallery-mot-r004-03.html",
+      "title": "Lantern light",
+      "direction": "Lantern light. The learning node's light, as in Learn's Welcome (welcome RECIPE, Embers): a light travels at 1250 px/s (each run 160–650 ms) with a comet trail, and ends in a fan of 16 embers, pale --node-lit for the first 40% of their life, then teal --accent; all on one fixed, pointer-transparent canvas. Arrival: one light runs along the status tabs to the selected tab and fans; the cards fade in, 200 ms. Hovering a card: a light runs through its steps bar, once per entry. Selecting: a light runs along the bottom of the card's band, and the card unfolds behind it (timer-driven, 320 ms); folding fades, 180 ms. A status change fans 10 embers from the band. Open: a light runs from the card's band into the header's Survey tab and bursts; the handoff follows 260 ms after it arrives. Sort, filter and delete glide and fade plainly (260 / 180 ms). Reduced motion: the canvas is hidden and everything is instant. Colour, type and form are r003-01 unchanged."
+    }
+  ]
+}

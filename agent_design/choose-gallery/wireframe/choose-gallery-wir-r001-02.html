@@ -1,0 +1,115 @@
+<!--
+  id:        r001-02
+  component: choose-gallery
+  phase:     wireframe
+  parents:   none
+  direction: Learn's grid, told in status. The same mechanism as Learn's Gallery (WG-51 to WG-68), so Welcome's recent cards and Gallery stay one family: equal cards in a responsive grid under a toolbar with status tabs (All · Exploring · Decided · Bought, each with its count), a name filter, sort and the count. Every card has the same slots: status and last opened, the title on one line, a board thumbnail (needs, criteria, products as dots), the "pick line" (the chosen product with its price, or how much is missing, or "Desk C un-chosen"), and the CR-25 stats. Selecting a card opens a full-width detail row right under its row: the status history as a timeline, the pick with its source, the board's numbers, and Open / Rename / Reveal / Delete.
+  request:   revision 1
+  inputs:    Gallery space of the Choose room (CR-11, CR-12, CR-24, CR-25, CR-14; Learn's Gallery in welcome-gallery WG-51 to WG-71): the list of all Choose subjects with their status (exploring → decided → bought), what each entry shows (e.g. the chosen product, compact stats like "4 needs · 6 criteria · 3 shortlisted", last opened), and how you sort, filter by status and open, rename or delete a subject. Hard cases: empty, one subject, many (50+), several bought, long names, a decided subject whose product is later un-chosen. Welcome's recent cards and Gallery should look like one family (choose-welcome, designed in parallel).
+  shared:    ../assets/gallery-kit.js (model, frame, rename/delete/keyboard flows) with ../choose-gallery-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r001-02 — Learn's grid, told in status</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script>
+GALLERY_KIT.mount({
+  id: 'r001-02', title: "Learn's grid, told in status",
+  css: `
+  .wrap { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+  .bar { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--hair); flex-wrap: wrap; }
+  .tabs { display: flex; gap: 0; border: 1px solid var(--hair); border-radius: 4px; overflow: hidden; }
+  .tabs button { border: 0; border-radius: 0; border-right: 1px solid var(--hair); display: flex; gap: 6px; align-items: center; }
+  .tabs button:last-child { border-right: 0; } .tabs button .n { opacity: .7; }
+  .bar .sp { flex: 1; } .bar input { width: 200px; max-width: 100%; }
+  .scroll { overflow: auto; padding: 16px 18px 80px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  @media (min-width: 1024px) { .grid { grid-template-columns: repeat(auto-fill, minmax(max(260px, calc((100% - 48px) / 5)), 1fr)); } }
+  .card { border: 1px solid var(--hair); padding: 10px 12px 12px; display: grid; gap: 6px; grid-template-rows: auto auto auto auto auto; min-width: 0; cursor: default; }
+  .card:hover { border-color: var(--mute); } .card.sel { outline: 2px solid var(--fg); outline-offset: -1px; }
+  .card .top { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--faint); }
+  .card .ttl { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+  .card.sel .ttl { white-space: normal; overflow-wrap: anywhere; }
+  .card .rn { width: 100%; }
+  .card .th { border: 1px solid var(--fill); background: var(--fill); padding: 4px; }
+  .card .th .thumb { width: 100%; height: 64px; }
+  .pick { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 17px; }
+  .pick b { font-weight: 600; } .pick.ready b::before { content: '◆ '; } .pick.back { border-left: 2px solid var(--fg); padding-left: 6px; }
+  .pick.run::after { content: ' · generating…'; color: var(--mute); }
+  .card .stats { font-size: 12px; color: var(--mute); }
+  .detail { grid-column: 1 / -1; border: 2px solid var(--fg); padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+  .detail h2 { margin: 0 0 8px; font-size: 15px; overflow-wrap: anywhere; } .detail h3 { margin: 0 0 6px; font-size: 11px; font-weight: 600; color: var(--mute); letter-spacing: .06em; text-transform: uppercase; }
+  .tl { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .tl li { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: baseline; padding: 3px 0; font-size: 12px; position: relative; }
+  .tl li::before { content: ''; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--fg); align-self: center; }
+  .tl li.d::before { border-width: 2px; } .tl li.b::before { background: var(--fg); } .tl li.u::before { border-style: dashed; }
+  .tl li span:last-child { color: var(--faint); white-space: nowrap; }
+  .pk { border: 1px solid var(--hair); padding: 8px 10px; font-size: 12px; margin-top: 10px; } .pk b { font-size: 13px; overflow-wrap: anywhere; } .pk .src { color: var(--faint); }
+  dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 12px; } dt { color: var(--faint); } dd { margin: 0; overflow-wrap: anywhere; }
+  .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; } .acts .pri { background: var(--fg); color: var(--bg); }
+  @media (max-width: 860px) { .detail { grid-template-columns: 1fr; } }`,
+  render(el, c) {
+    const { st, esc, fmt, model } = c;
+    const tab = (k, label, n) => `<button class="${st.status === k ? 'on' : ''}" data-status="${k}" aria-pressed="${st.status === k}">${k === 'all' ? '' : `<span class="st" data-s="${k}" style="border:0;padding:0"></span>`}${label}<span class="n num">${n}</span></button>`;
+    const pickLine = s => {
+      if (s.chosen) return `<div class="pick" title="${esc(s.chosen.name)}">${s.status === 'bought' ? 'Bought' : 'Chose'} <b>${esc(s.chosen.name)}</b> · ${esc(s.chosen.price)}</div>`;
+      const un = model.unchosen(s), m = model.missing(s);
+      if (un) return `<div class="pick back ${s.running ? 'run' : ''}">No pick · <b>${esc(un.product)}</b> un-chosen ${fmt.hours(un.at)}</div>`;
+      return `<div class="pick ${m.length ? '' : 'ready'} ${s.running ? 'run' : ''}">${m.length ? `No pick yet · <b>${m.length} missing</b>` : '<b>Ready</b> · the room can recommend'}</div>`;
+    };
+    const card = (s, i) => `<article class="card ${st.sel === s.id ? 'sel' : ''}" data-id="${s.id}" tabindex="${st.sel === s.id || (!st.sel && !i) ? 0 : -1}" aria-selected="${st.sel === s.id}">
+      <div class="top"><span class="st" data-s="${s.status}">${s.status}</span><span title="${fmt.time(s.lastOpened)}">opened ${fmt.rel(s.lastOpened)}</span></div>
+      ${c.title(s)}
+      <div class="th">${c.thumb(s, 220, 64)}</div>
+      ${pickLine(s)}
+      <div class="stats num">${model.summary(s)}</div></article>`;
+    const detail = s => {
+      const t = model.stats(s), m = model.missing(s);
+      const tl = [...s.history].map(h => {
+        const cls = h.unchosen ? 'u' : h.status[0];
+        const txt = h.unchosen ? `Un-chose ${esc(h.product)}, back to exploring` : h.status === 'exploring' ? 'Started exploring' : h.status === 'decided' ? `Chose ${esc(h.product)}` : `Marked ${esc(h.product)} as bought`;
+        return `<li class="${cls === 'e' ? '' : cls}"><span>${txt}</span><span title="${fmt.time(h.at)}">${fmt.date(h.at)}</span></li>`;
+      }).join('');
+      return `<section class="detail keep" aria-label="Details of ${esc(s.title)}">
+        <div><h2>${esc(s.title)}</h2><h3>History</h3><ul class="tl">${tl}</ul>
+          ${s.chosen ? `<div class="pk"><b>${esc(s.chosen.name)}</b><br>${esc(s.chosen.fact)}<br>${esc(s.chosen.price)} <span class="src">— seen at ${esc(s.chosen.priceSource)}, ${fmt.date(s.chosen.priceSeenAt)}; an indication, not a promise</span></div>` : ''}
+          <div class="acts"><button class="pri" data-open="${s.id}">Open in Survey</button><button data-rn="${s.id}">Rename</button><button data-reveal="${s.id}">Reveal in Explorer</button><button data-del="${s.id}">Delete…</button></div></div>
+        <div><h3>The board</h3><dl>
+          <dt>Needs</dt><dd>${t.answered} / ${t.needs} answered</dd>
+          <dt>Criteria</dt><dd>${t.must} must · ${t.nice} nice · ${t.open} to rank · ${t.irrelevant} irrelevant</dd>
+          <dt>Products</dt><dd>${t.shortlisted} shortlisted · ${t.candidates} candidates · ${t.rejected} rejected</dd>
+          <dt>Compare</dt><dd>${s.compareGaps ? `${s.compareGaps} empty cells` : 'filled'}</dd>
+          ${s.status === 'exploring' ? `<dt>Missing</dt><dd>${m.length ? esc(m.join(' · ')) : 'nothing: ready to recommend'}</dd>` : ''}
+          ${s.direction ? `<dt>Direction</dt><dd>“${esc(s.direction)}”</dd>` : ''}</dl></div>
+        <div><h3>The subject</h3><dl>
+          <dt>Created</dt><dd>${fmt.date(s.createdAt)}</dd><dt>Last opened</dt><dd>${fmt.time(s.lastOpened)}</dd>
+          <dt>Nodes</dt><dd>${s.nodes}</dd><dt>Tone</dt><dd>${esc(s.tone)}</dd><dt>Model</dt><dd>${esc(s.model)}</dd>
+          <dt>Generations</dt><dd>${s.generations}${s.running ? ' · one running' : ''}</dd><dt>Tokens</dt><dd>${fmt.k(s.tokens.in)} in / ${fmt.k(s.tokens.out)} out</dd></dl></div>
+      </section>`;
+    };
+    el.innerHTML = `<div class="wrap">
+      <div class="bar"><div class="tabs" role="group" aria-label="Filter by status">${tab('all', 'All', c.counts.all)}${tab('exploring', 'Exploring', c.counts.exploring)}${tab('decided', 'Decided', c.counts.decided)}${tab('bought', 'Bought', c.counts.bought)}</div>
+        <span class="sp"></span>
+        <input type="search" data-k="q" placeholder="Filter by name" value="${esc(st.q)}" aria-label="Filter by name">
+        <label class="mute">Sort <select data-sortsel>${Object.entries(c.SORTS).map(([k, v]) => `<option value="${k}" ${k === st.sort ? 'selected' : ''}>${v.label}</option>`).join('')}</select></label>
+        <button data-dir aria-label="Reverse order">${st.dir > 0 ? '↓' : '↑'}</button>
+        <span class="mute num">${c.list.length === c.total ? c.total : `${c.list.length} of ${c.total}`}</span></div>
+      <div class="scroll" data-scroll="grid">${c.list.length ? `<div class="grid" role="listbox" aria-label="Choose subjects">${c.list.map(card).join('')}</div>` : c.noMatch()}</div></div>`;
+    // the detail row goes right after the last card of the selected card's row
+    const sel = el.querySelector('.card.sel');
+    if (sel) {
+      const cards = [...el.querySelectorAll('.card')], y = sel.offsetTop;
+      const last = cards.filter(x => x.offsetTop === y).pop();
+      last.insertAdjacentHTML('afterend', detail(c.sel));
+    }
+  }
+});
+</script>
+</body>
+</html>

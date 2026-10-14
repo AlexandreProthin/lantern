@@ -1,0 +1,52 @@
+<!--
+  id:        r003-01
+  component: choose-gallery
+  phase:     color
+  parents:   r001-03, r001-02, r001-01, r002-01, r002-03
+  direction: Teal states. The status band speaks the board's status chip, so a status looks the same in Gallery as on the board's rail: exploring = teal outline and text, ready = a light teal wash, decided = the teal-grey --surface-2 with --focus text, bought = solid --accent with --accent-ink. The steps bar fills in teal, the selected status tab is filled teal, Open in Survey is the teal button, and the lifted card carries a teal hairline with a soft --glow-far halo. Glass cards over the backdrop. Form: r002-03 at r002-01's card size; type: choose-board r003-01; palette: CR-70.
+  request:   revision 4
+  inputs:    r002-03 but r002-01 card size. We skip Type round, just take the same as the one we already selected from the choose-board design. next step color
+  shared:    ../assets/gallery-kit.js, ../assets/form-structure.js (structure), ../assets/color-base.js (palette tokens,
+             choose-board type, r002-03 form at r002-01 card size), ../assets/backdrop.js (copy of choose-board's final
+             backdrop, colours from the tokens), ../choose-gallery-data.js
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose gallery r003-01 — Teal states</title>
+</head>
+<body>
+<script src="../choose-gallery-data.js"></script>
+<script src="../assets/gallery-kit.js"></script>
+<script src="../assets/form-structure.js"></script>
+<script src="../assets/color-base.js"></script>
+<script>
+GALLERY_KIT.mount({
+  id: 'r003-01', title: 'Teal states',
+  css: FORM_STRUCTURE.css + COLOR_BASE.css + `
+  .tab.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); } .tab.on .tl-l { font-weight: 600; } .tab.on .n { color: var(--accent-ink); opacity: .75; }
+  .st::before { border: 1px dashed var(--accent); } .st[data-s=decided]::before { border: 1.5px solid var(--focus); } .st[data-s=bought]::before { background: var(--accent); border-color: var(--accent); }
+  .tab.on .st.dot::before { border-color: var(--accent-ink); } .tab.on .st.dot[data-s=bought]::before { background: var(--accent-ink); }
+  .card .top { color: var(--accent); border-bottom-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .card:has(.pick.ready) .top { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .card.st-decided .top { background: var(--surface-2); color: var(--focus); border-bottom-color: transparent; } .card.st-decided .when { color: color-mix(in srgb, var(--focus) 70%, transparent); }
+  .card.st-bought .top { background: var(--accent); color: var(--accent-ink); border-bottom-color: transparent; } .card.st-bought .when { color: color-mix(in srgb, var(--accent-ink) 75%, transparent); }
+  .card.st-bought .top .st::before { background: var(--accent-ink); border-color: var(--accent-ink); }
+  .card:hover { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .step i b { background: color-mix(in srgb, var(--accent) 55%, transparent); } .step.full i b { background: var(--accent); }
+  .pick.ready b { color: var(--accent); }
+  .lift { border-color: color-mix(in srgb, var(--accent) 50%, transparent); box-shadow: 0 0 40px 6px var(--glow-far), 0 24px 60px color-mix(in srgb, var(--code) 80%, transparent); }
+  .acts .pri { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; } .acts .pri:hover { background: var(--focus); border-color: var(--focus); }
+  .sec h3 { color: var(--accent); }
+  .vt li.d::before { border: 2px solid var(--focus); background: var(--surface-2); } .vt li.b::before { background: var(--accent); border-color: var(--accent); } .vt li.u::before { border-color: var(--ink-mute); }
+  .bar input:focus { border-color: var(--accent); }
+`,
+  render(el, c) { FORM_STRUCTURE.render(el, c, { unfold: 'float', thumb: 'steps' }); }
+});
+</script>
+<script src="../assets/backdrop.js"></script>
+<script>document.dispatchEvent(new CustomEvent('lx:screen', { detail: 'gallery' }));</script>
+</body>
+</html>
