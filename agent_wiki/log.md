@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-10-14
+
+* **v0.2.0 released locally and verified**: master `d6fd69d` (version 0.2.0), the installer signed by the user, `latest.json` and the installer in the local update folder (signature key id checked against the app's public key). The user updated from v0.1.5 in the app: "update works, everything as expected". [v0.2.0 plan](/plans/v0-2-0.md) Part A is complete; not yet pushed or tagged.
+
 ## 2026-10-13
 
 * **v0.2.0 A4 done**: web-tools spike, 6 real calls (`app/evals/web-spike.mjs`). Only WebSearch and WebFetch can run; Opus gives dated, sourced answers in 40–50 s; Haiku is slower, not cheaper and breaks the source rules; web use shows only as stream tool events. New decision [choose-web-tools](/decisions/choose-web-tools.md); [inference-provider](/specs/inference-provider.md) IP-20/IP-60 and [choose-room](/specs/choose-room.md) CR-43/CR-90 amended; the user withdrew CR-45 (cheaper model for web searches).

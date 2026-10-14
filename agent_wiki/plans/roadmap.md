@@ -20,7 +20,7 @@ Order decided 2026-09-27: README → PoC → OKF wiki → specs + v0.1.0 plan.
 | 5 | v0.1.0 implementation, plan in [v0-1-0](/plans/v0-1-0.md) | released 2026-10-04; PoC removed (tag `poc-final`) |
 | 6 | v0.1.1, plan in [v0-1-1](/plans/v0-1-1.md) | released 2026-10-06 |
 | 7 | v0.1.2, plan in [v0-1-2](/plans/v0-1-2.md): the identity in the app | released 2026-10-06; later work in the [backlog](/plans/backlog.md) |
-| 8 | v0.2.0, plan in [v0-2-0](/plans/v0-2-0.md): the second room, Choose | planned 2026-10-13; specs from workshop rounds 5–6 |
+| 8 | v0.2.0, plan in [v0-2-0](/plans/v0-2-0.md): the second room, Choose | Part A (room-generic frame, lantern/2) released as v0.2.0 2026-10-14 and verified by the user; Part B (Choose) next |
 
 # Inputs to the specs
 
