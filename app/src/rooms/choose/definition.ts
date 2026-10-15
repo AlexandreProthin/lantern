@@ -41,7 +41,8 @@ export const chooseRoom: RoomDefinition = {
   nodeStates: { open: kind('open', '○'), lit: kind('lit', '●'), answered: kind('answered', '✓'), must: kind('must', '!'), nice: kind('nice', '+'), irrelevant: kind('irrelevant', '–'),
     candidate: kind('candidate', '○'), shortlisted: kind('shortlisted', '◆'), chosen: kind('chosen', '★'), rejected: kind('rejected', '×'), dismissed: kind('dismissed', '◌') },
   legend: [],
-  statsSummary(subject) { const s = headerStats(subject.rooms.choose); return { text: `${s.needs} needs · ${s.criteria} criteria · ${s.shortlisted} shortlisted`, tooltip: '' }; },
+  statsSummary(subject) { const s = headerStats(subject.rooms.choose); const n = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+    return { text: `${n(s.needs, 'need', 'needs')} · ${n(s.criteria, 'criterion', 'criteria')} · ${s.shortlisted} shortlisted`, tooltip: '' }; },
   newSubject: (title, tone, settings, direction) => newChooseSubject(title, { tone, model: settings.provider.defaultModel, effort: settings.provider.defaultEffort,
     locale: localeOf(chooseSettings(settings)), needsNote: direction }, settings.user.displayName),
   validate: validateChoose, summarize: chooseSummary, subjectMenu: SubjectMenu,

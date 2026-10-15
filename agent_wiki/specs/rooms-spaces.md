@@ -128,7 +128,8 @@ Space navigation is not necessarily tabs; it must be intuitive.
   canonical shortcut table of [graph-view](/specs/graph-view.md) GV-76, which this spec does not
   restate. They MUST work from any focus, including text inputs. *(Amended 2026-10-12, round 5, for v0.2.0.)* Room shortcuts **Ctrl+Shift+1**, **Ctrl+Shift+2**… follow the
   registration order (RS-4) and open that room's Welcome (q-r5-switch); they are added to GV-76.
-  Ctrl+1/2/3 address the current room's spaces in its own order. Ctrl+2 with no open subject
+  Ctrl+1/2/3 address the current room's spaces in its own order (Ctrl+4 and on for a room with more spaces, such as
+  Choose's Gallery; v0.2.0 B4). Ctrl+2 with no open subject
   opens the most recently opened subject (from the app-side recents, [subject-storage](/specs/subject-storage.md)
   ST-6), or does nothing when there is none.
 - **RS-24** State kept across switching: the open subject and its focused node (`focusId`, DM-40)

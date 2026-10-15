@@ -237,7 +237,7 @@
   }
   function key(e: KeyboardEvent) {
     if(e.ctrlKey && e.shiftKey && /^Digit[1-9]$/.test(e.code) && rooms.length>1) {const target=rooms[Number(e.code.slice(5))-1]; if(target){e.preventDefault(); void switchRoom(target.id);}}
-    else if(e.ctrlKey && !e.shiftKey && ['1','2','3'].includes(e.key)) {const target=room.spaces.find(item=>item.shortcutIndex===Number(e.key)); if(target){e.preventDefault(); void navigate(target.id);}}
+    else if(e.ctrlKey && !e.shiftKey && /^[1-9]$/.test(e.key)) {const target=room.spaces.find(item=>item.shortcutIndex===Number(e.key)); if(target){e.preventDefault(); void navigate(target.id);}}
     else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsSection='general';settingsOpen=true;}
     else if(e.key==='Escape') {
       if(document.querySelector('dialog[open]')) return;

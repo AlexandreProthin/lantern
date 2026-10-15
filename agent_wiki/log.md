@@ -2,6 +2,7 @@
 
 ## 2026-10-15
 
+* **v0.2.0 B4 done**: Survey, Compare, Welcome, Gallery and Choose's settings (slices 5 to 7), checked in the browser and by the full suite; the room stays behind `?chooseRoom` in development builds until B5. Nine points to confirm are in the [plan](/plans/v0-2-0.md). Next: B5 (tests, eval gate, acceptance).
 * **v0.2.0 B4 slice 3 done**: the Choose session (main lane, research lane, web progress, records with `toolCalls`) and its fake provider; slice 2's eight points recorded in [choose-protocol](/specs/choose-protocol.md); six new points to confirm in the [plan](/plans/v0-2-0.md).
 * **v0.2.0 B4 slices 2 and 4 done**: Choose's prompts, parser and context; Learn's UI made shared in `app/src/ui/` with Learn checked unchanged. The six slice-1 points and the summary change agreed and recorded (CR-21/22/61/90, CP-2, ST-7). Slice 2's open points are in the [plan](/plans/v0-2-0.md).
 * **v0.2.0 B4 started**: seven slices in the [plan](/plans/v0-2-0.md); slice 1 (Choose's rules, settings, board stats) done with six points to confirm, and one gap: the ST-7 summary cannot feed Choose's Gallery (CR-24).
