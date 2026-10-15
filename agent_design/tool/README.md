@@ -81,6 +81,9 @@ Example spec shape (use the actual output from context):
 }
 ```
 
+When the user's saved prompt asks for a single proposal, add `"single": true` to the spec and keep
+only the template's first proposal (combine or fresh mode; branch is refused).
+
 Publishing checks the saved revision, proposal count, IDs, parent groups and existing
 HTML files. It atomically appends one round to `lineage.json`, including a full snapshot
 of its request. It does not generate designs or judge their visual quality. The gallery

@@ -1,5 +1,6 @@
 """Local design exploration: Python standard library only (3.10+)."""
 import argparse
+import sys
 import copy
 from datetime import datetime, timezone
 from functools import partial
@@ -148,9 +149,14 @@ def publish(root, slug, spec):
     if spec.get("selection_revision") != selection["revision"]:
         raise Conflict("The user saved a newer request. Read context again before publishing.")
     expected = ctx["publish_template"]["proposals"]
+    if spec.get("single") is True:
+        # The user's saved prompt asked for one proposal only: publish the template's first entry alone.
+        if selection["next"]["mode"] == "branch":
+            raise ValueError("A single proposal is only possible in combine or fresh mode.")
+        expected = expected[:1]
     proposals = spec.get("proposals")
     if not isinstance(proposals, list) or len(proposals) != len(expected):
-        raise ValueError(f"This request needs exactly {len(expected)} proposals.")
+        raise ValueError(f"This request needs exactly {len(expected)} proposal{'s' if len(expected) != 1 else ''}.")
     phase = selection["next"]["phase"]
     nodes = []
     for actual, planned in zip(proposals, expected):
@@ -171,6 +177,39 @@ def publish(root, slug, spec):
     # The request snapshot and nodes commit together; selections remain user-owned.
     write(folder / "lineage.json", ledger)
     return ledger["rounds"][-1]
+
+
+def amend(root, slug, spec):
+    """Append one proposal to the latest round, on the user's explicit request (e.g. "make r006-02, r006-01 untouched").
+    Earlier nodes and the round's request snapshot are kept; the round records when and why it was amended."""
+    folder = concept_dir(root, slug)
+    ledger = read(folder / "lineage.json")
+    if not ledger["rounds"]:
+        raise ValueError("There is no round to amend.")
+    last = ledger["rounds"][-1]
+    note = spec.get("note")
+    if not isinstance(note, str) or not note.strip():
+        raise ValueError("An amendment needs a note quoting the user's request.")
+    request = last["request"]
+    if request["next"]["mode"] == "branch":
+        raise ValueError("Branch rounds cannot be amended.")
+    actual = spec.get("proposal") or {}
+    phase = request["next"]["phase"]
+    ident = f"r{last['number']:03d}-{len(last['node_ids']) + 1:02d}"
+    planned = {"id": ident, "parents": request["selected_ids"], "file": f"{phase}/{slug}-{TAGS[phase]}-{ident}.html"}
+    if any(actual.get(k) != planned[k] for k in planned):
+        raise ValueError(f"The amendment must be {ident} with the round's parents and file {planned['file']}.")
+    for key in ("title", "direction"):
+        if not isinstance(actual.get(key), str) or not actual[key].strip():
+            raise ValueError(f"The proposal needs a {key}.")
+    path = inside(folder, planned["file"])
+    if not path.is_file() or "<html" not in path.read_text(encoding="utf-8-sig").lower():
+        raise ValueError(f"Missing HTML experiment: {planned['file']}")
+    ledger["nodes"].append({**planned, "title": actual["title"], "direction": actual["direction"], "phase": phase, "tag": TAGS[phase]})
+    last["node_ids"].append(ident)
+    last.setdefault("amendments", []).append({"at": now(), "node_id": ident, "note": note.strip()})
+    write(folder / "lineage.json", ledger)
+    return last
 
 
 PAGE = '''<!doctype html>
@@ -284,7 +323,12 @@ def main():
     pub = sub.add_parser("publish")
     pub.add_argument("concept")
     pub.add_argument("spec", type=Path)
+    amd = sub.add_parser("amend", help="append one proposal to the latest round, on the user's request")
+    amd.add_argument("concept")
+    amd.add_argument("spec", type=Path)
     args = parser.parse_args()
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")   # prompts and directions may hold any character (e.g. ≠)
     try:
         if args.command == "serve":
             with ThreadingHTTPServer(("127.0.0.1", args.port), partial(Handler, root=ROOT)) as httpd:
@@ -302,6 +346,8 @@ def main():
                 result = initialize(ROOT, args.concept, args.phase, args.prompt)
             elif args.command == "context":
                 result = context(ROOT, args.concept)
+            elif args.command == "amend":
+                result = amend(ROOT, args.concept, read(args.spec))
             else:
                 result = publish(ROOT, args.concept, read(args.spec))
         print(json.dumps(result, ensure_ascii=False, indent=2))

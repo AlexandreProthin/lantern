@@ -126,6 +126,10 @@ Continuation mode is part of the saved request:
 - **fresh**: exactly **3**, with no parents. The user must clear picks and explicitly
   choose Fresh start when previous proposals exist.
 
+- **single** (on request only): when the user's saved prompt asks for one proposal, publish the template's
+  first entry alone by adding `"single": true` to the round spec. Combine or fresh mode only; say in the
+  experiment header that the prompt asked for it. (Added 2026-10-15 at the user's request.)
+
 The very first round needs no parents. Later combine/branch rounds require at least
 one pick. Picks can come from any round and any age, including different rounds.
 Never produce three mere reskins when the phase calls for structural alternatives;

@@ -68,6 +68,44 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual([p["parents"] for p in spec["proposals"]], [["r001-03"]] * 3 + [["r001-01"]] * 3)
         w.publish(self.root, "panel", spec)
 
+    def test_single_proposal_on_request(self):
+        spec = self.prepare()
+        single = {"selection_revision": spec["selection_revision"], "single": True, "proposals": spec["proposals"][:1]}
+        with self.assertRaises(ValueError):                       # without the flag, one is not enough
+            w.publish(self.root, "panel", {**single, "single": False})
+        with self.assertRaises(ValueError):                       # with it, three are too many
+            w.publish(self.root, "panel", {**single, "proposals": spec["proposals"]})
+        with self.assertRaises(ValueError):                       # and it must be the template's first entry
+            w.publish(self.root, "panel", {**single, "proposals": spec["proposals"][1:2]})
+        round_ = w.publish(self.root, "panel", single)
+        self.assertEqual(round_["node_ids"], ["r001-01"])
+        self.save(["r001-01"], mode="branch")
+        branch = self.prepare()
+        with self.assertRaises(ValueError):                       # not in branch mode
+            w.publish(self.root, "panel", {"selection_revision": branch["selection_revision"], "single": True, "proposals": branch["proposals"][:1]})
+        self.save(["r001-01"])
+        nxt = w.context(self.root, "panel")["publish_template"]["proposals"]
+        self.assertEqual([p["id"] for p in nxt], ["r002-01", "r002-02", "r002-03"])
+
+    def test_amend_appends_to_latest_round_only(self):
+        spec = self.prepare()
+        single = {"selection_revision": spec["selection_revision"], "single": True, "proposals": spec["proposals"][:1]}
+        w.publish(self.root, "panel", single)
+        before = w.read(self.root / "panel/lineage.json")
+        nxt = {"id": "r001-02", "parents": [], "file": spec["proposals"][1]["file"], "title": "Fixed", "direction": "The first, adjusted"}
+        with self.assertRaises(ValueError):                       # a note quoting the user is required
+            w.amend(self.root, "panel", {"proposal": nxt})
+        with self.assertRaises(ValueError):                       # the next id only
+            w.amend(self.root, "panel", {"note": "make r001-03", "proposal": {**nxt, "id": "r001-03"}})
+        round_ = w.amend(self.root, "panel", {"note": "make r001-02, r001-01 untouched", "proposal": nxt})
+        after = w.read(self.root / "panel/lineage.json")
+        self.assertEqual(round_["node_ids"], ["r001-01", "r001-02"])
+        self.assertEqual(after["nodes"][0], before["nodes"][0])
+        self.assertEqual(after["rounds"][0]["request"], before["rounds"][0]["request"])
+        self.assertEqual(round_["amendments"][0]["note"], "make r001-02, r001-01 untouched")
+        self.save(["r001-02"])
+        self.assertEqual(w.context(self.root, "panel")["publish_template"]["proposals"][0]["id"], "r002-01")
+
     def test_consumed_request_and_stale_generation_rejected(self):
         spec = self.prepare()
         self.save([])
