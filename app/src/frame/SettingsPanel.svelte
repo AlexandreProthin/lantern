@@ -35,7 +35,7 @@
   }
   async function test() {
     if(testing)return;testing=true;details='';abort=new AbortController();
-    try {await detect();const result=await provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'haiku',effort:'low',cancel:abort.signal},()=>{});status=`${strings.signedIn} · ${result.model} · ${Math.round(result.durationMs/1000)} s`;errorKind='';}
+    try {await detect();const result=await provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'opus',effort:'low',cancel:abort.signal},()=>{});status=`${strings.signedIn} · ${result.model} · ${Math.round(result.durationMs/1000)} s`;errorKind='';}
     catch(e){if(e instanceof ProviderError){errorKind=e.kind;status=strings.errorKinds[e.kind];details=e.details;}else details=String(e);}finally{testing=false;}
   }
   async function choose(path?:string) {

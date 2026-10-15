@@ -91,7 +91,7 @@ Moving is offered, never forced.
 The status area in **Provider** shows what the Claude Code CLI provider ([inference-provider](/specs/inference-provider.md)) can do now.
 
 - **SE-40** The section MUST show: *Found / Not found* with the located path, the version, and *Signed in / Not signed in / Not tested yet*.
-- **SE-41** The *Test* button MUST run the tiny haiku call of IP-41 and show the result: resolved model, duration, or the typed error with its fix-it message. There MUST be no automatic call at startup.
+- **SE-41** The *Test* button MUST run the tiny Opus 5.5 call of IP-41 (no Haiku, 2026-10-15) and show the result: resolved model, duration, or the typed error with its fix-it message. There MUST be no automatic call at startup.
 - **SE-42** Until a test or a real generation has run in the session, the login status MUST read *Not tested yet*; a successful or failed generation updates it.
 - **SE-43** A failure MUST show a fix-it message and a single action; the user MUST never need a terminal to understand it. Signing in is never done by Lantern in v0.1.0: the user follows step-by-step instructions (SE-47).
 

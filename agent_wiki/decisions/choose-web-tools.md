@@ -59,3 +59,11 @@ A research call is 40–65 s and about ten times the cost of a plain call, so Ch
 where CR-40 says, and *Use the web* can be turned off (CR-44). Specs amended:
 [inference-provider](/specs/inference-provider.md) IP-20 and IP-60, [choose-room](/specs/choose-room.md)
 CR-43, CR-45 and CR-90.
+
+# Amendment 2026-10-15
+
+The user: *do not use Haiku 4.5; the default model is Opus 5.5.* Web calls set
+`ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-opus-5-5`, which moves the WebFetch helper to Opus 5.5 (checked
+with CLI 2.1.290: `modelUsage` lists only `claude-opus-5-5`). A call now uses one model, so decision 2's
+*every model the call used* is the record's single `model` (DM-64); no `models` field is needed.
+[inference-provider](/specs/inference-provider.md) IP-20 and IP-41 amended.

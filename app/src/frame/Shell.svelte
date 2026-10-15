@@ -79,7 +79,7 @@
   async function installUpdate(){if(anyRunning)return;await updater.install(async()=>{for(const entry of owned.values())await entry.persistence.flush();await writer.flush();await windowMemory?.flush();});}
   function dismissUpdate(){settings.ui.dismissedUpdate=updater.version;void updater.release();preferencesChanged();}
   async function checkReady(){if(anyRunning||checkingReady)return;checkingReady=true;readyController=new AbortController();
-    try{if(desktop)await invoke('provider_status');readyPending=provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'haiku',effort:'low',cancel:readyController.signal},()=>{});await readyPending;}
+    try{if(desktop)await invoke('provider_status');readyPending=provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'opus',effort:'low',cancel:readyController.signal},()=>{});await readyPending;}
     catch(e){if(!(e instanceof ProviderError))banner=String(e);}finally{checkingReady=false;readyPending=undefined;}
   }
   function preferencesChanged() {

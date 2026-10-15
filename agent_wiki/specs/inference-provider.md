@@ -69,7 +69,7 @@ Implementation of the contract for v0.1.0. It is the only provider.
 
 ## Process
 
-- **IP-20** The call MUST run `claude -p --output-format stream-json --verbose --include-partial-messages --safe-mode --strict-mcp-config --no-session-persistence --tools "" --system-prompt <system>`, plus `--model <model>` when a model is set and `--effort <level>` when an effort is set. *(Amended 2026-10-13, v0.2.0 A4, [decision](/decisions/choose-web-tools.md).)* A call that allows web tools (the Choose room's research tasks, CR-40) runs `--tools "WebSearch,WebFetch" --allowedTools WebSearch WebFetch` instead of `--tools ""`; the provider counts the stream's tool-use events per tool name into `toolCalls` (DM-64) and reports them as progress while the call runs.
+- **IP-20** The call MUST run `claude -p --output-format stream-json --verbose --include-partial-messages --safe-mode --strict-mcp-config --no-session-persistence --tools "" --system-prompt <system>`, plus `--model <model>` when a model is set and `--effort <level>` when an effort is set. *(Amended 2026-10-13, v0.2.0 A4, [decision](/decisions/choose-web-tools.md).)* A call that allows web tools (the Choose room's research tasks, CR-40) runs `--tools "WebSearch,WebFetch" --allowedTools WebSearch WebFetch` instead of `--tools ""`; the provider counts the stream's tool-use events per tool name into `toolCalls` (DM-64) and reports them as progress while the call runs. *(Amended 2026-10-15 by the user: no Haiku 4.5.)* A web call also sets the environment variable `ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-opus-5-5`, so the CLI's WebFetch helper runs on Opus 5.5 instead of Haiku 4.5; checked with CLI 2.1.290, the `result` line's `modelUsage` then lists only `claude-opus-5-5`. Calls without `web` leave the environment as it is.
 - **IP-21** The prompt MUST be written to stdin and stdin closed; it MUST NOT be passed as an argument.
 - **IP-22** The working directory MUST be the OS temp directory; on Windows the child MUST be created with `CREATE_NO_WINDOW`.
 - **IP-23** The executable MUST be the one located by detection (IP-40), not a bare `claude` lookup at every call, once detection has found it.
@@ -94,7 +94,7 @@ One JSON object per stdout line. Lines that are not JSON MUST be ignored but cou
 Used by the Settings status and by the first-call error path.
 
 - **IP-40** The app MUST locate `claude` by searching `PATH` and then common install locations (for example `%USERPROFILE%\.local\bin`, `%APPDATA%\npm`, `%LOCALAPPDATA%\Programs`), trying `claude.exe`, `claude.cmd` and `claude`. The found path and version (`claude --version`, fast, no network) are shown in Settings.
-- **IP-41** The login check MUST be a *Test* call: a tiny prompt on `haiku` with `--effort low` through the normal provider path. It MUST run only when the user presses *Test* / *Check again* (or as a side effect of a real generation), never automatically at startup or when Settings opens.
+- **IP-41** The login check MUST be a *Test* call: a tiny prompt on `opus` (Opus 5.5, the default model) with `--effort low` *(Amended 2026-10-15 by the user: no Haiku 4.5.)* through the normal provider path. It MUST run only when the user presses *Test* / *Check again* (or as a side effect of a real generation), never automatically at startup or when Settings opens.
 - **IP-42** Cost and timing of the check: about 13k cache tokens of the CLI baseline plus a few output tokens, 3–6 s typically; it counts against the user's usage like any call. The result (ok, error type, model resolved, duration) is shown in the status area.
 - **IP-44** v0.1.0 MUST NOT open the Claude Code sign-in for the user, and no console window is ever opened by the app ([decision](/decisions/cli-signin-instructions-only.md)). When detection yields `not-installed` or `not-logged-in`, Settings → Provider and the frame banner MUST show clear step-by-step **instructions** (the install link; how to sign in to Claude Code) plus *Check again*, which runs the *Test* call of IP-41. The user does the one-time sign-in outside Lantern, following the instructions ([settings](/specs/settings.md) SE-47). *Lantern opens the sign-in for you* is Later.
 - **IP-43** Installed-but-not-tested is a valid status ("not tested yet"); the app MUST NOT block first use on the check — a failing first generation yields the same typed error and fix-it message.
@@ -125,7 +125,6 @@ Used by the Settings status and by the first-call error path.
 
 # Open
 
-- [choose-web-tools](/decisions/choose-web-tools.md) decision 2 says the log keeps every model a call used (a WebFetch call also runs Haiku 4.5, listed in the `result` line's `modelUsage`), but DM-64 has a single `model`. B3 records the resolved main model only; a `models` field, if wanted, is a DM-64 amendment.
 
 - Whether the *Test* call also confirms the effort flag is accepted by the installed CLI version (a `model-unknown`-style message would name the flag): an implementation-time question.
 - The exact CLI wording per error type must be captured as fixtures during implementation; the match patterns above are placeholders until then.

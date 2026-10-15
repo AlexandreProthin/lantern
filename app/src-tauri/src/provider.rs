@@ -46,6 +46,10 @@ pub fn args(req: &Request) -> Vec<String> {
     if let Some(effort) = &req.effort { args.extend(["--effort".into(), effort.clone()]); }
     args
 }
+/// IP-20: a web call runs WebFetch's helper on Opus 5.5, not Haiku 4.5.
+pub fn env(req: &Request) -> Vec<(&'static str, &'static str)> {
+    if req.web { vec![("ANTHROPIC_DEFAULT_HAIKU_MODEL", "claude-opus-5-5")] } else { Vec::new() }
+}
 pub fn detect() -> Option<PathBuf> {
     let mut folders: Vec<PathBuf> = std::env::var_os("PATH").map(|p| std::env::split_paths(&p).collect()).unwrap_or_default();
     if let Some(home) = std::env::var_os("USERPROFILE") { folders.push(PathBuf::from(home).join(".local/bin")); }
@@ -71,7 +75,7 @@ impl InferenceProvider for ClaudeCliProvider {
         if cancel.load(Ordering::SeqCst) { return Err(initial_error(ErrorKind::Cancelled, String::new())); }
         if req.effort.as_ref().is_some_and(|e| !["low", "medium", "high", "xhigh", "max"].contains(&e.as_str())) { return Err(initial_error(ErrorKind::Protocol, "Invalid effort".into())); }
         let mut cmd = process::command(&self.executable);
-        cmd.args(args(req));
+        cmd.args(args(req)).envs(env(req));
         cmd.current_dir(std::env::temp_dir()).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
         let mut child = cmd.spawn().map_err(|e| initial_error(if e.kind() == std::io::ErrorKind::NotFound { ErrorKind::NotInstalled } else { ErrorKind::ProcessCrashed }, e.to_string()))?;
         let job = match process::ProcessTree::attach(&child) { Ok(job) => job, Err(e) => { let _ = child.kill(); let _ = child.wait(); return Err(initial_error(ErrorKind::ProcessCrashed, e)); } };

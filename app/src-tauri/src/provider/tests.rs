@@ -9,7 +9,7 @@ fn parse_events(fixture: &str) -> (StreamParser, String, Vec<ToolUse>) {
     (parser, chunks, tools)
 }
 fn request(web: bool) -> Request {
-    Request { request_id: "test".into(), system: "Be terse.".into(), prompt: "Say only Lantern ready.".into(), model: Some("haiku".into()), effort: Some("low".into()), web }
+    Request { request_id: "test".into(), system: "Be terse.".into(), prompt: "Say only Lantern ready.".into(), model: Some("opus".into()), effort: Some("low".into()), web }
 }
 #[test]
 fn learn_calls_get_no_tool_and_web_calls_only_search_and_fetch() {
@@ -24,6 +24,7 @@ fn learn_calls_get_no_tool_and_web_calls_only_search_and_fetch() {
     for args in [&plain, &web] { for flag in ["--safe-mode", "--strict-mcp-config", "--no-session-persistence", "--system-prompt"] { assert!(args.iter().any(|a| a == flag)); } }
     let parsed: Request = serde_json::from_value(serde_json::json!({"requestId":"r","system":"s","prompt":"p","model":null,"effort":null})).unwrap();
     assert!(!parsed.web, "a request without web gets no tool");
+    assert!(env(&request(false)).is_empty()); assert_eq!(env(&request(true)), vec![("ANTHROPIC_DEFAULT_HAIKU_MODEL", "claude-opus-5-5")]);
 }
 #[test]
 fn recorded_web_call_counts_tools_reports_progress_and_keeps_the_answer() {
