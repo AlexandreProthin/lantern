@@ -79,7 +79,7 @@ describe('DM/ST domain', () => {
     const { v, root } = setup(); setState(v, root.id, 'lit'); setState(v, root.id, 'understood', 'demonstrated');
     addLearnChild(v, root.id, { title: 'A', kind: 'axis', createdBy: 'model' }); setDirection(v, 'x'.repeat(500));
     v.log = [generation('g1', 'a'), { ...generation('g2', 'b', 30), outcome: 'ok' }];
-    expect(visitSummary(v)).toEqual({ states: { understood: 1, open: 1 }, nodeData: { understoodBy: { demonstrated: 1 } }, data: { tone: 'curious' },
+    expect(visitSummary(v)).toEqual({ states: { understood: 1, open: 1 }, kindStates: Object.fromEntries(Object.values(v.nodes).reduce((m, n) => m.set(n.kind, { ...m.get(n.kind), [n.state]: (m.get(n.kind)?.[n.state] ?? 0) + 1 }), new Map<string, Record<string, number>>())), nodeData: { understoodBy: { demonstrated: 1 } }, data: { tone: 'curious' },
       input: 40, output: 40, tokens: 80, mainModel: 'b', modelOutputs: { a: 10, b: 30 }, generations: 2 });
   });
 });

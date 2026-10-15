@@ -1,4 +1,4 @@
-import { graphMotion } from './graphMotion';
+import { graphMotion } from './graph/graphMotion';
 export const travelDuration = (length: number) => Math.max(160, Math.min(650, length / graphMotion.route.speed * 1000));
 export function emberFan(index: number, count: number, heading: number) {
   const variation = (Math.sin((index + 1) * 7.13) + 1) / 2;

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { newLearnSubject } from './rules';
+import { newLearnSubject } from '../../rooms/learn/rules';
 import { addChild } from '../../core/graph';
 import { searchNodes, stepMatch } from './graph-search';
 

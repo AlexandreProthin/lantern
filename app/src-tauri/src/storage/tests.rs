@@ -69,6 +69,9 @@ fn summaries_are_per_room_and_old_cache_entries_are_discarded() {
     assert!(listed[0]["stale"].is_null());
     assert_eq!(learn["states"], json!({"lit":1,"understood":1,"open":1})); assert_eq!(learn["nodeData"], json!({"understoodBy":{"demonstrated":1}}));
     assert_eq!(learn["data"], json!({"tone":"curious"}), "a long direction stays out of the summary");
+    let kinds = learn["kindStates"].as_object().unwrap(); assert_eq!(kinds.values().flat_map(|s| s.as_object().unwrap().values()).map(|n| n.as_u64().unwrap()).sum::<u64>(), 3);
+    let mut s = s; s["rooms"]["learn"]["data"]["history"] = json!([{"status":"decided"}]); s["rooms"]["learn"]["data"]["big"] = json!(["x".repeat(5000)]);
+    let room = &summary(&s)["rooms"]["learn"]; assert_eq!(room["data"]["history"], json!([{"status":"decided"}])); assert!(room["data"]["big"].is_null(), "over 4 KB stays out");
 }
 #[test]
 fn paths_reject_traversal_and_windows_devices() {

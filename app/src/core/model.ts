@@ -149,23 +149,23 @@ export function convertV1(input: unknown): unknown {
 }
 /** ST-7: the room-neutral visit summary, as the Rust layer computes it; used by the browser build. */
 export interface VisitSummary {
-  states: Record<string, number>; nodeData: Record<string, Record<string, number>>; data: Data;
+  states: Record<string, number>; kindStates: Record<string, Record<string, number>>; nodeData: Record<string, Record<string, number>>; data: Data;
   input: number; output: number; tokens: number; mainModel: string | null; modelOutputs: Record<string, number>; generations: number;
 }
 export function visitSummary(v: RoomVisit): VisitSummary {
-  const states: Record<string, number> = {}, nodeData: Record<string, Record<string, number>> = {};
+  const states: Record<string, number> = {}, kindStates: Record<string, Record<string, number>> = {}, nodeData: Record<string, Record<string, number>> = {};
   for (const n of Object.values(v.nodes)) {
-    states[n.state] = (states[n.state] ?? 0) + 1;
+    states[n.state] = (states[n.state] ?? 0) + 1; (kindStates[n.kind] ??= {})[n.state] = (kindStates[n.kind][n.state] ?? 0) + 1;
     for (const [key, value] of Object.entries(n.data ?? {})) {
       if (typeof value === 'string' && [...value].length <= 64) (nodeData[key] ??= {})[value] = (nodeData[key][value] ?? 0) + 1;
     }
   }
-  // Short strings, numbers, booleans and small objects (a tone); long texts such as a direction stay in the file.
+  // Short strings, numbers, booleans, objects and arrays up to 4 KB (a tone, a pick, a history); long texts such as a direction stay in the file.
   const data = Object.fromEntries(Object.entries(v.data ?? {}).filter(([, value]) => typeof value === 'string' ? [...value].length <= 64
-    : typeof value === 'number' || typeof value === 'boolean' || (!!value && typeof value === 'object' && !Array.isArray(value) && new TextEncoder().encode(JSON.stringify(value)).length <= 1024)));
+    : typeof value === 'number' || typeof value === 'boolean' || (!!value && typeof value === 'object' && new TextEncoder().encode(JSON.stringify(value)).length <= 4096)));
   const modelOutputs: Record<string, number> = {}, latest = new Map<string, number>();
   let input = 0, output = 0;
   v.log.forEach((g, i) => { input += g.usage.input; output += g.usage.output; modelOutputs[g.model] = (modelOutputs[g.model] ?? 0) + g.usage.output; latest.set(g.model, i); });
   const mainModel = Object.keys(modelOutputs).sort((a, b) => modelOutputs[b] - modelOutputs[a] || latest.get(b)! - latest.get(a)!)[0] ?? null;
-  return { states, nodeData, data, input, output, tokens: input + output, mainModel, modelOutputs, generations: v.log.length };
+  return { states, kindStates, nodeData, data, input, output, tokens: input + output, mainModel, modelOutputs, generations: v.log.length };
 }

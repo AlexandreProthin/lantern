@@ -186,23 +186,26 @@ pub fn record_open(config: &Path, id: &str, at: &str) -> Result<AppState> {
 pub struct CacheEntry { #[serde(default)] pub version: u32, pub modified_ns: u128, pub size: u64, pub summary: Value }
 type Cache = HashMap<String, CacheEntry>;
 /// ST-36: entries written before lantern/2 summaries are discarded, so every file is read (and converted) once.
-const CACHE_VERSION: u32 = 2;
+/// Version 3 adds `kindStates` and larger visit data (ST-7, B4).
+const CACHE_VERSION: u32 = 3;
 fn read_cache(config: &Path) -> Cache { let mut cache: Cache = fs::read(config.join("summaries.json")).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default(); cache.retain(|key, entry| entry.version == CACHE_VERSION && !key.starts_with(r"\\?\")); cache }
 /// ST-7: per visit, counts the rooms interpret; this layer knows no room.
 pub fn summary(subject: &Value) -> Value {
     let mut rooms = serde_json::Map::new();
     for (room, v) in subject["rooms"].as_object().into_iter().flatten() {
         let mut states = HashMap::<String, u64>::new(); let mut node_data = HashMap::<String, HashMap<String, u64>>::new();
+        let mut kind_states = HashMap::<String, HashMap<String, u64>>::new();
         for n in v["nodes"].as_object().into_iter().flatten().map(|(_, n)| n) {
-            *states.entry(n["state"].as_str().unwrap_or_default().to_string()).or_default() += 1;
+            let state = n["state"].as_str().unwrap_or_default().to_string(); *states.entry(state.clone()).or_default() += 1;
+            *kind_states.entry(n["kind"].as_str().unwrap_or_default().to_string()).or_default().entry(state).or_default() += 1;
             for (key, value) in n["data"].as_object().into_iter().flatten() {
                 if let Some(text) = value.as_str().filter(|t| t.chars().count() <= 64) { *node_data.entry(key.clone()).or_default().entry(text.to_string()).or_default() += 1; }
             }
         }
-        // Short visit data only (a tone, a status); long texts such as a direction stay in the file.
+        // Short visit data only (a tone, a status, a pick, a history up to 4 KB); long texts such as a direction stay in the file.
         let data: serde_json::Map<String, Value> = v["data"].as_object().into_iter().flatten()
             .filter(|(_, value)| match value { Value::String(text) => text.chars().count() <= 64, Value::Number(_) | Value::Bool(_) => true,
-                Value::Object(_) => serde_json::to_string(value).is_ok_and(|text| text.len() <= 1024), _ => false })
+                Value::Object(_) | Value::Array(_) => serde_json::to_string(value).is_ok_and(|text| text.len() <= 4096), _ => false })
             .map(|(k, value)| (k.clone(), value.clone())).collect();
         let mut input = 0u64; let mut output = 0u64; let mut models = HashMap::<String, u64>::new(); let mut latest = HashMap::new();
         let log = v["log"].as_array().cloned().unwrap_or_default();
@@ -211,7 +214,7 @@ pub fn summary(subject: &Value) -> Value {
             let model = g["model"].as_str().unwrap_or("unknown").to_string(); *models.entry(model.clone()).or_default() += out; latest.insert(model, i);
         }
         let main = models.keys().max_by_key(|m| (models[*m], latest[*m]));
-        rooms.insert(room.clone(), json!({ "states": states, "nodeData": node_data, "data": data,
+        rooms.insert(room.clone(), json!({ "states": states, "kindStates": kind_states, "nodeData": node_data, "data": data,
             "input": input, "output": output, "tokens": input + output, "mainModel": main, "modelOutputs": models, "generations": log.len() }));
     }
     json!({ "id": subject["id"], "title": subject["title"], "createdAt": subject["createdAt"], "rooms": rooms })
