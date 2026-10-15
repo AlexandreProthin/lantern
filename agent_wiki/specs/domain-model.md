@@ -210,6 +210,6 @@ The values are illustrative (this example uses a sonnet model); the app's defaul
 
 # Open
 
-None for v0.1.0. For v0.2.0: Choose's `data` fields (v0.2.0 plan step B2).
+None for v0.1.0. Choose's `data` fields: [choose-protocol](/specs/choose-protocol.md) CP-1 to CP-7 (v0.2.0 B2).
 
 Related: [subject-storage](/specs/subject-storage.md), [learn-room](/specs/learn-room.md), [tutor-protocol](/specs/tutor-protocol.md), [inference-provider](/specs/inference-provider.md), [settings](/specs/settings.md).

@@ -2,6 +2,9 @@
 
 ## 2026-10-15
 
+* **v0.2.0 B2 started**: draft [choose-protocol](/specs/choose-protocol.md) (Choose's `data` under lantern/2, the `choose-1` system prompt with the source rules, tasks and blocks, context with the needs card and board, Compare filling, evals). Spec workshop round 7 asks the user the points the draft invented (Welcome needs, locale, *Explain*, the research lane, small source rules, the evals' model).
+* **Round 7 folded**: the user took every recommendation except the evals, which run all Choose cases on the default model (CP-61; noted in [platform-quality](/specs/platform-quality.md) PQ-30). [choose-room](/specs/choose-room.md) CR-13, CR-51, CR-80 and CR-90 amended; neither spec has an open question left. Both specs then **agreed** by the user: v0.2.0 B2 is done; next is B3 (provider tools per call).
+
 * **v0.2.0 B1 complete**: every design in the [v0.2.0 plan](/plans/v0-2-0.md) B1 has a `RECIPE.md` accepted by the user; next is B2.
 * **Compare accepted**: `agent_design/choose-compare`, six rounds, winner r006-03 *Rows stay open, clean lines* (a ledger with inline sources and evidence cards). Recorded in [choose-room](/specs/choose-room.md) CR-50/CR-51, with the user's last click rule: with a single card open, a click on another criterion folds the card and opens only that row (the prototype still leaves it open).
 * **Node glyphs accepted**: `agent_design/choose-nodes`, winner r003-02 *Fill and turn* on r001-01 *Kind inside, state around* (pictogram names the kind, ring and rim badge the state). Recorded under CR-20/CR-21; dismissed opacity follows GV (35 %), the user's call. The empty `choose-glyphs` stub was deleted.

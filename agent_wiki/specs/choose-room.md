@@ -3,11 +3,12 @@ type: Spec
 title: Choose room
 description: The second room - from knowing nothing about a kind of product to a reasoned choice - its spaces, node kinds and states, decision board, needs, research with sources, and accent.
 tags: [rooms, choose, buying, decision]
-status: draft
+status: stable
 generated: { by: claude-code/opus-5.5, at: 2026-10-12T22:00:00Z }
+verified: { by: "human:alex", at: 2026-10-15T17:00:00Z }
 ---
 
-Source: spec workshop rounds 5 and 6 (2026-10-12). Every rule below was chosen by the user in those
+Source: spec workshop rounds 5 to 7 (2026-10-12 to 15), agreed by the user 2026-10-15. Every rule below was chosen by the user in those
 rounds; the remaining questions are under [Open](#open).
 
 The Choose room helps the user choose, and usually buy, something they know nothing about yet.
@@ -86,6 +87,9 @@ DM-4).
   … €*, *it's for …*), never an answer, so the app still never writes the user's needs (WG-11); the currency comes
   from CR-90. The example line ends with *Shift+Enter adds your budget and needs.* The needs feed the needs card
   (CR-30, CR-31).
+  *Round 7 (q-r7-needs-note):* the text stays the user's note at the top of the needs card (*In your words*),
+  editable any time and sent with every call; the room never splits or rewrites it, and proposes need nodes only
+  for what it does not cover ([choose-protocol](/specs/choose-protocol.md) CP-2).
 
 # Node kinds
 
@@ -211,6 +215,8 @@ DM-4).
   product invites shortlisting more. Form, type (choose-board's), colours (teal spine) and motion (rows grow and fold,
   columns ease to their new widths, event-driven, instant under reduced motion) are in the recipe. Each cell stores its
   sources with their kind and its status (ok, filling, none, disagree, edited), for B2.
+  *Round 7 (q-r7-fill):* fills run in a **research lane**, one at a time per subject, alongside the user's own call,
+  so they never block lighting, replies or Recommend ([choose-protocol](/specs/choose-protocol.md) CP-40, CP-41).
 
 # Recommendation
 
@@ -240,7 +246,8 @@ DM-4).
 
 # Shared behaviour
 
-- **CR-80** As in Learn: one generation at a time per subject (LR-40), atomic results (LR-1),
+- **CR-80** As in Learn: one generation at a time per subject (LR-40), plus the Compare research lane (CP-41,
+  round 7), atomic results (LR-1),
   streaming not stored until `ok` (LR-2), every call logged (LR-3), cancel (LR-36), edits that take
   precedence (LR-35), text links between nodes (DM-21), model and effort per subject.
 - **CR-81** Tone: the same presets as Learn (ELI5, Curious, Student, Engineer, Expert, or custom
@@ -252,10 +259,13 @@ DM-4).
   country, for shops and prices (default: Windows' region); currency (default: the country's);
   default tone; *Use the web* (default on, CR-44). Model and effort defaults stay in Provider, shared
   by rooms.
+  *Round 7 (q-r7-locale):* a subject keeps the country and currency it was created with, changeable in its
+  menu for future calls only, like tone.
 
 # Open
 
-- Which Choose fields go in `data` under `lantern/2` ([decision](/decisions/format-lantern-2.md)), with the v0.2.0 plan.
+None that blocks code. Choose's `data` fields, prompts, context and evals are in
+[choose-protocol](/specs/choose-protocol.md) (round 7, 2026-10-15).
 
 Related: [rooms-spaces](/specs/rooms-spaces.md), [domain-model](/specs/domain-model.md),
 [learn-room](/specs/learn-room.md), [inference-provider](/specs/inference-provider.md),

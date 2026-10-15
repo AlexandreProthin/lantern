@@ -23,4 +23,5 @@ Stable specs from the spec workshop, rounds 1–3 (2026-10-01/02), agreed with t
 * [Settings](settings.md) - Every setting, the settings file, the panel, the library change flow, provider status.
 * [Updates](updates.md) - Daily launch check, quiet notice, manual check, in-app install, release contract.
 * [Platform and quality bar](platform-quality.md) - Windows, i18n readiness, tests, prompt evals, installer.
-* [Choose room](choose-room.md) - The second room (draft, round 5): from knowing nothing to a reasoned choice; needs, criteria, shortlist, sources.
+* [Choose room](choose-room.md) - The second room: from knowing nothing to a reasoned choice; needs, criteria, shortlist, sources.
+* [Choose protocol](choose-protocol.md) - Choose's data under lantern/2, the choose-1 prompts and blocks, context with needs and board, evals (B2).

@@ -248,7 +248,7 @@
       "id": "choose-room",
       "title": "Choose room",
       "area": "buy",
-      "status": "review",
+      "status": "agreed",
       "file": "specs/choose-room.md",
       "summary": "The second room: from knowing nothing to a reasoned purchase (needs, criteria, shortlist, decision).",
       "questions": [
@@ -274,6 +274,23 @@
         "q-r6-recommend",
         "q-r6-tone",
         "q-r6-settings"
+      ]
+    },
+    {
+      "id": "choose-protocol",
+      "title": "Choose protocol",
+      "area": "buy",
+      "status": "agreed",
+      "file": "specs/choose-protocol.md",
+      "summary": "Choose's data under lantern/2, the choose-1 prompts and blocks, context with the needs card and board, Compare filling, evals.",
+      "questions": [
+        "q-r7-needs-note",
+        "q-r7-locale",
+        "q-r7-explain",
+        "q-r7-fill",
+        "q-r7-rules",
+        "q-r7-evals",
+        "q-r7-anything"
       ]
     }
   ]

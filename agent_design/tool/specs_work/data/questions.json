@@ -87,6 +87,11 @@
       "number": 6,
       "created_at": "2026-10-12T22:30:00+00:00",
       "intro": "**Round 6: Choose room details.** Round 5 is folded in: the new spec **Choose room** is in the Specs tab (draft), and the frame changes are amendments marked *round 5* in Rooms and spaces, Domain model, Product scope, Settings and Subject storage.\n\nThis round settles what round 5 left open: the graph space's name, where the decision board lives, the subject status, what the web is used for and which sources count, Compare, the recommendation, tone, the room's settings, the file format, and one contradiction between two of your answers (*Open in Learn*).\n\nWhen this round is answered the Choose room spec can go to review, then I write the v0.2.0 plan (frame release first)."
+    },
+    {
+      "number": 7,
+      "created_at": "2026-10-15T20:00:00+00:00",
+      "intro": "**Round 7: Choose, ready for code (v0.2.0 B2).** All six Choose designs are accepted and recorded. The new spec **Choose protocol** (Specs tab, draft) writes down what the room stores, what the model is told and must answer (with the source rules in its system prompt), what each call receives, and the evals.\n\nMost of it follows from your earlier answers. These questions are the points I had to invent. When they are answered, the protocol and Choose room specs go to review, and B3 (the provider's web tools) can start."
     }
   ],
   "questions": [
@@ -3196,6 +3201,231 @@
       "settled": {
         "summary": "**lantern/2**, discussed in chat: neutral user/model roles, a `data` container for room fields, Learn files converted with a backup.",
         "spec": "specs/domain-model.md"
+      }
+    },
+    {
+      "id": "q-r7-needs-note",
+      "round": 7,
+      "area": "buy",
+      "title": "What happens to the needs you type on Welcome?",
+      "context": "On Welcome you can add your budget and needs with Shift+Enter (CR-13). On the board, the needs card lists **need nodes** as question over answer, and *every need is answered* is part of a complete board. Your Welcome text has to live somewhere in that card. The app never writes your needs for you (WG-11).",
+      "kind": "single",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "note",
+          "label": "It stays as your note at the top of the needs card",
+          "detail": "Shown as *In your words*, editable any time, sent with every call. The room proposes need nodes only for what it doesn't cover.",
+          "recommended": true
+        },
+        {
+          "id": "split",
+          "label": "The room splits it into answered need nodes",
+          "detail": "Each piece becomes a need with your words as its answer; you confirm each one before it's added."
+        },
+        {
+          "id": "both",
+          "label": "Both: the note stays, and the room offers to split it",
+          "detail": "The note is kept as-is; the split is offered once after the intro, and you confirm each piece."
+        }
+      ],
+      "take": "**Keep it as your note.** It is your exact words, it's always sent, and nothing is rewritten. Need nodes then cover only the gaps, so the board doesn't fill with questions you already answered.",
+      "settled": {
+        "summary": "Your note at the top of the needs card, *In your words*, never split (CP-2, CR-13).",
+        "spec": "specs/choose-protocol.md"
+      }
+    },
+    {
+      "id": "q-r7-locale",
+      "round": 7,
+      "area": "buy",
+      "title": "Does a subject keep its country and currency?",
+      "context": "Prices are shown in your currency and looked up for your country (CR-90). If you change the setting later, a subject could keep what it started with or follow the setting.",
+      "kind": "single",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "keep",
+          "label": "The subject keeps its own, changeable in its menu",
+          "detail": "Set from Settings when the subject is created. Changing it affects future calls only, like tone.",
+          "recommended": true
+        },
+        {
+          "id": "follow",
+          "label": "It always follows Settings",
+          "detail": "Old prices stay in the old currency until filled again."
+        }
+      ],
+      "take": "**Keep its own.** A choice made for a purchase in France shouldn't flip to dollars because you changed a setting for a new subject.",
+      "settled": {
+        "summary": "The subject keeps its country and currency, changeable in its menu (CP-2, CR-90).",
+        "spec": "specs/choose-protocol.md"
+      }
+    },
+    {
+      "id": "q-r7-explain",
+      "round": 7,
+      "area": "buy",
+      "title": "Can you ask the room to explain a need or a criterion?",
+      "context": "Concepts and families light up. Needs are answered by you and criteria are ranked by you, so they have no *lit* state. Their hook says in one line why they matter.",
+      "kind": "single",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "explain",
+          "label": "Yes: *Explain* writes a short text, the state doesn't change",
+          "detail": "Why it matters for this choice, and how different answers or values change it. No new nodes. Offline.",
+          "recommended": true
+        },
+        {
+          "id": "hook",
+          "label": "No: the hook is enough; ask in the dialogue if needed"
+        }
+      ],
+      "take": "**Yes, with Explain.** You know nothing about the field yet, so *Build volume: must or nice?* is hard to answer without a paragraph on what it changes. It's a cheap offline call.",
+      "settled": {
+        "summary": "*Explain* on needs and criteria writes text, no state change (CP-10).",
+        "spec": "specs/choose-protocol.md"
+      }
+    },
+    {
+      "id": "q-r7-fill",
+      "round": 7,
+      "area": "buy",
+      "title": "How should Compare fill itself while you keep working?",
+      "context": "Compare fills a product's column when you shortlist it and a criterion's row when you add it (CR-51). Each fill is a web call of 40 to 65 s. Today only one call runs at a time per subject (LR-40), so three shortlisted products could lock *Light it up* and replies for several minutes.",
+      "kind": "single",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "lane",
+          "label": "A research lane: one fill runs alongside your own call",
+          "detail": "Fills only write Compare cells, so they never conflict with lighting a node or a reply. At most one fill and one other call per subject at a time; fills queue one column or row each.",
+          "recommended": true
+        },
+        {
+          "id": "queue",
+          "label": "One call at a time; fills queue and you wait",
+          "detail": "Simplest. You can browse and edit, but not light or reply, while fills run."
+        },
+        {
+          "id": "button",
+          "label": "No automatic fill: you press *Fill Compare*",
+          "detail": "One call fills what's empty, when you ask. Changes CR-51."
+        }
+      ],
+      "take": "**The research lane.** It keeps the automatic fill you asked for without blocking you. The risk is small because a fill only writes cells and is checked against the graph when it lands (LR-43).",
+      "settled": {
+        "summary": "A research lane: one fill alongside your own call (CP-41, CR-51, CR-80).",
+        "spec": "specs/choose-protocol.md"
+      }
+    },
+    {
+      "id": "q-r7-rules",
+      "round": 7,
+      "area": "buy",
+      "title": "Which of these small rules do you accept?",
+      "context": "Rules the protocol draft needed. Tick the ones you accept; leave unticked any you want changed (say how in the notes).",
+      "kind": "multi",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "shop",
+          "label": "A **shop** source kind, for prices and availability only",
+          "detail": "The designs had manufacturer, measured, opinion, model knowledge and sponsored. A retailer's price page is none of these.",
+          "recommended": true
+        },
+        {
+          "id": "nosource",
+          "label": "A value without a source or a date is dropped: the cell reads *nothing found*",
+          "detail": "CR-41 says every fact shows its source and date; this is how the app enforces it.",
+          "recommended": true
+        },
+        {
+          "id": "sponsored",
+          "label": "A value backed only by sponsored sources counts as *nothing found*",
+          "detail": "The sponsored sources stay visible, struck, *not used* (CR-42 rule 4).",
+          "recommended": true
+        },
+        {
+          "id": "check",
+          "label": "*Check this* never overwrites your own value",
+          "detail": "It updates the room's value beside yours and says what changed.",
+          "recommended": true
+        },
+        {
+          "id": "weboff",
+          "label": "With the web off, finding products and filling Compare still work, from the model's knowledge",
+          "detail": "Every source then reads *model knowledge* with its date (CR-44).",
+          "recommended": true
+        },
+        {
+          "id": "recommend",
+          "label": "A recommendation never chooses for you",
+          "detail": "It's a reply on the subject node, with a *Choose <product>* button when it names one.",
+          "recommended": true
+        },
+        {
+          "id": "family",
+          "label": "Products found from the board go under a family the room names",
+          "detail": "An existing family, or a new one it creates. The graph stays a tree (DM-11).",
+          "recommended": true
+        },
+        {
+          "id": "needchip",
+          "label": "When you mention a need in the dialogue, the room offers *Add to needs* in your words",
+          "detail": "*Add* or *Ignore* under the reply; nothing is added without your click (CR-30).",
+          "recommended": true
+        }
+      ],
+      "take": "All of them. Each is the strict reading of a rule you already chose: sources, sponsored content, your edits take precedence, the app never writes your needs.",
+      "settled": {
+        "summary": "All eight accepted (CP-4, CP-10 to CP-13, CP-30, CP-31).",
+        "spec": "specs/choose-protocol.md"
+      }
+    },
+    {
+      "id": "q-r7-evals",
+      "round": 7,
+      "area": "buy",
+      "title": "Which model runs the Choose evals?",
+      "context": "The quality bar is 95 % of cases on Haiku (PQ-30, PQ-33), on the idea that if Haiku follows the protocol, larger models will. In the web spike Haiku broke the source rules (deal sites, a spec PDF it never read), so it would fail the research cases. A research case costs about $0.25 at API prices.",
+      "kind": "single",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "split",
+          "label": "Offline cases on Haiku, research cases on the default model",
+          "detail": "Opus 5.5 at medium effort, each research case run twice, same 95 % bar. About 20 research calls, roughly $5 per full run.",
+          "recommended": true
+        },
+        {
+          "id": "haiku",
+          "label": "Everything on Haiku, as PQ-30 says",
+          "detail": "Expect the research cases to fail until the prompt is much stricter."
+        },
+        {
+          "id": "default",
+          "label": "Everything on the default model"
+        }
+      ],
+      "take": "**Split.** The evals should test what you'll actually run. Research runs on your subject's model (CR-45 was withdrawn for this reason), and the offline tasks still get Haiku's strictness.",
+      "settled": {
+        "summary": "Every Choose case on the default model, 95 % bar (CP-61; PQ-30 noted).",
+        "spec": "specs/choose-protocol.md"
+      }
+    },
+    {
+      "id": "q-r7-anything",
+      "round": 7,
+      "area": "buy",
+      "title": "Anything else in the Choose protocol draft?",
+      "context": "Read the draft in the Specs tab (Choose protocol). Note anything you'd change: the system prompt text, the tasks, what each call is sent, the evals. Leave empty if it's fine.",
+      "kind": "text",
+      "allow_other": true,
+      "settled": {
+        "summary": "All good: no change to the draft.",
+        "spec": "specs/choose-protocol.md"
       }
     }
   ]

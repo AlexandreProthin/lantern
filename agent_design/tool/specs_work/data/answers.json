@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 20,
-  "saved_at": "2026-10-12T21:54:15.937469+00:00",
+  "revision": 23,
+  "saved_at": "2026-10-15T16:44:33.937854+00:00",
   "answers": {
     "q-poc-off": {
       "notes": "missing: \n- node content author (model name who wrote it, thinking effort if available + user name if he edited it), this i a node metadata like the state (\"LIT\", ...) tag\n- token count as generation go (to know how many the graph cost to reach a given state)\n- side pannel need to be resizable\n- generation time i am ok to wait no a constraint here (keep the live stream as tokens arrive)\n- Exactly 3 options is too restrictive: i want to be able to dismiss one, ask for others, or add my own\n- i want a way to edit/correct a node content (to influence, orient or adjust the next one generation context), will be handy in case the model halucinate wrong/false info\n- delete or regenerate a node and a cancel while it streams => yes\n- home screen needs more work to be welcoming, allow edits, see progress ...\n- need the ability to choose/change llm model (even mid session)\n- a room setting pannel (sub menu in the global app setting)\n- a proper prompt engineer pre-prompt and an optimized context managment\n- ctrl + clic multiple node to generate a new node merging the ideas\n- settings pannel: to connect the llm provider (v0.1.0 is focused to work with a claude code subscription plan but later codex or other provider even api key suport, when implemented we will have a focus on security here (probably nex version))\nLantern is like Prism, the lantern app (will) have multiple room to do different things. Each room can have multiple spaces.\nLantern spaces example:\n- learning space (the poc)\n- welcome (landing) space to start a new subject or pick a recent one to continue a previous session (up to 3 most recent session)\n- gallery to browse the knowlege exploration with associated stats ",
@@ -647,6 +647,53 @@
       "updated_at": "2026-10-12T21:54:07.358Z",
       "flag": "discuss",
       "notes": "is it worth upgrading the file format ? i do not mind converting old files. in other word will we be limited by lantern/1 "
+    },
+    "q-r7-needs-note": {
+      "choice": [
+        "note"
+      ],
+      "updated_at": "2026-10-15T16:39:02.668Z"
+    },
+    "q-r7-explain": {
+      "choice": [
+        "explain"
+      ],
+      "updated_at": "2026-10-15T16:39:29.031Z"
+    },
+    "q-r7-locale": {
+      "choice": [
+        "keep"
+      ],
+      "updated_at": "2026-10-15T16:39:39.231Z"
+    },
+    "q-r7-fill": {
+      "choice": [
+        "lane"
+      ],
+      "updated_at": "2026-10-15T16:40:45.181Z"
+    },
+    "q-r7-rules": {
+      "choice": [
+        "shop",
+        "nosource",
+        "sponsored",
+        "check",
+        "weboff",
+        "recommend",
+        "family",
+        "needchip"
+      ],
+      "updated_at": "2026-10-15T16:42:44.125Z"
+    },
+    "q-r7-evals": {
+      "choice": [
+        "default"
+      ],
+      "updated_at": "2026-10-15T16:43:27.541Z"
+    },
+    "q-r7-anything": {
+      "notes": "all good",
+      "updated_at": "2026-10-15T16:44:28.850Z"
     }
   }
 }
