@@ -10,7 +10,8 @@
     "installer:preview": "tauri build --bundles nsis --config src-tauri/tauri.preview.conf.json",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
-    "eval": "tsx evals/run.ts"
+    "eval": "tsx evals/run.ts",
+    "eval:choose": "tsx evals/choose.ts"
   },
   "dependencies": {
     "@tauri-apps/api": "2.8.0",

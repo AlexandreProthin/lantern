@@ -51,6 +51,10 @@ DM-4).
   *Reject*, *Un-choose* and *Mark as bought*. Its form, type, colours (teal spine) and motion (unfolds from the rail;
   counters roll; a light runs up the spine when the board becomes complete) are in the recipe; motion is event-driven
   only and instant under reduced motion.
+  *(B4 slices 5 to 7, agreed by the user 2026-10-15.)* The rail stays visible while the board is open and toggles it; it replaces the divider, so the
+  panel cannot be dragged wider in Choose. *Check this* is on the node, not on each reply (the shared panel has
+  no per-turn actions yet); a need or criterion reads *Not explained yet* until *Explain*. *Delete* is disabled
+  on a subtree that holds the chosen product.
 - **CR-12** Welcome and Gallery are the room's own ([spaces-per-room-no-home](/decisions/spaces-per-room-no-home.md)):
   Welcome starts a new choice (*What do you want to choose?*) or continues one of the 3 most recent
   Choose subjects; Gallery lists the Choose subjects with their status (CR-24).
@@ -78,6 +82,10 @@ DM-4).
   Choose wording; the header shows the four spaces (CR-11). Colours are where Learn's light falls, in teal (CR-70);
   motion is Learn's shipped embers and capsule, plus the starters appearing like Learn's chips and a light along a
   card's steps bar on hover.
+  *(B4 slices 5 to 7, agreed by the user 2026-10-15.)* Gallery: *Ready* / *n missing* counts what the summary knows (needs, ranking, shortlist), not empty
+  Compare cells; the needs note shows up to 64 characters (ST-7). The FLIP glides on sort and filter, the
+  shrink-out and the band fill on a status change are left out. The subject menu's needs note saves on blur,
+  as Learn's direction.
 - **CR-13** Welcome MUST offer an optional direction field for what the user already knows, like
   Learn's (WG-9): *budget about 500 €, I want to print figurines for my kids* (q-buy-needs).
   *Designed 2026-10-15* (choose-welcome recipe): the direction is called **the needs** and opens with **Shift+Enter**
@@ -135,6 +143,7 @@ DM-4).
   from the centre (360 ms) and the badge comes out onto the rim; falling ones close into the centre (300 ms); a
   badge-only change turns the badge over; a pick opens its second ring and its glow blooms. Instant under reduced
   motion (GV-100). Dismissed opacity follows GV (at most 35 %), not the design's 45 % (the user, 2026-10-15).
+  *(B4 slices 5 to 7, agreed by the user 2026-10-15.)* Rejected products fade like dismissed ones, to 35 %.
 
 - **CR-22** At most one product is `chosen` per subject. Choosing one MUST NOT reject the others
   automatically. *(B4, agreed by the user 2026-10-15.)* Choosing another product first un-chooses the current one, which goes back to
@@ -220,6 +229,8 @@ DM-4).
   sources with their kind and its status (ok, filling, none, disagree, edited), for B2.
   *Round 7 (q-r7-fill):* fills run in a **research lane**, one at a time per subject, alongside the user's own call,
   so they never block lighting, replies or Recommend ([choose-protocol](/specs/choose-protocol.md) CP-40, CP-41).
+  *(B4 slices 5 to 7, agreed by the user 2026-10-15.)* While a check runs, the toolbar shows *Checking… · <step>* with Cancel. Unranked criteria get no
+  row. The web-off banner gives no knowledge date (none is stored).
 
 # Recommendation
 
@@ -267,6 +278,8 @@ DM-4).
   menu for future calls only, like tone.
   *(B4, agreed by the user 2026-10-15.)* With no region in the system language the country is FR; a country missing from the app's currency table
   gets EUR, which the user can change.
+  *(B4 slices 5 to 7, agreed by the user 2026-10-15.)* Country is chosen from the currency table's countries (about 43); the currency follows the
+  country until the user sets it by hand.
 
 # Open
 
