@@ -182,7 +182,8 @@ Slots as TP-12: each template ends with its required ending; blocks are those of
   4. `<need>` is not applied: the panel shows *Add to needs: <question> — <answer>* with *Add* and
      *Ignore*; *Add* creates an `answered` need under the subject, `createdBy: user`.
   5. `<recommend>`: `product` must be a shortlisted or chosen product's id, otherwise it is read
-     as `null`. The turn is stored; nothing changes state.
+     as `null`. The turn is stored; nothing changes state. *(B4 slice 2, agreed by the user 2026-10-15.)* A missing or invalid `confidence` reads `low`;
+     `missing` keeps at most 8 entries of 120 characters.
 - **CP-31** **Source checks** (CR-41, CR-42), applied to every fact and cell *(round 7, q-r7-rules)*:
   1. a value with no source, or a source with no valid `read` date, loses that source; a value left
      with no source is stored as `null` (*nothing found*);
@@ -190,9 +191,17 @@ Slots as TP-12: each template ends with its required ending; blocks are those of
      kept and shown struck (*not used*);
   3. a `read` date later than today is invalid; a `model` source is valid only with web off or in a
      task without web.
+
+  *(B4 slice 2, agreed by the user 2026-10-15.)* A `model` source is valid exactly when the call had no web tools; other kinds are kept
+  with web off. A **fact** left with no source, or with sponsored sources only, is dropped, since a fact
+  cannot be `null`; only cells keep `null` with the sponsored sources shown struck. A source with a bad
+  `url` (or a `url` on a `model` source) loses the `url` and is kept; an unknown `kind` or a bad `read`
+  drops it. Values are clipped to their limits; option and product titles to 80 characters and hooks to
+  160, as Learn.
 - **CP-32** Visible text (TP-32) also cuts at `<products>`, `<cells>`, `<facts>`, `<need>` and
   `<recommend>`. With web on, text the model writes before its first tool call is not the answer
-  (choose-web-tools decision 3): the visible text is the text after the last tool result.
+  (choose-web-tools decision 3): the visible text is the text after the last tool result. *(B4 slice 2, agreed by the user 2026-10-15.)* The
+  session does that cut from the provider's tool events (IP-13); `visibleText` cuts only at the tags.
 
 # Context assembly
 
@@ -214,6 +223,12 @@ Slots as TP-12: each template ends with its required ending; blocks are those of
     `(the user's value)` and the room's value beside it when edited, `≠` when `disagree`, `nothing
     found` when `null`; each line at most 300 characters.
   - `TARGET` (fill only): the cells to fill, `<product id> × <criterion id> (<criterion title>)`.
+
+  *(B4 slice 2, agreed by the user 2026-10-15.)* Formats the rules above leave open are the code's (`app/src/rooms/choose/context.ts`): map
+  lines `- <id> [<kind>:<state>] <title> — <hook>`; NEEDS under `ANSWERED NEEDS:` and `STILL OPEN:`,
+  dismissed needs left out; BOARD's empty groups left out and `STATUS` last; COMPARE lines for stored
+  cells only, `≠ ` before a disputed value; a product's facts in its FOCUS block. The task templates'
+  prose is the code's (only the system prompt above is verbatim) and is judged by the evals (CP-60).
 - **CP-51** Matrix:
 
 | Task | Subject, locale, needs | Board | Map + path | Parent clip | Focus | Dialogue | Compare | Target |
@@ -227,6 +242,10 @@ Slots as TP-12: each template ends with its required ending; blocks are those of
 | `check` | yes | yes | yes | - | yes | the turn checked | yes on a product, cell or row | - |
 | `recommend` | yes | yes | yes | - | - | - | yes | - |
 
+  *(B4 slice 2, agreed by the user 2026-10-15.)* `check` on a reply names the checked turn by its index in the focus node's dialogue (sent
+  as `TURN TO CHECK`). `check` on a single cell has no TARGET in this matrix, so it checks the cell's
+  product (or row) and the session keeps only that cell's result.
+
 - **CP-52** Budget: the map budget is Learn's setting (CA-10) and covers the map part only, reduced
   as CA-21. Needs, board and Compare are never reduced: the needs note is at most 500 characters,
   answers 500 each, and Compare at most 300 characters a line (about 5 products × 12 criteria, under
@@ -238,7 +257,8 @@ Slots as TP-12: each template ends with its required ending; blocks are those of
 
 - **CP-40** The room fills cells on its own (CR-51): shortlisting a product queues its column
   (must and nice criteria), adding or ranking a criterion `must` or `nice` queues its row for the
-  shortlist, and *Fill Compare* on the board queues every empty cell. Queued cells are coalesced
+  shortlist, and *Fill Compare* on the board queues every empty cell (a cell with no stored value; a
+  *nothing found* cell counts as filled, *(B4 slice 2, agreed by the user 2026-10-15.)*). Queued cells are coalesced
   into `fill` calls of at most one product column or one criterion row, oldest first, shown
   striped (*Researching…*). Cancel stops the running call and drops the queue.
 - **CP-41** A **research lane** *(round 7, q-r7-fill)*: one `fill` call at a time per subject runs alongside the one
