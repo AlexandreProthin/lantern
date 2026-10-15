@@ -22,24 +22,26 @@ API, local or other provider MUST fit without changing callers.
 
 ## Request
 
-- **IP-1** A request MUST carry: `system` (string), `prompt` (string), `model` (alias or free-text id, optional), `effort` (`low`|`medium`|`high`|`xhigh`|`max`, optional) and a `cancel` token.
+- **IP-1** A request MUST carry: `system` (string), `prompt` (string), `model` (alias or free-text id, optional), `effort` (`low`|`medium`|`high`|`xhigh`|`max`, optional), `web` (boolean, optional, false when absent) and a `cancel` token. *(Amended 2026-10-15, v0.2.0 B3, [decision](/decisions/choose-web-tools.md).)* `web` lets the call search the web and read pages and nothing else (IP-20, IP-60); only the Choose room's research tasks set it (CR-40, [choose-protocol](/specs/choose-protocol.md) CP-10), and every other call, Learn's included, runs with no tool at all.
 - **IP-2** The provider MUST NOT interpret the prompt: assembly is the caller's job ([context-assembly](/specs/context-assembly.md)). Prompt text MAY reach the provider only through the channel it defines (for the CLI: stdin).
 - **IP-3** A provider that does not support `effort` MUST ignore it and report that in its result (`resolvedEffort` absent).
 
 ## Streaming
 
-- **IP-4** The provider MUST call a text callback with each streamed text chunk, in order, on the calling thread. Chunks MUST concatenate to the final text.
+- **IP-4** The provider MUST call a text callback with each streamed text chunk, in order, on the calling thread. Chunks MUST concatenate to the final text; in a call that used tools, the chunks after the last tool use do (IP-13).
+- **IP-13** *(Amended 2026-10-15, v0.2.0 B3, [decision](/decisions/choose-web-tools.md).)* A call with `web` MUST report each tool use, in stream order and once per use, through a tool callback `{name, detail}`: `detail` is the search query for WebSearch and the page's host for WebFetch, so the caller can show progress (*Searching… / Reading eu.store.bambulab.com…*). A tool use closes the text before it: that text (the model's *I'll search…*) is not part of the final text, and a caller showing chunks starts over at each tool use ([choose-protocol](/specs/choose-protocol.md) CP-32).
 - **IP-5** If the provider produced no chunks but a final text exists, it MUST emit that text once through the callback so the UI still shows something (PoC behaviour).
 
 ## Result
 
-- **IP-6** A completed call MUST return `{text, model, usage, durationMs, costUsd?, outcome}`:
+- **IP-6** A completed call MUST return `{text, model, usage, durationMs, costUsd?, toolCalls?, outcome}`:
   - `model`: the **resolved** model id reported by the provider, not the alias asked for.
   - `usage`: `{input, output, thinking, cacheRead, cacheWrite}`, all integers, 0 when unknown for a field the provider cannot report.
   - `durationMs`: wall time as reported by the provider, else measured by the app.
   - `costUsd`: optional, API-equivalent; stored in the log, never shown ([domain-model](/specs/domain-model.md)).
+  - `toolCalls`: optional, the number of tool uses per tool name (`{"WebSearch": 1, "WebFetch": 1}`), copied into the record (DM-64); absent when the call used no tool. *(Amended 2026-10-15, v0.2.0 B3, [decision](/decisions/choose-web-tools.md).)*
   - `outcome`: `ok` | `cancelled` | `error`.
-- **IP-7** An unsuccessful call MUST return a typed error (below) carrying the same `usage`, `durationMs` and `model` fields wherever known, so that failed and cancelled calls can be logged (DM-32).
+- **IP-7** An unsuccessful call MUST return a typed error (below) carrying the same `usage`, `durationMs`, `model` and `toolCalls` fields wherever known, so that failed and cancelled calls can be logged (DM-32).
 - **IP-8** The call is synchronous from the provider's point of view (blocking); callers run it off the UI thread and relay chunks as events.
 - **IP-9** The CLI's own baseline (about 13k tokens, reported in `usage` as cache creation or read) MUST be reported in `usage` and logged like any other figure, but it sits **outside** Lantern's context budget, which covers only Lantern's own prompt ([context-assembly](/specs/context-assembly.md) CA-12). It is not part of *tokens spent* either ([welcome-gallery](/specs/welcome-gallery.md) WG-31).
 
@@ -78,6 +80,7 @@ One JSON object per stdout line. Lines that are not JSON MUST be ignored but cou
 
 - **IP-24** `system` with `subtype: "init"` supplies the resolved `model`.
 - **IP-25** `stream_event` lines with `event.delta.type == "text_delta"` supply streamed text.
+- **IP-19** *(Amended 2026-10-15, v0.2.0 B3, [decision](/decisions/choose-web-tools.md).)* `assistant` lines whose `message.content` holds a `tool_use` block supply tool uses (`name`, `id`, `input`); each `id` counts once. Text streamed before such a line is the text a tool use closes (IP-13).
 - **IP-26** The final `result` line supplies `usage` (including `output_tokens_details.thinking_tokens`), `duration_ms`, `total_cost_usd`, `is_error` and the result text. The call is successful iff this line exists and `is_error` is not true.
 - **IP-27** Errors MUST be read from the `result` line (`is_error`), not from the exit code: the CLI can exit with 0 and `is_error: true`. The stream MUST be read to the end before success is judged.
 
@@ -116,11 +119,13 @@ Used by the Settings status and by the first-call error path.
 
 # Testability
 
-- **IP-70** Stream parsing and error detection MUST be tested in Rust against **recorded stream fixtures** (one file per case: ok, thinking, no-delta, each error type, truncated stream, cancelled).
+- **IP-70** Stream parsing and error detection MUST be tested in Rust against **recorded stream fixtures** (one file per case: ok, thinking, no-delta, each error type, truncated stream, cancelled, and a web call with a search and a blocked fetch). Building the arguments is a pure function, tested to give `--tools ""` without `web` and exactly WebSearch and WebFetch with it (IP-20, IP-60).
 - **IP-71** A **fake provider** implementing the same contract MUST exist for the web build and the Playwright tests: deterministic streamed text, configurable delays, and injectable errors of every type.
 - **IP-72** One ignored Rust test MAY call the real CLI (`cargo test -- --ignored`); prompt evals use the real CLI by hand ([platform-quality](/specs/platform-quality.md)).
 
 # Open
+
+- [choose-web-tools](/decisions/choose-web-tools.md) decision 2 says the log keeps every model a call used (a WebFetch call also runs Haiku 4.5, listed in the `result` line's `modelUsage`), but DM-64 has a single `model`. B3 records the resolved main model only; a `models` field, if wanted, is a DM-64 amendment.
 
 - Whether the *Test* call also confirms the effort flag is accepted by the installed CLI version (a `model-unknown`-style message would name the flag): an implementation-time question.
 - The exact CLI wording per error type must be captured as fixtures during implementation; the match patterns above are placeholders until then.

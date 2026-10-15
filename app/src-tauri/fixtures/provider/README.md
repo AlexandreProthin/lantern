@@ -6,6 +6,13 @@ Haiku/low (success) and an intentionally invalid model id (failure).
 Session ids, UUIDs and local paths are redacted. The success includes thinking
 events and usage; the invalid-model capture tests real wording and `is_error`.
 
+`recorded-web.jsonl` was captured on 2026-10-15 from Claude Code 2.1.290 with the
+IP-20 web flags (`--tools "WebSearch,WebFetch" --allowedTools WebSearch WebFetch`),
+default model, effort low: one WebFetch the site blocked, one WebSearch, then the
+answer. The init event is trimmed to the fields the parser reads plus a few for
+context; local paths are redacted. The preamble and repeated-id cases are variants
+built from it in the tests.
+
 No-delta, truncated, cancelled and other error cases in the unit tests are
 synthetic variants of this event shape. They are fault-injection coverage, not
 claims to have recorded authentication, quota or network failures. No credentials

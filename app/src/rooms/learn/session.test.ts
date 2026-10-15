@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import { newLearnSubject, understoodBy } from './rules';
 import { FakeProvider } from './fake-provider';
 import { LearnSession } from './session';
+import type { Request } from '../../frame/provider';
 test('LR-1/10/11/13/15/33: intro, light, check, reply and demonstrated understanding', async () => {
   const s = newLearnSubject('Tides'); const session = new LearnSession(s, new FakeProvider(0), () => {});
   await session.run('intro', session.visit.rootId); expect(session.visit.log[0].task).toBe('intro');
@@ -45,4 +46,12 @@ test('LR-2/TP-32: streamed machine block fragments never become visible JSON', a
   const session = new LearnSession(s, provider, () => {}, () => { if (session.running) displays.push(session.running.text); });
   await session.run('intro', session.visit.rootId);
   expect(displays.some(text => text.includes('"title"') || text.includes('<options'))).toBe(false);
+});
+test('IP-1/IP-60: no Learn call asks for a tool', async () => {
+  const provider = new FakeProvider(0), requests: Request[] = [], stream = provider.stream.bind(provider);
+  provider.stream = (request, onText) => { requests.push(request); return stream(request, onText); };
+  const s = newLearnSubject('Tides'), session = new LearnSession(s, provider, () => {});
+  await session.run('intro', session.visit.rootId); const id = Object.keys(session.visit.nodes).find(k => k !== session.visit.rootId)!;
+  await session.run('light', id); await session.run('more', id); await session.run('check', id); await session.run('reply', id, 'Because the moon pulls.');
+  expect(requests.length).toBe(5); expect(requests.every(r => r.web === undefined)).toBe(true);
 });

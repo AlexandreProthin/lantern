@@ -5,10 +5,10 @@ pub struct Calls { pub active: Mutex<HashMap<String, Cancel>>, pub executable: M
 impl Default for Calls { fn default() -> Self { Self { active: Mutex::new(HashMap::new()), executable: Mutex::new(detect()) } } }
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Chunk { request_id: String, text: String }
+pub struct Chunk { request_id: String, #[serde(skip_serializing_if = "Option::is_none")] text: Option<String>, #[serde(skip_serializing_if = "Option::is_none")] tool: Option<ToolUse> }
 #[tauri::command]
 pub async fn generate(request: Request, channel: Channel<Chunk>, calls: State<'_, Calls>) -> Result<Completion, ProviderError> {
-    let error = |kind, details: &str| ProviderError { kind, details: details.into(), model: String::new(), usage: Usage::default(), duration_ms: 0 };
+    let error = |kind, details: &str| ProviderError { kind, details: details.into(), model: String::new(), usage: Usage::default(), duration_ms: 0, tool_calls: None };
     let executable = calls.executable.lock().map_err(|_| error(ErrorKind::ProcessCrashed, "Detection registry poisoned"))?.clone().ok_or_else(|| error(ErrorKind::NotInstalled, "Claude CLI was not found"))?;
     let cancel = Arc::new(AtomicBool::new(false));
     {
@@ -21,7 +21,10 @@ pub async fn generate(request: Request, channel: Channel<Chunk>, calls: State<'_
     }
     let id = request.request_id.clone();
     let result = tauri::async_runtime::spawn_blocking(move || {
-        ClaudeCliProvider::new(executable).stream(&request, cancel, &mut |text| { let _ = channel.send(Chunk { request_id: request.request_id.clone(), text: text.into() }); })
+        ClaudeCliProvider::new(executable).stream(&request, cancel, &mut |event| { let request_id = request.request_id.clone(); let _ = channel.send(match event {
+            Streamed::Text(text) => Chunk { request_id, text: Some(text.into()), tool: None },
+            Streamed::Tool(tool) => Chunk { request_id, text: None, tool: Some(tool.clone()) },
+        }); })
     }).await;
     if let Ok(mut active) = calls.active.lock() { active.remove(&id); }
     result.map_err(|_| error(ErrorKind::ProcessCrashed, "Provider worker failed"))?
