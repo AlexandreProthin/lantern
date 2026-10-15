@@ -3,7 +3,7 @@
 ## 2026-10-15
 
 * **v0.2.0 B1 complete**: every design in the [v0.2.0 plan](/plans/v0-2-0.md) B1 has a `RECIPE.md` accepted by the user; next is B2.
-* **Compare accepted**: `agent_design/choose-compare`, six rounds, winner r006-03 *Rows stay open, clean lines* (a ledger with inline sources and evidence cards). Recorded in [choose-room](/specs/choose-room.md) CR-50/CR-51; one click rule left open there.
+* **Compare accepted**: `agent_design/choose-compare`, six rounds, winner r006-03 *Rows stay open, clean lines* (a ledger with inline sources and evidence cards). Recorded in [choose-room](/specs/choose-room.md) CR-50/CR-51, with the user's last click rule: with a single card open, a click on another criterion folds the card and opens only that row (the prototype still leaves it open).
 * **Node glyphs accepted**: `agent_design/choose-nodes`, winner r003-02 *Fill and turn* on r001-01 *Kind inside, state around* (pictogram names the kind, ring and rim badge the state). Recorded under CR-20/CR-21; dismissed opacity follows GV (35 %), the user's call. The empty `choose-glyphs` stub was deleted.
 * **Welcome accepted**: `agent_design/choose-welcome`, winner r003-01 *Learn's embers, teal* (Learn's Welcome, need starters, locale line, Gallery cards for recents). Recorded under CR-12/CR-13.
 * **Gallery accepted**: `agent_design/choose-gallery`, winner r004-02 *Unfold from the band*. Recorded under CR-12/CR-24 (status history).

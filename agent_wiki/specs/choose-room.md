@@ -203,7 +203,8 @@ DM-4).
   read, a ≠ note when sources disagree, ? when none was found, a price as "an indication, not a promise · seen <date>",
   and a user's value tagged *yours* with the room's value beside it, struck. **Evidence cards**: a click on a criterion
   unfolds its row's band (one card per product), a click on the column header unfolds or folds every row, a click on a
-  cell unfolds only that cell's card (inside an unfolded row, only that card stays open). Cells are edited only in a
+  cell unfolds only that cell's card (inside an unfolded row, only that card stays open); with a single card open, a
+  click on another criterion folds the card and opens only that row (the user, 2026-10-15). Cells are edited only in a
   card (*Save as mine*, *Revert to the room's*, *Check this*; a band adds *Check this row*). Product headers carry
   *Choose* / *Remove*, or *Chosen* with *Un-choose* (CR-22, CR-24). Research shows its current step and *Cancel* in the
   toolbar while the cells being filled are striped; web off shows a banner and hides *Check this* (CR-44); a single
@@ -254,7 +255,6 @@ DM-4).
 
 # Open
 
-- Compare: with a single card open, a click on another criterion opens that row and leaves the card open; whether the row click should fold the card was asked in round 3 and not answered (choose-compare recipe).
 - Which Choose fields go in `data` under `lantern/2` ([decision](/decisions/format-lantern-2.md)), with the v0.2.0 plan.
 
 Related: [rooms-spaces](/specs/rooms-spaces.md), [domain-model](/specs/domain-model.md),

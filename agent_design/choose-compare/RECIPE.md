@@ -43,8 +43,9 @@ and, behind *Show irrelevant (n)*, **Irrelevant** (CR-50).
   cells' source is *model knowledge*; *Check this* is hidden.
 - **One product**: a dashed cell invites shortlisting more and names the board's candidates.
 
-Open from round 3: with a single card open, clicking another criterion opens that row and leaves the card open. The
-user was asked whether the row click should fold the card; not answered, so it stays as built.
+Decided 2026-10-15 by the user, after the final: with a single card open, a click on another criterion **folds the
+card and opens only that row** ("clicking another criterion should fold the card and open only that row"). The final
+prototype still leaves the card open; the implementation follows this rule.
 
 ## Decisions and ancestry
 
