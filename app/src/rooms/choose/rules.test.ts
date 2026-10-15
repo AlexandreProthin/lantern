@@ -55,6 +55,10 @@ test('CR-22/CR-24/CP-2: one pick, status and append-only history, un-choosing in
   expect(v.data?.pick).toMatchObject({ productId: b, title: 'Prusa MK4S' });
   v.nodes[b].data = { facts: [{ label: 'Price', value: '799 €', sources: [] }] }; setState(v, b, 'candidate'); chooseProduct(v, b);
   v.nodes[b].title = 'Prusa MK4S kit'; normalize(v); expect(v.data?.pick).toMatchObject({ title: 'Prusa MK4S kit', price: '799 €' });
+  v.nodes[b].data = { facts: [{ label: 'Price', value: '799 €', sources: [{ kind: 'sponsored', name: 'Deals', read: '2026-10-14' }, { kind: 'shop', name: 'Prusa store', url: 'https://prusa3d.com', read: '2026-10-15' }] }] };
+  normalize(v); expect(v.data?.pick).toMatchObject({ source: { kind: 'shop', name: 'Prusa store', read: '2026-10-15' } });
+  expect((v.data?.history as { title?: string }[]).map(h => h.title)).toEqual(['Bambu A1', 'Bambu A1', 'Prusa MK4S', 'Prusa MK4S', 'Prusa MK4S', 'Prusa MK4S']);
+  expect(() => validateChoose(v)).not.toThrow();
   expect(() => validateChoose(v)).not.toThrow();
 });
 

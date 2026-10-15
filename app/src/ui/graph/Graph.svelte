@@ -700,7 +700,7 @@
         style="left: {n.x}px; top: {n.y}px;--slot:{n.slot ?? 0};--back-x:{n.backX}px;--back-y:{n.backY}px"
         aria-pressed={focused}
         aria-label="{title(n.title)} · {n.kind} · {n.state}{room.labelExtra?.(n) ?? ''}{busy ? ' · '+strings.preparing : ''}"
-        title="{title(n.title)} · {n.state}"
+        title="{title(n.title)} · {n.state}{room.tooltipExtra?.(n) ?? ''}"
         onclick={() => session.setFocus(n.id)}
         oncontextmenu={(e) => { if (!n.pending) openMenu(e, n.id); }}
         aria-haspopup="menu"

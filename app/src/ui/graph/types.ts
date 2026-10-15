@@ -21,6 +21,8 @@ export interface GraphRoomView {
   dataAttrs?: (node: SceneNode) => Record<string, string | undefined>;
   /** Appended to the node's accessible name after `title · kind · state`. */
   labelExtra?: (node: GraphNode) => string;
+  /** Appended to the node's tooltip after `title · state` (Choose: a rejected product's reason). Default none. */
+  tooltipExtra?: (node: GraphNode) => string;
   /** A node that takes no pulse or travelling light (Learn: dismissed). */
   quiet?: (node: GraphNode) => boolean;
   /** RS-34: a node that becomes this warms the backdrop. Default `state === 'lit'`. */

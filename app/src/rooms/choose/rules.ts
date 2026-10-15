@@ -27,9 +27,11 @@ export interface UserValue { value: string; at: string; by: string }
 /** CP-5: the status the design shows is derived (cellStatus), never stored. */
 export interface Cell { value: string | null; note?: string; disagree?: boolean; sources: Source[]; user?: UserValue; generationId: string; at: string }
 export interface Locale { country: string; currency: string }
-export interface HistoryEntry { status: Status; at: string; productId?: string; unchosen?: true }
+/** CP-2: `title` is the product's title at the time, so the Gallery's timeline can name it. */
+export interface HistoryEntry { status: Status; at: string; productId?: string; title?: string; unchosen?: true }
 /** CP-2: the last chosen product, kept after un-choosing so the Gallery can show it struck. */
-export interface Pick { productId: string; title: string; price?: string; at: string }
+/** CR-41: `source` is where the price was seen (the first source of the Price fact that is not sponsored). */
+export interface Pick { productId: string; title: string; price?: string; source?: { kind: SourceKind; name: string; read: string }; at: string }
 export interface ChooseData { tone: Tone; needsNote?: string; locale: Locale; status: Status; history: HistoryEntry[]; pick?: Pick }
 
 /** Valid visits always carry these fields (validateChoose); the cast is the only place that reads visit `data`. */
@@ -75,9 +77,10 @@ export function validCell(c: unknown): c is Cell {
 }
 const validFact = (f: unknown) => isObject(f) && length(f.label, 60) && !!(f.label as string).trim() && length(f.value, CELL_VALUE_LIMIT) && Array.isArray(f.sources) && f.sources.every(validSource);
 const statuses: Status[] = ['exploring', 'decided', 'bought'];
-const validPick = (p: unknown) => isObject(p) && typeof p.productId === 'string' && length(p.title, 120) && (p.price === undefined || length(p.price, CELL_VALUE_LIMIT)) && isTime(p.at);
+const validPick = (p: unknown) => isObject(p) && typeof p.productId === 'string' && length(p.title, 120) && (p.price === undefined || length(p.price, CELL_VALUE_LIMIT)) && isTime(p.at)
+  && (p.source === undefined || (isObject(p.source) && sourceKinds.includes(p.source.kind as SourceKind) && length(p.source.name, SOURCE_NAME_LIMIT) && typeof p.source.read === 'string'));
 const validHistory = (h: unknown) => isObject(h) && statuses.includes(h.status as Status) && isTime(h.at)
-  && (h.productId === undefined || typeof h.productId === 'string') && (h.unchosen === undefined || (h.unchosen === true && h.status === 'exploring'));
+  && (h.productId === undefined || typeof h.productId === 'string') && (h.title === undefined || length(h.title, 120)) && (h.unchosen === undefined || (h.unchosen === true && h.status === 'exploring'));
 
 /** DM-66, CP-7: the room's half of validation, on load and before every save. */
 export function validateChoose(v: RoomVisit): void {
@@ -112,8 +115,8 @@ export function validateChoose(v: RoomVisit): void {
 /** Before every save: drop orphan cells (CP-5) and refresh the pick from the chosen product (CP-2). */
 export function normalize(v: RoomVisit): void { pruneCells(v); const chosen = chosenOf(v); if (chosen) writePick(v, chosen, chooseData(v).pick?.productId === chosen.id ? chooseData(v).pick!.at : now()); }
 function writePick(v: RoomVisit, product: GraphNode, at: string): void {
-  const price = facts(product).find(f => f.label.toLowerCase() === 'price')?.value;
-  v.data = { ...v.data, pick: { productId: product.id, title: product.title, ...(price ? { price } : {}), at } };
+  const fact = facts(product).find(f => f.label.toLowerCase() === 'price'), seen = fact?.sources.find(s => s.kind !== 'sponsored');
+  v.data = { ...v.data, pick: { productId: product.id, title: product.title, ...(fact ? { price: fact.value } : {}), ...(seen ? { source: { kind: seen.kind, name: seen.name, read: seen.read } } : {}), at } };
 }
 /** CP-5: a cell whose criterion is gone is dropped on save. */
 export function pruneCells(v: RoomVisit): void {
@@ -159,16 +162,16 @@ function pushStatus(v: RoomVisit, entry: HistoryEntry): void { const d = chooseD
 export function chooseProduct(v: RoomVisit, id: string): void {
   const n = nodeOf(v, id); if (n.kind !== 'product' || !['candidate', 'shortlisted'].includes(n.state)) throw new Error('Product cannot be chosen');
   const current = chosenOf(v); if (current) unchooseProduct(v, current.id);
-  n.state = 'chosen'; const at = now(); pushStatus(v, { status: 'decided', at, productId: id }); writePick(v, n, at);
+  n.state = 'chosen'; const at = now(); pushStatus(v, { status: 'decided', at, productId: id, title: n.title }); writePick(v, n, at);
 }
 export function unchooseProduct(v: RoomVisit, id: string): void {
   const n = nodeOf(v, id); if (n.state !== 'chosen') throw new Error('Product is not chosen');
-  n.state = 'shortlisted'; pushStatus(v, { status: 'exploring', at: now(), productId: id, unchosen: true });
+  n.state = 'shortlisted'; pushStatus(v, { status: 'exploring', at: now(), productId: id, title: n.title, unchosen: true });
 }
 /** CR-24: *Mark as bought* on the chosen product. */
 export function markBought(v: RoomVisit): void {
   const chosen = chosenOf(v); if (!chosen || statusOf(v) !== 'decided') throw new Error('Nothing to mark as bought');
-  pushStatus(v, { status: 'bought', at: now(), productId: chosen.id });
+  pushStatus(v, { status: 'bought', at: now(), productId: chosen.id, title: chosen.title });
 }
 /** CP-3: at most one criterion holds prices. */
 export function setPriceCriterion(v: RoomVisit, id: string): void {

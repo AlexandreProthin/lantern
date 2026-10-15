@@ -8,7 +8,7 @@
   import { childrenOf, pathTo, deleteSubtree, editLabel, revertText, subtreeIds } from '../core/graph';
   import type { GraphNode, Turn } from '../core/model';
   import type { PanelRequest, PanelRoomView, PanelSession, PanelSnippets } from './panel-types';
-  let { session, room, placeholder, notice: noticeBody, footer, revision, showTokens = true, request = null, preview }: PanelSnippets & { session: PanelSession; room: PanelRoomView; revision: number; showTokens?: boolean; request?: PanelRequest | null; preview?: (id: string | null) => void } = $props();
+  let { session, room, placeholder, notice: noticeBody, footer, body, after, revision, showTokens = true, request = null, preview }: PanelSnippets & { session: PanelSession; room: PanelRoomView; revision: number; showTokens?: boolean; request?: PanelRequest | null; preview?: (id: string | null) => void } = $props();
   const visit = $derived.by(() => { revision; return session.visit; });
   const node = $derived(visit.nodes[visit.focusId]);
   const path = $derived(pathTo(visit, node.id));
@@ -135,6 +135,7 @@
       {#if node.edited}<small>{strings.editedBy(node.edited.by)}</small>{/if}
       {#if node.previous !== undefined}<button class="quiet" onclick={() => compare = node}>{strings.previousVersion}</button>{/if}
     {/if}
+    {#if body}{@render body(node, { running, busy, perform })}{/if}
     {#if kids.some(n => !room.setAside(n))}
       <section><h2>{room.nextHeading(node, visit)}</h2>
         {#each kids.filter(n => !room.setAside(n)) as child (child.id)}<button class="option" onclick={() => session.setFocus(child.id)}><strong>{child.title}</strong><span>{child.hook}</span><small>{room.optionTag(child)}</small></button>{/each}
@@ -164,6 +165,7 @@
         {#if busy && room.tasks.dialogue.includes(running!.task)}<div class="turn model"><Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>{/if}
       </section>
     {/if}
+    {#if after}{@render after(node, { running, busy, perform })}{/if}
   </div>
   {#if busy&&!nearBottom}<button class="jump-latest" onclick={()=>{scroller.scrollTop=scroller.scrollHeight;nearBottom=true;}}>{strings.jumpLatest}</button>{/if}
   {#if lit}<footer><textarea bind:this={composer} aria-label={strings.composer} value={drafts[node.id] ?? ''} oninput={e => drafts[node.id] = e.currentTarget.value} placeholder={strings.composer} rows="2" disabled={busy} onkeydown={e => { if(e.ctrlKey && e.key === 'Enter') { e.preventDefault(); send(); } }}></textarea>

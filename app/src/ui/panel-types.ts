@@ -50,4 +50,8 @@ export interface PanelSnippets {
   notice: Snippet<[PanelNotice, { running: PanelRunning | null }]>;
   /** Footer buttons after Send / Cancel (Learn: Check, Understood). */
   footer: Snippet<[GraphNode, { running: PanelRunning | null; busy: boolean; perform: (fn: () => void) => void }]>;
+  /** Optional (Choose): the room's own section after the explanation and before the children (answer form, facts, ranking). */
+  body?: Snippet<[GraphNode, { running: PanelRunning | null; busy: boolean; perform: (fn: () => void) => void }]>;
+  /** Optional (Choose): after the dialogue (an offered need, the recommendation's button). */
+  after?: Snippet<[GraphNode, { running: PanelRunning | null; busy: boolean; perform: (fn: () => void) => void }]>;
 }

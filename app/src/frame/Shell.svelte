@@ -195,7 +195,7 @@
       return cached!.value;
     },
     isRunning:id=>!!owned.get(id)?.session.running,
-    settings(){settingsSection='provider';settingsOpen=true;},refresh:refreshCatalogue
+    settings(section='provider'){settingsSection=section;settingsOpen=true;},refresh:refreshCatalogue
   };
   async function retrySaves() {
     try { for(const entry of owned.values()) await entry.persistence.flush(); await writer.flush(); saveError=''; } catch(e) {saveError=String(e);}

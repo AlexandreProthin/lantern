@@ -10,7 +10,8 @@ export interface LibrarySpaces {
   open(id: string): Promise<void>; rename(id: string, title: string): Promise<void>;
   remove(id: string): Promise<void>; reveal(id: string): Promise<void>; filePath(id: string): Promise<string>;
   thumbnail(summary: SubjectSummary): Promise<ThumbnailGraph>;
-  isRunning(id: string): boolean; settings(): void; refresh(): Promise<void>;
+  isRunning(id: string): boolean; /** Opens Settings; `section` as SettingsPanel's nav ids (`provider` by default, `room:<id>` for a room's group). */
+  settings(section?: string): void; refresh(): Promise<void>;
 }
 /** Same breadth-first order as native thumbnail projection, bounded to WG-41. */
 export function thumbnailGraph(rootId: string, nodes: ThumbnailGraph['nodes']): ThumbnailGraph {

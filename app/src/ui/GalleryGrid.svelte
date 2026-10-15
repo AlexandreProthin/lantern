@@ -7,11 +7,11 @@
   import { cardDetails } from '../frame/catalogue';
   import { tokens } from '../frame/library-format';
   import { strings } from './strings';
-  import type { GallerySnippets } from './gallery-types';
-  let { visible, settings, library, revision, navigate, visual, figures, details: detailRows }: Pick<SpaceProps, 'visible' | 'settings' | 'library' | 'revision' | 'navigate'> & GallerySnippets = $props();
+  import type { GallerySnippets, GalleryRoomView, CardDetail } from './gallery-types';
+  let { visible, settings, library, revision, navigate, visual, figures, details: detailRows, toolbar, noMatch, empty, lifted, room }: Pick<SpaceProps, 'visible' | 'settings' | 'library' | 'revision' | 'navigate'> & GallerySnippets & { room?: GalleryRoomView } = $props();
   const catalogue=untrack(()=>library.catalogue);
   const view=$derived.by(()=>{revision;return {count:catalogue.summaries.length,sort:catalogue.sort,ascending:catalogue.ascending,state:catalogue.state};});
-  const cards=$derived.by(()=>{revision;return catalogue.visible;});
+  const cards=$derived.by(()=>{revision;const all=catalogue.visible;return room?.arrange?room.arrange(all):all;});
   const selected=$derived.by(()=>{revision;return catalogue.selectedId;});
   const filter=$derived.by(()=>{revision;return catalogue.filter;});
   const available=$derived.by(()=>{revision;return library.available;});
@@ -23,6 +23,15 @@
   async function confirmDelete(s:SubjectSummary){deleting=s;error='';await tick();dialog.showModal();dialog.querySelector<HTMLButtonElement>('button')?.focus();}
   async function remove(){if(deleting&&await action(deleting.id,()=>library.remove(deleting!.id))){dialog.close();deleting=null;}}
   function select(id:string){catalogue.select(id);if(renameId!==id)renameId=null;}
+  // The catalogue moves through its own order; a room that arranges the cards moves through that one.
+  function arranged(k:string,columns:number){
+    if(k==='Escape'){catalogue.select(null);return;}
+    if(!cards.length)return;let i=cards.findIndex(s=>s.id===selected);
+    if(k==='Home'||i<0)i=0;else if(k==='End')i=cards.length-1;
+    else if(k==='ArrowLeft'&&i%columns>0)i--;else if(k==='ArrowRight'&&i%columns<columns-1)i=Math.min(i+1,cards.length-1);
+    else if(k==='ArrowUp'&&i>=columns)i-=columns;else if(k==='ArrowDown'&&i+columns<cards.length)i+=columns;
+    catalogue.select(cards[i].id);
+  }
   async function key(e:KeyboardEvent){
     if(e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement)return;
     const current=cards.find(s=>s.id===selected);
@@ -31,36 +40,30 @@
     else if(e.key==='Delete'&&current){e.preventDefault();await confirmDelete(current);}
     else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Escape'].includes(e.key)){
       e.preventDefault();e.stopPropagation();const columns=getComputedStyle(grid).gridTemplateColumns.split(' ').length;
-      catalogue.move(e.key,columns);await tick();grid.querySelector<HTMLElement>(`[data-card-id="${catalogue.selectedId}"]`)?.focus();
+      if(room?.arrange)arranged(e.key,columns);else catalogue.move(e.key,columns);await tick();grid.querySelector<HTMLElement>(`[data-card-id="${catalogue.selectedId}"]`)?.focus();
     }
   }
 </script>
-<main class="gallery" class:hidden={!visible}>
+<main class={`gallery ${room?.className??''}`} class:hidden={!visible}>
   {#if visible}
   {#if !available}<p role="alert">{strings.libraryUnavailable}</p>
-  {:else if !view.count}<div class="empty"><h1>{strings.noSubjects}</h1><button onclick={()=>navigate('welcome')}>{strings.startOne}</button></div>
+  {:else if !view.count}{#if empty}{@render empty()}{:else}<div class="empty"><h1>{strings.noSubjects}</h1><button onclick={()=>navigate('welcome')}>{strings.startOne}</button></div>{/if}
   {:else}
-    <div class="toolbar"><h1>{strings.gallery}</h1><span>{strings.subjectCount(view.count)}</span>
+    {#if toolbar}{@render toolbar({cards,count:view.count})}{:else}<div class="toolbar"><h1>{strings.gallery}</h1><span>{strings.subjectCount(view.count)}</span>
       <label>{strings.sort}<select aria-label={strings.sort} value={view.sort} onchange={e=>catalogue.setSort(e.currentTarget.value as CatalogueSort)}>
         <option value="lastOpened">{strings.lastOpened}</option><option value="created">{strings.created}</option><option value="progress">{strings.progress}</option>
       </select></label><button aria-label={view.ascending?strings.ascending:strings.descending} onclick={()=>catalogue.setSort(catalogue.sort,!catalogue.ascending)}>{view.ascending?'↑':'↓'}</button>
       <input aria-label={strings.filter} placeholder={strings.filter} value={filter} oninput={e=>catalogue.setFilter(e.currentTarget.value)} onkeydown={e=>{if(e.key==='Escape'){e.stopPropagation();catalogue.setFilter('');}}}/>
-    </div>
-    {#if !cards.length}<p>{strings.noMatches(filter)} <button onclick={()=>catalogue.setFilter('')}>{strings.clearFilter}</button></p>{/if}
+    </div>{/if}
+    {#if !cards.length}{#if noMatch}{@render noMatch(filter)}{:else}<p>{strings.noMatches(filter)} <button onclick={()=>catalogue.setFilter('')}>{strings.clearFilter}</button></p>{/if}{/if}
     <div class="grid" bind:this={grid} role="listbox" aria-label={strings.gallery} tabindex="-1" onkeydown={e=>{if(e.target===grid)void key(e);}} onclick={e=>{if(e.target===grid)catalogue.select(null);}}>
       {#each cards as summary,i (summary.id)}{@const detail=cardDetails(summary,view.state.lastOpenedAt[summary.id],settings.appearance.showTokenStats)}
         <div class="card" data-card-id={summary.id} class:selected={selected===summary.id} role="option" aria-selected={selected===summary.id} aria-label={summary.title}
           onkeydown={key} tabindex={selected===summary.id||(!selected&&i===0)?0:-1} onclick={()=>select(summary.id)} ondblclick={e=>{if(!(e.target instanceof HTMLInputElement)&&!(e.target instanceof HTMLButtonElement))void action(summary.id,()=>library.open(summary.id));}}>
-          {@render visual(summary)}
-          {#if renameId===summary.id}<input class="rename" aria-label={strings.rename} bind:value={renameTitle} maxlength="120" onkeydown={e=>{e.stopPropagation();if(e.key==='Enter')void saveRename(summary.id);if(e.key==='Escape')renameId=null;}}/>
-          {:else}<h2 title={selected===summary.id?undefined:summary.title}>{summary.title}</h2>{/if}
-          {@render figures(summary, detail)}
-          {#if selected===summary.id}<div class="actions">
-            <button disabled={working} onclick={()=>action(summary.id,()=>library.open(summary.id))}>{strings.openSubject}</button>
-            <button disabled={working||summary.readOnly||summary.unreadable} onclick={()=>startRename(summary)}>{strings.rename}</button>
-            <button disabled={working} onclick={()=>confirmDelete(summary)}>{strings.delete}</button>
-            <button disabled={working} onclick={()=>action(summary.id,()=>library.reveal(summary.id))}>{strings.revealSubject}</button>
-          </div>{@render detailRows(summary, detail)}{/if}
+          {#if lifted&&selected===summary.id}
+            <div class="rest" aria-hidden="true" inert>{@render visual(summary)}<h2>{summary.title}</h2>{@render figures(summary, detail)}</div>
+            <div class="lift">{@render body(summary,detail,true)}</div>
+          {:else}{@render body(summary,detail,false)}{/if}
           {#if summary.error}<p class="error">{summary.error}</p>{/if}
           {#if error&&errorId===summary.id}<p role="alert" class="error">{error}</p>{/if}
         </div>
@@ -69,8 +72,20 @@
   {/if}
   {/if}
 </main>
+{#snippet body(summary:SubjectSummary,detail:CardDetail,lift:boolean)}
+  {@render visual(summary)}
+  {#if renameId===summary.id}<input class="rename" aria-label={strings.rename} bind:value={renameTitle} maxlength="120" onkeydown={e=>{e.stopPropagation();if(e.key==='Enter')void saveRename(summary.id);if(e.key==='Escape')renameId=null;}}/>
+  {:else}<h2 title={selected===summary.id?undefined:summary.title}>{summary.title}</h2>{/if}
+  {#if lift&&lifted}{@render lifted(summary, detail)}{:else}{@render figures(summary, detail)}{/if}
+  {#if selected===summary.id}<div class="actions">
+    <button disabled={working} onclick={()=>action(summary.id,()=>library.open(summary.id))}>{room?.labels?.open??strings.openSubject}</button>
+    <button disabled={working||summary.readOnly||summary.unreadable} onclick={()=>startRename(summary)}>{strings.rename}</button>
+    <button disabled={working} onclick={()=>confirmDelete(summary)}>{room?.labels?.delete??strings.delete}</button>
+    <button disabled={working} onclick={()=>action(summary.id,()=>library.reveal(summary.id))}>{room?.labels?.reveal??strings.revealSubject}</button>
+  </div>{@render detailRows(summary, detail)}{/if}
+{/snippet}
 <dialog bind:this={dialog} aria-label={deleting?strings.deleteSubject(deleting.title):strings.delete} oncancel={()=>deleting=null}>
-  {#if deleting}<h2>{strings.deleteSubject(deleting.title)}</h2><p>{strings.deleteSubjectHistory(deleting.total??0,settings.appearance.showTokenStats?tokens(deleting.tokens):null)}</p>
+  {#if deleting}<h2>{strings.deleteSubject(deleting.title)}</h2><p>{room?.deleteNote?room.deleteNote(deleting,settings.appearance.showTokenStats):strings.deleteSubjectHistory(deleting.total??0,settings.appearance.showTokenStats?tokens(deleting.tokens):null)}</p>
     {#if library.isRunning(deleting.id)}<p>{strings.generationCancelled}</p>{/if}
     {#if error}<p role="alert">{error}</p>{/if}
     <div class="actions"><button disabled={working} onclick={()=>{dialog.close();deleting=null;}}>{strings.cancel}</button><button disabled={working} onclick={remove}>{strings.delete}</button></div>

@@ -13,9 +13,12 @@
   import ModelPicker from './ModelPicker.svelte';
   import TonePicker from './TonePicker.svelte';
   import { WelcomeEmbers } from './embers';
-  import type { WelcomeRoomView, WelcomeSnippets } from './welcome-types';
-  let { visible, settings, library, revision, navigate, room, visual, figure }: Pick<SpaceProps, 'visible' | 'settings' | 'library' | 'revision' | 'navigate'> & WelcomeSnippets & { room: WelcomeRoomView } = $props();
-  const labels = $derived({ lede: strings.firstWelcome, question: strings.subjectQuestion, example: strings.subjectExample, directionPlaceholder: strings.directionPlaceholder, carryIn: strings.carryIn, recent: strings.recentSubjects, continue: strings.continueSubject, ...room.labels });
+  import type { WelcomeRoomView, WelcomeSnippets, WelcomeStarter } from './welcome-types';
+  let { visible, settings, library, revision, navigate, room, visual, figure, card, extra }: Pick<SpaceProps, 'visible' | 'settings' | 'library' | 'revision' | 'navigate'> & WelcomeSnippets & { room: WelcomeRoomView } = $props();
+  const labels = $derived({ lede: strings.firstWelcome, question: strings.subjectQuestion, example: strings.subjectExample, directionPlaceholder: strings.directionPlaceholder, carryIn: strings.carryIn, recent: strings.recentSubjects, continue: strings.continueSubject,
+    addsDirection: strings.addsDirection, directionLabel: strings.directionLabel, directionAlone: strings.directionAlone, directionOver: strings.directionOver,
+    startersLabel: '', cliNotReady: strings.cliNotReady, libraryUnavailable: strings.libraryUnavailable, ...room.labels });
+  const starters=$derived<WelcomeStarter[]>(room.starters?.(settings)??[]);
   let arriving=$state(true);
   let title=$state(''),tone=$state<Tone>('curious'),model=$state('opus'),busy=$state(false),error=$state('');
   let suggestionRevision=$state(0),field:HTMLInputElement,button:HTMLButtonElement,suggestButton=$state<HTMLButtonElement>(),canvas:HTMLCanvasElement;
@@ -34,7 +37,7 @@
   const validModel=$derived(isValidModel(model));
   const reduced=$derived(osReduced||settings.appearance.reduceMotion==='on');
   const directionLength=$derived([...direction].length),over=$derived(Math.max(0,directionLength-DIRECTION_LIMIT));
-  const why=$derived(!title.trim()&&direction.trim()?strings.directionAlone:over?strings.directionOver(over,DIRECTION_LIMIT):'');
+  const why=$derived(!title.trim()&&direction.trim()?labels.directionAlone:over?labels.directionOver(over,DIRECTION_LIMIT):'');
   const canSubmit=$derived(!!title.trim()&&!over&&validModel&&ready&&available&&!busy);
   const shape=$derived<Shape>(open?'two':focused||title.trim()?'cap':'rest');
   $effect(()=>{const next=shape,show=focused;untrack(()=>capsule?.apply(next,show));});
@@ -59,7 +62,7 @@
     busy=true;error='';const snapshot={title:title.trim(),tone:cloneJson(tone),model,direction:direction.trim()};
     try{await motion?.handoff(field,button);await library.create(snapshot.title,snapshot.tone,snapshot.model,snapshot.direction);title='';direction='';open=false;}catch(e){error=String(e);}finally{busy=false;}
   }
-  const inField=(el:EventTarget|null)=>el===field||el===dirField||el===button;
+  const inField=(el:EventTarget|null)=>el===field||el===dirField||el===button||(el instanceof Element&&!!el.closest('.starters'));
   function focusIn(e:FocusEvent){if(inField(e.target))focused=true;}
   function focusOut(e:FocusEvent){
     if(!inField(e.target))return;
@@ -71,6 +74,12 @@
     direction='';
     const done=()=>{open=false;void tick().then(()=>{field.focus();field.setSelectionRange(field.value.length,field.value.length);});};
     if(capsule)capsule.fadeLower(done);else done();
+  }
+  // CR-13: a starter adds only its words at the cursor, after ', ' when text precedes it; the user writes the answer.
+  function addStarter(s:WelcomeStarter){
+    const text=direction,at=Math.min(dirField.selectionStart??text.length,text.length),sep=at&&!/[\s,]$/.test(text.slice(0,at))?', ':'';
+    direction=text.slice(0,at)+sep+s.insert+text.slice(at);const caret=at+sep.length+s.insert.length-(s.caretBack??0);
+    void tick().then(()=>{dirField.focus();dirField.setSelectionRange(caret,caret);capsule?.resized();});
   }
   function subjectKey(e:KeyboardEvent){
     if(e.key==='Escape'){title='';e.stopPropagation();}
@@ -99,14 +108,15 @@
         <div class="lower" bind:this={lower}>
           <div class="hair" bind:this={hair}></div>
           <!-- Limited by validation, not maxlength, so a pasted text over the limit stays visible and editable. -->
-          <textarea class="dir" bind:this={dirField} bind:value={direction} rows="1" placeholder={labels.directionPlaceholder} aria-label={strings.directionLabel} disabled={!available||busy}
+          <textarea class="dir" bind:this={dirField} bind:value={direction} rows="1" placeholder={labels.directionPlaceholder} aria-label={labels.directionLabel} disabled={!available||busy}
             onkeydown={directionKey} oninput={()=>void tick().then(()=>capsule?.resized())}></textarea>
+          {#if starters.length}<div class="starters" role="group" aria-label={labels.startersLabel||undefined}>{#if labels.startersLabel}<span class="shint">{labels.startersLabel}</span>{/if}{#each starters as s,i}<button type="button" class="starter" style={`--delay:${125+i*50}ms`} onclick={()=>addStarter(s)}>{s.label}</button>{/each}</div>{/if}
           <div class="tail"><div class="dmeta">{#if directionLength>=400}<span class:over={over>0}>{directionLength} / {DIRECTION_LIMIT}</span>{/if}</div><span class="slot"></span></div>
         </div>
       </div>
       <button class="primary" bind:this={button} disabled={!canSubmit}>{labels.carryIn}</button>
     </form>
-    <p class="example"><span class="hint" bind:this={hint}>{labels.example} <kbd>Shift+Enter</kbd> {strings.addsDirection}</span></p>
+    <p class="example"><span class="hint" bind:this={hint}>{labels.example} <kbd>Shift+Enter</kbd> {labels.addsDirection}</span></p>
     {#if why}<p class="why" role="status">{why}</p>{/if}
     <div class="row">
       <div class="pickers">
@@ -116,16 +126,17 @@
       {#if typeof tone==='object'}<textarea aria-label={strings.customTone} maxlength="300" bind:value={tone.custom}></textarea>{/if}
       {#if suggestions}<button class="suggest" bind:this={suggestButton} disabled={thinking||!ready||!available||!validModel||busy} onclick={suggest}>{thinking?strings.thinkingSubjects:strings.suggestSubjects}</button>{/if}
     </div>
+    {#if extra}{@render extra()}{/if}
     {#if options.length}<div class="chips">{#each options as option,i}<button class="chipbtn" style={`--delay:${i*50}ms`} onclick={()=>{title=option.title;field.focus();}}><b>{option.title}</b><span>{option.hook}</span></button>{/each}</div>{/if}
     {#if suggestError}<div class="inline-msg" role="alert">{strings.errorKinds[suggestError.kind]}<button onclick={suggest}>{strings.retry}</button></div>{/if}
     {#if error}<p class="inline-msg" role="alert">{error}</p>{/if}
-    {#if !ready}<div class="inline-msg">{strings.cliNotReady} <button onclick={library.settings}>{strings.settings}</button></div>{/if}
-    {#if !available}<p class="libmsg">{strings.libraryUnavailable}</p>
-    {:else if recent.length}<section class="shelf" aria-label={labels.recent}>
+    {#if !ready}<div class="inline-msg">{labels.cliNotReady} <button onclick={() => library.settings()}>{strings.settings}</button></div>{/if}
+    {#if !available}<p class="libmsg">{labels.libraryUnavailable}</p>
+    {:else if recent.length}<section class="shelf" class:wide={!!room.shelfWidth} style={room.shelfWidth?`--shelf:${room.shelfWidth}px`:undefined} aria-label={labels.recent}>
       <h2>{labels.recent}</h2><div class="cards">
-        {#each recent as summary (summary.id)}<button class="card" onmouseenter={hover} onclick={()=>library.open(summary.id)}>
-          {@render visual(summary)}<h3>{summary.title}</h3><div class="meta"><b>{@render figure(summary)}</b><span title={exactDate(library.catalogue.state.lastOpenedAt[summary.id])}>{relativeDate(library.catalogue.state.lastOpenedAt[summary.id])}</span></div><span class="cont">{labels.continue}</span>
-        </button>{/each}
+        {#each recent as summary (summary.id)}{#if card}{@render card(summary,{open:()=>void library.open(summary.id),light:(a,b)=>void motion?.travel(a,b)})}{:else}<button class="card" onmouseenter={hover} onclick={()=>library.open(summary.id)}>
+          {@render visual?.(summary)}<h3>{summary.title}</h3><div class="meta"><b>{@render figure?.(summary)}</b><span title={exactDate(library.catalogue.state.lastOpenedAt[summary.id])}>{relativeDate(library.catalogue.state.lastOpenedAt[summary.id])}</span></div><span class="cont">{labels.continue}</span>
+        </button>{/if}{/each}
       </div><button class="browse" onclick={()=>navigate('gallery')}>{strings.browseAll(total)}</button>
     </section>{/if}
   </div>
@@ -154,7 +165,8 @@
   .wrap:global(.capsule) .example{text-align:left;font-size:11px;padding-left:29px}.wrap:global(.capsule.two) .example{padding-left:25px}.why{margin:-6px 0 0;text-align:center;font-size:12px;color:var(--ink-mute)}.row{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6px}.pickers{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px}
   .model{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;font-size:11px;color:var(--ink-mute)}.model :global(select){border:0;background:transparent;color:var(--ink-mute);font-size:12px;padding:5px 6px}.model :global(option){background:var(--surface)}textarea{width:min(400px,100%)}.suggest,.browse{border:0;background:transparent;font-size:12px;color:var(--ink-mute);padding:2px}.suggest{text-decoration:underline;text-underline-offset:3px}.suggest:hover:not(:disabled),.browse:hover{color:var(--accent)}
   .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.chipbtn{text-align:left;display:flex;flex-direction:column;gap:3px;max-width:220px;padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface);animation:appear 200ms both;animation-delay:var(--delay)}.chipbtn b{font-size:14px;font-weight:600}.chipbtn span{font-size:12px;color:var(--ink-mute);line-height:1.4}.inline-msg{text-align:center;font-size:12px;color:var(--ink-mute)}.inline-msg button{margin-left:8px;font-size:12px}.libmsg{padding:24px;text-align:center;border:1px dashed var(--line);color:var(--ink-mute)}
-  .shelf{margin-top:15vh;display:flex;flex-direction:column;gap:18px}.shelf h2{margin:0;text-align:center;font-size:11px;font-weight:600;color:var(--ink-faint)}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}.card{display:flex;flex-direction:column;gap:10px;padding:0;border:0;background:transparent;text-align:left;opacity:.7}.card:hover,.card:focus-visible{opacity:1}.card:hover :global(.thumbnail){filter:drop-shadow(0 0 12px var(--glow-far))}.card h3{font-size:16px;font-weight:600;margin:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.meta{display:flex;justify-content:space-between;gap:8px;width:100%;font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums}.meta b{font-weight:400;color:var(--ink-mute)}.cont{font-size:12px;color:var(--ink-mute);text-decoration:underline;text-underline-offset:3px}.browse{align-self:center;padding:6px}
+  .shelf.wide{width:min(var(--shelf),calc(100vw - 32px));align-self:center}.shelf{margin-top:15vh;display:flex;flex-direction:column;gap:18px}.shelf h2{margin:0;text-align:center;font-size:11px;font-weight:600;color:var(--ink-faint)}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}.card{display:flex;flex-direction:column;gap:10px;padding:0;border:0;background:transparent;text-align:left;opacity:.7}.card:hover,.card:focus-visible{opacity:1}.card:hover :global(.thumbnail){filter:drop-shadow(0 0 12px var(--glow-far))}.card h3{font-size:16px;font-weight:600;margin:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.meta{display:flex;justify-content:space-between;gap:8px;width:100%;font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums}.meta b{font-weight:400;color:var(--ink-mute)}.cont{font-size:12px;color:var(--ink-mute);text-decoration:underline;text-underline-offset:3px}.browse{align-self:center;padding:6px}
+  .starters{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 16px 6px 0}.shint{font-size:11px;color:var(--ink-faint);margin-right:2px}.starter{border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink-mute);padding:3px 10px;font-size:12px;animation:appear 200ms both;animation-delay:var(--delay)}.starter:hover{border-color:var(--accent);color:var(--accent)}
   button,input{transition:color 180ms ease-out,opacity 180ms ease-out,box-shadow 180ms ease-out,background 180ms ease-out}.embers{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
   @keyframes underline{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
   @media(max-width:760px){.subj{font-size:26px}.cap:global(.on) .subj{font-size:20px}.cards{grid-template-columns:1fr}.wrap,.wrap.first{padding-top:10vh}}
