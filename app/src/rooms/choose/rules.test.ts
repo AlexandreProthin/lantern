@@ -2,7 +2,7 @@ import { expect, test } from 'vitest';
 import { cloneJson } from '../../core/model';
 import type { RoomVisit } from '../../core/model';
 import { addChooseChild, answerNeed, cellStatus, chooseProduct, chosenOf, markBought, newChooseSubject, pruneCells, rejectProduct,
-  restoreProduct, setNeedsNote, setPriceCriterion, setState, statusOf, unchooseProduct, validateChoose } from './rules';
+  normalize, restoreProduct, setNeedsNote, setPriceCriterion, setState, statusOf, unchooseProduct, validateChoose } from './rules';
 import type { Cell } from './rules';
 import { board, headerStats } from './stats';
 import { chooseSettingsDefaults, currencyOf, systemCountry, validateChooseSettings } from './settings';
@@ -52,6 +52,9 @@ test('CR-22/CR-24/CP-2: one pick, status and append-only history, un-choosing in
   expect((v.data?.history as { status: string; productId: string; unchosen?: true }[]).map(h => [h.status, h.productId, h.unchosen ?? false])).toEqual([
     ['decided', a, false], ['exploring', a, true], ['decided', b, false], ['bought', b, false], ['exploring', b, true]]);
   expect(() => markBought(v)).toThrow();
+  expect(v.data?.pick).toMatchObject({ productId: b, title: 'Prusa MK4S' });
+  v.nodes[b].data = { facts: [{ label: 'Price', value: '799 €', sources: [] }] }; setState(v, b, 'candidate'); chooseProduct(v, b);
+  v.nodes[b].title = 'Prusa MK4S kit'; normalize(v); expect(v.data?.pick).toMatchObject({ title: 'Prusa MK4S kit', price: '799 €' });
   expect(() => validateChoose(v)).not.toThrow();
 });
 

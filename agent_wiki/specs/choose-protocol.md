@@ -31,6 +31,7 @@ puts in `data` and which values it allows (DM-66).
 | `needsNote` | optional, the Welcome needs text (CR-13), at most 500 characters, shown at the top of the needs card as *In your words*, editable any time, never split or rewritten by the room *(round 7, q-r7-needs-note)* |
 | `locale` | required: `{country, currency}`, ISO 3166 alpha-2 and ISO 4217, from Settings → Choose room when the subject is created; changed in the subject menu for future calls only, like tone *(round 7, q-r7-locale)* |
 | `status` | required: `exploring`, `decided` or `bought` (CR-24) |
+| `pick` | optional, the last chosen product: `{productId, title, price?, at}`, `price` the value of its *Price* fact; written when a product is chosen and refreshed from that product before every save, kept after un-choosing so the Gallery can show it struck (CR-24) *(B4, agreed by the user 2026-10-15.)* |
 | `history` | required, append-only: `[{status, at, productId?, unchosen?}]`, one entry per status change, un-choosing included (`status: "exploring"`, `unchosen: true`, the product's id) |
 
 - **CP-3** **Node `data`**, by kind:

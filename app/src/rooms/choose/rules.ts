@@ -28,7 +28,9 @@ export interface UserValue { value: string; at: string; by: string }
 export interface Cell { value: string | null; note?: string; disagree?: boolean; sources: Source[]; user?: UserValue; generationId: string; at: string }
 export interface Locale { country: string; currency: string }
 export interface HistoryEntry { status: Status; at: string; productId?: string; unchosen?: true }
-export interface ChooseData { tone: Tone; needsNote?: string; locale: Locale; status: Status; history: HistoryEntry[] }
+/** CP-2: the last chosen product, kept after un-choosing so the Gallery can show it struck. */
+export interface Pick { productId: string; title: string; price?: string; at: string }
+export interface ChooseData { tone: Tone; needsNote?: string; locale: Locale; status: Status; history: HistoryEntry[]; pick?: Pick }
 
 /** Valid visits always carry these fields (validateChoose); the cast is the only place that reads visit `data`. */
 export const chooseData = (v: RoomVisit) => (v.data ?? {}) as unknown as ChooseData;
@@ -73,6 +75,7 @@ export function validCell(c: unknown): c is Cell {
 }
 const validFact = (f: unknown) => isObject(f) && length(f.label, 60) && !!(f.label as string).trim() && length(f.value, CELL_VALUE_LIMIT) && Array.isArray(f.sources) && f.sources.every(validSource);
 const statuses: Status[] = ['exploring', 'decided', 'bought'];
+const validPick = (p: unknown) => isObject(p) && typeof p.productId === 'string' && length(p.title, 120) && (p.price === undefined || length(p.price, CELL_VALUE_LIMIT)) && isTime(p.at);
 const validHistory = (h: unknown) => isObject(h) && statuses.includes(h.status as Status) && isTime(h.at)
   && (h.productId === undefined || typeof h.productId === 'string') && (h.unchosen === undefined || (h.unchosen === true && h.status === 'exploring'));
 
@@ -80,7 +83,7 @@ const validHistory = (h: unknown) => isObject(h) && statuses.includes(h.status a
 export function validateChoose(v: RoomVisit): void {
   const d = v.data ?? {}, fail = (what: string) => { throw new Error(`Invalid Choose ${what}`); };
   if (!validTone(d.tone) || !validLocale(d.locale) || !statuses.includes(d.status as Status) || !Array.isArray(d.history) || !d.history.every(validHistory)
-    || (d.needsNote !== undefined && (!length(d.needsNote, NOTE_LIMIT) || !(d.needsNote as string)))) fail('visit data');
+    || (d.needsNote !== undefined && (!length(d.needsNote, NOTE_LIMIT) || !(d.needsNote as string))) || (d.pick !== undefined && !validPick(d.pick))) fail('visit data');
   let chosen = 0, price = 0;
   for (const n of Object.values(v.nodes)) {
     const kind = n.kind as NodeKind, data = n.data ?? {};
@@ -102,9 +105,16 @@ export function validateChoose(v: RoomVisit): void {
   }
   // CR-22, CR-24: at most one pick, and the status says whether there is one.
   if (chosen > 1 || price > 1 || (chosen === 1) !== (d.status !== 'exploring')) fail('pick or status');
+  const pick = chosenOf(v); if (pick && (d.pick as Pick | undefined)?.productId !== pick.id) fail('pick');
   for (const g of v.log) if (!(tasks as readonly string[]).includes(g.task) || !validTone(g.data?.tone) || typeof g.data?.web !== 'boolean') fail('generation record');
 }
 
+/** Before every save: drop orphan cells (CP-5) and refresh the pick from the chosen product (CP-2). */
+export function normalize(v: RoomVisit): void { pruneCells(v); const chosen = chosenOf(v); if (chosen) writePick(v, chosen, chooseData(v).pick?.productId === chosen.id ? chooseData(v).pick!.at : now()); }
+function writePick(v: RoomVisit, product: GraphNode, at: string): void {
+  const price = facts(product).find(f => f.label.toLowerCase() === 'price')?.value;
+  v.data = { ...v.data, pick: { productId: product.id, title: product.title, ...(price ? { price } : {}), at } };
+}
 /** CP-5: a cell whose criterion is gone is dropped on save. */
 export function pruneCells(v: RoomVisit): void {
   for (const n of nodesOfKind(v, 'product')) {
@@ -149,7 +159,7 @@ function pushStatus(v: RoomVisit, entry: HistoryEntry): void { const d = chooseD
 export function chooseProduct(v: RoomVisit, id: string): void {
   const n = nodeOf(v, id); if (n.kind !== 'product' || !['candidate', 'shortlisted'].includes(n.state)) throw new Error('Product cannot be chosen');
   const current = chosenOf(v); if (current) unchooseProduct(v, current.id);
-  n.state = 'chosen'; pushStatus(v, { status: 'decided', at: now(), productId: id });
+  n.state = 'chosen'; const at = now(); pushStatus(v, { status: 'decided', at, productId: id }); writePick(v, n, at);
 }
 export function unchooseProduct(v: RoomVisit, id: string): void {
   const n = nodeOf(v, id); if (n.state !== 'chosen') throw new Error('Product is not chosen');

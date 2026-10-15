@@ -122,6 +122,8 @@ DM-4).
 | `product` | `candidate` → `shortlisted` → `chosen`, or `rejected` with a reason |
 | any | `dismissed`, from `open` only, restorable, never re-proposed (as LR-54) |
 
+  *(B4, agreed by the user 2026-10-15.)* A product is never dismissed: it is rejected with a reason or removed from the shortlist. *Remove* takes a shortlisted product back to `candidate`; a rejected product can be restored to `candidate`, losing its reason. A ranked criterion never returns to *to rank*, and an answered need never returns to open: its answer is edited (CR-23).
+
   *Designed 2026-10-15* (`agent_design/choose-nodes/RECIPE.md`, r003-02): the state reads **around** the pictogram.
   The ring gives one of Learn's looks, in Choose's tokens: `open` / `candidate` dotted; `lit` glowing; `answered`,
   `must`, `nice`, `shortlisted`, `chosen` settled (filled `--node-understood`, as Learn's understood); `irrelevant` a
@@ -135,7 +137,8 @@ DM-4).
   motion (GV-100). Dismissed opacity follows GV (at most 35 %), not the design's 45 % (the user, 2026-10-15).
 
 - **CR-22** At most one product is `chosen` per subject. Choosing one MUST NOT reject the others
-  automatically.
+  automatically. *(B4, agreed by the user 2026-10-15.)* Choosing another product first un-chooses the current one, which goes back to
+  `shortlisted`; the history records both changes.
 - **CR-23** A criterion's state can be changed at any time; a need's answer can be edited at any
   time (CR-31).
 - **CR-24** The **subject** has a status: `exploring` → `decided` → `bought`, shown in the Gallery.
@@ -229,6 +232,7 @@ DM-4).
   criterion is `must` and none is still `open`; at least two products are shortlisted, or one is chosen; and no
   Compare cell is empty for the shortlisted products × `must` criteria. The answer appears in the reading panel.
   Once a product is chosen, the status replaces the offer.
+  *(B4, agreed by the user 2026-10-15.)* A cell with *nothing found* (`null`) counts as filled, and dismissed needs and criteria do not count.
 
 # Look
 
@@ -261,6 +265,8 @@ DM-4).
   by rooms.
   *Round 7 (q-r7-locale):* a subject keeps the country and currency it was created with, changeable in its
   menu for future calls only, like tone.
+  *(B4, agreed by the user 2026-10-15.)* With no region in the system language the country is FR; a country missing from the app's currency table
+  gets EUR, which the user can change.
 
 # Open
 
