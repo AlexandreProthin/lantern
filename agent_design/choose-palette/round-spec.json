@@ -1,0 +1,26 @@
+{
+  "selection_revision": 1,
+  "proposals": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "color/choose-palette-col-r001-01.html",
+      "title": "Same night, teal lantern",
+      "direction": "Only the lantern changes: Learn's navy walls, surfaces, lines, ink and code stay exactly; accent, lit light, glows, focus, path and the warm surface-2 turn teal. The two rooms read as one house with a different lamp."
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "color/choose-palette-col-r001-02.html",
+      "title": "Deep lagoon",
+      "direction": "The whole room takes the hue: a blue-green night, teal-tinted surfaces and lines, cool white ink, a calmer sage-teal accent. Further from Learn, more its own place; same lightness steps as Learn so the calm holds."
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "color/choose-palette-col-r001-03.html",
+      "title": "Teal room, warm flame",
+      "direction": "Teal is the room's colour (accent, settled nodes, paths, focus) but the lantern light itself stays a warm cream flame: lit nodes, their near glow and the motes are warm, the far glow teal. Slate-navy walls between Learn's and the lagoon's."
+    }
+  ]
+}

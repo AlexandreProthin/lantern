@@ -1,0 +1,88 @@
+<!--
+  id:        r002-03
+  component: choose-board
+  phase:     form
+  parents:   r001-01
+  direction: Hierarchy by grey surfaces, no lines. From r001-01: the whole structure. The rail is a raised grey pane whose counters are rounded tiles; a missing counter carries a light top edge. The open sheet sits on a darker ground with rounded cards in a lighter grey, the missing items in a pale band across the top, Recommend as the one light filled button, and the chosen product as an inverted (light) card.
+  request:   revision 3
+  inputs:    accepted
+  read as:   the counter rail's structure is accepted and frozen (../assets/rail-structure.js, extracted unchanged from r001-01);
+             this round varies composition, density, scale and hierarchy only, in greyscale with one typeface (system UI).
+             The completeness rule of round 1 stays as proposed.
+  shared:    ../assets/board-kit.js (scenarios, completeness rule, Survey frame), ../assets/rail-structure.js, ../choose-board-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose board r002-03 — Tonal panes</title>
+</head>
+<body>
+<script src="../choose-board-data.js"></script>
+<script src="../assets/board-kit.js"></script>
+<script src="../assets/rail-structure.js"></script>
+<script>
+BOARD_KIT.mount({
+  id: 'r002-03', title: "Tonal panes", slot: 'rail', render: RAIL_RENDER,
+  css: `
+  .sheet .top .sp { flex: 1; } .rail .gap { flex: 1; }
+  .main[data-expanded='true'] .graph { display: none; }
+  .main[data-expanded='true'] .board { flex: 1 1 62%; flex-direction: column; }
+  .board { display: flex; flex-direction: column; min-height: 0; }
+  .rail { flex: 1; display: flex; flex-direction: column; cursor: pointer; overflow: auto; text-align: center; }
+  .rail .ctr { position: relative; } .rail .ctr b, .rail .ctr small { display: block; }
+  .rail .ctr .tip { display: none; position: absolute; right: calc(100% + 10px); top: 0; width: 230px; text-align: left; z-index: 5; }
+  .rail .ctr:hover .tip { display: block; }
+  .sheet { flex: 1; overflow: auto; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; }
+  .need { display: grid; align-items: baseline; } .need .x { border: 0; background: transparent; }
+  .add { display: flex; gap: 6px; } .add input { flex: 1; }
+  .crit { display: flex; align-items: center; justify-content: space-between; gap: 10px; } .crit .why { display: block; }
+  .prod .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  @media (max-width: 760px) { .board { flex: 0 0 auto !important; } .rail { flex-direction: row; overflow-x: auto; } .rail .ctr .tip { display: none !important; } .cols { grid-template-columns: 1fr; } }
+
+  :root { --fg: #f0f0f0; --bg: #0c0c0c; --mute: #a3a3a3; --faint: #6b6b6b; --hair: #3a3a3a; --fill: #1d1d1d; --pane: #181818; --tile: #242424; --band: #2e2e2e; }
+  .board { flex: 0 0 84px; background: var(--pane); }
+  .rail { padding: 10px 8px; gap: 8px; } .rail:hover .ctr { background: #2a2a2a; }
+  .rail .ttl { font-size: 9px; letter-spacing: .16em; color: var(--mute); }
+  .rail .st { border: 0; background: var(--tile); font-size: 10px; } .rail .st[data-s='decided'] { background: var(--band); color: var(--fg); } .rail .st[data-s='bought'] { background: var(--fg); color: var(--bg); }
+  .rail .ctr { background: var(--tile); border-radius: 10px; padding: 10px 4px 8px; }
+  .rail .ctr.miss { box-shadow: inset 0 2px 0 var(--fg); }
+  .rail .ctr b { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; } .rail .ctr small { font-size: 10px; color: var(--mute); margin-top: 2px; }
+  .rail .ctr .tip { background: var(--band); border-radius: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.55; border: 0; box-shadow: 0 8px 30px #000; }
+  .rail .miss-n { font-size: 11px; color: var(--mute); padding: 4px 0; }
+  .rail .rec { border: 0; border-radius: 10px; background: var(--tile); font-size: 11px; padding: 8px 0; } .rail .rec.on { background: var(--fg); color: var(--bg); font-weight: 600; }
+  .main[data-expanded='true'] .board { background: var(--bg); }
+  .sheet { padding: 18px 22px 80px; }
+  .sheet .top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .sheet .top h2 { margin: 0; font-size: 18px; font-weight: 600; }
+  .sheet .top .st { border: 0; background: var(--tile); }
+  .sheet button { border: 0; background: var(--tile); border-radius: 8px; } .sheet button:hover { background: var(--band); }
+  .sheet button.on { background: var(--fg); color: var(--bg); font-weight: 600; padding: 7px 16px; }
+  .missing { margin: 14px 0 16px; padding: 12px 16px; border-radius: 12px; background: var(--band); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .missing b { font-weight: 600; } .missing span { background: var(--tile); padding: 3px 10px; border-radius: 999px; font-size: 12px; }
+  .missing.none { background: var(--pane); color: var(--mute); }
+  .cols { gap: 14px; }
+  .card { background: var(--pane); border-radius: 14px; padding: 16px 18px; border: 0; }
+  .card h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: var(--fg); display: flex; justify-content: space-between; } .card h3 span { color: var(--mute); font-weight: 400; }
+  .need { grid-template-columns: 38% 1fr auto; gap: 10px; padding: 7px 10px; margin: 0 -10px; border-radius: 8px; } .need:hover { background: var(--tile); }
+  .need .q { color: var(--mute); } .need .edit { border: 0; } .need .x { color: var(--faint); padding: 0 4px; }
+  .need.open { background: var(--tile); } .need.open .q { color: var(--fg); }
+  .add { margin-top: 10px; } .add input { background: var(--tile); border: 0; border-radius: 8px; padding: 6px 10px; }
+  .grp { margin-bottom: 14px; } .grp h4 { margin: 0 0 6px; font-size: 11px; font-weight: 600; color: var(--mute); } .grp.irr { opacity: .55; }
+  .crit { padding: 7px 10px; margin: 0 -10px 4px; background: var(--tile); border-radius: 8px; } .crit .why { font-size: 11px; color: var(--faint); }
+  .seg { border: 0; background: var(--bg); border-radius: 7px; padding: 2px; } .seg button { border: 0 !important; border-radius: 5px; font-size: 10px; padding: 2px 7px; background: transparent; }
+  .seg button.on { background: var(--fg); color: var(--bg); padding: 2px 7px; }
+  .short { margin-top: 14px; }
+  .prods { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .prod { background: var(--tile); border-radius: 12px; padding: 14px; display: grid; gap: 6px; border: 0; } .prod b { font-size: 15px; }
+  .prod.candidate { background: transparent; box-shadow: inset 0 0 0 1px var(--hair); }
+  .prod.chosen { background: var(--fg); color: var(--bg); } .prod.chosen .mute, .prod.chosen .faint { color: #555; }
+  .prod.chosen button { background: #d6d6d6; color: var(--bg); } .prod.chosen button.on { background: var(--bg); color: var(--fg); }
+  .rej { margin-top: 12px; font-size: 12px; color: var(--faint); }
+`
+});
+</script>
+</body>
+</html>

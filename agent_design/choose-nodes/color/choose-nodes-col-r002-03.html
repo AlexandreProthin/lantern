@@ -1,0 +1,52 @@
+<!--
+  id:        r002-03
+  component: choose-nodes
+  phase:     color
+  parents:   r001-01
+  direction: Settled is calm and the lantern goes to the pick. Lit nodes keep Learn's glow, but settled states (answered, must, nice, shortlisted) are --surface with an --accent ring, pictogram and badge, outlined rather than filled. Only the chosen product is filled --accent, with a wider glow and a --focus ring and star, and the path from the subject to it turns --accent (Learn's highlighted-route colour); a bought subject fills too. Irrelevant is a --line ring; rejected and dismissed fade with --ink-mute badges. No red.
+  request:   revision 2
+  inputs:    Then jump to the color round and pick the missing choices from other choose room design round to keep it uniform. if in doute of anything ask me. / To keep the lantern feeling over the room stay coherent with the already designed learn room
+  frozen:    structure r001-01 (assets/glyphs-r001-01.js). Form and type were not run as rounds; per the brief they are
+             taken from the settled Choose and Learn rounds: Learn final node form (44 px disc, 13 px / 1.5 titles),
+             choose-board r003-01 type (app families, sentence case), choose-palette r001-01 tokens (CR-70),
+             Learn's open / lit / faded looks and the final backdrop (assets/node-kit-room.js).
+  shared:    ../choose-nodes-data.js, ../assets/node-kit.js, ../assets/glyphs-r001-01.js, ../assets/node-kit-room.js, ../assets/backdrop.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>choose-nodes r002-03 · One light on the pick</title>
+<style>
+/* this proposal: how the decision states use the Choose tokens */
+.look-settled .anchor{background:var(--surface);border-color:var(--accent);color:var(--accent)}
+.look-settled .badge{background:var(--bg);border-color:var(--accent);color:var(--accent)}
+.chosen .anchor,.subject.bought .anchor{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 0 18px 4px var(--glow-near),0 0 52px 14px var(--glow-far)}
+.chosen .anchor::before{border-color:var(--focus)}
+.chosen .badge,.subject.bought .badge{background:var(--focus);border-color:var(--focus);color:var(--accent-ink)}
+.look-quiet .anchor{background:var(--bg);border-color:var(--line);color:var(--ink-mute)}
+.look-quiet .t{color:var(--ink-mute)}.look-quiet .badge{border-color:var(--line);color:var(--ink-mute)}
+.look-faded .badge{border-color:var(--ink-mute);color:var(--ink-mute)}
+.kit-edges path.route{stroke:var(--accent);stroke-width:1.6}
+</style>
+</head>
+<body>
+<script src="../choose-nodes-data.js"></script>
+<script src="../assets/node-kit.js"></script>
+<script src="../assets/glyphs-r001-01.js"></script>
+<script src="../assets/node-kit-room.js"></script>
+<script>
+NodeKit.mountRoom({
+  phase: 'color', id: 'r002-03', title: "One light on the pick",
+  direction: "Settled is calm and the lantern goes to the pick. Lit nodes keep Learn's glow, but settled states (answered, must, nice, shortlisted) are --surface with an --accent ring, pictogram and badge, outlined rather than filled. Only the chosen product is filled --accent, with a wider glow and a --focus ring and star, and the path from the subject to it turns --accent (Learn's highlighted-route colour); a bought subject fills too. Irrelevant is a --line ring; rejected and dismissed fade with --ink-mute badges. No red.",
+  renderNode: GLYPHS.renderNode, legend: GLYPHS.legend,
+  edgeClass(n, nodes) {
+    const chosen = nodes.find(o => o.kind === 'product' && o.state === 'chosen');
+    for (let p = chosen; p; p = nodes.find(o => o.id === p.parentId)) if (p.id === n.id) return 'route';
+    return '';
+  },
+});
+</script>
+</body>
+</html>

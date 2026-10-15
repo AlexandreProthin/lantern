@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "concept": "choose-welcome",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-14T21:24:38.716294+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-welcome",
+        "revision": 1,
+        "saved_at": "2026-10-14T21:20:03.142735+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "Welcome space of the Choose room (choose-room CR-11, CR-12, CR-13, CR-24, CR-90; header RS-12/RS-20). \"What do you want to choose?\" with the optional direction field (e.g. \"budget about 500 €, I want to print figurines for my kids\"), the 3 most recent Choose subjects with their status (exploring / decided / bought) to continue, and the way to Gallery. Hard cases: first run with no subjects, a subject that's decided, one that's bought, long subject names, CLI not ready. Explore what is specific to choosing compared with Learn (e.g. how the direction field invites needs and budget), but don't break the shared header/space structure (RS-12, RS-20). Stay consistent with Learn's Welcome (welcome and welcome-context recipes) and the choose-palette recipe."
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-15T06:26:15.880414+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-welcome",
+        "revision": 3,
+        "saved_at": "2026-10-15T06:21:37.122318+00:00",
+        "based_on_round": 1,
+        "selected_ids": [
+          "r001-01",
+          "r001-02"
+        ],
+        "next": {
+          "phase": "color",
+          "mode": "combine",
+          "prompt": "r001-01 but shit + enter shows r001-02 (with the preset options to choose/clic from). Then jump to the color round and pick the missing choices from other choose room design round to keep it uniform. if in doute of anything ask me.\nTo keep the lantern feeling over the room stay coherent with the already designed learn room especially for the welcome view."
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-15T06:42:11.486786+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-welcome",
+        "revision": 5,
+        "saved_at": "2026-10-15T06:36:00.753669+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r001-01",
+          "r001-02",
+          "r002-01"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": "as close as learn room. Only one proposition for the next round"
+        }
+      },
+      "node_ids": [
+        "r003-01"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "wireframe/choose-welcome-wir-r001-01.html",
+      "title": "Threshold, tuned",
+      "direction": "Learn's threshold, tuned for choosing. Same column as Learn's Welcome: the question field, the capsule with Carry the lantern in docked while focused, Shift+Enter opening the direction inside it; tone and model; a shelf of three equal cards; Browse all n. What changes is content: the direction asks for budget and needs, a quiet locale line says where prices come from (CR-90), and each card replaces the graph thumbnail with a four-step decision bar (needs, criteria, shortlist, pick) under its status and outcome.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "wireframe/choose-welcome-wir-r001-02.html",
+      "title": "Needs on the table",
+      "direction": "Needs on the table. For a choice the needs are the first thing the room learns (CR-30), so the direction is always visible as a second line of the same field, titled \"What do you already know?\", with need starters under it (Budget in €, Who it's for, What for, Where it goes, Already have, Must avoid): a starter inserts only its label at the cursor, never an answer. Enter still submits from either line with or without needs. The recents are a three-row list rather than cards, so long titles wrap in full, with status, outcome and last opened in fixed columns; Browse all closes the list.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "wireframe/choose-welcome-wir-r001-03.html",
+      "title": "Two beats, next steps",
+      "direction": "Two beats and next steps. The first beat is Learn's rest state: one question, nothing else asked. Enter does not leave Welcome at once: the subject rises into a sentence (\"Choosing a 3D printer\") and a second beat asks \"Anything the room should know first?\" with the direction; Enter there carries the lantern in, with or without needs (Shift+Enter in the subject jumps straight there, Esc goes back). One optional question, never a questionnaire (CR-32). The recents are next-step cards: each says what the choice needs now (answer 2 needs, rank 2 criteria / mark Sofa B as bought / done) and its action opens Survey on that place.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-01",
+      "parents": [
+        "r001-01",
+        "r001-02"
+      ],
+      "file": "color/choose-welcome-col-r002-01.html",
+      "title": "Lit question",
+      "direction": "Learn's light, in teal. The colour of Learn's final Welcome (r004-01 Lit question) mapped one to one onto the Choose palette: a --glow-far halo behind the field, the underline --accent at 45% (full with a --glow-near shadow on focus), the capsule edge --accent at 60%, a teal caret, the primary --accent; the selected tone --node-lit on --surface-2; the need starters stay quiet (--ink-mute, dashed --line) and turn teal on hover, as Learn's Suggest. The shelf is dimmed to 70% until hovered, as Learn's.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r002-02",
+      "parents": [
+        "r001-01",
+        "r001-02"
+      ],
+      "file": "color/choose-welcome-col-r002-02.html",
+      "title": "Teal needs",
+      "direction": "The needs carry the light. The field at rest is Learn's (teal underline, halo, caret); once Shift+Enter opens the needs, the light moves down to them: the halo slides under the two-part card and the card gains a soft --glow-far, the hairline turns --accent, the need starters are teal pills (--accent at 45% outline, --accent text, an --accent 18% fill on hover) and Budget (€) is lit as the one most asked for. The example line's Shift+Enter key is --accent, so the way in is lit too. The locale line has a teal dot. Cards at full strength, as Gallery's.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r002-03",
+      "parents": [
+        "r001-01",
+        "r001-02"
+      ],
+      "file": "color/choose-welcome-col-r002-03.html",
+      "title": "Glass lamp",
+      "direction": "One lamp on glass. The field is made of the same glass as the cards and the header, so Welcome reads as one family with the board and Gallery: no halo behind it, the underline --line-strong at rest; the capsule is --glass with a --glass-line edge, and only focus lights it (an --accent 50% edge and a --glow-far halo, as Gallery's lifted card). The one bright thing is the primary button, with its halo. The selected tone is --accent text over an --accent underline; the need starters sit on --surface-2 with --node-lit text, like Learn's selected tone. Cards at full strength; Browse all is teal.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r002-01"
+      ],
+      "file": "motion/choose-welcome-mot-r003-01.html",
+      "title": "Learn's embers, teal",
+      "direction": "Learn's Welcome motion, ported as shipped onto r002-01 (app embers.ts and capsule.ts, the welcome and welcome-context recipes), the light teal because it reads the tokens. Arrival: the underline draws in (650 ms), then a light runs along it from the left edge to the centre and fans out, once per load. The capsule: rest to capsule to two-part card in 380 ms ease-out cubic-bezier(.2,.8,.2,1), the subject shrinks with a brief opacity dip (260 ms), Carry the lantern in slides out from behind the edge on focus (240 ms) and back on leaving (170 ms), rides the card's corner on Shift+Enter; the hairline draws in, the needs drop in, the hint glides with the card; closing fades the needs (110 ms) first. Choose additions in Learn's words: the need starters appear like Learn's suggestion chips (200 ms, 50 ms apart), and hovering a recent card runs the light along its steps bar to where the decision stands (Learn: through the graph thumbnail). Submit: a light runs from the field to the button, handoff 260 ms after, timer-driven. Reduced motion: everything instant, no canvas.",
+      "phase": "motion",
+      "tag": "mot"
+    }
+  ]
+}

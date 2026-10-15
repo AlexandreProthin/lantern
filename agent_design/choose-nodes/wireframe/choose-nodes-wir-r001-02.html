@@ -1,0 +1,120 @@
+<!--
+  id:        r001-02
+  component: choose-nodes
+  phase:     wireframe
+  parents:   none
+  direction: Shape is the kind, the glyph is the state. Each kind has its own silhouette (subject double circle, concept circle as in Learn, need speech bubble, criterion diamond, family stacked squares, product square, own hexagon); inside it, a status glyph extends Learn's set (hollow dot open, dot lit, check answered, ! must, + nice, – irrelevant, bookmark shortlisted, star chosen, × rejected, return arrow dismissed). The outline gives the four looks (dotted, glowing, filled, faded). A rejected product shows the first line of its reason under its title.
+  request:   revision 1
+  inputs:    Choose's node glyphs and states. One glyph per kind (subject, concept, need, criterion, family, product, own) and how every state reads on the graph: concept/family open→lit; need open→answered; criterion open→must/nice/irrelevant; product candidate→shortlisted→chosen or rejected with a reason; dismissed for any kind. Include the legend rows. Write the shared data file first with hard cases (long labels, a rejected product, a dismissed node, many products in a family, one chosen product). Wireframes must differ in mechanism (how kind and state are encoded), not in looks.
+  shared:    ../choose-nodes-data.js, ../assets/node-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>choose-nodes r001-02 · Shape is the kind</title>
+<style>
+.nd{display:flex;align-items:flex-start;gap:12px;width:210px}
+.anchor{position:relative;flex:none;width:44px;height:44px;color:#eee}
+.anchor svg.sh{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.sh .body{fill:#111;stroke:currentColor;stroke-width:1.2;vector-effect:non-scaling-stroke}
+.sh .back{fill:none;stroke:currentColor;stroke-width:1.2;vector-effect:non-scaling-stroke}
+.sh .ring2{fill:none;stroke:currentColor;stroke-width:1;vector-effect:non-scaling-stroke;display:none}
+.anchor svg.st{position:absolute;left:13px;top:13px;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.st .f{fill:currentColor;stroke:none}
+.need .anchor svg.st{top:10px}
+.t{font-size:13px;line-height:1.5;padding-top:11px;overflow-wrap:anywhere;color:#eee}
+.why{display:block;font-size:12px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:154px}
+.subject .anchor{width:54px;height:54px}.subject .anchor svg.st{left:18px;top:18px}.subject .t{padding-top:15px;font-weight:600}
+/* looks on the outline */
+.look-open .sh .body,.look-open .sh .back{stroke-dasharray:1.5 3}
+.look-open .anchor{color:#999}
+.look-lit .anchor svg.sh{filter:drop-shadow(0 0 5px rgba(255,255,255,.4)) drop-shadow(0 0 12px rgba(255,255,255,.18))}
+.look-settled .sh .body{fill:#eee}.look-settled svg.st{color:#111}
+.look-quiet .anchor{color:#888}.look-quiet .t{color:#999}
+.look-faded .anchor{color:#666}.look-faded .sh .body,.look-faded .sh .back{stroke-dasharray:1.5 3}.look-faded .t{color:#777}
+.chosen .sh .ring2{display:block}
+.rejected .t>span:first-child{text-decoration:line-through;text-decoration-color:#777}
+.kit-node .anchor{border-radius:4px}
+.bare .anchor{margin:6px}
+</style>
+</head>
+<body>
+<script src="../choose-nodes-data.js"></script>
+<script src="../assets/node-kit.js"></script>
+<script>
+const {esc, stateOf} = NodeKit;
+// silhouettes in a 44 x 44 box; "back" is drawn behind the body, "ring2" is the chosen second outline
+const SHAPE = {
+  subject: {body:'<circle cx="22" cy="22" r="21"/>', back:'', ring:'<circle cx="22" cy="22" r="17.5"/>'},
+  concept: {body:'<circle cx="22" cy="22" r="21"/>'},
+  need: {body:'<path d="M5 2h34a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H19l-9 8v-8H5a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z"/>'},
+  criterion: {body:'<path d="M22 0 44 22 22 44 0 22z"/>'},
+  family: {body:'<rect x="1" y="9" width="34" height="34" rx="2"/>', back:'<path d="M5 5V1h38v38h-4M9 9V5h30v30"/>'},
+  product: {body:'<rect x="2" y="2" width="40" height="40" rx="2"/>'},
+  own: {body:'<path d="M22 0 41 11v22L22 44 3 33V11z"/>'},
+};
+const OUTER = {
+  subject:'', concept:'<circle cx="22" cy="22" r="26"/>', need:'', family:'',
+  criterion:'<path d="M22-6 50 22 22 50-6 22z"/>', own:'',
+  product:'<rect x="-4" y="-4" width="52" height="52" rx="4"/>',
+};
+const GLYPH = {
+  open: '<circle cx="9" cy="9" r="4"/>',
+  candidate: '<circle cx="9" cy="9" r="4"/>',
+  lit: '<circle class="f" cx="9" cy="9" r="4"/>',
+  answered: '<path d="m3 9 4 4 8-9"/>',
+  must: '<path d="M9 2.5v8"/><circle class="f" cx="9" cy="14.5" r="1.4"/>',
+  nice: '<path d="M9 4v10M4 9h10"/>',
+  irrelevant: '<path d="M4 9h10"/>',
+  shortlisted: '<path class="f" d="M5.5 2.5h7v13L9 12.6l-3.5 2.9z"/>',
+  chosen: '<path class="f" d="m9 1.8 2.2 4.6 5 .6-3.7 3.4 1 5L9 12.9l-4.5 2.5 1-5L1.8 7l5-.6z"/>',
+  rejected: '<path d="m4 4 10 10M14 4 4 14"/>',
+  dismissed: '<path d="M5 6.5h6a3.5 3.5 0 0 1 0 7H7M7.5 3.5 4.5 6.5l3 3"/>',
+  exploring: '<circle class="f" cx="4" cy="9" r="1.3"/><circle class="f" cx="9" cy="9" r="1.3"/><circle class="f" cx="14" cy="9" r="1.3"/>',
+  decided: '<path d="m3 9 4 4 8-9"/>',
+  bought: '<path d="M3.5 6.5h11l-1 9h-9zM6.5 6.5V5a2.5 2.5 0 0 1 5 0v1.5"/>',
+};
+const LOOK = {open:'open', candidate:'open', lit:'lit', answered:'settled', must:'settled', nice:'settled', shortlisted:'settled', chosen:'settled',
+  irrelevant:'quiet', rejected:'faded', dismissed:'faded', exploring:'lit', decided:'lit', bought:'settled'};
+function renderNode(n, o) {
+  const s = stateOf(n), sh = SHAPE[n.kind];
+  const svg = `<svg class="sh" viewBox="0 0 44 44" aria-hidden="true"><g class="ring2">${OUTER[n.kind] || ''}</g>${sh.back ? `<g class="back">${sh.back}</g>` : ''}<g class="body">${sh.body}</g>${sh.ring ? `<g class="back">${sh.ring}</g>` : ''}</svg>`;
+  const disc = `<span class="anchor">${svg}<svg class="st" viewBox="0 0 18 18" aria-hidden="true">${GLYPH[s] || ''}</svg></span>`;
+  const cls = `nd ${n.kind} ${s} look-${LOOK[s]}${o.bare ? ' bare' : ''}`;
+  if (o.bare) return `<span class="${cls}" style="width:auto">${disc}</span>`;
+  const reason = s === 'rejected' && n.reason ? `<span class="why">× ${esc(n.reason)}</span>` : '';
+  return `<span class="${cls}">${disc}<span class="t"><span>${esc(n.title)}</span>${reason}</span></span>`;
+}
+NodeKit.mount({
+  id: 'r001-02', title: 'Shape is the kind, glyph is the state', renderNode,
+  direction: 'Each kind has its own silhouette, readable at a glance across the graph; inside it, one status glyph, the way Learn\'s circle carries its status. The outline gives the four looks (dotted open, glowing lit, filled settled, faded). A rejected product keeps one line of its reason under its title. Click a node, then try its states in the panel.',
+  legend: [
+    {heading: 'Kinds: the silhouette', rows: [
+      {node:{kind:'subject',status:'exploring'}, name:'Subject', text:'Double circle: what is being chosen'},
+      {node:{kind:'concept',state:'lit'}, name:'Concept', text:'Circle, as in Learn: something to understand'},
+      {node:{kind:'need',state:'lit'}, name:'Need', text:'Speech bubble: a question to you'},
+      {node:{kind:'criterion',state:'lit'}, name:'Criterion', text:'Diamond: something to compare on'},
+      {node:{kind:'family',state:'lit'}, name:'Family', text:'Stacked squares: a group of products'},
+      {node:{kind:'product',state:'candidate'}, name:'Product', text:'Square: a real model'},
+      {node:{kind:'own',state:'lit'}, name:'Your own', text:'Hexagon: added by you'},
+    ]},
+    {heading: 'States: the glyph inside, the outline around', rows: [
+      {node:{kind:'concept',state:'open'}, name:'Open / candidate', text:'Dotted outline, hollow dot'},
+      {node:{kind:'concept',state:'lit'}, name:'Lit', text:'Glowing outline, dot'},
+      {node:{kind:'need',state:'answered'}, name:'Answered', text:'Filled, check'},
+      {node:{kind:'criterion',state:'must'}, name:'Must', text:'Filled, !'},
+      {node:{kind:'criterion',state:'nice'}, name:'Nice to have', text:'Filled, +'},
+      {node:{kind:'criterion',state:'irrelevant'}, name:'Irrelevant', text:'Grey outline, –'},
+      {node:{kind:'product',state:'shortlisted'}, name:'Shortlisted', text:'Filled, bookmark'},
+      {node:{kind:'product',state:'chosen'}, name:'Chosen', text:'Filled, second outline, star; one per subject'},
+      {node:{kind:'product',state:'rejected'}, name:'Rejected', text:'Faded, ×, title struck, first line of the reason'},
+      {node:{kind:'need',state:'dismissed'}, name:'Dismissed', text:'Faded, return arrow: restorable'},
+      {node:{kind:'subject',status:'bought'}, name:'Subject status', text:'… exploring, check decided, bag bought'},
+    ]},
+  ],
+});
+</script>
+</body>
+</html>

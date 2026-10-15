@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "concept": "choose-board",
+  "revision": 8,
+  "saved_at": "2026-10-14T20:52:53.441888+00:00",
+  "based_on_round": 5,
+  "selected_ids": [
+    "r001-01",
+    "r002-01",
+    "r003-01",
+    "r004-03"
+  ],
+  "next": {
+    "phase": "motion",
+    "mode": "combine",
+    "prompt": ""
+  }
+}

@@ -1,0 +1,36 @@
+<!--
+  id:        r001-03
+  component: choose-palette
+  phase:     color
+  parents:   none
+  direction: Teal is the room's colour (accent, settled nodes, paths, focus) but the lantern light itself stays a warm cream flame: lit nodes, their near glow and the motes are warm, the far glow teal. Slate-navy walls between Learn's and the lagoon's.
+  request:   revision 1
+  inputs:    Choose room palette: teal lantern (CR-70), the full RS-31 token set under data-room="choose" (plus --error), in the same calm family as Learn's Amber lantern. The backdrop (RS-34) re-tints from the tokens. Show it on Welcome, Survey and Gallery with the backdrop and glass, plus a token sheet.
+  read as:   direction ("teal lantern, same calm family as Learn's Amber lantern"), not a precise scheme.
+  ui:        ../assets/replica.js (Choose replica: Welcome, Survey, Gallery, token sheet) and ../assets/backdrop.js
+             (the final backdrop, colours from the tokens), with ../choose-palette-data.js. Only :root differs between proposals.
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose palette r001-03 — Teal room, warm flame</title>
+<style>
+  :root {
+    --bg: #0f1b24; --surface: #152430; --surface-2: #2b3133; --ink: #f1ebe1; --ink-mute: #a8b4b8;
+    --line: #344853; --accent: #3fb5ae; --accent-ink: #061f1d; --focus: #a9e9e2;
+    --node-open: #93a1a6; --node-lit: #ffe4b6; --node-understood: #3fb5ae;
+    --glow-near: rgba(255, 208, 146, 0.30); --glow-far: rgba(78, 196, 186, 0.15); --path-muted: #3b5f5c;
+    --code: #0a141b; --error: #d86a5a; --error-ink: #f0a598;
+    color-scheme: dark;
+  }
+</style>
+</head>
+<body>
+<script src="../choose-palette-data.js"></script>
+<script src="../assets/replica.js"></script>
+<script>CHOOSE_UI.mount({ id: 'r001-03', name: 'Choose', title: "Teal room, warm flame" });</script>
+<script src="../assets/backdrop.js"></script>
+</body>
+</html>

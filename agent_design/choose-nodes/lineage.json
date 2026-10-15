@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "concept": "choose-nodes",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-14T21:26:21.197404+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-nodes",
+        "revision": 1,
+        "saved_at": "2026-10-14T21:19:40.894947+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "Choose's node glyphs and states. One glyph per kind (subject, concept, need, criterion, family, product, own) and how every state reads on the graph: concept/family open→lit; need open→answered; criterion open→must/nice/irrelevant; product candidate→shortlisted→chosen or rejected with a reason; dismissed for any kind. Include the legend rows. Write the shared data file first with hard cases (long labels, a rejected product, a dismissed node, many products in a family, one chosen product). Wireframes must differ in mechanism (how kind and state are encoded), not in looks."
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-15T06:34:31.634338+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-nodes",
+        "revision": 2,
+        "saved_at": "2026-10-15T06:30:35.002426+00:00",
+        "based_on_round": 1,
+        "selected_ids": [
+          "r001-01"
+        ],
+        "next": {
+          "phase": "color",
+          "mode": "combine",
+          "prompt": "Then jump to the color round and pick the missing choices from other choose room design round to keep it uniform. if in doute of anything ask me.\nTo keep the lantern feeling over the room stay coherent with the already designed learn room"
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-15T06:47:05.262464+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-nodes",
+        "revision": 3,
+        "saved_at": "2026-10-15T06:41:28.273700+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r001-01",
+          "r002-01"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": "next"
+        }
+      },
+      "node_ids": [
+        "r003-01",
+        "r003-02",
+        "r003-03"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "wireframe/choose-nodes-wir-r001-01.html",
+      "title": "Kind inside, state around",
+      "direction": "Kind inside, state around. Every node keeps Learn's 44 px disc; the pictogram inside names the kind (target, i, ?, balance, cluster, box, pen). The state lives on the disc and its rim: the ring gives the four looks (dotted open, glowing lit, filled settled, faded), and a small badge on the rim gives the exact state (check answered, ! must, + nice, – irrelevant, bookmark shortlisted, star chosen, × rejected; ellipsis/check/bag for the subject's status). The graph stays quiet: a rejected product's reason is in the tooltip and the panel, not on the graph.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "wireframe/choose-nodes-wir-r001-02.html",
+      "title": "Shape is the kind",
+      "direction": "Shape is the kind, the glyph is the state. Each kind has its own silhouette (subject double circle, concept circle as in Learn, need speech bubble, criterion diamond, family stacked squares, product square, own hexagon); inside it, a status glyph extends Learn's set (hollow dot open, dot lit, check answered, ! must, + nice, – irrelevant, bookmark shortlisted, star chosen, × rejected, return arrow dismissed). The outline gives the four looks (dotted, glowing, filled, faded). A rejected product shows the first line of its reason under its title.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "wireframe/choose-nodes-wir-r001-03.html",
+      "title": "One shape, state in words",
+      "direction": "One shape, the state in words. Every node is Learn's plain disc with Learn's own status glyph (hollow dot open, dot lit, check settled); kind is a small mono kicker above the title (NEED, CRITERION…) and the exact state is a word line under it, with its content: the need's answer, MUST / nice / irrelevant, shortlisted, ★ chosen, the rejected product's full reason, \"dismissed · restore\". A family counts its products by state. The disc only ever has four looks (dotted, glowing, filled, faded); everything finer is read, not decoded.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-01",
+      "parents": [
+        "r001-01"
+      ],
+      "file": "color/choose-nodes-col-r002-01.html",
+      "title": "Learn's settled light",
+      "direction": "Learn's node colours one to one, in teal. Open dotted --node-open, lit --surface-2 with --node-lit and both glows, and every settled state (answered, must, nice, shortlisted, chosen, bought) filled --node-understood with an --accent-ink pictogram, exactly like Learn's understood. Rim badges are --bg with a teal ring. Chosen adds Learn's lit glow and a --focus second ring. Irrelevant is a --line ring with --ink-mute. Rejected and dismissed fade (.45, dashed). No red anywhere: one light, one colour.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r002-02",
+      "parents": [
+        "r001-01"
+      ],
+      "file": "color/choose-nodes-col-r002-02.html",
+      "title": "Graded teal",
+      "direction": "The amount of teal follows how firm the decision is. Answered and must are filled --accent; nice and shortlisted are --surface-2 with an --accent ring and pictogram (half-way); chosen is filled, glowing (--glow-near, --glow-far) and ringed in --focus, the only settled node that glows. The must, shortlisted and chosen badges are filled (--accent, --focus); the others are --bg with a teal ring. Irrelevant is a --line ring. A rejected product keeps the room's one warm note: its × badge in --error / --error-ink, the node faded. Dismissed fades with no colour.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r002-03",
+      "parents": [
+        "r001-01"
+      ],
+      "file": "color/choose-nodes-col-r002-03.html",
+      "title": "One light on the pick",
+      "direction": "Settled is calm and the lantern goes to the pick. Lit nodes keep Learn's glow, but settled states (answered, must, nice, shortlisted) are --surface with an --accent ring, pictogram and badge, outlined rather than filled. Only the chosen product is filled --accent, with a wider glow and a --focus ring and star, and the path from the subject to it turns --accent (Learn's highlighted-route colour); a bought subject fills too. Irrelevant is a --line ring; rejected and dismissed fade with --ink-mute badges. No red.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r001-01",
+        "r002-01"
+      ],
+      "file": "motion/choose-nodes-mot-r003-01.html",
+      "title": "Quiet cross-fade",
+      "direction": "Nothing moves, the light only changes. A state change cross-fades the old look into the new one in place: 260 ms out-ease (420 ms, in-ease, when a node fades out: rejected, dismissed, irrelevant). A new badge fades in 120 ms after the disc starts. A glow (lit, chosen) warms up over 420 ms, and a chosen product's second ring fades in over 320 ms. An un-chosen product and the subject's status cross-fade at the same time as the acted node. No particles, no travelling light: the calmest reading of RS-33.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r001-01",
+        "r002-01"
+      ],
+      "file": "motion/choose-nodes-mot-r003-02.html",
+      "title": "Fill and turn",
+      "direction": "The geometry carries the change. Settling fills the disc from its centre outward (clip-path circle, 360 ms out-ease) over the old look, and the badge comes out of the disc onto the rim (from the centre, scale .3 to 1, 240 ms, starting at 200 ms). Un-settling and fading reverse it: the old look closes into its centre (300 ms in-ease) and reveals the new one. A badge-only change (nice to must) turns the badge over (rotateY, 220 ms). A chosen product then opens its second ring outward (scale .8 to 1, 320 ms) and its glow blooms (480 ms). No particles.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r001-01",
+        "r002-01"
+      ],
+      "file": "motion/choose-nodes-mot-r003-03.html",
+      "title": "Embers on the decision",
+      "direction": "Learn's own light language, used for decisions. Every change cross-fades in place (240 ms; 520 ms in-ease when a node fades out, with no particles, as Learn's cancel emits none). Settling a node releases Learn's settle burst: 12 --node-lit embers from the rim, 800 ms, at most 38 px/s. Lighting a concept gets Learn's passing glow (180 ms) and a fan of 8 embers. Choosing a product sends Learn's travelling light (--focus dot, comet trail, 1250 px/s, 160-650 ms per leg) from the previous pick, or from the subject, along the graph to the new pick; on arrival its ring and glow come on with a 16-ember fan. Marking as bought gives the subject the same 16-ember fan.",
+      "phase": "motion",
+      "tag": "mot"
+    }
+  ]
+}

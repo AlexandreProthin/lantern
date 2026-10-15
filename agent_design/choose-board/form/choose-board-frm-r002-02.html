@@ -1,0 +1,88 @@
+<!--
+  id:        r002-02
+  component: choose-board
+  phase:     form
+  parents:   r001-01
+  direction: High density, hierarchy by alignment. From r001-01: the whole structure. A compact 64 px rail with 15 px semibold numerals and tiny labels between hairlines; a 2 px bar on the left edge marks a counter with something missing. The open sheet reads as a ledger: 12 px text, 26 px rows, a hairline grid, grey header bars, needs as a two-column table, criteria as rows under group labels, products as table rows (name, fact, state, actions). Everything visible without scrolling on a laptop.
+  request:   revision 3
+  inputs:    accepted
+  read as:   the counter rail's structure is accepted and frozen (../assets/rail-structure.js, extracted unchanged from r001-01);
+             this round varies composition, density, scale and hierarchy only, in greyscale with one typeface (system UI).
+             The completeness rule of round 1 stays as proposed.
+  shared:    ../assets/board-kit.js (scenarios, completeness rule, Survey frame), ../assets/rail-structure.js, ../choose-board-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose board r002-02 — Dense ledger</title>
+</head>
+<body>
+<script src="../choose-board-data.js"></script>
+<script src="../assets/board-kit.js"></script>
+<script src="../assets/rail-structure.js"></script>
+<script>
+BOARD_KIT.mount({
+  id: 'r002-02', title: "Dense ledger", slot: 'rail', render: RAIL_RENDER,
+  css: `
+  .sheet .top .sp { flex: 1; } .rail .gap { flex: 1; }
+  .main[data-expanded='true'] .graph { display: none; }
+  .main[data-expanded='true'] .board { flex: 1 1 62%; flex-direction: column; }
+  .board { display: flex; flex-direction: column; min-height: 0; }
+  .rail { flex: 1; display: flex; flex-direction: column; cursor: pointer; overflow: auto; text-align: center; }
+  .rail .ctr { position: relative; } .rail .ctr b, .rail .ctr small { display: block; }
+  .rail .ctr .tip { display: none; position: absolute; right: calc(100% + 10px); top: 0; width: 230px; text-align: left; z-index: 5; }
+  .rail .ctr:hover .tip { display: block; }
+  .sheet { flex: 1; overflow: auto; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; }
+  .need { display: grid; align-items: baseline; } .need .x { border: 0; background: transparent; }
+  .add { display: flex; gap: 6px; } .add input { flex: 1; }
+  .crit { display: flex; align-items: center; justify-content: space-between; gap: 10px; } .crit .why { display: block; }
+  .prod .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  @media (max-width: 760px) { .board { flex: 0 0 auto !important; } .rail { flex-direction: row; overflow-x: auto; } .rail .ctr .tip { display: none !important; } .cols { grid-template-columns: 1fr; } }
+
+  :root { --fg: #e6e6e6; --bg: #0f0f0f; --mute: #a0a0a0; --faint: #666; --hair: #2e2e2e; --fill: #181818; --bar: #202020; }
+  html, body { font-size: 12px; }
+  .board { flex: 0 0 64px; border-left: 1px solid var(--hair); }
+  .rail { padding: 0; gap: 0; } .rail:hover { background: var(--fill); }
+  .rail .ttl { font-size: 9px; letter-spacing: .1em; color: var(--mute); background: var(--bar); padding: 6px 0; border-bottom: 1px solid var(--hair); }
+  .rail > div:nth-child(2) { padding: 6px 0; border-bottom: 1px solid var(--hair); } .rail .st { font-size: 9px; padding: 0 5px; }
+  .rail .ctr { padding: 8px 2px; border-bottom: 1px solid var(--hair); }
+  .rail .ctr b { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; } .rail .ctr small { font-size: 9px; color: var(--mute); }
+  .rail .ctr.miss { box-shadow: inset 2px 0 0 var(--fg); }
+  .rail .ctr .tip { background: var(--bg); border: 1px solid var(--fg); padding: 6px 8px; font-size: 11px; line-height: 1.5; }
+  .rail .miss-n { font-size: 10px; padding: 6px 0; border-top: 1px solid var(--hair); background: var(--bar); }
+  .rail .rec { border: 0; border-top: 1px solid var(--hair); border-radius: 0; font-size: 10px; padding: 8px 0; } .rail .rec.on { background: var(--fg); color: var(--bg); }
+  .sheet { padding: 0 0 70px; }
+  .sheet .top { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bar); border-bottom: 1px solid var(--hair); }
+  .sheet .top h2 { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .sheet .top button, .missing button { font-size: 11px; padding: 2px 8px; border-radius: 2px; }
+  .missing { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--hair); margin: 0; }
+  .missing b { font-size: 11px; margin-right: 4px; } .missing span { border: 1px solid var(--hair); padding: 0 6px; border-radius: 2px; font-size: 11px; line-height: 18px; }
+  .missing.none { color: var(--mute); }
+  .cols { gap: 0; border-bottom: 1px solid var(--hair); } .cols .card + .card { border-left: 1px solid var(--hair); }
+  .card { padding: 0; } .card > p { padding: 6px 12px; margin: 0; }
+  .card h3 { margin: 0; padding: 5px 12px; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); background: var(--bar); border-bottom: 1px solid var(--hair); display: flex; justify-content: space-between; }
+  .need { grid-template-columns: 38% 1fr 22px; min-height: 26px; padding: 0 0 0 12px; border-bottom: 1px solid var(--hair); align-items: center; }
+  .need:nth-of-type(even) { background: var(--fill); } .need .q { color: var(--mute); border-right: 1px solid var(--hair); padding-right: 8px; line-height: 26px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .need .edit { border: 0; padding: 0 8px; line-height: 26px; } .need .x { color: var(--faint); font-size: 10px; }
+  .need.open .q { color: var(--fg); font-weight: 600; }
+  .add { padding: 4px 12px; } .add button { font-size: 11px; padding: 1px 8px; border-radius: 2px; }
+  .grp { margin: 0; } .grp h4 { margin: 0; padding: 3px 12px; font-size: 10px; font-weight: 600; color: var(--mute); border-bottom: 1px solid var(--hair); }
+  .grp.irr .crit { color: var(--faint); }
+  .crit { min-height: 26px; padding: 2px 8px 2px 12px; border-bottom: 1px solid var(--hair); } .crit .why { display: inline; margin-left: 8px; font-size: 11px; color: var(--faint); }
+  .seg { border-radius: 2px; } .seg button { font-size: 10px; padding: 1px 6px; }
+  .short { margin: 0; border: 0; border-bottom: 1px solid var(--hair); }
+  .prods { display: grid; gap: 0; }
+  .prod { display: grid; grid-template-columns: 22% 1fr 90px auto; align-items: center; gap: 0; min-height: 28px; padding: 0 8px 0 12px; border-bottom: 1px solid var(--hair); }
+  .prod > * { padding: 0 8px 0 0; } .prod .faint { font-size: 11px; } .prod.chosen { box-shadow: inset 3px 0 0 var(--fg); font-weight: 600; }
+  .prod.candidate b { font-weight: 400; } .prod .acts button { font-size: 10px; padding: 1px 6px; border-radius: 2px; }
+  .rej { padding: 5px 12px; font-size: 11px; color: var(--faint); margin: 0; }
+  .short > p { padding: 5px 12px; margin: 0; }
+  @media (max-width: 760px) { .prod { grid-template-columns: 1fr auto; } .prod .mute, .prod .faint { display: none; } }
+`
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!--
+  id:        r003-03
+  component: choose-nodes
+  phase:     motion
+  parents:   r001-01, r002-01
+  direction: Learn's own light language, used for decisions. Every change cross-fades in place (240 ms; 520 ms in-ease when a node fades out, with no particles, as Learn's cancel emits none). Settling a node releases Learn's settle burst: 12 --node-lit embers from the rim, 800 ms, at most 38 px/s. Lighting a concept gets Learn's passing glow (180 ms) and a fan of 8 embers. Choosing a product sends Learn's travelling light (--focus dot, comet trail, 1250 px/s, 160-650 ms per leg) from the previous pick, or from the subject, along the graph to the new pick; on arrival its ring and glow come on with a 16-ember fan. Marking as bought gives the subject the same 16-ember fan.
+  request:   revision 3
+  inputs:    next
+  frozen:    structure r001-01 (assets/glyphs-r001-01.js), colour r002-01 (below, verbatim), form and type as in r002-01
+             (assets/node-kit-room.js). Only state changes move; selection, route light, spawn and busy are the graph's
+             (graph-view GV-31 to GV-98) and are not redrawn. Event-driven only, nothing loops (RS-33); under reduced
+             motion (OS or the toggle, GV-100) every change is instant and nothing depends on motion (GV-103).
+  shared:    ../choose-nodes-data.js, ../assets/node-kit.js, ../assets/glyphs-r001-01.js, ../assets/node-kit-room.js,
+             ../assets/node-motion.js, ../assets/backdrop.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>choose-nodes r003-03 · Embers on the decision</title>
+<style>
+/* r002-01 Learn's settled light, frozen */
+.look-settled .anchor{background:var(--node-understood);border-color:var(--node-understood);color:var(--accent-ink)}
+.look-settled .badge{background:var(--bg);border-color:var(--node-understood);color:var(--node-understood)}
+.look-quiet .anchor{background:var(--bg);border-color:var(--line);color:var(--ink-mute)}
+.look-quiet .t{color:var(--ink-mute)}.look-quiet .badge{border-color:var(--line);color:var(--ink-mute)}
+.look-faded .badge{border-color:var(--node-open);color:var(--node-open)}
+.chosen .anchor{box-shadow:0 0 14px 2px var(--glow-near),0 0 38px 9px var(--glow-far)}
+.chosen .anchor::before{border-color:var(--focus)}
+.subject.bought .badge,.subject.decided .badge{border-color:var(--node-lit);color:var(--node-lit)}
+
+.mo-hold .anchor{box-shadow:none!important}.mo-hold .anchor::before{opacity:0}
+</style>
+</head>
+<body>
+<script src="../choose-nodes-data.js"></script>
+<script src="../assets/node-kit.js"></script>
+<script src="../assets/glyphs-r001-01.js"></script>
+<script src="../assets/node-kit-room.js"></script>
+<script src="../assets/node-motion.js"></script>
+<script>
+const RANK = {dismissed:0, rejected:0, irrelevant:1, open:1, candidate:1, lit:2, exploring:2, decided:2, answered:3, must:3, nice:3, shortlisted:3, chosen:4, bought:4};
+const GLOWS = s => s === 'lit' || s === 'chosen' || s === 'exploring' || s === 'decided';
+const q = (c, sel) => c.el && c.el.querySelector(sel);
+function warm(anchor, ms, delay = 0) { // a glow warming up from nothing to its static value
+  if (!anchor) return;
+  const shadow = getComputedStyle(anchor).boxShadow;
+  if (shadow === 'none') return;
+  Motion.animate(anchor, [{boxShadow: shadow.replace(/rgba?\([^)]*\)/g, 'rgba(0,0,0,0)')}, {boxShadow: shadow}], {duration: ms, delay, easing: Motion.EASE_OUT, fill: 'backwards'});
+}
+function pass(anchor, ms = 180) { // Learn's passing glow
+  if (!anchor) return;
+  const base = getComputedStyle(anchor).boxShadow, none = base === 'none' ? '0 0 0 0 rgba(0,0,0,0), 0 0 0 0 rgba(0,0,0,0)' : base;
+  Motion.animate(anchor, [{boxShadow: none}, {boxShadow: '0 0 22px 6px var(--glow-near), 0 0 56px 16px var(--glow-far)'}, {boxShadow: none}], {duration: ms * 2, easing: 'ease-out'});
+}
+function pathTo(from, to) { // node ids: from, up to the common ancestor, down to to
+  const up = id => { const r = []; for (let n = NodeKit.api.get(id); n; n = n.parentId && NodeKit.api.get(n.parentId)) r.push(n.id); return r; };
+  const a = up(from), b = up(to), common = a.find(x => b.includes(x));
+  return [...a.slice(0, a.indexOf(common) + 1), ...b.slice(0, b.indexOf(common)).reverse()];
+}
+function onStateChange(changes) {
+  const acted = changes[0];
+  for (const c of changes) {
+    const out = RANK[c.to] < RANK[c.from] && RANK[c.to] <= 1;
+    const g = Motion.ghost(c);
+    const a = Motion.animate(g, [{opacity: 1}, {opacity: 0}], {duration: out ? 520 : 240, easing: out ? Motion.EASE_IN : Motion.EASE_OUT, fill: 'forwards'});
+    if (a) a.finished.then(() => Motion.drop(g), () => Motion.drop(g)); else Motion.drop(g);
+    if (c.to === 'chosen' || c !== acted && c.node.kind === 'subject') continue;
+    if (c.to === 'bought') { pass(q(c, '.anchor'), 260); Motion.embers(c.el, {count: 16, spread: Math.PI * 1.4, speed: 66, life: 690}); }
+    else if (RANK[c.to] >= 3 && RANK[c.to] > RANK[c.from]) Motion.embers(c.el, {count: 12, life: 800, speed: 38});
+    else if (c.to === 'lit' && c.from === 'open') { pass(q(c, '.anchor')); Motion.embers(c.el, {count: 8, spread: Math.PI * 1.4, speed: 48, life: 650}); }
+  }
+  const pick = changes.find(c => c.to === 'chosen');
+  if (pick && !Motion.reduced()) {
+    const prev = changes.find(c => c.from === 'chosen');
+    const ids = pathTo(prev ? prev.node.id : 's', pick.node.id);
+    const anchor = q(pick, '.anchor');
+    pick.el.classList.add('mo-hold');
+    Motion.travel(ids.map(id => NodeKit.api.el(id)), {onArrive() {
+      pick.el.classList.remove('mo-hold');
+      if (Motion.reduced()) return;
+      pass(anchor, 220);
+      Motion.animate(anchor, [{transform: 'scale(.85)', opacity: 0}, {transform: 'none', opacity: 1}], {duration: 320, easing: Motion.EASE_OUT, pseudoElement: '::before'});
+      Motion.embers(pick.el, {count: 16, spread: Math.PI * 1.4, speed: 66, life: 690});
+    }});
+  }
+}
+NodeKit.mountRoom({
+  phase: 'motion', id: 'r003-03', title: "Embers on the decision",
+  direction: "Learn's own light language, used for decisions. Every change cross-fades in place (240 ms; 520 ms in-ease when a node fades out, with no particles, as Learn's cancel emits none). Settling a node releases Learn's settle burst: 12 --node-lit embers from the rim, 800 ms, at most 38 px/s. Lighting a concept gets Learn's passing glow (180 ms) and a fan of 8 embers. Choosing a product sends Learn's travelling light (--focus dot, comet trail, 1250 px/s, 160-650 ms per leg) from the previous pick, or from the subject, along the graph to the new pick; on arrival its ring and glow come on with a 16-ember fan. Marking as bought gives the subject the same 16-ember fan. Use Play the story (bottom left), or try states in the panel.",
+  renderNode: GLYPHS.renderNode, legend: GLYPHS.legend, onStateChange,
+});
+Motion.install('r003-03');
+</script>
+</body>
+</html>

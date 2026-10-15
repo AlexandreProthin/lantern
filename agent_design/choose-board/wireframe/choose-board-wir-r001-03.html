@@ -1,0 +1,116 @@
+<!--
+  id:        r001-03
+  component: choose-board
+  phase:     wireframe
+  parents:   none
+  direction: Next step. A 200 px column on the graph's left edge leads with readiness (five checks: needs answered, criteria ranked, a must, two shortlisted, Compare filled) and the one next missing thing, actionable right there: answer a need inline, rank a criterion, shortlist a candidate, fill Compare, or, when complete, get the recommendation. Counters sit below. "Open board" widens it over the graph into a single-column decision sheet: checklist, needs card, one ranked criteria list, shortlist with a pick. The panel never moves.
+  request:   revision 2
+  inputs:    Decision board in Survey (CR-10, CR-14): a slim strip next to the graph, always visible, with a few counters and what is still missing before a decision; a click opens it full height; the reading panel stays for nodes. It collects the needs card (editable at any time, CR-31), the criteria ranked must / nice / irrelevant (CR-21, CR-23), the shortlist and the pick (CR-22), the subject status exploring / decided / bought (CR-24), and when it looks complete it offers the recommendation (CR-61; what counts as complete is decided here). Hard cases: a new subject with nothing settled, a nearly complete board, a long needs list, a chosen product, bought.
+  shared:    ../assets/board-kit.js (scenarios, completeness rule, Survey frame) with ../choose-board-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose board r001-03 — Next step</title>
+</head>
+<body>
+<script src="../choose-board-data.js"></script>
+<script src="../assets/board-kit.js"></script>
+<script>
+BOARD_KIT.mount({
+  id: 'r001-03', title: 'Next step', slot: 'left',
+  css: `
+  .board { position: absolute; left: 0; top: 0; bottom: 0; width: 200px; z-index: 4; background: var(--bg); border-right: 1px solid var(--hair); display: flex; flex-direction: column; }
+  .graph svg { left: 200px; width: calc(100% - 200px); }
+  .strip { flex: 1; overflow: auto; padding: 12px 12px 70px; display: flex; flex-direction: column; gap: 14px; }
+  .ready { display: grid; gap: 6px; } .ready .ticks { display: flex; gap: 3px; } .ready .ticks i { flex: 1; height: 6px; border: 1px solid var(--fg); }
+  .ready .ticks i.on { background: var(--fg); } .ready b { font-size: 12px; }
+  .next { border: 1px solid var(--fg); padding: 10px; display: grid; gap: 8px; } .next .lab { font-size: 10px; letter-spacing: .1em; color: var(--mute); }
+  .next .what { font-weight: 600; } .next .row { display: flex; gap: 4px; flex-wrap: wrap; } .next .row button { font-size: 11px; padding: 2px 7px; }
+  .next .skip { border: 0; padding: 0; font-size: 11px; color: var(--mute); text-decoration: underline; justify-self: start; }
+  .next.done { border-style: double; border-width: 3px; }
+  .ctrs { display: grid; gap: 0; } .ctrs div { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--fill); font-size: 12px; }
+  .ctrs span { color: var(--mute); } .ctrs b { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .open-b { margin-top: auto; } .ask { border: 0; padding: 0; font-size: 11px; color: var(--mute); text-decoration: underline; text-align: left; }
+  .main[data-expanded='true'] .board { width: 100%; }
+  .doc { flex: 1; overflow: auto; padding: 16px 22px 80px; max-width: 760px; }
+  .doc .bar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; } .doc .bar h2 { margin: 0; font-size: 15px; flex: 1; }
+  .doc h3 { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin: 22px 0 8px; }
+  .check { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; } .check li::before { content: '☐ '; } .check li.ok::before { content: '☑ '; } .check li.ok { color: var(--mute); }
+  .needs { border: 1px solid var(--hair); padding: 8px 12px; }
+  .needs .r { display: grid; grid-template-columns: 34% 1fr; gap: 10px; padding: 4px 0; } .needs .r .q { color: var(--mute); } .needs .r.open .q { color: var(--fg); }
+  .rank .r { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--fill); }
+  .rank .r.irrelevant { color: var(--faint); } .rank .r .n { color: var(--faint); font-size: 11px; } .rank .why { display: block; font-size: 11px; color: var(--faint); }
+  .pick .r { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--fill); }
+  .pick .r.rejected { color: var(--faint); } .pick .r .sub { display: block; font-size: 11px; color: var(--mute); }
+  .pick input[type=radio] { accent-color: #fff; } .foot { margin-top: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  @media (max-width: 760px) { .board { width: 150px; } .graph svg { left: 150px; width: calc(100% - 150px); } }`,
+  render(el, { s, expanded, setExpanded, act, esc, counts: c, missing, stage }) {
+    const checks = [
+      ['Needs answered', c.needs > 0 && !c.needsOpen], ['Criteria ranked', c.criteria > 0 && !c.criteriaOpen], ['At least one must', c.must > 0],
+      ['Two products shortlisted', c.shortlisted >= 2 || !!c.chosen], ['Compare filled', c.shortlisted > 0 && !s.compareGaps]];
+    const okN = checks.filter(x => x[1]).length, ready = stage === 'ready';
+    const statusLine = `<span class="st" data-s="${stage === 'open' ? 'exploring' : stage}">${stage === 'open' ? 'exploring' : stage}</span>`;
+    if (!expanded) {
+      const first = missing[0];
+      let next;
+      if (s.status === 'bought') next = `<div class="next done"><span class="lab">BOUGHT</span><span class="what">${esc(c.chosen.name)}</span><span class="mute">Nothing left to decide.</span></div>`;
+      else if (c.chosen) next = `<div class="next done"><span class="lab">DECIDED</span><span class="what">${esc(c.chosen.name)}</span><button class="on" data-bought>Mark as bought</button></div>`;
+      else if (!first) next = `<div class="next done"><span class="lab">READY</span><span class="what">Everything a decision needs is here.</span><button class="on" data-rec>Get the recommendation</button></div>`;
+      else {
+        let ctl = '';
+        if (first.need) ctl = `<input class="edit" data-ans placeholder="your answer">`;
+        else if (first.crit) ctl = `<span class="mute" style="font-size:11px">${esc(first.crit.why)}</span><div class="row">${['must', 'nice', 'irrelevant'].map(x => `<button data-rk="${x}">${x}</button>`).join('')}</div>`;
+        else if (first.area === 'shortlist') { const cand = s.products.filter(p => p.state === 'candidate'); ctl = cand.length ? cand.map(p => `<div class="row"><span style="flex:1">${esc(p.name)}</span><button data-sl="${s.products.indexOf(p)}">shortlist</button></div>`).join('') : '<span class="mute" style="font-size:11px">Explore a family in the graph to find candidates.</span>'; }
+        else if (first.area === 'compare') ctl = '<button data-fill>Fill the empty cells</button>';
+        else if (first.area === 'needs') ctl = `<input class="edit" data-addn placeholder="e.g. budget about 500 €">`;
+        else ctl = '<span class="mute" style="font-size:11px">Criteria appear as you explore the graph.</span>';
+        next = `<div class="next"><span class="lab">NEXT · ${missing.length} missing</span><span class="what">${esc(first.text)}</span>${ctl}${missing.length > 1 ? '<button class="skip" data-open>see all</button>' : ''}</div>`;
+      }
+      el.innerHTML = `<div class="strip">
+        <div class="ready"><div style="display:flex;justify-content:space-between;align-items:center"><b>Ready to decide</b>${statusLine}</div>
+          <div class="ticks">${checks.map(x => `<i class="${x[1] ? 'on' : ''}" title="${x[0]}"></i>`).join('')}</div><span class="mute" style="font-size:11px">${okN} of 5 checks</span></div>
+        ${next}
+        <div class="ctrs"><div><span>Needs</span><b>${c.needsAnswered}/${c.needs}</b></div><div><span>Criteria</span><b>${c.must} must · ${c.nice} nice</b></div>
+          <div><span>Shortlist</span><b>${c.shortlisted}</b></div><div><span>Pick</span><b>${c.chosen ? esc(c.chosen.name) : '—'}</b></div></div>
+        ${s.status === 'exploring' && !ready ? '<button class="ask" data-rec>Ask for a recommendation now</button>' : ''}
+        <button class="open-b" data-open>Open board ⤢</button></div>`;
+      const ans = el.querySelector('[data-ans]'); if (ans) ans.onchange = () => act.answer(first.need, ans.value);
+      const addn = el.querySelector('[data-addn]'); if (addn) addn.onkeydown = e => { if (e.key === 'Enter') act.addNeed(addn.value); };
+      el.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => act.rank(first.crit, b.dataset.rk));
+      el.querySelectorAll('[data-sl]').forEach(b => b.onclick = () => act.product(s.products[+b.dataset.sl], 'shortlisted'));
+    } else {
+      const order = { must: 0, nice: 1, open: 2, irrelevant: 3 }, ks = [...s.criteria].sort((a, b) => order[a.state] - order[b.state]);
+      const P = s.products, ord = { chosen: 0, shortlisted: 1, candidate: 2, rejected: 3 }, ps = [...P].sort((a, b) => ord[a.state] - ord[b.state]);
+      el.innerHTML = `<div class="doc">
+        <div class="bar"><h2>Decision · ${esc(s.subject)}</h2>${statusLine}<button data-close>Back to graph ✕</button></div>
+        <h3>Ready to decide · ${okN} of 5</h3><ul class="check">${checks.map(x => `<li class="${x[1] ? 'ok' : ''}">${x[0]}</li>`).join('')}</ul>
+        <h3>My needs</h3><div class="needs">${s.needs.map((n, i) => `<div class="r ${n.answer ? '' : 'open'}"><span class="q">${esc(n.q)}</span><input class="edit" data-n="${i}" value="${esc(n.answer || '')}" placeholder="○ to answer"></div>`).join('')}
+          <div class="r"><input class="edit" data-add placeholder="+ add a need"><span></span></div></div>
+        <h3>What matters, ranked</h3><div class="rank">${ks.length ? ks.map((k, i) => `<div class="r ${k.state}"><span class="n">${i + 1}</span><span>${esc(k.name)}<span class="why">${esc(k.why)}</span></span>
+          <span class="seg">${['must', 'nice', 'irrelevant'].map(x => `<button class="${k.state === x ? 'on' : ''}" data-k="${s.criteria.indexOf(k)}" data-v="${x}">${x}</button>`).join('')}</span></div>`).join('') : '<p class="mute">No criteria yet.</p>'}</div>
+        <h3>Shortlist and pick</h3><div class="pick">${ps.length ? ps.map(p => `<div class="r ${p.state}">
+          ${p.state === 'shortlisted' || p.state === 'chosen' ? `<input type="radio" name="pick" ${p.state === 'chosen' ? 'checked' : ''} ${s.status === 'bought' ? 'disabled' : ''} data-pick="${P.indexOf(p)}" aria-label="Choose ${esc(p.name)}">` : '<span></span>'}
+          <span>${esc(p.name)}<span class="sub">${esc(p.state === 'rejected' ? 'rejected: ' + p.reason : p.fact)}</span></span>
+          <span>${p.state === 'candidate' ? `<button data-p="${P.indexOf(p)}" data-v="shortlisted">shortlist</button>` : p.state === 'rejected' ? '' : p.state === 'chosen' ? '<b>chosen</b>' : `<button data-p="${P.indexOf(p)}" data-v="rejected">reject</button>`}</span></div>`).join('') : '<p class="mute">No products yet.</p>'}</div>
+        <div class="foot">${s.status === 'exploring' ? `<button class="${ready ? 'on' : ''}" data-rec>${ready ? 'Get the recommendation' : `Ask now (${missing.length} missing)`}</button>` : ''}
+          ${s.status === 'decided' ? '<button class="on" data-bought>Mark as bought</button>' : ''}${s.status === 'bought' ? '<b>Bought ✓</b>' : ''}
+          ${s.recommendation && s.status !== 'exploring' ? `<span class="mute">${esc(s.recommendation)}</span>` : ''}</div></div>`;
+      el.querySelector('[data-close]').onclick = () => setExpanded(false);
+      el.querySelectorAll('[data-n]').forEach(i => i.onchange = () => act.answer(s.needs[+i.dataset.n], i.value));
+      const add = el.querySelector('[data-add]'); add.onkeydown = e => { if (e.key === 'Enter') act.addNeed(add.value); };
+      el.querySelectorAll('[data-k]').forEach(b => b.onclick = () => act.rank(s.criteria[+b.dataset.k], b.dataset.v));
+      el.querySelectorAll('[data-pick]').forEach(r => r.onchange = () => act.product(P[+r.dataset.pick], 'chosen'));
+    }
+    el.querySelectorAll('[data-open]').forEach(b => b.onclick = () => setExpanded(true));
+    el.querySelectorAll('[data-rec]').forEach(b => b.onclick = () => act.recommend());
+    el.querySelectorAll('[data-p]').forEach(b => b.onclick = () => act.product(s.products[+b.dataset.p], b.dataset.v));
+    el.querySelector('[data-fill]')?.addEventListener('click', () => act.fillCompare());
+    el.querySelector('[data-bought]')?.addEventListener('click', () => act.bought());
+  }
+});
+</script>
+</body>
+</html>

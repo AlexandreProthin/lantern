@@ -1,0 +1,51 @@
+<!--
+  id:        r002-02
+  component: choose-nodes
+  phase:     color
+  parents:   r001-01
+  direction: The amount of teal follows how firm the decision is. Answered and must are filled --accent; nice and shortlisted are --surface-2 with an --accent ring and pictogram (half-way); chosen is filled, glowing (--glow-near, --glow-far) and ringed in --focus, the only settled node that glows. The must, shortlisted and chosen badges are filled (--accent, --focus); the others are --bg with a teal ring. Irrelevant is a --line ring. A rejected product keeps the room's one warm note: its × badge in --error / --error-ink, the node faded. Dismissed fades with no colour.
+  request:   revision 2
+  inputs:    Then jump to the color round and pick the missing choices from other choose room design round to keep it uniform. if in doute of anything ask me. / To keep the lantern feeling over the room stay coherent with the already designed learn room
+  frozen:    structure r001-01 (assets/glyphs-r001-01.js). Form and type were not run as rounds; per the brief they are
+             taken from the settled Choose and Learn rounds: Learn final node form (44 px disc, 13 px / 1.5 titles),
+             choose-board r003-01 type (app families, sentence case), choose-palette r001-01 tokens (CR-70),
+             Learn's open / lit / faded looks and the final backdrop (assets/node-kit-room.js).
+  shared:    ../choose-nodes-data.js, ../assets/node-kit.js, ../assets/glyphs-r001-01.js, ../assets/node-kit-room.js, ../assets/backdrop.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>choose-nodes r002-02 · Graded teal</title>
+<style>
+/* this proposal: how the decision states use the Choose tokens */
+.look-settled .anchor{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.look-settled .badge{background:var(--bg);border-color:var(--accent);color:var(--accent)}
+.nice .anchor,.shortlisted .anchor{background:var(--surface-2);border-color:var(--accent);color:var(--accent)}
+.must .badge,.shortlisted .badge{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chosen .anchor{box-shadow:0 0 14px 2px var(--glow-near),0 0 38px 9px var(--glow-far)}
+.chosen .anchor::before{border-color:var(--focus)}
+.chosen .badge{background:var(--focus);border-color:var(--focus);color:var(--accent-ink)}
+.look-quiet .anchor{background:var(--bg);border-color:var(--line);color:var(--ink-mute)}
+.look-quiet .t{color:var(--ink-mute)}.look-quiet .badge{border-color:var(--line);color:var(--ink-mute)}
+.look-faded .badge{border-color:var(--node-open);color:var(--node-open)}
+.rejected .badge{background:var(--bg);border-color:var(--error);color:var(--error-ink)}
+.rejected.look-faded{opacity:.6}
+</style>
+</head>
+<body>
+<script src="../choose-nodes-data.js"></script>
+<script src="../assets/node-kit.js"></script>
+<script src="../assets/glyphs-r001-01.js"></script>
+<script src="../assets/node-kit-room.js"></script>
+<script>
+NodeKit.mountRoom({
+  phase: 'color', id: 'r002-02', title: "Graded teal",
+  direction: "The amount of teal follows how firm the decision is. Answered and must are filled --accent; nice and shortlisted are --surface-2 with an --accent ring and pictogram (half-way); chosen is filled, glowing (--glow-near, --glow-far) and ringed in --focus, the only settled node that glows. The must, shortlisted and chosen badges are filled (--accent, --focus); the others are --bg with a teal ring. Irrelevant is a --line ring. A rejected product keeps the room's one warm note: its × badge in --error / --error-ink, the node faded. Dismissed fades with no colour.",
+  renderNode: GLYPHS.renderNode, legend: GLYPHS.legend,
+
+});
+</script>
+</body>
+</html>

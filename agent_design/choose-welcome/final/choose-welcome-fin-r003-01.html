@@ -1,0 +1,51 @@
+<!--
+  id:        r003-01
+  component: choose-welcome
+  phase:     motion
+  parents:   r001-01, r001-02, r002-01
+  direction: Learn's Welcome motion, ported as shipped onto r002-01 (app embers.ts and capsule.ts, the welcome and welcome-context recipes), the light teal because it reads the tokens. Arrival: the underline draws in (650 ms), then a light runs along it from the left edge to the centre and fans out, once per load. The capsule: rest to capsule to two-part card in 380 ms ease-out cubic-bezier(.2,.8,.2,1), the subject shrinks with a brief opacity dip (260 ms), Carry the lantern in slides out from behind the edge on focus (240 ms) and back on leaving (170 ms), rides the card's corner on Shift+Enter; the hairline draws in, the needs drop in, the hint glides with the card; closing fades the needs (110 ms) first. Choose additions in Learn's words: the need starters appear like Learn's suggestion chips (200 ms, 50 ms apart), and hovering a recent card runs the light along its steps bar to where the decision stands (Learn: through the graph thumbnail). Submit: a light runs from the field to the button, handoff 260 ms after, timer-driven. Reduced motion: everything instant, no canvas.
+  request:   revision 5
+  inputs:    as close as learn room. Only one proposition for the next round
+  base:      r002-01 frozen (../assets/color-base.js + r002-01's light, copied unchanged; the button's selectors follow it
+             out of the capsule, and its size is Learn's 12 x 28 px). Motion in ../assets/welcome-motion.js.
+  shared:    ../choose-welcome-data.js, ../assets/welcome-kit.js, ../assets/color-base.js, ../assets/welcome-motion.js, ../assets/backdrop.js
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose welcome r003-01 — Learn's embers, teal</title>
+</head>
+<body>
+<script src="../choose-welcome-data.js"></script>
+<script src="../assets/welcome-kit.js"></script>
+<script src="../assets/color-base.js"></script>
+<script src="../assets/welcome-motion.js"></script>
+<script>
+WELCOME_KIT.mount({
+  id: 'r003-01', title: "Learn's embers, teal",
+  css: COLOR_BASE.css + `
+  .ask::before { content: ''; position: absolute; width: min(560px, 100%); height: 240px; top: -100px; left: 50%; transform: translateX(-50%); background: radial-gradient(ellipse, var(--glow-far), transparent 70%); pointer-events: none; }
+  .cap { border-bottom-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  .cap:not(.on):focus-within { border-bottom-color: var(--accent); box-shadow: 0 6px 15px -10px var(--glow-near); }
+  .cap.on { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); background: color-mix(in srgb, var(--bg) 70%, transparent); }
+  .subj, .dirf { caret-color: var(--accent); }
+  .hair { background: var(--line); }
+  .ask > .primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .ask > .primary:hover:not(:disabled) { background: var(--focus); border-color: var(--focus); }
+  .tones button[aria-pressed=true] { background: var(--surface-2); color: var(--node-lit); }
+  .starters button { background: none; border: 1px dashed var(--line); color: var(--ink-mute); }
+  .starters button:hover { border-color: var(--accent); color: var(--accent); }
+  .card { opacity: .7; } .card:hover, .card:focus-within, .card:focus { opacity: 1; }
+
+  .ask > .primary { padding: 12px 28px; font: 600 14px var(--font-text); border-radius: 999px; }
+` + WELCOME_MOTION.css,
+  render: COLOR_BASE.render,
+  wire: WELCOME_MOTION.wire,
+});
+</script>
+<script src="../assets/backdrop.js"></script>
+<script>document.dispatchEvent(new CustomEvent('lx:screen', { detail: 'welcome' }));</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "selection_revision": 6,
+  "proposals": [
+    {
+      "id": "r005-01",
+      "parents": [
+        "r001-01",
+        "r002-01",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/choose-board-mot-r005-01.html",
+      "title": "Quiet fades",
+      "direction": "Everything still and quick: only opacity moves, nothing travels or scales. The board fades in over the graph in 160 ms and out in 120 ms; a changed counter cross-fades its numeral (200 ms); Recommend, a new status and the chosen card fade up to their state (200–240 ms). No glow, no backdrop reaction. The closest reading of RS-33's calm frame."
+    },
+    {
+      "id": "r005-02",
+      "parents": [
+        "r001-01",
+        "r002-01",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/choose-board-mot-r005-02.html",
+      "title": "Unfold from the spine",
+      "direction": "Spatial, and the teal spine leads. The board unfolds leftward out of the rail (a 320 ms reveal from its edge, decelerating), its sections arriving 40 ms apart, and folds back into the rail in 240 ms. A changed counter rolls: the old value slides up and out as the new one rises in (280 ms). When the board becomes complete, a light runs up the spine (600 ms) and Recommend fills with teal from the left; the chosen card fills the same way (360 ms); a new status slides in."
+    },
+    {
+      "id": "r005-03",
+      "parents": [
+        "r001-01",
+        "r002-01",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/choose-board-mot-r005-03.html",
+      "title": "Lantern light",
+      "direction": "Light, not movement, the language of the graph and the backdrop. The board opens with a soft fade and a 1.5 % settle (240 ms). A counter that changes glows briefly as it settles to teal (900 ms). Becoming complete sends one slow halo around Recommend (1.2 s, once) and warms the backdrop at that spot, as a lit node does; choosing a product and a new status do the same at the card and the chip. Each light is a single event, never a loop."
+    }
+  ]
+}

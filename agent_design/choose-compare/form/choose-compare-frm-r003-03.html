@@ -1,0 +1,78 @@
+<!--
+  id:        r003-03
+  component: choose-compare
+  phase:     form
+  parents:   r001-01, r001-03, r002-01
+  direction: Hierarchy by grey surfaces, no lines: every cell is a rounded tile with small gaps between, the criterion column a darker pane, product headers lighter tiles. The open card is a raised, lighter tile with a notch pointing up at its cell; a fully unfolded row lays its cards out as a row of raised tiles. Sources sit in inset pills; the chosen column's tiles are a step lighter.
+  request:   revision 3
+  inputs:    r002-01 but selecting a cell other than one from the first column only unfold its corresponding card. if the entire row is unfolded from a clic from the first column then clicking a cell from the compared choices fold the row if not in it and open the item else just keep this item deployed
+  read as:   structure amendment, agreed with the user in chat before this round (2026-10-15): the click rules of the prompt are
+             applied to r002-01's structure and frozen in ../assets/compare-structure.js. A click on a product cell unfolds only
+             that cell's card; if rows were unfolded from the first column, they fold, and if the clicked cell is in an unfolded
+             row only its card stays open ("keep this item deployed" = only that card, the user's answer). Cards replace in-place
+             editing. This round varies composition, density and hierarchy only, greyscale, one typeface.
+  shared:    ../assets/compare-kit.js, ../assets/compare-structure.js, ../choose-compare-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose compare r003-03 — Tonal tiles</title>
+</head>
+<body>
+<script src="../choose-compare-data.js"></script>
+<script src="../assets/compare-kit.js"></script>
+<script src="../assets/compare-structure.js"></script>
+<script>
+COMPARE_KIT.mount({ id: 'r003-03', title: "Tonal tiles", render: COMPARE_RENDER, css: `
+  .scroll { position: absolute; inset: 0; overflow: auto; padding-bottom: 70px; }
+  table { border-collapse: separate; min-width: 100%; }
+  th, td { vertical-align: top; text-align: left; }
+  thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); }
+  thead th.corner, tbody th { position: sticky; left: 0; z-index: 1; background: var(--bg); }
+  thead th.corner { z-index: 3; cursor: pointer; }
+  thead th small, tbody th .why, tbody th .sum { display: block; }
+  thead th .acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  tbody tr.crow th { cursor: pointer; } tbody th .tw { display: inline-block; width: 14px; }
+  td[data-cell] { cursor: pointer; } td .v, td .price, td .room, td .note { display: block; }
+  td .srcs { display: flex; flex-wrap: wrap; align-items: center; } .tagline { display: inline-flex; gap: 5px; align-items: center; }
+  tr.ev > th, tr.ev > td { cursor: default; } tr.ev.single > td:empty { background: transparent; }
+  .card .ch { display: flex; gap: 8px; align-items: baseline; } .card .ch .fold { margin-left: auto; }
+  .src { display: grid; } .src .meta { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; } .src.sponsored .sv { text-decoration: line-through; }
+  .ed { display: grid; } .ed .row { display: flex; flex-wrap: wrap; }
+
+  :root { --fg: #f0f0f0; --bg: #0c0c0c; --mute: #a3a3a3; --faint: #6b6b6b; --hair: #3a3a3a; --fill: #1d1d1d; --pane: #151515; --tile: #1e1e1e; --tile2: #262626; --raised: #2e2e2e; }
+  table { border-spacing: 6px; }
+  thead th { padding: 12px 14px; min-width: 210px; background: var(--bg); }
+  thead th.prod { background: var(--tile2); border-radius: 12px; } thead th.chosen { background: #343434; }
+  thead th.corner { width: 240px; background: var(--pane); border-radius: 12px; } thead th.corner small { font-weight: 400; font-size: 11px; color: var(--mute); margin-top: 4px; }
+  thead th .pn { font-size: 15px; } thead th .acts { margin-top: 8px; } thead th .acts button { border: 0; background: var(--raised); border-radius: 8px; font-size: 11px; padding: 3px 10px; }
+  tr.grp th { padding: 10px 14px 0; font-size: 11px; font-weight: 600; color: var(--mute); background: var(--bg); }
+  tbody tr.crow th { padding: 12px 14px; font-weight: 400; background: var(--pane); border-radius: 12px; } tbody tr.crow th:hover { background: #1a1a1a; }
+  tbody th .cn { font-size: 14px; font-weight: 600; } tbody th .why { font-size: 11px; color: var(--mute); margin: 3px 0 0 14px; }
+  tbody th .sum { font-size: 11px; color: var(--mute); margin: 6px 0 0 14px; background: var(--tile); border-radius: 999px; padding: 2px 8px; display: inline-block; }
+  tr.irr { opacity: .55; }
+  td[data-cell] { padding: 12px 14px; background: var(--tile); border-radius: 12px; max-width: 280px; } td[data-cell]:hover { background: var(--tile2); }
+  td.chosen[data-cell] { background: var(--tile2); }
+  td .v { font-size: 14px; font-weight: 600; } td .v.none { font-weight: 400; font-style: italic; color: var(--mute); }
+  td.disagree .v::before { content: '≠ '; } td.none .v::before { content: '? '; }
+  td .srcs { gap: 4px; margin-top: 8px; } .tagline { font-size: 10px; color: var(--mute); background: var(--bg); border-radius: 999px; padding: 2px 8px 2px 3px; }
+  .k { border: 0; background: var(--raised); border-radius: 999px; padding: 0 6px; } .k[data-k='measured'] { background: #444; } .k[data-k='user'] { background: var(--fg); color: var(--bg); }
+  td .note { font-size: 11px; margin-top: 8px; background: var(--raised); border-radius: 8px; padding: 6px 8px; } td .price, td .room { font-size: 11px; color: var(--mute); margin-top: 4px; }
+  td.filling { background: repeating-linear-gradient(135deg, var(--tile) 0 6px, var(--tile2) 6px 12px); }
+  td.item[data-cell] { background: var(--raised); }
+  tr.ev > th, tr.ev > td { padding: 0; background: transparent; }
+  tr.ev th { font-size: 11px; color: var(--mute); font-weight: 400; padding: 12px 14px; } tr.ev th button { display: block; margin-top: 8px; border: 0; background: var(--raised); border-radius: 8px; font-size: 11px; }
+  .card { position: relative; background: var(--raised); border-radius: 14px; padding: 14px; box-shadow: 0 12px 30px #000; }
+  tr.ev.single .card::before { content: ''; position: absolute; top: -7px; left: 24px; width: 14px; height: 14px; background: var(--raised); transform: rotate(45deg); border-radius: 2px; }
+  .card .ch { font-size: 12px; color: var(--mute); margin-bottom: 10px; } .card .ch b { color: var(--fg); } .card .fold { border: 0; background: var(--tile2); border-radius: 8px; }
+  .srclist { display: grid; gap: 6px; } .src { gap: 2px; padding: 8px 10px; background: var(--tile2); border-radius: 10px; font-size: 12px; } .src .meta { font-size: 10px; color: var(--mute); } .src.sponsored { opacity: .55; }
+  .card .note { font-size: 11px; margin-bottom: 8px; background: var(--tile2); border-radius: 8px; padding: 6px 8px; } .card .yours { font-size: 12px; margin-bottom: 8px; } .card .pricenote { font-size: 11px; color: var(--mute); margin-top: 6px; }
+  .ed { gap: 6px; margin-top: 12px; } .ed .row { gap: 6px; } .ed .edit { background: var(--tile2); border: 0; border-radius: 8px; padding: 6px 8px; }
+  .ed button { border: 0; background: var(--tile2); border-radius: 8px; font-size: 11px; }
+  .more { font-weight: 400; color: var(--mute); padding: 10px; }
+` });
+</script>
+</body>
+</html>

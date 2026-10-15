@@ -1,0 +1,270 @@
+{
+  "meta": {
+    "about": "Content for the choose-welcome proposals: the Welcome space of the Choose room (choose-room CR-11, CR-12, CR-13, CR-24, CR-90; frame RS-11, RS-12, RS-20; Learn baseline welcome-gallery WG-1 to WG-14). Not real data: products are placeholders (Printer A…) on purpose, as in choose-board. Every proposal reads this file through choose-welcome-data.js and assets/welcome-kit.js.",
+    "settings": "the Settings values Welcome reads (CR-90 and Provider): country and currency of the Choose room, useWeb, the room's default tone, the Provider default model and the model list (SE-48). Welcome never writes them.",
+    "copy": "fixed strings. question = the field's placeholder (CR-12); directionPlaceholder and example are proposals for this design, the rest follow WG-9/WG-10/WG-12/WG-13/WG-14 rewritten for Choose. {currency} is replaced by settings.currencySymbol.",
+    "starters": "need starters some proposals offer next to the direction: label = what the chip shows, insert = the text it adds at the cursor (a label only; the user writes the value, the app never writes the answer, as WG-11). They map to CR-30's needs.",
+    "subjects": "Choose subjects, newest last-opened first. id; title (1 to 120 characters, CR-12/WG-3); status exploring | decided | bought (CR-24); needs {answered,total}; criteria {must,nice,irrelevant,open} (CR-21); shortlisted (count); pick: the chosen product name, null while exploring (CR-22); missing: what the board still lists before a decision (CR-61 rule, from choose-board), empty when complete; lastOpened: relative text (WG-5 rule) with lastOpenedExact for the tooltip; createdAt; direction: what the user typed on Welcome, or empty. price: the chosen product's price as last seen, for the pick line (choose-gallery), null without a pick.",
+    "scenarios": "one per state the proposals must draw: subjects = ids shown as recents (at most 3, WG-6); total = all Choose subjects (Browse all n); cli = provider ready; library = library folder available (RS-41). first run: no subjects, Gallery and the subject spaces disabled (RS-11).",
+    "hardCases": "decided (sofa, long title), bought (printer), exploring with a long missing list (headphones, 118-character title), a brand-new subject with nothing settled (car), a subject with a direction and one without, CLI not ready, library unavailable, first run, a single subject, and the direction's 500-character limit (WG-9)."
+  },
+  "settings": {
+    "country": "France",
+    "currency": "EUR",
+    "currencySymbol": "€",
+    "useWeb": true,
+    "defaultTone": "Curious",
+    "defaultModel": "opus",
+    "models": [
+      {
+        "id": "opus",
+        "label": "Opus 5.5"
+      },
+      {
+        "id": "sonnet",
+        "label": "Sonnet 5.5"
+      },
+      {
+        "id": "haiku",
+        "label": "Haiku 5.5"
+      }
+    ],
+    "tones": [
+      "ELI5",
+      "Curious",
+      "Student",
+      "Engineer",
+      "Expert",
+      "Custom"
+    ]
+  },
+  "copy": {
+    "room": "Choose",
+    "question": "What do you want to choose?",
+    "submit": "Carry the lantern in",
+    "directionPlaceholder": "Budget, who it's for, what you already know… (optional)",
+    "example": "For example, a 3D printer, a family car, or headphones for flights.",
+    "exampleKey": "Shift+Enter adds your budget and needs.",
+    "directionSample": "budget about 500 €, I want to print figurines for my kids",
+    "directionLimit": 500,
+    "directionCounterFrom": 400,
+    "titleLimit": 120,
+    "blankSubject": "Add what you want to choose; the needs alone are not enough.",
+    "overLimit": "The needs are {n} characters over the 500 limit.",
+    "firstRun": "Bring something you want to choose and know nothing about. The room shows what matters, asks what you need, and compares real products with their sources.",
+    "cliNotReady": "The Claude Code CLI is not ready. Fix it in Settings → Provider.",
+    "libraryUnavailable": "The library folder is not available. Choose another folder in Settings → Library.",
+    "locale": "Prices for {country} in {currency} · research on the web",
+    "localeOffline": "Prices for {country} in {currency} · web off, from the model's knowledge",
+    "browseAll": "Browse all {n}",
+    "continue": "Continue",
+    "recentTitle": "Continue a choice"
+  },
+  "starters": [
+    {
+      "label": "Budget",
+      "insert": "budget about  {currency}",
+      "caretBack": 2
+    },
+    {
+      "label": "Who it's for",
+      "insert": "it's for "
+    },
+    {
+      "label": "What for",
+      "insert": "I want to use it to "
+    },
+    {
+      "label": "Where it goes",
+      "insert": "it will be in "
+    },
+    {
+      "label": "Already have",
+      "insert": "I already have "
+    },
+    {
+      "label": "Must avoid",
+      "insert": "I don't want "
+    }
+  ],
+  "subjects": [
+    {
+      "id": "printer",
+      "title": "3D printer",
+      "status": "bought",
+      "needs": {
+        "answered": 4,
+        "total": 4
+      },
+      "criteria": {
+        "must": 2,
+        "nice": 2,
+        "irrelevant": 1,
+        "open": 0
+      },
+      "shortlisted": 3,
+      "pick": "Printer A",
+      "missing": [],
+      "lastOpened": "today",
+      "lastOpenedExact": "14 Oct 2026, 18:42",
+      "createdAt": "2 Oct 2026",
+      "direction": "budget about 500 €, I want to print figurines for my kids",
+      "price": "549 €"
+    },
+    {
+      "id": "sofa",
+      "title": "A sofa bed for the small guest room that a tall adult can actually sleep on",
+      "status": "decided",
+      "needs": {
+        "answered": 5,
+        "total": 5
+      },
+      "criteria": {
+        "must": 3,
+        "nice": 1,
+        "irrelevant": 2,
+        "open": 0
+      },
+      "shortlisted": 2,
+      "pick": "Sofa B",
+      "missing": [],
+      "lastOpened": "yesterday",
+      "lastOpenedExact": "13 Oct 2026, 21:05",
+      "createdAt": "9 Oct 2026",
+      "direction": "room is 2.6 m wide, under 900 €, guests twice a month",
+      "price": "829 €"
+    },
+    {
+      "id": "headphones",
+      "title": "Noise-cancelling headphones for long-haul flights and open-plan office work, comfortable with glasses on all day",
+      "status": "exploring",
+      "needs": {
+        "answered": 2,
+        "total": 4
+      },
+      "criteria": {
+        "must": 1,
+        "nice": 3,
+        "irrelevant": 0,
+        "open": 2
+      },
+      "shortlisted": 1,
+      "pick": null,
+      "missing": [
+        "2 needs to answer",
+        "2 criteria to rank",
+        "1 more product to shortlist",
+        "3 Compare cells to fill"
+      ],
+      "lastOpened": "3 days ago",
+      "lastOpenedExact": "11 Oct 2026, 09:12",
+      "createdAt": "11 Oct 2026",
+      "direction": "",
+      "price": null
+    },
+    {
+      "id": "car",
+      "title": "Family car",
+      "status": "exploring",
+      "needs": {
+        "answered": 0,
+        "total": 0
+      },
+      "criteria": {
+        "must": 0,
+        "nice": 0,
+        "irrelevant": 0,
+        "open": 0
+      },
+      "shortlisted": 0,
+      "pick": null,
+      "missing": [
+        "needs",
+        "criteria",
+        "a shortlist"
+      ],
+      "lastOpened": "12 Sep",
+      "lastOpenedExact": "12 Sep 2026, 16:30",
+      "createdAt": "12 Sep 2026",
+      "direction": "",
+      "price": null
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "normal",
+      "label": "Normal (bought, decided, exploring)",
+      "subjects": [
+        "printer",
+        "sofa",
+        "headphones"
+      ],
+      "total": 7,
+      "cli": true,
+      "library": true
+    },
+    {
+      "id": "exploring",
+      "label": "Two exploring",
+      "subjects": [
+        "headphones",
+        "car",
+        "printer"
+      ],
+      "total": 4,
+      "cli": true,
+      "library": true
+    },
+    {
+      "id": "one",
+      "label": "One subject",
+      "subjects": [
+        "car"
+      ],
+      "total": 1,
+      "cli": true,
+      "library": true
+    },
+    {
+      "id": "first",
+      "label": "First run",
+      "subjects": [],
+      "total": 0,
+      "cli": true,
+      "library": true
+    },
+    {
+      "id": "cli",
+      "label": "CLI not ready",
+      "subjects": [
+        "printer",
+        "sofa",
+        "headphones"
+      ],
+      "total": 7,
+      "cli": false,
+      "library": true
+    },
+    {
+      "id": "nolib",
+      "label": "Library unavailable",
+      "subjects": [],
+      "total": 0,
+      "cli": true,
+      "library": false
+    },
+    {
+      "id": "offline",
+      "label": "Web off (CR-44)",
+      "subjects": [
+        "printer",
+        "sofa",
+        "headphones"
+      ],
+      "total": 7,
+      "cli": true,
+      "library": true,
+      "useWeb": false
+    }
+  ]
+}

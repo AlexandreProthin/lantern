@@ -1,0 +1,125 @@
+<!--
+  id:        r001-03
+  component: choose-welcome
+  phase:     wireframe
+  parents:   none
+  direction: Two beats and next steps. The first beat is Learn's rest state: one question, nothing else asked. Enter does not leave Welcome at once: the subject rises into a sentence ("Choosing a 3D printer") and a second beat asks "Anything the room should know first?" with the direction; Enter there carries the lantern in, with or without needs (Shift+Enter in the subject jumps straight there, Esc goes back). One optional question, never a questionnaire (CR-32). The recents are next-step cards: each says what the choice needs now (answer 2 needs, rank 2 criteria / mark Sofa B as bought / done) and its action opens Survey on that place.
+  request:   revision 1
+  inputs:    Welcome space of the Choose room (choose-room CR-11, CR-12, CR-13, CR-24, CR-90; header RS-12/RS-20). "What do you want to choose?" with the optional direction field (e.g. "budget about 500 €, I want to print figurines for my kids"), the 3 most recent Choose subjects with their status (exploring / decided / bought) to continue, and the way to Gallery. Hard cases: first run with no subjects, a subject that's decided, one that's bought, long subject names, CLI not ready. Explore what is specific to choosing compared with Learn (e.g. how the direction field invites needs and budget), but don't break the shared header/space structure (RS-12, RS-20). Stay consistent with Learn's Welcome (welcome and welcome-context recipes) and the choose-palette recipe.
+  shared:    ../assets/welcome-kit.js with ../choose-welcome-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose welcome r001-03 — Two beats, next steps</title>
+</head>
+<body>
+<script src="../choose-welcome-data.js"></script>
+<script src="../assets/welcome-kit.js"></script>
+<script>
+const K = WELCOME_KIT, { C, esc, fill } = K;
+function next(s) {
+  if (s.status === 'bought') return { say: `Done: you bought <b>${esc(s.pick)}</b>.`, act: 'Open' };
+  if (s.status === 'decided') return { say: `You chose <b>${esc(s.pick)}</b>. Bought it?`, act: 'Open the pick', extra: 'Mark as bought' };
+  if (!s.missing.length) return { say: 'Everything is settled.', act: 'Ask for a recommendation' };
+  return { say: `Next: ${esc(s.missing[0])}${s.missing.length > 1 ? ` <span class="faint">+${s.missing.length - 1} more</span>` : ''}`, act: C.continue, list: s.missing };
+}
+K.mount({
+  id: 'r001-03', title: 'Two beats, next steps',
+  css: `
+  .wrap { max-width: 820px; margin: 0 auto; padding: 16vh 16px 80px; display: flex; flex-direction: column; gap: 18px; }
+  .lede { text-align: center; color: var(--mute); margin: 0 auto 6px; max-width: 560px; }
+  .beat1 .subj { width: 100%; border: 0; border-bottom: 1px solid var(--fg); background: none; font-size: 34px; font-weight: 300; text-align: center; padding: 6px 0 12px; outline: none; }
+  .example { text-align: center; font-size: 12px; color: var(--faint); margin-top: 6px; }
+  .example kbd { font: inherit; color: var(--mute); }
+  .beat2 { display: none; flex-direction: column; gap: 10px; }
+  .stage.two .beat1 { display: none; } .stage.two .beat2 { display: flex; }
+  .sentence { font-size: 26px; font-weight: 300; text-align: center; }
+  .sentence button.link { font-size: 12px; margin-left: 8px; vertical-align: middle; }
+  .q { text-align: center; color: var(--mute); }
+  .dirf { width: 100%; border: 1px solid var(--fg); border-radius: 12px; background: none; resize: none; font-size: 15px; line-height: 1.5; min-height: 84px; padding: 10px 14px; outline: none; }
+  .b2tail { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .b2tail .keys { font-size: 11px; color: var(--faint); }
+  .b2tail .btns { display: flex; gap: 10px; align-items: center; }
+  .why { text-align: center; }
+  .locale { text-align: center; font-size: 11px; color: var(--faint); }
+  .locale button.link { font-size: 11px; color: var(--faint); }
+  .shelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 6vh; }
+  .card { border: 1px solid var(--hair); display: flex; flex-direction: column; min-width: 0; }
+  .card .hd { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
+  .card .hd:hover { background: var(--fill); }
+  .card .top { display: flex; justify-content: space-between; font-size: 11px; color: var(--mute); gap: 8px; }
+  .card h3 { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .card .nx { border-top: 1px dashed var(--hair); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; font-size: 13px; }
+  .card .nx .acts { margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .card .nx ul { margin: 0; padding-left: 16px; font-size: 12px; color: var(--mute); display: none; }
+  .card:hover .nx ul, .card:focus-within .nx ul { display: block; }
+  .card[data-s='bought'] { border-style: dashed; }
+  .browse { text-align: center; }
+  @media (max-width: 720px) { .shelf { grid-template-columns: 1fr; } .beat1 .subj { font-size: 26px; } }
+  `,
+  render({ sc, subjects, first, locale }) {
+    if (!sc.library) return `<div class="wrap"><div class="beat1"><input class="subj" disabled placeholder="${esc(C.question)}"></div>
+      <div class="notice">${esc(C.libraryUnavailable)} <button class="link" data-settings="Library">Open Settings</button></div></div>`;
+    const cards = subjects.map((s) => {
+      const n = next(s);
+      return `<article class="card" data-s="${s.status}">
+        <div class="hd" data-open="${s.id}" title="${esc(s.title)}"><div class="top">${K.statusPill(s)}<span>${K.opened(s)}</span></div>
+          <h3 class="clamp2">${esc(s.title)}</h3><div class="faint" style="font-size:11px">${esc(K.stats(s))}</div></div>
+        <div class="nx"><div>${n.say}</div>${n.list ? `<ul>${n.list.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}
+          <div class="acts"><button data-open="${s.id}">${n.act}</button>${n.extra ? `<button class="mark-bought" data-id="${s.id}">${n.extra}</button>` : ''}</div></div></article>`;
+    }).join('');
+    return `<div class="wrap">
+      ${first ? `<p class="lede">${esc(C.firstRun)}</p>` : ''}
+      <div class="stage" id="stage">
+        <div class="beat1"><input class="subj" id="subj" maxlength="${C.titleLimit}" placeholder="${esc(C.question)}" autofocus aria-label="${esc(C.question)}">
+          <div class="example">${esc(C.example)} <kbd>Enter</kbd> to go on.</div></div>
+        <div class="beat2" aria-live="polite">
+          <div class="sentence">Choosing <b id="echo"></b><button class="link" id="back">change</button></div>
+          <div class="q">Anything the room should know first? Budget, who it's for, what you already have.</div>
+          <textarea class="dirf" id="dir" rows="3" placeholder="${esc(C.directionSample)}" aria-label="Your needs and budget"></textarea>
+          <div class="b2tail"><span class="keys"><span class="counter" id="cnt"></span> Enter carries the lantern in · Shift+Enter new line · Esc back</span>
+            <span class="btns"><button class="link" id="skip">Start with nothing more</button><button class="primary" id="go">${C.submit}</button></span></div>
+        </div>
+      </div>
+      <div class="why" id="why"></div>
+      ${sc.cli ? '' : `<div class="notice">${esc(C.cliNotReady)} <button class="link" data-settings="Provider">Open Settings → Provider</button> · your choices below still open.</div>`}
+      ${K.pickers()}
+      <div class="locale">${esc(locale)} · <button class="link" data-settings="Choose room">change</button></div>
+      ${subjects.length ? `<section class="shelf" aria-label="Recent choices">${cards}</section>` : ''}
+      ${sc.total ? `<div class="browse"><button class="link" data-browse>${fill(C.browseAll, { n: sc.total })}</button></div>` : ''}
+    </div>`;
+  },
+  wire({ sc }) {
+    document.querySelectorAll('.mark-bought').forEach((b) => b.addEventListener('click', () => K.toast(`Marked as bought: ${esc(b.closest('.card').querySelector('h3').textContent)} (same action as the board's Mark as bought; Undo for 10 s)`)));
+    const stage = document.getElementById('stage'), subj = document.getElementById('subj'), dir = document.getElementById('dir');
+    if (!subj || subj.disabled) return;
+    const go = document.getElementById('go'), skip = document.getElementById('skip');
+    const upd = () => {
+      const r = K.check(subj.value, dir.value);
+      go.disabled = !r.ok; skip.disabled = !sc.cli;
+      const cnt = document.getElementById('cnt'); cnt.textContent = r.counter; cnt.classList.toggle('over', r.over);
+      const why = document.getElementById('why'); why.textContent = r.why; why.classList.toggle('over', r.over);
+    };
+    const two = () => { if (!subj.value.trim()) return; document.getElementById('echo').textContent = subj.value.trim(); stage.classList.add('two'); dir.focus(); upd(); };
+    const one = () => { stage.classList.remove('two'); subj.focus(); upd(); };
+    subj.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); two(); }
+      else if (e.key === 'Escape') { subj.value = ''; upd(); }
+    });
+    dir.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); K.submit(subj.value, dir.value); }
+      else if (e.key === 'Escape') { e.preventDefault(); one(); }
+    });
+    document.getElementById('back').addEventListener('click', one);
+    skip.addEventListener('click', () => K.submit(subj.value, ''));
+    go.addEventListener('click', () => K.submit(subj.value, dir.value));
+    [subj, dir].forEach((el) => el.addEventListener('input', upd));
+    upd();
+  },
+});
+</script>
+</body>
+</html>

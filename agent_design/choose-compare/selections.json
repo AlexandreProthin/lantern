@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "concept": "choose-compare",
+  "revision": 7,
+  "saved_at": "2026-10-14T22:55:37.106388+00:00",
+  "based_on_round": 6,
+  "selected_ids": [
+    "r001-01",
+    "r001-03",
+    "r002-01",
+    "r003-01",
+    "r004-01",
+    "r005-01",
+    "r006-03"
+  ],
+  "next": {
+    "phase": "motion",
+    "mode": "combine",
+    "prompt": "next round is only one proposal. make the columns and row resize smoothly when the selection changes."
+  }
+}

@@ -1,0 +1,144 @@
+<!--
+  id:        r006-03
+  component: choose-compare
+  phase:     motion
+  parents:   r001-01, r001-03, r002-01, r003-01, r004-01, r005-01
+  direction: r006-02 with the line fix the user circled: during a fold or unfold, the empty cells of an evidence row (the other products' columns when a single card is open) no longer show a teal vertical line. The animation's clipping wrapper made them count as non-empty, which switched on the open card's teal rule; empty cells are now left unwrapped, and each cell's rules are read before wrapping. Everything else as r006-02: rows already unfolded stay unfolded, highlights fade with the motion, hover waits while rows resize.
+  request:   revision 6 (round 6, amended)
+  inputs:    User, 2026-10-15, with a screenshot circling teal vertical lines in the empty cells of an opening evidence row: "almost there do r006-03 by fixing the line highlight on fold/unfold i screen it during the animation and circled what i mean"
+  read as:   a third proposal of round 6 (workflow.py amend), r006-01 and r006-02 untouched. The circled lines are the open
+             card's rule (tr.ev.single > td:not(:empty)) lighting up on empty cells while they were wrapped for the animation.
+  shared:    ../assets/compare-kit-color.js, ../assets/compare-structure.js, ../assets/compare-motion-2.js, ../assets/compare-resize-3.js,
+             ../assets/backdrop.js, ../choose-compare-data.js
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose compare r006-03 — Rows stay open, clean lines</title>
+</head>
+<body>
+<script src="../choose-compare-data.js"></script>
+<script src="../assets/compare-kit-color.js"></script>
+<script src="../assets/compare-structure.js"></script>
+<script src="../assets/compare-motion-2.js"></script>
+<script src="../assets/compare-resize-3.js"></script>
+<script>
+const hooks = {
+  bandIn: tr => RESIZE.grow(tr),
+  bandOut: (tr, done) => RESIZE.shrink(tr, done),
+  bandKeep: (tr, h, entering) => RESIZE.keep(tr, h, entering),
+  cardOut: (card, done) => RESIZE.cardOut(card, done),
+  mark: td => RESIZE.mark(td),
+  unmark: (td, done) => RESIZE.unmark(td, done),
+  cell: td => td.animate([{ opacity: .25 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' }),
+  chosen: (th, tds) => [th, ...tds].forEach(x => x && x.animate([{ opacity: .45 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' })),
+  rowsIn: trs => { const g = trs[0]?.previousElementSibling; if (g?.classList.contains('grp')) RESIZE.grow(g); trs.forEach(tr => RESIZE.grow(tr)); }
+};
+COMPARE_KIT.mount({ id: 'r006-03', title: 'Rows stay open, clean lines', render: MOTION.wrap(RESIZE.wrap(COMPARE_RENDER), hooks), css: `
+  .scroll { position: absolute; inset: 0; overflow: auto; padding-bottom: 70px; }
+  table { border-collapse: separate; min-width: 100%; }
+  th, td { vertical-align: top; text-align: left; }
+  thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); }
+  thead th.corner, tbody th { position: sticky; left: 0; z-index: 1; background: var(--bg); }
+  thead th.corner { z-index: 3; cursor: pointer; }
+  thead th small, tbody th .why, tbody th .sum { display: block; }
+  thead th .acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  tbody tr.crow th { cursor: pointer; } tbody th .tw { display: inline-block; width: 14px; }
+  td[data-cell] { cursor: pointer; } td .v, td .price, td .room, td .note { display: block; }
+  td .srcs { display: flex; flex-wrap: wrap; align-items: center; } .tagline { display: inline-flex; gap: 5px; align-items: center; }
+  tr.ev > th, tr.ev > td { cursor: default; } tr.ev.single > td:empty { background: transparent; }
+  .card .ch { display: flex; gap: 8px; align-items: baseline; } .card .ch .fold { margin-left: auto; }
+  .src { display: grid; } .src .meta { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; } .src.sponsored .sv { text-decoration: line-through; }
+  .ed { display: grid; } .ed .row { display: flex; flex-wrap: wrap; }
+
+  :root { --fg: #e6e6e6; --bg: #0f0f0f; --mute: #a0a0a0; --faint: #666; --hair: #2e2e2e; --fill: #181818; --bar: #202020; --band: #151515; }
+  html, body { font-size: 12px; }
+  table { border-spacing: 0; }
+  th, td { border-bottom: 1px solid var(--hair); border-right: 1px solid var(--hair); }
+  thead th { background: var(--bar); padding: 6px 8px; border-bottom: 1px solid var(--fg); min-width: 170px; }
+  thead th.corner { width: 190px; } thead th.corner small { font-weight: 400; font-size: 11px; color: var(--mute); }
+  thead th .pn { font-size: 12px; font-weight: 600; } thead th.chosen { box-shadow: inset 0 3px 0 var(--fg); }
+  thead th .acts { margin-top: 4px; } thead th .acts button { font-size: 10px; padding: 0 6px; border-radius: 2px; }
+  tr.grp th { background: var(--bar); padding: 3px 8px; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+  tbody tr.crow th { padding: 6px 8px; font-weight: 600; width: 190px; } tbody th .cn { font-size: 12px; }
+  tbody th .why { font-weight: 400; color: var(--faint); font-size: 11px; margin-left: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
+  tbody th .sum { font-weight: 400; color: var(--mute); font-size: 10px; margin-left: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
+  tbody tr.crow:hover > * { background: var(--fill); } tr.irr { color: var(--faint); }
+  td[data-cell] { padding: 6px 8px; max-width: 260px; } td.chosen { box-shadow: inset 2px 0 0 var(--fg), inset -2px 0 0 var(--fg); }
+  td .v { font-size: 12px; font-weight: 600; } td .v.none { font-weight: 400; font-style: italic; color: var(--mute); }
+  td.disagree .v::before { content: '≠ '; } td.none .v::before { content: '? '; }
+  td .srcs { gap: 2px 6px; margin-top: 3px; } .tagline { font-size: 10px; color: var(--mute); max-width: 100%; } .tagline .sn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+  .k { font-size: 9px; line-height: 13px; padding: 0 3px; }
+  td .note { font-size: 10px; margin-top: 3px; border-left: 2px solid var(--fg); padding-left: 5px; } td .price, td .room { font-size: 10px; color: var(--mute); }
+  td.filling { background: repeating-linear-gradient(135deg, transparent 0 5px, var(--fill) 5px 10px); }
+  td.item { box-shadow: inset 0 -2px 0 var(--fg); background: var(--band); }
+  tr.ev > * { background: var(--band); padding: 6px 8px 10px; border-bottom: 1px solid var(--fg); }
+  tr.ev th { font-weight: 400; color: var(--mute); font-size: 11px; } tr.ev th button { display: block; margin-top: 4px; font-size: 10px; padding: 0 6px; border-radius: 2px; }
+  tr.ev.single > td:not(:empty) { box-shadow: inset 2px 0 0 var(--fg); }
+  .card .ch { font-size: 11px; color: var(--mute); margin-bottom: 4px; } .card .ch b { color: var(--fg); } .card .fold { font-size: 10px; padding: 0 5px; border-radius: 2px; }
+  .src { padding: 3px 0; border-bottom: 1px solid var(--hair); font-size: 11px; } .src .meta { font-size: 10px; color: var(--mute); } .src.sponsored { color: var(--faint); }
+  .card .note, .card .yours, .card .pricenote { font-size: 10px; margin: 3px 0; } .card .note { border-left: 2px solid var(--fg); padding-left: 5px; } .card .pricenote { color: var(--mute); }
+  .ed { gap: 3px; margin-top: 6px; } .ed .row { gap: 3px; } .ed button { font-size: 10px; padding: 0 6px; border-radius: 2px; }
+  .more { font-weight: 400; color: var(--mute); border: 1px dashed var(--hair); padding: 6px; }
+
+  /* ---- type layer: choose-board r003-01 (the app's Segoe UI Variable faces, sentence case), set on the ledger's scale ---- */
+  :root { --font-text: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; --font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+    --font-small: 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif;
+    --step--1: 11px; --step-0: 12px; --step-1: 13px; --step-2: 15px; --step-3: 18px; --step-4: 24px; --step-5: 30px; }
+  html, body { font-family: var(--font-text); font-size: var(--step-0); }
+  thead th .pn { font: 600 var(--step-2)/1.25 var(--font-display); }
+  thead th.corner .cnt { font: 600 var(--step--1) var(--font-small); } thead th.corner small { font: 400 var(--step--1) var(--font-small); }
+  thead th .acts button, .chosen-l { font: 400 var(--step--1) var(--font-small); }
+  tr.grp th { font: 600 var(--step--1) var(--font-small); text-transform: none; letter-spacing: 0; }
+  tbody th .cn { font: 600 var(--step-1) var(--font-text); }
+  tbody th .why, tbody th .sum { font: 400 var(--step--1) var(--font-small); }
+  td .v { font: 600 var(--step-1)/1.3 var(--font-text); } td .v.none { font-weight: 400; }
+  .tagline, td .price, td .room, td .note { font: 400 var(--step--1)/1.35 var(--font-small); }
+  .k { font: 600 var(--step--1)/15px var(--font-small); text-transform: none; letter-spacing: 0; }
+  .card .ch { font: 400 var(--step--1) var(--font-small); } .card .ch b { font: 600 var(--step-0) var(--font-text); }
+  .src { font: 400 var(--step-0)/1.35 var(--font-text); } .src .meta, .card .note, .card .yours, .card .pricenote { font: 400 var(--step--1)/1.35 var(--font-small); }
+  .ed button, tr.ev th button, tr.ev th { font: 400 var(--step--1) var(--font-small); }
+
+  /* ---- colour layer: the accepted Choose palette (CR-70) ---- */
+  :root {
+    --bg: #101827; --surface: #172132; --surface-2: #1f3034; --ink: #f3e9dc; --ink-mute: #aeb3bf; --line: #3b4558;
+    --accent: #5cc6bd; --accent-ink: #0d211f; --focus: #b6efe6; --node-open: #969ca7; --node-lit: #c8f3ea; --node-understood: #5cc6bd;
+    --glow-near: rgba(118, 222, 206, 0.32); --glow-far: rgba(84, 204, 188, 0.15); --path-muted: #3e625d; --code: #0c1320;
+    --error: #d86a5a; --error-ink: #f0a598; color-scheme: dark;
+    --fg: var(--ink); --mute: var(--ink-mute); --faint: var(--ink-faint); --hair: var(--glass-line);
+    --fill: color-mix(in srgb, var(--ink) 5%, transparent); --bar: color-mix(in srgb, var(--surface) 92%, transparent);
+    --band: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+  .scroll { background: var(--glass); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-top: 1px solid var(--glass-line); }
+  thead th, thead th.corner { background: var(--bar); border-bottom-color: var(--line); }
+  tbody th { background: color-mix(in srgb, var(--surface) 88%, transparent); }
+  tr.grp th { background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--ink-mute); }
+  tbody tr.crow:hover > * { background: color-mix(in srgb, var(--ink) 4%, transparent); } tbody tr.crow:hover > th { background: color-mix(in srgb, var(--surface-2) 92%, transparent); }
+  td.filling { background: repeating-linear-gradient(135deg, transparent 0 5px, color-mix(in srgb, var(--accent) 10%, transparent) 5px 10px); }
+  .src { border-bottom-color: var(--glass-line); } .card .edit { color: var(--ink); }
+  .more { border-color: var(--line); color: var(--ink-mute); }
+
+  /* ---- r004-01 ---- */
+  tr.grp th { color: var(--accent); } tbody th .tw { color: var(--accent); }
+  tbody tr.crow.banded > th { box-shadow: inset 2px 0 0 var(--accent); }
+  thead th.chosen { background: var(--accent); color: var(--accent-ink); box-shadow: none; } thead th.chosen .acts button { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
+  td.chosen { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
+  td.disagree .v::before, td.none .v::before { color: var(--focus); } td .note, .card .note { border-left-color: var(--focus); }
+  .k[data-k='user'] { background: var(--focus); color: var(--accent-ink); border-color: var(--focus); }
+  .k[data-k='measured'] { border-color: var(--ink-mute); color: var(--ink); } .k[data-k='opinion'] { border-style: dashed; font-style: italic; }
+  .k[data-k='sponsored'] { text-decoration: line-through; color: var(--ink-faint); } .k[data-k='model'] { border-style: dotted; }
+  .src.sponsored { color: var(--ink-faint); }
+  td.item { box-shadow: inset 0 -2px 0 var(--accent); background: var(--band); } tr.ev > * { border-bottom-color: var(--accent); }
+  tr.ev.single > td:not(:empty) { box-shadow: inset 2px 0 0 var(--accent); }
+  thead th .acts button[data-ch] { border-color: var(--accent); color: var(--accent); background: transparent; }
+  tr.ev th button { border-color: var(--accent); color: var(--accent); background: transparent; }
+
+  /* ---- r006-02/03: hover waits while rows resize (root.no-hover until the pointer moves) ---- */
+  :root.no-hover tbody tr.crow:hover > td:not(.item):not(.filling) { background: transparent; }
+  :root.no-hover tbody tr.crow:hover > th { background: color-mix(in srgb, var(--surface) 88%, transparent); }` });
+</script>
+<script src="../assets/backdrop.js"></script>
+<script>document.dispatchEvent(new CustomEvent('lx:screen', { detail: 'gallery' }));</script>
+</body>
+</html>

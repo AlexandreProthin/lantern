@@ -1,0 +1,36 @@
+<!--
+  id:        r001-02
+  component: choose-palette
+  phase:     color
+  parents:   none
+  direction: The whole room takes the hue: a blue-green night, teal-tinted surfaces and lines, cool white ink, a calmer sage-teal accent. Further from Learn, more its own place; same lightness steps as Learn so the calm holds.
+  request:   revision 1
+  inputs:    Choose room palette: teal lantern (CR-70), the full RS-31 token set under data-room="choose" (plus --error), in the same calm family as Learn's Amber lantern. The backdrop (RS-34) re-tints from the tokens. Show it on Welcome, Survey and Gallery with the backdrop and glass, plus a token sheet.
+  read as:   direction ("teal lantern, same calm family as Learn's Amber lantern"), not a precise scheme.
+  ui:        ../assets/replica.js (Choose replica: Welcome, Survey, Gallery, token sheet) and ../assets/backdrop.js
+             (the final backdrop, colours from the tokens), with ../choose-palette-data.js. Only :root differs between proposals.
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose palette r001-02 — Deep lagoon</title>
+<style>
+  :root {
+    --bg: #0b1a1e; --surface: #10262b; --surface-2: #1b3538; --ink: #e6f0ec; --ink-mute: #9fb4b2;
+    --line: #2b4549; --accent: #6cc0b0; --accent-ink: #08201b; --focus: #bdeee3;
+    --node-open: #8ea4a3; --node-lit: #c6f1e6; --node-understood: #6cc0b0;
+    --glow-near: rgba(120, 214, 196, 0.30); --glow-far: rgba(92, 196, 176, 0.14); --path-muted: #335a55;
+    --code: #07141a; --error: #d8705e; --error-ink: #f2a99a;
+    color-scheme: dark;
+  }
+</style>
+</head>
+<body>
+<script src="../choose-palette-data.js"></script>
+<script src="../assets/replica.js"></script>
+<script>CHOOSE_UI.mount({ id: 'r001-02', name: 'Choose', title: "Deep lagoon" });</script>
+<script src="../assets/backdrop.js"></script>
+</body>
+</html>

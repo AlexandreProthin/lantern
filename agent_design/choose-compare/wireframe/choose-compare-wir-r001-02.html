@@ -1,0 +1,112 @@
+<!--
+  id:        r001-02
+  component: choose-compare
+  phase:     wireframe
+  parents:   none
+  direction: Evidence drawer. The table stays clean: each cell shows its value and one status mark (≠ sources differ, ? no source, ✎ yours, … researching, a date for a price), plus the kind of its main source as a small tag. Selecting a cell (click, or arrow keys and Enter) opens a drawer on the right with the whole evidence: every source with its kind, value and date, the disagreement explained, sponsored sources listed apart as "not used", the room's value next to yours, the edit field and Check this. The table narrows; the selected cell stays in view.
+  request:   revision 1
+  inputs:    Compare space (CR-11, CR-50, CR-51): a full-width table, shortlisted products as columns and criteria as rows, must first, then nice; irrelevant criteria hidden behind a toggle. Each cell holds a value with its source and the date it was read (CR-41), and follows the source rules (CR-42: manufacturer specs, independent measurements preferred, community reports marked as opinion, affiliate lists never a basis, sponsored sources marked, disagreements shown). The room fills a product's column when it is shortlisted and a criterion's row when it is added; the user can edit any cell, and an edited cell is marked as the user's and keeps the room's value. Hard cases: one product, five products, a cell being filled (research takes 40-65 s), a cell with no source found, sources that disagree, a user-edited cell, a long value, a price (an indication at a date), a chosen product, web use turned off (values from the model's knowledge with its date, CR-44).
+  shared:    ../assets/compare-kit.js with ../choose-compare-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose compare r001-02 — Evidence drawer</title>
+</head>
+<body>
+<script src="../choose-compare-data.js"></script>
+<script src="../assets/compare-kit.js"></script>
+<script>
+const day = d => /^\d{4}-\d\d-\d\d$/.test(d) ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : d;
+const RANK = { spec: 0, measured: 1, opinion: 2, model: 3, sponsored: 4 };
+COMPARE_KIT.mount({
+  id: 'r001-02', title: 'Evidence drawer',
+  css: `
+  .wrap { position: absolute; inset: 0; display: flex; }
+  .scroll { flex: 1; min-width: 0; overflow: auto; padding-bottom: 70px; }
+  table { border-collapse: separate; border-spacing: 0; min-width: 100%; }
+  th, td { border-bottom: 1px solid var(--hair); text-align: left; vertical-align: middle; }
+  thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 14px; border-bottom: 1px solid var(--fg); min-width: 150px; white-space: nowrap; }
+  thead th.chosen { border-bottom-width: 3px; } thead th small { display: block; font-weight: 400; color: var(--mute); font-size: 11px; }
+  thead th:first-child, tbody th { position: sticky; left: 0; z-index: 1; background: var(--bg); min-width: 190px; max-width: 220px; }
+  thead th:first-child { z-index: 3; }
+  tbody th { padding: 9px 14px; font-weight: 400; white-space: normal; }
+  tr.grp th { background: var(--fill); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); padding: 4px 14px; }
+  tr.irr th, tr.irr td { color: var(--faint); }
+  td { padding: 9px 14px; cursor: pointer; white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+  td:hover { background: var(--fill); } td.sel { outline: 2px solid var(--fg); outline-offset: -2px; background: var(--fill); }
+  td.chosen { background: var(--fill); }
+  td .m { display: inline-block; min-width: 14px; font-weight: 700; } td.none, td.filling { color: var(--mute); font-style: italic; }
+  td.filling { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--fill) 6px 12px); }
+  td .k { margin-left: 6px; vertical-align: 1px; }
+  td .d { font-size: 11px; color: var(--mute); margin-left: 4px; }
+  .drawer { flex: 0 0 340px; border-left: 1px solid var(--fg); overflow: auto; padding: 14px 16px 80px; }
+  .drawer .x { float: right; } .drawer h2 { font-size: 11px; margin: 0; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); font-weight: 600; }
+  .drawer h3 { margin: 4px 0 12px; font-size: 16px; } .drawer .val { font-size: 18px; margin-bottom: 4px; }
+  .drawer .note { border-left: 2px solid var(--fg); padding-left: 8px; margin: 10px 0; }
+  .drawer .src { border-top: 1px solid var(--hair); padding: 8px 0; display: grid; gap: 2px; } .drawer .src .sv { font-size: 13px; }
+  .drawer .src .meta { font-size: 11px; color: var(--mute); display: flex; gap: 6px; align-items: center; }
+  .drawer .lab { font-size: 11px; color: var(--mute); margin: 16px 0 4px; }
+  .drawer .row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .legend { position: absolute; left: 14px; bottom: 56px; font-size: 11px; color: var(--mute); }
+  .empty { padding: 20px 0; color: var(--mute); }
+  .more { color: var(--mute); font-weight: 400; white-space: normal; border: 1px dashed var(--hair); padding: 8px; }
+  @media (max-width: 900px) { .drawer { position: absolute; right: 0; top: 0; bottom: 0; width: min(340px, 90vw); background: var(--bg); } }`,
+  render(el, { s, rows, cell, act, esc, kindLabel }) {
+    const ui = act.ui, P = s.products;
+    const mark = x => ({ disagree: '≠', none: '?', edited: '✎', filling: '…' }[x.status] || '');
+    const main = x => [...x.sources].sort((a, b) => RANK[a.kind] - RANK[b.kind])[0];
+    const td = (p, c, r, i) => {
+      const x = cell(p, c), key = `${p.id}:${c.id}`, m = main(x);
+      const txt = x.status === 'filling' ? 'researching' : x.status === 'none' ? 'no source found' : esc(x.value);
+      return `<td class="${x.status} ${p.state === 'chosen' ? 'chosen' : ''} ${ui.sel === key ? 'sel' : ''}" data-cell="${key}" data-r="${r}" data-c="${i}" tabindex="${ui.sel === key || (!ui.sel && r === 0 && i === 0) ? 0 : -1}" title="${esc(x.value || '')}">
+        <span class="m">${mark(x)}</span>${txt}${x.kind === 'price' && m ? `<span class="d">· ${esc(day(m.date))}</span>` : ''}${m && x.status !== 'filling' && x.status !== 'edited' ? `<span class="k" data-k="${m.kind}">${m.kind === 'spec' ? 'mfr' : kindLabel[m.kind]}</span>` : ''}${x.status === 'edited' ? '<span class="k" data-k="user">yours</span>' : ''}</td>`;
+    };
+    let lastState = null;
+    const body = rows.map((c, r) => { let g = ''; if (c.state !== lastState) { lastState = c.state; g = `<tr class="grp"><th colspan="${P.length + 1}">${{ must: 'Must', nice: 'Nice to have', irrelevant: 'Irrelevant' }[c.state]}</th></tr>`; }
+      return g + `<tr class="${c.state === 'irrelevant' ? 'irr' : ''}"><th>${esc(c.name)}${c.filling ? ' <span class="mute">· researching…</span>' : ''}</th>${P.map((p, i) => td(p, c, r, i)).join('')}</tr>`; }).join('');
+    let drawer = '';
+    if (ui.sel) {
+      const [pid, cid] = ui.sel.split(':'), p = P.find(q => q.id === pid), c = s.criteria.find(q => q.id === cid);
+      if (p && c) { const x = cell(p, c), used = x.sources.filter(z => z.kind !== 'sponsored').sort((a, b) => RANK[a.kind] - RANK[b.kind]), spons = x.sources.filter(z => z.kind === 'sponsored');
+        const src = z => `<div class="src"><span class="sv">${esc(z.value || '—')}</span><span class="meta"><span class="k" data-k="${z.kind}">${kindLabel[z.kind]}</span>${esc(z.name)} · read ${esc(day(z.date))}</span>${z.note ? `<span class="meta">${esc(z.note)}</span>` : ''}</div>`;
+        drawer = `<aside class="drawer" aria-label="Evidence"><button class="x" data-x aria-label="Close">✕</button><h2>${esc(c.name)}</h2><h3>${esc(p.name)}</h3>
+          <div class="val">${x.status === 'filling' ? '<i class="mute">Researching…</i>' : x.status === 'none' ? '<i class="mute">No source found</i>' : esc(x.value)}</div>
+          ${x.kind === 'price' ? '<div class="mute">A price is an indication at the date it was seen, never a promise.</div>' : ''}
+          ${x.status === 'edited' ? `<div class="note"><span class="k" data-k="user">yours</span> since ${esc(day(x.user.date))}${x.user.note ? ' · ' + esc(x.user.note) : ''}<br>The room's value: ${esc(x.room)}</div>` : ''}
+          ${x.note ? `<div class="note">${esc(x.note)}</div>` : ''}
+          <div class="lab">Sources (${used.length})</div>${used.map(src).join('') || '<div class="empty">None yet.</div>'}
+          ${spons.length ? `<div class="lab">Seen but not used (sponsored or affiliate)</div>${spons.map(src).join('')}` : ''}
+          <div class="lab">Your value</div><input class="edit" data-in value="${esc(x.status === 'edited' ? x.value : '')}" placeholder="${esc(x.status === 'edited' ? '' : 'replace the room\'s value…')}">
+          <div class="row"><button data-save>Save as mine</button>${x.status === 'edited' ? '<button data-revert>Revert to the room\'s</button>' : ''}${s.web && x.status !== 'filling' ? '<button data-check>Check this</button>' : ''}</div></aside>`; }
+    }
+    el.innerHTML = `<div class="wrap"><div class="scroll"><table><thead><tr><th>${P.length} shortlisted</th>${P.map(p => `<th class="${p.state === 'chosen' ? 'chosen' : ''}">${p.state === 'chosen' ? '✓ ' : ''}${esc(p.name)}
+        <small>${p.filling ? 'researching…' : p.state === 'chosen' ? `chosen · <button data-un="${p.id}">un-choose</button>` : `<button data-ch="${p.id}">choose</button> <button data-drop="${p.id}">remove</button>`}</small></th>`).join('')}
+        ${s.candidates ? `<th><div class="more">Shortlist more to compare: ${s.candidates.map(esc).join(', ')}</div></th>` : ''}</tr></thead><tbody>${body}</tbody></table></div>${drawer}</div>
+      <div class="legend">≠ sources differ · ? no source · ✎ yours · … researching · tag = main source · arrows move, Enter opens</div>`;
+    const sc = el.querySelector('.scroll'); if (ui.scroll) [sc.scrollLeft, sc.scrollTop] = ui.scroll; sc.onscroll = () => ui.scroll = [sc.scrollLeft, sc.scrollTop];
+    const cells = [...el.querySelectorAll('td[data-cell]')];
+    cells.forEach(t => {
+      t.onclick = () => { ui.sel = t.dataset.cell; act.draw(); el.querySelector(`td[data-cell="${ui.sel}"]`)?.focus(); };
+      t.onkeydown = e => {
+        const r = +t.dataset.r, c = +t.dataset.c, d = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+        if (d) { e.preventDefault(); const n = cells.find(x => +x.dataset.r === r + d[0] && +x.dataset.c === c + d[1]); if (n) { cells.forEach(x => x.tabIndex = -1); n.tabIndex = 0; n.focus(); if (ui.sel) { ui.sel = n.dataset.cell; act.draw(); el.querySelector(`td[data-cell="${ui.sel}"]`)?.focus(); } } }
+        if (e.key === 'Enter') t.click(); if (e.key === 'Escape') { ui.sel = null; act.draw(); }
+      };
+    });
+    const dr = el.querySelector('.drawer');
+    if (dr) { const [pid, cid] = ui.sel.split(':'), p = P.find(q => q.id === pid), c = s.criteria.find(q => q.id === cid), inp = dr.querySelector('[data-in]');
+      dr.querySelector('[data-x]').onclick = () => { ui.sel = null; act.draw(); };
+      dr.querySelector('[data-save]').onclick = () => act.edit(p, c, inp.value); inp.onkeydown = e => { if (e.key === 'Enter') act.edit(p, c, inp.value); };
+      dr.querySelector('[data-revert]')?.addEventListener('click', () => act.revert(p, c));
+      dr.querySelector('[data-check]')?.addEventListener('click', () => act.check(p, c)); }
+    el.querySelectorAll('[data-ch]').forEach(b => b.onclick = e => { e.stopPropagation(); act.choose(P.find(p => p.id === b.dataset.ch)); });
+    el.querySelectorAll('[data-un]').forEach(b => b.onclick = e => { e.stopPropagation(); act.unchoose(P.find(p => p.id === b.dataset.un)); });
+    el.querySelectorAll('[data-drop]').forEach(b => b.onclick = e => { e.stopPropagation(); if (ui.sel && ui.sel.startsWith(b.dataset.drop + ':')) ui.sel = null; act.drop(P.find(p => p.id === b.dataset.drop)); });
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!--
+  id:        r001-01
+  component: choose-palette
+  phase:     color
+  parents:   none
+  direction: Only the lantern changes: Learn's navy walls, surfaces, lines, ink and code stay exactly; accent, lit light, glows, focus, path and the warm surface-2 turn teal. The two rooms read as one house with a different lamp.
+  request:   revision 1
+  inputs:    Choose room palette: teal lantern (CR-70), the full RS-31 token set under data-room="choose" (plus --error), in the same calm family as Learn's Amber lantern. The backdrop (RS-34) re-tints from the tokens. Show it on Welcome, Survey and Gallery with the backdrop and glass, plus a token sheet.
+  read as:   direction ("teal lantern, same calm family as Learn's Amber lantern"), not a precise scheme.
+  ui:        ../assets/replica.js (Choose replica: Welcome, Survey, Gallery, token sheet) and ../assets/backdrop.js
+             (the final backdrop, colours from the tokens), with ../choose-palette-data.js. Only :root differs between proposals.
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose palette r001-01 — Same night, teal lantern</title>
+<style>
+  :root {
+    --bg: #101827; --surface: #172132; --surface-2: #1f3034; --ink: #f3e9dc; --ink-mute: #aeb3bf;
+    --line: #3b4558; --accent: #5cc6bd; --accent-ink: #0d211f; --focus: #b6efe6;
+    --node-open: #969ca7; --node-lit: #c8f3ea; --node-understood: #5cc6bd;
+    --glow-near: rgba(118, 222, 206, 0.32); --glow-far: rgba(84, 204, 188, 0.15); --path-muted: #3e625d;
+    --code: #0c1320; --error: #d86a5a; --error-ink: #f0a598;
+    color-scheme: dark;
+  }
+</style>
+</head>
+<body>
+<script src="../choose-palette-data.js"></script>
+<script src="../assets/replica.js"></script>
+<script>CHOOSE_UI.mount({ id: 'r001-01', name: 'Choose', title: "Same night, teal lantern" });</script>
+<script src="../assets/backdrop.js"></script>
+</body>
+</html>

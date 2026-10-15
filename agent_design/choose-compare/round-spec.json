@@ -1,0 +1,17 @@
+{
+  "note": "User, 2026-10-15, with a screenshot circling teal vertical lines in the empty cells of an opening evidence row: \"almost there do r006-03 by fixing the line highlight on fold/unfold i screen it during the animation and circled what i mean\"",
+  "proposal": {
+    "id": "r006-03",
+    "parents": [
+      "r001-01",
+      "r001-03",
+      "r002-01",
+      "r003-01",
+      "r004-01",
+      "r005-01"
+    ],
+    "file": "motion/choose-compare-mot-r006-03.html",
+    "title": "Rows stay open, clean lines",
+    "direction": "r006-02 with the line fix the user circled: during a fold or unfold, the empty cells of an evidence row (the other products' columns when a single card is open) no longer show a teal vertical line. The animation's clipping wrapper made them count as non-empty, which switched on the open card's teal rule; empty cells are now left unwrapped, and each cell's rules are read before wrapping. Everything else as r006-02: rows already unfolded stay unfolded, highlights fade with the motion, hover waits while rows resize."
+  }
+}

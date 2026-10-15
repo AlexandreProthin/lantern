@@ -1,0 +1,117 @@
+<!--
+  id:        r001-02
+  component: choose-welcome
+  phase:     wireframe
+  parents:   none
+  direction: Needs on the table. For a choice the needs are the first thing the room learns (CR-30), so the direction is always visible as a second line of the same field, titled "What do you already know?", with need starters under it (Budget in €, Who it's for, What for, Where it goes, Already have, Must avoid): a starter inserts only its label at the cursor, never an answer. Enter still submits from either line with or without needs. The recents are a three-row list rather than cards, so long titles wrap in full, with status, outcome and last opened in fixed columns; Browse all closes the list.
+  request:   revision 1
+  inputs:    Welcome space of the Choose room (choose-room CR-11, CR-12, CR-13, CR-24, CR-90; header RS-12/RS-20). "What do you want to choose?" with the optional direction field (e.g. "budget about 500 €, I want to print figurines for my kids"), the 3 most recent Choose subjects with their status (exploring / decided / bought) to continue, and the way to Gallery. Hard cases: first run with no subjects, a subject that's decided, one that's bought, long subject names, CLI not ready. Explore what is specific to choosing compared with Learn (e.g. how the direction field invites needs and budget), but don't break the shared header/space structure (RS-12, RS-20). Stay consistent with Learn's Welcome (welcome and welcome-context recipes) and the choose-palette recipe.
+  shared:    ../assets/welcome-kit.js with ../choose-welcome-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose welcome r001-02 — Needs on the table</title>
+</head>
+<body>
+<script src="../choose-welcome-data.js"></script>
+<script src="../assets/welcome-kit.js"></script>
+<script>
+const K = WELCOME_KIT, { C, D, esc, fill } = K;
+K.mount({
+  id: 'r001-02', title: 'Needs on the table',
+  css: `
+  .wrap { max-width: 760px; margin: 0 auto; padding: 11vh 16px 80px; display: flex; flex-direction: column; gap: 16px; }
+  .lede { text-align: center; color: var(--mute); margin: 0 auto 4px; max-width: 560px; }
+  .field { border: 1px solid var(--fg); border-radius: 14px; padding: 14px 18px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 11px; color: var(--mute); }
+  .subj { border: 0; background: none; font-size: 28px; font-weight: 300; padding: 2px 0 8px; outline: none; border-bottom: 1px solid var(--hair); }
+  .dirf { border: 0; background: none; resize: none; font-size: 15px; line-height: 1.5; min-height: 46px; outline: none; padding: 2px 0; }
+  .starters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .starters button { border-radius: 999px; padding: 1px 10px; font-size: 12px; border-style: dashed; }
+  .starters .hint { font-size: 11px; color: var(--faint); margin-right: 4px; }
+  .tail { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 4px; }
+  .tail .left { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--faint); }
+  .tail .left button.link { font-size: 11px; color: var(--faint); }
+  .why { margin-top: -6px; padding-left: 4px; }
+  .list { margin-top: 5vh; border-top: 1px solid var(--hair); }
+  .list h2 { font-size: 11px; font-weight: 600; color: var(--mute); margin: 10px 0 4px; }
+  .rowi { display: grid; grid-template-columns: 84px 1fr 150px 84px; gap: 12px; align-items: start; padding: 12px 4px; border-bottom: 1px solid var(--hair); cursor: pointer; }
+  .rowi:hover { background: var(--fill); }
+  .rowi .t { font-weight: 600; overflow-wrap: anywhere; }
+  .rowi .sub { font-size: 12px; color: var(--mute); margin-top: 3px; }
+  .rowi .when { font-size: 12px; color: var(--mute); text-align: right; }
+  .rowi .bar { margin-top: 4px; }
+  .rowi .go { justify-self: end; }
+  .browse { padding: 10px 4px; }
+  @media (max-width: 640px) { .rowi { grid-template-columns: 1fr auto; } .rowi .st-c { grid-column: 1 / -1; } .rowi .when { text-align: left; } }
+  `,
+  render({ sc, subjects, first, locale }) {
+    if (!sc.library) return `<div class="wrap"><div class="field"><input class="subj" disabled placeholder="${esc(C.question)}"></div>
+      <div class="notice">${esc(C.libraryUnavailable)} <button class="link" data-settings="Library">Open Settings</button></div></div>`;
+    const starters = D.starters.map((s, i) => `<button type="button" data-st="${i}">+ ${esc(s.label)}${s.label === 'Budget' ? ` (${K.S.currencySymbol})` : ''}</button>`).join('');
+    const rows = subjects.map((s) => `<div class="rowi" data-open="${s.id}" role="link" tabindex="0">
+        <div class="st-c">${K.statusPill(s)}</div>
+        <div><div class="t">${esc(s.title)}</div><div class="sub">${K.outcome(s)} · ${esc(K.stats(s))}</div></div>
+        <div>${K.boardBar(s, false)}<div class="when" style="text-align:left;margin-top:4px">${K.opened(s)}</div></div>
+        <button class="go" data-open="${s.id}">${C.continue}</button></div>`).join('');
+    return `<div class="wrap">
+      ${first ? `<p class="lede">${esc(C.firstRun)}</p>` : ''}
+      <div class="field" id="field">
+        <label for="subj">${esc(C.question)}</label>
+        <input class="subj" id="subj" maxlength="${C.titleLimit}" placeholder="a 3D printer, a family car…" autofocus>
+        <label for="dir">What do you already know? <span class="faint">(optional)</span></label>
+        <textarea class="dirf" id="dir" rows="2" placeholder="${esc(C.directionSample)}"></textarea>
+        <div class="starters"><span class="hint">Add:</span>${starters}</div>
+        <div class="tail"><div class="left"><span class="counter" id="cnt"></span><span>${esc(locale)} · <button class="link" data-settings="Choose room">change</button></span></div>
+          <button class="primary" id="go" disabled>${C.submit}</button></div>
+      </div>
+      <div class="why" id="why"></div>
+      ${sc.cli ? '' : `<div class="notice">${esc(C.cliNotReady)} <button class="link" data-settings="Provider">Open Settings → Provider</button> · your choices below still open.</div>`}
+      ${K.pickers()}
+      ${subjects.length ? `<section class="list" aria-label="Recent choices"><h2>Continue a choice</h2>${rows}
+        <div class="browse"><button class="link" data-browse>${fill(C.browseAll, { n: sc.total })}</button></div></section>` : ''}
+    </div>`;
+  },
+  wire() {
+    const subj = document.getElementById('subj'), dir = document.getElementById('dir');
+    if (!subj || subj.disabled) return;
+    const go = document.getElementById('go');
+    const upd = () => {
+      const r = K.check(subj.value, dir.value);
+      go.disabled = !r.ok;
+      const cnt = document.getElementById('cnt'); cnt.textContent = r.counter; cnt.classList.toggle('over', r.over);
+      const why = document.getElementById('why'); why.textContent = r.why; why.classList.toggle('over', r.over);
+      dir.style.height = '0'; dir.style.height = dir.scrollHeight + 'px';
+    };
+    subj.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); dir.focus(); }
+      else if (e.key === 'Enter') { e.preventDefault(); K.submit(subj.value, dir.value); }
+      else if (e.key === 'Escape') { subj.value = ''; upd(); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); dir.focus(); }
+    });
+    dir.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); K.submit(subj.value, dir.value); }
+      else if (e.key === 'Escape') { e.preventDefault(); dir.value = ''; subj.focus(); upd(); }
+      else if (e.key === 'ArrowUp' && dir.selectionStart === 0) { e.preventDefault(); subj.focus(); }
+    });
+    document.querySelectorAll('[data-st]').forEach((b) => b.addEventListener('click', () => {
+      const st = D.starters[+b.dataset.st];
+      const ins = fill(st.insert);
+      const v = dir.value, at = dir.selectionStart ?? v.length;
+      const sep = at && !/[\s,]$/.test(v.slice(0, at)) ? ', ' : '';
+      dir.value = v.slice(0, at) + sep + ins + v.slice(at);
+      const caret = at + sep.length + ins.length - (st.caretBack || 0);
+      dir.focus(); dir.setSelectionRange(caret, caret); upd();
+    }));
+    go.addEventListener('click', () => K.submit(subj.value, dir.value));
+    document.querySelectorAll('.rowi').forEach((r) => r.addEventListener('keydown', (e) => { if (e.key === 'Enter') r.click(); }));
+    [subj, dir].forEach((el) => el.addEventListener('input', upd));
+    upd();
+  },
+});
+</script>
+</body>
+</html>

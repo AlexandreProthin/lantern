@@ -1,0 +1,107 @@
+<!--
+  id:        r001-02
+  component: choose-board
+  phase:     wireframe
+  parents:   none
+  direction: Journey band. A 56 px band across the top of the graph shows the decision as five stations on a line: Needs → Criteria → Shortlist → Compare → Pick, each solid when settled or hollow with a short "what is missing" under it; a sixth end station, Recommend, lights up when the board is complete. A click on a station drops the board down over the graph, full height, as five columns in the same order, with the clicked one in front. The panel never moves.
+  request:   revision 2
+  inputs:    Decision board in Survey (CR-10, CR-14): a slim strip next to the graph, always visible, with a few counters and what is still missing before a decision; a click opens it full height; the reading panel stays for nodes. It collects the needs card (editable at any time, CR-31), the criteria ranked must / nice / irrelevant (CR-21, CR-23), the shortlist and the pick (CR-22), the subject status exploring / decided / bought (CR-24), and when it looks complete it offers the recommendation (CR-61; what counts as complete is decided here). Hard cases: a new subject with nothing settled, a nearly complete board, a long needs list, a chosen product, bought.
+  shared:    ../assets/board-kit.js (scenarios, completeness rule, Survey frame) with ../choose-board-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose board r001-02 — Journey band</title>
+</head>
+<body>
+<script src="../choose-board-data.js"></script>
+<script src="../assets/board-kit.js"></script>
+<script>
+let focusCol = 'needs';
+BOARD_KIT.mount({
+  id: 'r001-02', title: 'Journey band', slot: 'top',
+  css: `
+  .board { position: absolute; left: 0; right: 0; top: 0; z-index: 4; background: var(--bg); border-bottom: 1px solid var(--hair); }
+  .band { display: flex; align-items: flex-start; height: 58px; padding: 8px 14px 0; gap: 0; overflow-x: auto; }
+  .stn { flex: 1 1 0; min-width: 84px; position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; border: 0; padding: 0 4px; background: transparent; border-radius: 0; }
+  .stn::before { content: ''; position: absolute; top: 7px; left: -50%; right: 50%; height: 1px; background: var(--hair); z-index: -1; }
+  .stn:first-child::before { display: none; }
+  .stn .dot { width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--fg); background: var(--bg); }
+  .stn.done .dot { background: var(--fg); } .stn.part .dot { background: linear-gradient(90deg, var(--fg) 50%, var(--bg) 50%); }
+  .stn b { font-size: 11px; font-weight: 600; } .stn small { font-size: 10px; color: var(--mute); white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+  .stn.end .dot { border-style: dashed; } .stn.end.ready .dot { border-style: solid; box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--fg); background: var(--fg); }
+  .stn.end.ready b { text-decoration: underline; }
+  .stat { flex: 0 0 auto; align-self: center; padding: 0 0 12px 12px; }
+  .stn:hover b { text-decoration: underline; } .stn.cur b { text-decoration: underline; text-underline-offset: 3px; }
+  .main[data-expanded='true'] .board { bottom: 0; display: flex; flex-direction: column; }
+  .drop { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(5, minmax(170px, 1fr)); gap: 0; overflow: auto; border-top: 1px solid var(--hair); }
+  .col { border-right: 1px solid var(--hair); padding: 12px 12px 70px; min-width: 0; }
+  .col.cur { background: var(--fill); }
+  .col h3 { margin: 0 0 10px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+  .col .miss { font-size: 11px; border: 1px dashed var(--hair); padding: 4px 6px; margin-bottom: 10px; }
+  .item { padding: 6px 0; border-bottom: 1px solid var(--fill); } .item .sub { display: block; font-size: 11px; color: var(--faint); }
+  .item.open > span:first-child::before { content: '○ '; }
+  .item .acts { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; } .item .acts button { font-size: 11px; padding: 2px 7px; }
+  .lab { font-size: 10px; font-weight: 600; margin: 10px 0 2px; color: var(--mute); }
+  .chosen { border: 2px solid var(--fg); padding: 8px; }
+  .closer { position: absolute; right: 10px; top: 64px; z-index: 6; font-size: 11px; }
+  .reco-bar { padding: 8px 14px; border-top: 1px solid var(--hair); display: flex; gap: 10px; align-items: center; }
+  @media (max-width: 760px) { .drop { grid-template-columns: repeat(5, 78vw); } }`,
+  render(el, { s, expanded, setExpanded, act, esc, counts: c, missing, stage }) {
+    const m = a => missing.filter(x => x.area === a);
+    const stations = [
+      { k: 'needs', l: 'Needs', state: !c.needs ? '' : m('needs').length ? 'part' : 'done', sub: !c.needs ? 'none yet' : m('needs').length ? `${m('needs').length} to answer` : `${c.needs} settled` },
+      { k: 'criteria', l: 'Criteria', state: !c.criteria ? '' : m('criteria').length ? 'part' : 'done', sub: !c.criteria ? 'none yet' : c.criteriaOpen ? `${c.criteriaOpen} to rank` : !c.must ? 'no must yet' : `${c.must} must · ${c.nice} nice` },
+      { k: 'shortlist', l: 'Shortlist', state: c.shortlisted >= 2 || c.chosen ? 'done' : c.shortlisted ? 'part' : '', sub: c.shortlisted ? `${c.shortlisted} shortlisted` : c.candidates ? `${c.candidates} candidate${c.candidates > 1 ? 's' : ''}` : 'no products yet' },
+      { k: 'compare', l: 'Compare', state: !c.shortlisted ? '' : s.compareGaps ? 'part' : 'done', sub: !c.shortlisted ? '—' : s.compareGaps ? `${s.compareGaps} empty cell${s.compareGaps > 1 ? 's' : ''}` : 'filled' },
+      { k: 'pick', l: s.status === 'bought' ? 'Bought' : 'Pick', state: c.chosen ? 'done' : '', sub: c.chosen ? esc(c.chosen.name) : 'not yet' }
+    ];
+    const ready = stage === 'ready';
+    el.innerHTML = `<div class="band" role="list">${stations.map(t => `<button class="stn ${t.state} ${expanded && focusCol === t.k ? 'cur' : ''}" data-col="${t.k}" role="listitem"><span class="dot"></span><b>${t.l}</b><small>${t.sub}</small></button>`).join('')}
+      ${s.status === 'exploring' ? `<button class="stn end ${ready ? 'ready' : ''}" data-rec title="${ready ? 'The board is complete' : 'Ask now: the room says what is missing and how sure it is'}"><span class="dot"></span><b>Recommend</b><small>${ready ? 'ready' : `${missing.length} missing`}</small></button>` : ''}
+      <span class="stat"><span class="st" data-s="${stage === 'open' ? 'exploring' : stage}">${stage === 'open' ? 'exploring' : stage}</span></span></div>
+      ${expanded ? drop() : ''}`;
+
+    function drop() {
+      const groups = [['must', 'Must'], ['nice', 'Nice to have'], ['open', 'To rank'], ['irrelevant', 'Irrelevant']];
+      const missBox = a => m(a).length ? `<div class="miss">${m(a).map(x => esc(x.text)).join('<br>')}</div>` : '';
+      const P = s.products;
+      return `<button class="closer" data-close>Close ✕</button><div class="drop">
+        <section class="col ${focusCol === 'needs' ? 'cur' : ''}"><h3>Needs</h3>${missBox('needs')}
+          ${s.needs.map((n, i) => `<div class="item ${n.answer ? '' : 'open'}"><span>${esc(n.q)}</span><input class="edit" data-n="${i}" value="${esc(n.answer || '')}" placeholder="your answer"></div>`).join('')}
+          <div class="item"><input class="edit" data-add placeholder="+ add a need or constraint"></div></section>
+        <section class="col ${focusCol === 'criteria' ? 'cur' : ''}"><h3>Criteria</h3>${missBox('criteria')}
+          ${groups.map(([g, l]) => { const ks = s.criteria.filter(k => k.state === g); return ks.length ? `<div class="lab">${l}</div>` + ks.map(k => `<div class="item"><span>${esc(k.name)}</span><span class="sub">${esc(k.why)}</span>
+            <div class="acts">${['must', 'nice', 'irrelevant'].map(x => `<button class="${k.state === x ? 'on' : ''}" data-k="${s.criteria.indexOf(k)}" data-v="${x}">${x}</button>`).join('')}</div></div>`).join('') : ''; }).join('')}</section>
+        <section class="col ${focusCol === 'shortlist' ? 'cur' : ''}"><h3>Shortlist</h3>${missBox('shortlist')}
+          ${['shortlisted', 'candidate', 'rejected'].map(st => { const ps = P.filter(p => p.state === st); return ps.length ? `<div class="lab">${st}</div>` + ps.map(p => `<div class="item"><span>${esc(p.name)}</span><span class="sub">${esc(p.state === 'rejected' ? p.reason : p.fact)}</span>
+            <div class="acts">${st === 'candidate' ? `<button data-p="${P.indexOf(p)}" data-v="shortlisted">shortlist</button><button data-p="${P.indexOf(p)}" data-v="rejected">reject</button>` : st === 'shortlisted' ? `<button data-p="${P.indexOf(p)}" data-v="rejected">reject</button>` : `<button data-p="${P.indexOf(p)}" data-v="candidate">restore</button>`}</div></div>`).join('') : ''; }).join('')}
+          ${P.length ? '' : '<p class="faint">Products come from families and research.</p>'}</section>
+        <section class="col ${focusCol === 'compare' ? 'cur' : ''}"><h3>Compare</h3>${missBox('compare')}
+          <p class="mute">${c.shortlisted ? `${c.shortlisted} products × ${c.must} must criteria.` : 'Shortlist products to compare them.'}</p>
+          ${s.compareGaps ? '<button data-fill>Let the room fill the empty cells</button>' : ''}<p><button>Open Compare ▤</button></p></section>
+        <section class="col ${focusCol === 'pick' ? 'cur' : ''}"><h3>Pick</h3>
+          ${c.chosen ? `<div class="chosen"><b>${esc(c.chosen.name)}</b><span class="sub mute">${esc(c.chosen.fact)}</span>
+            ${s.status === 'bought' ? '<p><b>Bought ✓</b></p>' : `<div class="acts" style="margin-top:8px;display:flex;gap:6px"><button class="on" data-bought>Mark as bought</button><button data-p="${P.indexOf(c.chosen)}" data-v="shortlisted">un-choose</button></div>`}</div>
+            ${s.recommendation ? `<p class="mute">${esc(s.recommendation)}</p>` : ''}` : `<p class="mute">Choose one of the shortlist.</p>`}
+          ${P.filter(p => p.state === 'shortlisted').map(p => `<div class="item"><span>${esc(p.name)}</span><div class="acts"><button data-p="${P.indexOf(p)}" data-v="chosen">choose</button></div></div>`).join('')}</section>
+      </div>
+      ${s.status === 'exploring' ? `<div class="reco-bar"><span class="${ready ? '' : 'mute'}">${ready ? 'The board is complete.' : `${missing.length} things missing. You can still ask.`}</span><button class="${ready ? 'on' : ''}" data-rec>Get the recommendation</button></div>` : ''}`;
+    }
+    el.querySelectorAll('[data-col]').forEach(b => b.onclick = () => { if (expanded && focusCol === b.dataset.col) return setExpanded(false); focusCol = b.dataset.col; setExpanded(true); });
+    el.querySelectorAll('[data-rec]').forEach(b => b.onclick = () => act.recommend());
+    el.querySelector('[data-close]')?.addEventListener('click', () => setExpanded(false));
+    el.querySelector('[data-fill]')?.addEventListener('click', () => act.fillCompare());
+    el.querySelectorAll('[data-n]').forEach(i => i.onchange = () => act.answer(s.needs[+i.dataset.n], i.value));
+    const add = el.querySelector('[data-add]'); if (add) add.onkeydown = e => { if (e.key === 'Enter') act.addNeed(add.value); };
+    el.querySelectorAll('[data-k]').forEach(b => b.onclick = () => act.rank(s.criteria[+b.dataset.k], b.dataset.v));
+    el.querySelectorAll('[data-p]').forEach(b => b.onclick = () => act.product(s.products[+b.dataset.p], b.dataset.v));
+    el.querySelector('[data-bought]')?.addEventListener('click', () => act.bought());
+    el.querySelector('.col.cur')?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+  }
+});
+</script>
+</body>
+</html>

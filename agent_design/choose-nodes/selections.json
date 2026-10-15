@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "concept": "choose-nodes",
+  "revision": 4,
+  "saved_at": "2026-10-15T16:16:16.458671+00:00",
+  "based_on_round": 3,
+  "selected_ids": [
+    "r001-01",
+    "r002-01",
+    "r003-02"
+  ],
+  "next": {
+    "phase": "motion",
+    "mode": "combine",
+    "prompt": "final"
+  }
+}

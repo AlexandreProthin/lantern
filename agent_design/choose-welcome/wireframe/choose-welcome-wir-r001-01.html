@@ -1,0 +1,126 @@
+<!--
+  id:        r001-01
+  component: choose-welcome
+  phase:     wireframe
+  parents:   none
+  direction: Learn's threshold, tuned for choosing. Same column as Learn's Welcome: the question field, the capsule with Carry the lantern in docked while focused, Shift+Enter opening the direction inside it; tone and model; a shelf of three equal cards; Browse all n. What changes is content: the direction asks for budget and needs, a quiet locale line says where prices come from (CR-90), and each card replaces the graph thumbnail with a four-step decision bar (needs, criteria, shortlist, pick) under its status and outcome.
+  request:   revision 1
+  inputs:    Welcome space of the Choose room (choose-room CR-11, CR-12, CR-13, CR-24, CR-90; header RS-12/RS-20). "What do you want to choose?" with the optional direction field (e.g. "budget about 500 €, I want to print figurines for my kids"), the 3 most recent Choose subjects with their status (exploring / decided / bought) to continue, and the way to Gallery. Hard cases: first run with no subjects, a subject that's decided, one that's bought, long subject names, CLI not ready. Explore what is specific to choosing compared with Learn (e.g. how the direction field invites needs and budget), but don't break the shared header/space structure (RS-12, RS-20). Stay consistent with Learn's Welcome (welcome and welcome-context recipes) and the choose-palette recipe.
+  shared:    ../assets/welcome-kit.js with ../choose-welcome-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose welcome r001-01 — Threshold, tuned</title>
+</head>
+<body>
+<script src="../choose-welcome-data.js"></script>
+<script src="../assets/welcome-kit.js"></script>
+<script>
+const K = WELCOME_KIT, { C, esc, fill } = K;
+K.mount({
+  id: 'r001-01', title: 'Threshold, tuned',
+  css: `
+  .wrap { max-width: 820px; margin: 0 auto; padding: 14vh 16px 80px; display: flex; flex-direction: column; gap: 18px; }
+  .wrap.first { padding-top: 20vh; }
+  .lede { text-align: center; color: var(--mute); margin: 0 auto 6px; max-width: 560px; }
+  .cap { display: flex; flex-direction: column; border-bottom: 1px solid var(--fg); }
+  .cap.active { border: 1px solid var(--fg); border-radius: 28px; padding: 4px 6px 4px 24px; }
+  .cap.dir { border-radius: 20px; padding: 8px 8px 8px 20px; }
+  .row1 { display: flex; align-items: center; gap: 10px; }
+  .subj { flex: 1; min-width: 0; border: 0; background: none; font-size: 34px; font-weight: 300; text-align: center; padding: 6px 0 12px; outline: none; }
+  .cap.active .subj { font-size: 20px; text-align: left; padding: 8px 0; }
+  .hr { height: 1px; background: var(--hair); margin: 6px 16px 6px 0; display: none; }
+  .dirf { display: none; border: 0; background: none; resize: none; font-size: 15px; line-height: 1.5; min-height: 48px; outline: none; padding: 2px 0; }
+  .cap.dir .hr, .cap.dir .dirf { display: block; }
+  .tail { display: none; align-items: center; justify-content: space-between; gap: 10px; }
+  .cap.dir .tail { display: flex; }
+  .cap.dir .row1 .primary { display: none; }
+  .primary.dock { visibility: hidden; }
+  .cap.focus .primary.dock { visibility: visible; }
+  .example { text-align: center; font-size: 12px; color: var(--faint); margin-top: -6px; }
+  .cap.active ~ .example, .cap.active ~ .why { text-align: left; padding-left: 26px; }
+  .example kbd { font: inherit; color: var(--mute); }
+  .why { text-align: center; margin-top: -10px; }
+  .locale { text-align: center; font-size: 11px; color: var(--faint); margin-top: -6px; }
+  .locale button.link { color: var(--faint); font-size: 11px; }
+  .shelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 7vh; }
+  .card { border: 1px solid var(--hair); padding: 12px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; min-width: 0; }
+  .card:hover { border-color: var(--fg); }
+  .card h3 { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .card .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 11px; color: var(--mute); }
+  .card .out { font-size: 12px; } .card .out b { font-weight: 600; }
+  .card .meta { font-size: 11px; color: var(--mute); }
+  .card .act { margin-top: auto; align-self: flex-start; }
+  .card[data-s='bought'] { opacity: .75; }
+  .browse { text-align: center; }
+  @media (max-width: 720px) { .shelf { grid-template-columns: 1fr; } .subj { font-size: 26px; } }
+  `,
+  render({ sc, subjects, first, locale }) {
+    if (!sc.library) return `<div class="wrap"><div class="cap"><div class="row1"><input class="subj" disabled placeholder="${esc(C.question)}"></div></div>
+      <div class="notice">${esc(C.libraryUnavailable)} <button class="link" data-settings="Library">Open Settings</button></div></div>`;
+    const cards = subjects.map((s) => `<article class="card" data-s="${s.status}" data-open="${s.id}" title="${esc(s.title)}">
+        <div class="top">${K.statusPill(s)}<span>${K.opened(s)}</span></div>
+        <h3 class="clamp2">${esc(s.title)}</h3>
+        ${K.boardBar(s, true)}
+        <div class="out">${K.outcome(s)}</div>
+        <div class="meta">${esc(K.stats(s))}</div>
+        <button class="act" data-open="${s.id}">${C.continue}</button></article>`).join('');
+    return `<div class="wrap${first ? ' first' : ''}">
+      ${first ? `<p class="lede">${esc(C.firstRun)}</p>` : ''}
+      <div class="cap" id="cap">
+        <div class="row1"><input class="subj" id="subj" maxlength="${C.titleLimit}" placeholder="${esc(C.question)}" autofocus aria-label="${esc(C.question)}">
+          <button class="primary dock" id="go1" disabled>${C.submit}</button></div>
+        <div class="hr"></div>
+        <textarea class="dirf" id="dir" rows="2" placeholder="${esc(fill(C.directionPlaceholder))}" aria-label="Your needs and budget"></textarea>
+        <div class="tail"><span class="counter" id="cnt"></span><button class="primary dock" id="go2" disabled>${C.submit}</button></div>
+      </div>
+      <div class="example">${esc(C.example)} <kbd>Shift+Enter</kbd> adds your budget and needs.</div>
+      <div class="why" id="why"></div>
+      ${sc.cli ? '' : `<div class="notice">${esc(C.cliNotReady)} <button class="link" data-settings="Provider">Open Settings → Provider</button> · your choices below still open.</div>`}
+      ${K.pickers()}
+      <div class="locale">${esc(locale)} · <button class="link" data-settings="Choose room">change</button></div>
+      ${subjects.length ? `<section class="shelf" aria-label="Recent choices">${cards}</section>` : ''}
+      ${sc.total ? `<div class="browse"><button class="link" data-browse>${fill(C.browseAll, { n: sc.total })}</button></div>` : ''}
+    </div>`;
+  },
+  wire() {
+    const cap = document.getElementById('cap'), subj = document.getElementById('subj'), dir = document.getElementById('dir');
+    if (!subj || subj.disabled) return;
+    const go = [document.getElementById('go1'), document.getElementById('go2')];
+    const upd = () => {
+      const r = K.check(subj.value, dir.value);
+      go.forEach((b) => (b.disabled = !r.ok));
+      const cnt = document.getElementById('cnt'); cnt.textContent = r.counter; cnt.classList.toggle('over', r.over);
+      const why = document.getElementById('why'); why.textContent = r.why; why.classList.toggle('over', r.over);
+      cap.classList.toggle('active', cap.contains(document.activeElement) || !!subj.value || cap.classList.contains('dir'));
+      cap.classList.toggle('focus', cap.contains(document.activeElement));
+      dir.style.height = '0'; dir.style.height = dir.scrollHeight + 'px';
+    };
+    const openDir = () => { cap.classList.add('dir'); upd(); dir.focus(); };
+    const closeDir = () => { dir.value = ''; cap.classList.remove('dir'); subj.focus(); upd(); };
+    subj.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); openDir(); }
+      else if (e.key === 'Enter') { e.preventDefault(); K.submit(subj.value, dir.value); }
+      else if (e.key === 'Escape') { subj.value = ''; upd(); }
+      else if (e.key === 'ArrowDown' && cap.classList.contains('dir')) { e.preventDefault(); dir.focus(); }
+    });
+    dir.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); K.submit(subj.value, dir.value); }
+      else if (e.key === 'Escape' || (e.key === 'Backspace' && !dir.value)) { e.preventDefault(); closeDir(); }
+      else if (e.key === 'ArrowUp' && dir.selectionStart === 0) { e.preventDefault(); subj.focus(); }
+    });
+    go.forEach((b) => b.addEventListener('click', () => K.submit(subj.value, dir.value)));
+    ['input', 'focusin'].forEach((ev) => cap.addEventListener(ev, upd));
+    cap.addEventListener('focusout', () => setTimeout(() => {
+      if (!cap.contains(document.activeElement) && !dir.value.trim()) cap.classList.remove('dir');
+      upd();
+    }));
+    upd();
+  },
+});
+</script>
+</body>
+</html>

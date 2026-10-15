@@ -1,0 +1,17 @@
+{
+  "selection_revision": 5,
+  "single": true,
+  "proposals": [
+    {
+      "id": "r003-01",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r002-01"
+      ],
+      "file": "motion/choose-welcome-mot-r003-01.html",
+      "title": "Learn's embers, teal",
+      "direction": "Learn's Welcome motion, ported as shipped onto r002-01 (app embers.ts and capsule.ts, the welcome and welcome-context recipes), the light teal because it reads the tokens. Arrival: the underline draws in (650 ms), then a light runs along it from the left edge to the centre and fans out, once per load. The capsule: rest to capsule to two-part card in 380 ms ease-out cubic-bezier(.2,.8,.2,1), the subject shrinks with a brief opacity dip (260 ms), Carry the lantern in slides out from behind the edge on focus (240 ms) and back on leaving (170 ms), rides the card's corner on Shift+Enter; the hairline draws in, the needs drop in, the hint glides with the card; closing fades the needs (110 ms) first. Choose additions in Learn's words: the need starters appear like Learn's suggestion chips (200 ms, 50 ms apart), and hovering a recent card runs the light along its steps bar to where the decision stands (Learn: through the graph thumbnail). Submit: a light runs from the field to the button, handoff 260 ms after, timer-driven. Reduced motion: everything instant, no canvas."
+    }
+  ]
+}

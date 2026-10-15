@@ -1,0 +1,462 @@
+window.CHOOSE_PALETTE_DATA = {
+ "meta": {
+  "about": "Content for the Choose room replica drawn over the backdrop in the palette proposals. Not real user data. Only colour varies between proposals.",
+  "subjects": "title, status (exploring | decided | bought, CR-24), counts for the compact stats (needs, criteria, shortlisted; CR-25), lastOpened (display text), created (ISO date), model, thumb: compact tree as [parentIndex, look] pairs (index 0 is the root, parent -1). look is the colour treatment only: open | lit | settled | faded",
+  "graph": "the open subject in Survey: nodes with id, title, kind (subject | concept | need | criterion | family | product | own, CR-20), state (CR-21), look (open | lit | settled | faded: which node token paints it), parent id, world x/y in px from the graph area's centre; focus = selected node id",
+  "looks": "a palette round has only the RS-31 node tokens: open = --node-open dotted, lit = --node-lit with glow, settled = --node-understood solid (answered, must, shortlisted, chosen), faded = --node-open at low opacity (irrelevant, rejected, dismissed). Choose's own glyphs come later (choose-glyphs design).",
+  "panel": "the reading panel's content for the focused node, with one sourced fact (CR-41) to show source/date colours",
+  "learn": "Learn's binding palette (RS-31), for the side-by-side toggle"
+ },
+ "learn": {
+  "--bg": "#101827",
+  "--surface": "#172132",
+  "--surface-2": "#302b2a",
+  "--ink": "#f3e9dc",
+  "--ink-mute": "#aeb3bf",
+  "--line": "#3b4558",
+  "--accent": "#e8b66e",
+  "--accent-ink": "#211b14",
+  "--focus": "#ffe0ab",
+  "--node-open": "#969ca7",
+  "--node-lit": "#ffe1aa",
+  "--node-understood": "#e8b66e",
+  "--glow-near": "rgba(255, 199, 118, 0.34)",
+  "--glow-far": "rgba(255, 182, 88, 0.15)",
+  "--path-muted": "#6f5c42",
+  "--code": "#0c1320",
+  "--error": "#d86a5a",
+  "--error-ink": "#f0a598"
+ },
+ "subjects": [
+  {
+   "title": "3D printer",
+   "status": "exploring",
+   "needs": 4,
+   "criteria": 6,
+   "shortlisted": 3,
+   "lastOpened": "20 minutes ago",
+   "created": "2026-10-12",
+   "model": "Opus 5.5",
+   "thumb": [
+    [
+     -1,
+     "lit"
+    ],
+    [
+     0,
+     "lit"
+    ],
+    [
+     0,
+     "settled"
+    ],
+    [
+     0,
+     "settled"
+    ],
+    [
+     0,
+     "lit"
+    ],
+    [
+     2,
+     "settled"
+    ],
+    [
+     2,
+     "open"
+    ],
+    [
+     3,
+     "settled"
+    ],
+    [
+     3,
+     "faded"
+    ],
+    [
+     4,
+     "settled"
+    ],
+    [
+     4,
+     "lit"
+    ],
+    [
+     4,
+     "faded"
+    ]
+   ]
+  },
+  {
+   "title": "Road bike for commuting",
+   "status": "decided",
+   "needs": 5,
+   "criteria": 7,
+   "shortlisted": 2,
+   "lastOpened": "yesterday",
+   "created": "2026-10-05",
+   "model": "Opus 5.5",
+   "thumb": [
+    [
+     -1,
+     "settled"
+    ],
+    [
+     0,
+     "settled"
+    ],
+    [
+     0,
+     "settled"
+    ],
+    [
+     0,
+     "lit"
+    ],
+    [
+     1,
+     "settled"
+    ],
+    [
+     2,
+     "settled"
+    ],
+    [
+     3,
+     "settled"
+    ],
+    [
+     3,
+     "faded"
+    ],
+    [
+     6,
+     "settled"
+    ]
+   ]
+  },
+  {
+   "title": "Heat pump",
+   "status": "bought",
+   "needs": 6,
+   "criteria": 5,
+   "shortlisted": 3,
+   "lastOpened": "3 weeks ago",
+   "created": "2026-09-14",
+   "model": "Sonnet 5.5",
+   "thumb": [
+    [
+     -1,
+     "settled"
+    ],
+    [
+     0,
+     "settled"
+    ],
+    [
+     0,
+     "settled"
+    ],
+    [
+     0,
+     "settled"
+    ],
+    [
+     1,
+     "settled"
+    ],
+    [
+     2,
+     "faded"
+    ],
+    [
+     3,
+     "settled"
+    ],
+    [
+     3,
+     "settled"
+    ]
+   ]
+  },
+  {
+   "title": "Espresso grinder",
+   "status": "exploring",
+   "needs": 1,
+   "criteria": 0,
+   "shortlisted": 0,
+   "lastOpened": "4 days ago",
+   "created": "2026-10-10",
+   "model": "Opus 5.5",
+   "thumb": [
+    [
+     -1,
+     "lit"
+    ],
+    [
+     0,
+     "open"
+    ],
+    [
+     0,
+     "lit"
+    ],
+    [
+     0,
+     "open"
+    ]
+   ]
+  },
+  {
+   "title": "Noise-cancelling headphones for long flights and open-plan offices",
+   "status": "exploring",
+   "needs": 3,
+   "criteria": 4,
+   "shortlisted": 1,
+   "lastOpened": "2 days ago",
+   "created": "2026-10-08",
+   "model": "Opus 5.5",
+   "thumb": [
+    [
+     -1,
+     "lit"
+    ],
+    [
+     0,
+     "settled"
+    ],
+    [
+     0,
+     "lit"
+    ],
+    [
+     1,
+     "settled"
+    ],
+    [
+     2,
+     "open"
+    ],
+    [
+     2,
+     "lit"
+    ]
+   ]
+  },
+  {
+   "title": "Family car",
+   "status": "exploring",
+   "needs": 0,
+   "criteria": 0,
+   "shortlisted": 0,
+   "lastOpened": "just now",
+   "created": "2026-10-14",
+   "model": "Opus 5.5",
+   "thumb": [
+    [
+     -1,
+     "lit"
+    ]
+   ]
+  }
+ ],
+ "graph": {
+  "subject": "3D printer",
+  "focus": "c-speed",
+  "nodes": [
+   {
+    "id": "root",
+    "title": "3D printer",
+    "kind": "subject",
+    "state": "lit",
+    "look": "lit",
+    "parent": null,
+    "x": 0,
+    "y": -250
+   },
+   {
+    "id": "c-fdm",
+    "title": "FDM or resin?",
+    "kind": "concept",
+    "state": "lit",
+    "look": "lit",
+    "parent": "root",
+    "x": -330,
+    "y": -110
+   },
+   {
+    "id": "n-what",
+    "title": "What will you print?",
+    "kind": "need",
+    "state": "answered",
+    "look": "settled",
+    "parent": "root",
+    "x": -110,
+    "y": -110
+   },
+   {
+    "id": "k-volume",
+    "title": "Build volume",
+    "kind": "criterion",
+    "state": "must",
+    "look": "settled",
+    "parent": "root",
+    "x": 110,
+    "y": -110
+   },
+   {
+    "id": "f-corexy",
+    "title": "Enclosed CoreXY around 600 €",
+    "kind": "family",
+    "state": "lit",
+    "look": "lit",
+    "parent": "root",
+    "x": 330,
+    "y": -110
+   },
+   {
+    "id": "c-speed",
+    "title": "Speed vs. print quality",
+    "kind": "concept",
+    "state": "lit",
+    "look": "lit",
+    "parent": "c-fdm",
+    "x": -400,
+    "y": 30
+   },
+   {
+    "id": "c-bed",
+    "title": "What is a heated bed?",
+    "kind": "concept",
+    "state": "open",
+    "look": "open",
+    "parent": "c-fdm",
+    "x": -250,
+    "y": 30
+   },
+   {
+    "id": "n-abs",
+    "title": "Will you print ABS?",
+    "kind": "need",
+    "state": "open",
+    "look": "open",
+    "parent": "n-what",
+    "x": -110,
+    "y": 30
+   },
+   {
+    "id": "k-noise",
+    "title": "Noise",
+    "kind": "criterion",
+    "state": "nice",
+    "look": "settled",
+    "parent": "k-volume",
+    "x": 60,
+    "y": 30
+   },
+   {
+    "id": "k-colour",
+    "title": "Multi-colour",
+    "kind": "criterion",
+    "state": "irrelevant",
+    "look": "faded",
+    "parent": "k-volume",
+    "x": 170,
+    "y": 30
+   },
+   {
+    "id": "p-a",
+    "title": "Printer A",
+    "kind": "product",
+    "state": "shortlisted",
+    "look": "settled",
+    "parent": "f-corexy",
+    "x": 280,
+    "y": 30
+   },
+   {
+    "id": "p-b",
+    "title": "Printer B",
+    "kind": "product",
+    "state": "candidate",
+    "look": "lit",
+    "parent": "f-corexy",
+    "x": 390,
+    "y": 30
+   },
+   {
+    "id": "p-c",
+    "title": "Printer C",
+    "kind": "product",
+    "state": "rejected",
+    "look": "faded",
+    "parent": "f-corexy",
+    "x": 500,
+    "y": 30
+   },
+   {
+    "id": "o-kids",
+    "title": "Safe for kids' room?",
+    "kind": "own",
+    "state": "open",
+    "look": "open",
+    "parent": "n-what",
+    "x": -110,
+    "y": 170
+   }
+  ]
+ },
+ "panel": {
+  "crumbs": [
+   "3D printer",
+   "FDM or resin?",
+   "Speed vs. print quality"
+  ],
+  "kind": "concept",
+  "state": "lit",
+  "title": "Speed vs. print quality",
+  "hook": "Why a fast printer is not always the better buy for figurines.",
+  "body": [
+   "Printers advertise top speeds, but fine detail comes from slow outer walls, cooling and a stiff frame. A CoreXY printer keeps quality at higher speeds because its print head is light.",
+   "For your use, small figurines, quality matters more than raw speed: most of the print time goes into thin layers and supports, not into fast infill."
+  ],
+  "fact": {
+   "text": "Printer A: max. speed 500 mm/s",
+   "source": "manufacturer specifications",
+   "date": "read 2026-10-12",
+   "kind": "spec"
+  },
+  "opinion": {
+   "text": "Owners report quieter prints with the enclosure closed.",
+   "source": "user forum, experience report",
+   "date": "read 2026-10-12",
+   "kind": "opinion"
+  },
+  "sponsored": {
+   "text": "\"Best 3D printers of 2026\" list",
+   "source": "affiliate list, not used for the recommendation",
+   "kind": "sponsored"
+  },
+  "deeper": [
+   {
+    "title": "Why CoreXY keeps detail at speed",
+    "hook": "A light print head and two fixed motors."
+   },
+   {
+    "title": "Does input shaping matter for figurines?",
+    "hook": "Ringing, and when you would see it."
+   }
+  ],
+  "turns": [
+   {
+    "role": "tutor",
+    "text": "You mentioned your kids will choose the models. Should I record \"small detailed figurines\" as a need?"
+   },
+   {
+    "role": "user",
+    "text": "Yes, and mostly under 10 cm."
+   }
+  ]
+ }
+};

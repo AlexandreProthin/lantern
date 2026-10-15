@@ -1,0 +1,84 @@
+<!--
+  id:        r003-02
+  component: choose-nodes
+  phase:     motion
+  parents:   r001-01, r002-01
+  direction: The geometry carries the change. Settling fills the disc from its centre outward (clip-path circle, 360 ms out-ease) over the old look, and the badge comes out of the disc onto the rim (from the centre, scale .3 to 1, 240 ms, starting at 200 ms). Un-settling and fading reverse it: the old look closes into its centre (300 ms in-ease) and reveals the new one. A badge-only change (nice to must) turns the badge over (rotateY, 220 ms). A chosen product then opens its second ring outward (scale .8 to 1, 320 ms) and its glow blooms (480 ms). No particles.
+  request:   revision 3
+  inputs:    next
+  frozen:    structure r001-01 (assets/glyphs-r001-01.js), colour r002-01 (below, verbatim), form and type as in r002-01
+             (assets/node-kit-room.js). Only state changes move; selection, route light, spawn and busy are the graph's
+             (graph-view GV-31 to GV-98) and are not redrawn. Event-driven only, nothing loops (RS-33); under reduced
+             motion (OS or the toggle, GV-100) every change is instant and nothing depends on motion (GV-103).
+  shared:    ../choose-nodes-data.js, ../assets/node-kit.js, ../assets/glyphs-r001-01.js, ../assets/node-kit-room.js,
+             ../assets/node-motion.js, ../assets/backdrop.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>choose-nodes r003-02 · Fill and turn</title>
+<style>
+/* r002-01 Learn's settled light, frozen */
+.look-settled .anchor{background:var(--node-understood);border-color:var(--node-understood);color:var(--accent-ink)}
+.look-settled .badge{background:var(--bg);border-color:var(--node-understood);color:var(--node-understood)}
+.look-quiet .anchor{background:var(--bg);border-color:var(--line);color:var(--ink-mute)}
+.look-quiet .t{color:var(--ink-mute)}.look-quiet .badge{border-color:var(--line);color:var(--ink-mute)}
+.look-faded .badge{border-color:var(--node-open);color:var(--node-open)}
+.chosen .anchor{box-shadow:0 0 14px 2px var(--glow-near),0 0 38px 9px var(--glow-far)}
+.chosen .anchor::before{border-color:var(--focus)}
+.subject.bought .badge,.subject.decided .badge{border-color:var(--node-lit);color:var(--node-lit)}
+
+.mo-ghost.under{z-index:-1}
+</style>
+</head>
+<body>
+<script src="../choose-nodes-data.js"></script>
+<script src="../assets/node-kit.js"></script>
+<script src="../assets/glyphs-r001-01.js"></script>
+<script src="../assets/node-kit-room.js"></script>
+<script src="../assets/node-motion.js"></script>
+<script>
+const RANK = {dismissed:0, rejected:0, irrelevant:1, open:1, candidate:1, lit:2, exploring:2, decided:2, answered:3, must:3, nice:3, shortlisted:3, chosen:4, bought:4};
+const GLOWS = s => s === 'lit' || s === 'chosen' || s === 'exploring' || s === 'decided';
+const q = (c, sel) => c.el && c.el.querySelector(sel);
+function warm(anchor, ms, delay = 0) { // a glow warming up from nothing to its static value
+  if (!anchor) return;
+  const shadow = getComputedStyle(anchor).boxShadow;
+  if (shadow === 'none') return;
+  Motion.animate(anchor, [{boxShadow: shadow.replace(/rgba?\([^)]*\)/g, 'rgba(0,0,0,0)')}, {boxShadow: shadow}], {duration: ms, delay, easing: Motion.EASE_OUT, fill: 'backwards'});
+}
+const SHUT = 'circle(0% at 50% 50%)', FULL = 'circle(110% at 50% 50%)';
+function onStateChange(changes) {
+  for (const c of changes) {
+    const up = RANK[c.to] > RANK[c.from], down = RANK[c.to] < RANK[c.from];
+    const anchor = q(c, '.anchor'), badge = q(c, '.badge');
+    if (up) {
+      const g = Motion.ghost(c, 'under');
+      const a = Motion.animate(anchor, [{clipPath: SHUT}, {clipPath: FULL}], {duration: 360, easing: Motion.EASE_OUT});
+      if (a) a.finished.then(() => Motion.drop(g), () => Motion.drop(g)); else Motion.drop(g);
+      if (badge) Motion.animate(badge, [{transform: 'translate(-19px,19px) scale(.3)', opacity: 0}, {transform: 'none', opacity: 1}], {duration: 240, delay: 200, easing: Motion.EASE_OUT, fill: 'backwards'});
+    } else if (down) {
+      const g = Motion.ghost(c);
+      if (g) {
+        const a = Motion.animate(g.querySelector('.anchor'), [{clipPath: FULL}, {clipPath: SHUT}], {duration: 300, easing: Motion.EASE_IN, fill: 'forwards'});
+        Motion.animate(g.querySelector('.t'), [{opacity: 1}, {opacity: 0}], {duration: 200, easing: Motion.EASE_IN, fill: 'forwards'});
+        if (a) a.finished.then(() => Motion.drop(g), () => Motion.drop(g)); else Motion.drop(g);
+      }
+    } else if (badge) {
+      Motion.animate(badge, [{transform: 'perspective(60px) rotateY(90deg)'}, {transform: 'none'}], {duration: 220, easing: Motion.EASE_OUT});
+    }
+    if (c.to === 'chosen') Motion.animate(anchor, [{transform: 'scale(.8)', opacity: 0}, {transform: 'none', opacity: 1}], {duration: 320, delay: 300, easing: Motion.EASE_OUT, pseudoElement: '::before', fill: 'backwards'});
+    if (GLOWS(c.to) && !GLOWS(c.from)) warm(anchor, 480, c.to === 'chosen' ? 300 : 120);
+  }
+}
+NodeKit.mountRoom({
+  phase: 'motion', id: 'r003-02', title: "Fill and turn",
+  direction: "The geometry carries the change. Settling fills the disc from its centre outward (clip-path circle, 360 ms out-ease) over the old look, and the badge comes out of the disc onto the rim (from the centre, scale .3 to 1, 240 ms, starting at 200 ms). Un-settling and fading reverse it: the old look closes into its centre (300 ms in-ease) and reveals the new one. A badge-only change (nice to must) turns the badge over (rotateY, 220 ms). A chosen product then opens its second ring outward (scale .8 to 1, 320 ms) and its glow blooms (480 ms). No particles. Use Play the story (bottom left), or try states in the panel.",
+  renderNode: GLYPHS.renderNode, legend: GLYPHS.legend, onStateChange,
+});
+Motion.install('r003-02');
+</script>
+</body>
+</html>

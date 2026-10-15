@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "concept": "choose-welcome",
+  "revision": 6,
+  "saved_at": "2026-10-15T16:11:35.509226+00:00",
+  "based_on_round": 3,
+  "selected_ids": [
+    "r001-01",
+    "r001-02",
+    "r002-01",
+    "r003-01"
+  ],
+  "next": {
+    "phase": "motion",
+    "mode": "combine",
+    "prompt": "as close as learn room. Only one proposition for the next round"
+  }
+}

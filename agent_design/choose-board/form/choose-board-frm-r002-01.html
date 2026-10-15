@@ -1,0 +1,86 @@
+<!--
+  id:        r002-01
+  component: choose-board
+  phase:     form
+  parents:   r001-01
+  direction: Low density, hierarchy by scale. From r001-01: the whole structure. Rail 88 px with large light numerals and small tracked labels, no rules between counters, only space; a dot left of a numeral marks something missing. The open sheet is airy: a light 22 px title, the missing items as one quiet line, needs as question-over-answer pairs, criteria under large group names, products as wide rows. One vertical hairline between the two columns.
+  request:   revision 3
+  inputs:    accepted
+  read as:   the counter rail's structure is accepted and frozen (../assets/rail-structure.js, extracted unchanged from r001-01);
+             this round varies composition, density, scale and hierarchy only, in greyscale with one typeface (system UI).
+             The completeness rule of round 1 stays as proposed.
+  shared:    ../assets/board-kit.js (scenarios, completeness rule, Survey frame), ../assets/rail-structure.js, ../choose-board-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose board r002-01 — Quiet numerals</title>
+</head>
+<body>
+<script src="../choose-board-data.js"></script>
+<script src="../assets/board-kit.js"></script>
+<script src="../assets/rail-structure.js"></script>
+<script>
+BOARD_KIT.mount({
+  id: 'r002-01', title: "Quiet numerals", slot: 'rail', render: RAIL_RENDER,
+  css: `
+  .sheet .top .sp { flex: 1; } .rail .gap { flex: 1; }
+  .main[data-expanded='true'] .graph { display: none; }
+  .main[data-expanded='true'] .board { flex: 1 1 62%; flex-direction: column; }
+  .board { display: flex; flex-direction: column; min-height: 0; }
+  .rail { flex: 1; display: flex; flex-direction: column; cursor: pointer; overflow: auto; text-align: center; }
+  .rail .ctr { position: relative; } .rail .ctr b, .rail .ctr small { display: block; }
+  .rail .ctr .tip { display: none; position: absolute; right: calc(100% + 10px); top: 0; width: 230px; text-align: left; z-index: 5; }
+  .rail .ctr:hover .tip { display: block; }
+  .sheet { flex: 1; overflow: auto; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; }
+  .need { display: grid; align-items: baseline; } .need .x { border: 0; background: transparent; }
+  .add { display: flex; gap: 6px; } .add input { flex: 1; }
+  .crit { display: flex; align-items: center; justify-content: space-between; gap: 10px; } .crit .why { display: block; }
+  .prod .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  @media (max-width: 760px) { .board { flex: 0 0 auto !important; } .rail { flex-direction: row; overflow-x: auto; } .rail .ctr .tip { display: none !important; } .cols { grid-template-columns: 1fr; } }
+
+  :root { --fg: #ededed; --bg: #121212; --mute: #9a9a9a; --faint: #5e5e5e; --hair: #333; --fill: #1b1b1b; }
+  .board { flex: 0 0 88px; border-left: 1px solid var(--hair); }
+  .rail { padding: 18px 8px; gap: 22px; } .rail:hover { background: var(--fill); }
+  .rail .ttl { font-size: 9px; letter-spacing: .22em; color: var(--faint); }
+  .rail .st { border: 0; padding: 0; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+  .rail .st[data-s='bought'] { background: none; color: var(--fg); }
+  .rail .ctr b { font-size: 28px; font-weight: 300; line-height: 1; font-variant-numeric: tabular-nums; }
+  .rail .ctr b .faint { font-size: 14px; }
+  .rail .ctr small { margin-top: 6px; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
+  .rail .ctr.miss b::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--fg); vertical-align: middle; margin: 0 5px 0 -10px; }
+  .rail .ctr .tip { background: var(--bg); border: 1px solid var(--hair); padding: 12px 14px; font-size: 12px; line-height: 1.6; }
+  .rail .miss-n { font-size: 10px; letter-spacing: .08em; color: var(--mute); }
+  .rail .rec { margin: 0 4px; font-size: 11px; border-radius: 999px; padding: 6px 0; } .rail .rec.on { background: var(--fg); color: var(--bg); }
+  .sheet { padding: 32px 40px 80px; }
+  .sheet .top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .sheet .top h2 { margin: 0; font-size: 22px; font-weight: 300; }
+  .sheet .top button { border-radius: 999px; padding: 6px 14px; }
+  .missing { margin: 14px 0 34px; color: var(--mute); font-size: 13px; line-height: 1.7; }
+  .missing b { font-weight: 400; color: var(--fg); margin-right: 6px; } .missing span::after { content: ' · '; color: var(--faint); } .missing span:last-of-type::after { content: ''; }
+  .missing button { margin-left: 10px; border-radius: 999px; font-size: 12px; }
+  .cols { gap: 0; } .cols .card + .card { border-left: 1px solid var(--hair); padding-left: 36px; } .cols .card:first-child { padding-right: 36px; }
+  .card h3 { margin: 0 0 18px; font-size: 10px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--faint); display: flex; gap: 10px; }
+  .need { grid-template-columns: 1fr auto; padding: 0 0 16px; } .need .q { grid-column: 1; font-size: 11px; color: var(--mute); }
+  .need .edit { grid-column: 1; font-size: 15px; border-bottom-color: transparent; } .need .edit:hover { border-bottom-color: var(--hair); }
+  .need .x { grid-column: 2; grid-row: 1 / 3; color: var(--faint); align-self: center; }
+  .need.open .q::before { content: '○ '; color: var(--fg); } .need.open .q { color: var(--fg); }
+  .add { margin-top: 6px; } .add input { font-size: 13px; } .add button { border-radius: 999px; }
+  .grp { margin-bottom: 22px; } .grp h4 { margin: 0 0 8px; font-size: 15px; font-weight: 600; } .grp.irr { opacity: .5; }
+  .crit { padding: 6px 0; } .crit .why { font-size: 11px; color: var(--faint); margin-top: 2px; }
+  .seg { border-color: var(--hair); } .seg button { font-size: 10px; padding: 3px 8px; }
+  .short { margin-top: 40px; border-top: 1px solid var(--hair); padding-top: 26px; }
+  .prods { display: grid; gap: 0; }
+  .prod { display: grid; grid-template-columns: minmax(140px, 1fr) 2fr auto auto; align-items: baseline; gap: 18px; padding: 14px 0; border-bottom: 1px solid var(--fill); }
+  .prod b { font-size: 17px; font-weight: 500; } .prod.candidate b { font-weight: 300; } .prod.chosen b::before { content: '● '; }
+  .prod .acts button { border-radius: 999px; font-size: 11px; }
+  .rej { margin-top: 14px; font-size: 12px; color: var(--faint); }
+  @media (max-width: 760px) { .cols .card + .card { border-left: 0; padding-left: 0; } .prod { grid-template-columns: 1fr; gap: 4px; } .sheet { padding: 20px; } }
+`
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!--
+  id:        r002-01
+  component: choose-nodes
+  phase:     color
+  parents:   r001-01
+  direction: Learn's node colours one to one, in teal. Open dotted --node-open, lit --surface-2 with --node-lit and both glows, and every settled state (answered, must, nice, shortlisted, chosen, bought) filled --node-understood with an --accent-ink pictogram, exactly like Learn's understood. Rim badges are --bg with a teal ring. Chosen adds Learn's lit glow and a --focus second ring. Irrelevant is a --line ring with --ink-mute. Rejected and dismissed fade (.45, dashed). No red anywhere: one light, one colour.
+  request:   revision 2
+  inputs:    Then jump to the color round and pick the missing choices from other choose room design round to keep it uniform. if in doute of anything ask me. / To keep the lantern feeling over the room stay coherent with the already designed learn room
+  frozen:    structure r001-01 (assets/glyphs-r001-01.js). Form and type were not run as rounds; per the brief they are
+             taken from the settled Choose and Learn rounds: Learn final node form (44 px disc, 13 px / 1.5 titles),
+             choose-board r003-01 type (app families, sentence case), choose-palette r001-01 tokens (CR-70),
+             Learn's open / lit / faded looks and the final backdrop (assets/node-kit-room.js).
+  shared:    ../choose-nodes-data.js, ../assets/node-kit.js, ../assets/glyphs-r001-01.js, ../assets/node-kit-room.js, ../assets/backdrop.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>choose-nodes r002-01 · Learn's settled light</title>
+<style>
+/* this proposal: how the decision states use the Choose tokens */
+.look-settled .anchor{background:var(--node-understood);border-color:var(--node-understood);color:var(--accent-ink)}
+.look-settled .badge{background:var(--bg);border-color:var(--node-understood);color:var(--node-understood)}
+.look-quiet .anchor{background:var(--bg);border-color:var(--line);color:var(--ink-mute)}
+.look-quiet .t{color:var(--ink-mute)}.look-quiet .badge{border-color:var(--line);color:var(--ink-mute)}
+.look-faded .badge{border-color:var(--node-open);color:var(--node-open)}
+.chosen .anchor{box-shadow:0 0 14px 2px var(--glow-near),0 0 38px 9px var(--glow-far)}
+.chosen .anchor::before{border-color:var(--focus)}
+.subject.bought .badge,.subject.decided .badge{border-color:var(--node-lit);color:var(--node-lit)}
+</style>
+</head>
+<body>
+<script src="../choose-nodes-data.js"></script>
+<script src="../assets/node-kit.js"></script>
+<script src="../assets/glyphs-r001-01.js"></script>
+<script src="../assets/node-kit-room.js"></script>
+<script>
+NodeKit.mountRoom({
+  phase: 'color', id: 'r002-01', title: "Learn's settled light",
+  direction: "Learn's node colours one to one, in teal. Open dotted --node-open, lit --surface-2 with --node-lit and both glows, and every settled state (answered, must, nice, shortlisted, chosen, bought) filled --node-understood with an --accent-ink pictogram, exactly like Learn's understood. Rim badges are --bg with a teal ring. Chosen adds Learn's lit glow and a --focus second ring. Irrelevant is a --line ring with --ink-mute. Rejected and dismissed fade (.45, dashed). No red anywhere: one light, one colour.",
+  renderNode: GLYPHS.renderNode, legend: GLYPHS.legend,
+
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!--
+  id:        r001-01
+  component: choose-compare
+  phase:     wireframe
+  parents:   none
+  direction: Sourced cells. Everything is visible at once: each cell shows its value and, under it, its sources as short kind tags with the date read (manufacturer · 12 Oct, measured, opinion, sponsored struck through). Disagreement, no source, research in progress, the user's own value (with the room's beside it and Revert) and price indications are written in the cell. Click a cell to edit it in place or ask Check this. Sticky criterion column and product header; five products scroll sideways.
+  request:   revision 1
+  inputs:    Compare space (CR-11, CR-50, CR-51): a full-width table, shortlisted products as columns and criteria as rows, must first, then nice; irrelevant criteria hidden behind a toggle. Each cell holds a value with its source and the date it was read (CR-41), and follows the source rules (CR-42: manufacturer specs, independent measurements preferred, community reports marked as opinion, affiliate lists never a basis, sponsored sources marked, disagreements shown). The room fills a product's column when it is shortlisted and a criterion's row when it is added; the user can edit any cell, and an edited cell is marked as the user's and keeps the room's value. Hard cases: one product, five products, a cell being filled (research takes 40-65 s), a cell with no source found, sources that disagree, a user-edited cell, a long value, a price (an indication at a date), a chosen product, web use turned off (values from the model's knowledge with its date, CR-44).
+  shared:    ../assets/compare-kit.js with ../choose-compare-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose compare r001-01 — Sourced cells</title>
+</head>
+<body>
+<script src="../choose-compare-data.js"></script>
+<script src="../assets/compare-kit.js"></script>
+<script>
+const day = d => /^\d{4}-\d\d-\d\d$/.test(d) ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : d;
+COMPARE_KIT.mount({
+  id: 'r001-01', title: 'Sourced cells',
+  css: `
+  .scroll { position: absolute; inset: 0; overflow: auto; padding-bottom: 70px; }
+  table { border-collapse: separate; border-spacing: 0; min-width: 100%; }
+  th, td { border-bottom: 1px solid var(--hair); border-right: 1px solid var(--fill); vertical-align: top; text-align: left; }
+  thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 12px; border-bottom: 1px solid var(--fg); min-width: 210px; }
+  thead th:first-child, tbody th { position: sticky; left: 0; z-index: 1; background: var(--bg); width: 230px; min-width: 200px; }
+  thead th:first-child { z-index: 3; }
+  thead th .acts { display: flex; gap: 4px; margin-top: 6px; } thead th .acts button { font-size: 11px; padding: 1px 7px; }
+  thead th.chosen { border: 2px solid var(--fg); border-bottom-width: 1px; } thead th .pn { font-size: 14px; }
+  thead th.filling .pn::after { content: ' · researching…'; font-weight: 400; font-size: 11px; color: var(--mute); }
+  tbody th { padding: 10px 12px; font-weight: 400; } tbody th .st { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); }
+  tbody th .why { display: block; font-size: 11px; color: var(--faint); }
+  tr.grp th { background: var(--fill); padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+  tr.irr th, tr.irr td { color: var(--faint); }
+  td { padding: 9px 12px; cursor: pointer; max-width: 300px; } td:hover { background: var(--fill); }
+  td.chosen { border-left: 2px solid var(--fg); border-right: 2px solid var(--fg); }
+  td .v { display: block; font-size: 14px; } td .v.none { color: var(--mute); font-style: italic; font-size: 13px; }
+  td .srcs { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 5px; font-size: 11px; color: var(--mute); align-items: center; }
+  td .note { display: block; margin-top: 5px; font-size: 11px; border-left: 2px solid var(--fg); padding-left: 6px; }
+  td.disagree .v::before { content: '≠ '; }
+  td.filling { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--fill) 6px 12px); color: var(--mute); }
+  td.edited .room { display: block; font-size: 11px; color: var(--mute); margin-top: 4px; } td.edited .room s { text-decoration-color: var(--mute); }
+  td .price { display: block; font-size: 11px; color: var(--mute); }
+  td.open { outline: 2px solid var(--fg); outline-offset: -2px; background: var(--fill); cursor: default; }
+  td .ed { margin-top: 8px; display: grid; gap: 6px; } td .ed .row { display: flex; gap: 6px; flex-wrap: wrap; } td .ed button { font-size: 11px; }
+  .hint { padding: 16px 14px; color: var(--mute); }
+  .more { border: 1px dashed var(--hair); padding: 12px; color: var(--mute); min-width: 200px; }`,
+  render(el, { s, rows, cell, act, esc, kindLabel }) {
+    const ui = act.ui, P = s.products;
+    const srcLine = x => {
+      const used = x.sources.filter(z => z.kind !== 'sponsored'), spons = x.sources.filter(z => z.kind === 'sponsored');
+      return `<span class="srcs">${used.map(z => `<span class="k" data-k="${z.kind}">${kindLabel[z.kind]}</span><span>${esc(z.name)} · ${esc(day(z.date))}</span>`).join('')}
+        ${spons.map(z => `<span class="k" data-k="sponsored">sponsored</span><span>${esc(z.name)}: not used</span>`).join('')}</span>`;
+    };
+    const td = (p, c) => {
+      const x = cell(p, c), key = `${p.id}:${c.id}`, open = ui.open === key, cls = [x.status, p.state === 'chosen' ? 'chosen' : '', open ? 'open' : ''].join(' ');
+      let body;
+      if (x.status === 'filling') body = `<span class="v none">Researching…</span><span class="srcs">sources appear as they are read</span>`;
+      else if (x.status === 'none') body = `<span class="v none">No source found</span>${x.note ? `<span class="note">${esc(x.note)}</span>` : ''}${x.sources.length ? srcLine(x) : ''}`;
+      else body = `<span class="v">${esc(x.value)}</span>
+        ${x.kind === 'price' ? `<span class="price">an indication, not a promise${x.sources[0] ? ` · seen ${esc(day(x.sources[0].date))}` : ''}</span>` : ''}
+        ${x.status === 'edited' ? `<span class="srcs"><span class="k" data-k="user">yours</span><span>${esc(day(x.user.date))}${x.user.note ? ' · ' + esc(x.user.note) : ''}</span></span><span class="room">The room's value: <s>${esc(x.room)}</s></span>` : ''}
+        ${x.note && x.status !== 'edited' ? `<span class="note">${esc(x.note)}</span>` : ''}${srcLine(x)}`;
+      const ed = open ? `<div class="ed"><input class="edit" data-in value="${esc(x.status === 'none' || x.status === 'filling' ? '' : x.value)}" placeholder="your value" aria-label="Your value for ${esc(p.name)}, ${esc(c.name)}">
+        <div class="row"><button data-save>Save as mine</button>${x.status === 'edited' ? '<button data-revert>Revert to the room\'s</button>' : ''}${s.web && x.status !== 'filling' ? '<button data-check>Check this</button>' : ''}<button data-x>Close</button></div></div>` : '';
+      return `<td class="${cls}" data-cell="${key}" tabindex="0">${body}${ed}</td>`;
+    };
+    let lastState = null;
+    const body = rows.map(c => { let g = ''; if (c.state !== lastState) { lastState = c.state; g = `<tr class="grp"><th colspan="${P.length + 1}">${{ must: 'Must', nice: 'Nice to have', irrelevant: 'Irrelevant' }[c.state]}</th></tr>`; }
+      return g + `<tr class="${c.state === 'irrelevant' ? 'irr' : ''}"><th><span>${esc(c.name)}</span>${c.filling ? ' <span class="mute">· researching…</span>' : ''}<span class="why">${esc(c.why)}</span></th>${P.map(p => td(p, c)).join('')}</tr>`; }).join('');
+    el.innerHTML = `<div class="scroll"><table><thead><tr><th>${P.length} shortlisted</th>${P.map(p => `<th class="${p.state === 'chosen' ? 'chosen' : ''} ${p.filling ? 'filling' : ''}"><span class="pn">${p.state === 'chosen' ? '✓ ' : ''}<b>${esc(p.name)}</b></span>
+      <div class="acts">${p.state === 'chosen' ? '<b>Chosen</b><button data-un="' + p.id + '">Un-choose</button>' : `<button data-ch="${p.id}">Choose</button><button data-drop="${p.id}">Remove</button>`}</div></th>`).join('')}
+      ${s.candidates ? `<th><div class="more">Shortlist more to compare: ${s.candidates.map(esc).join(', ')} are candidates in the board.</div></th>` : ''}</tr></thead><tbody>${body}</tbody></table>
+      ${P.length ? '' : '<p class="hint">Nothing shortlisted yet.</p>'}</div>`;
+    const sc = el.querySelector('.scroll'); if (ui.scroll) sc.scrollLeft = ui.scroll; sc.onscroll = () => ui.scroll = sc.scrollLeft;
+    const find = k => { const [pid, cid] = k.split(':'); return [P.find(p => p.id === pid), s.criteria.find(c => c.id === cid)]; };
+    el.querySelectorAll('td[data-cell]').forEach(t => {
+      t.onclick = e => { if (e.target.closest('.ed')) return; ui.open = t.dataset.cell; act.draw(); el.querySelector('[data-in]')?.focus(); };
+      t.onkeydown = e => { if (e.key === 'Enter' && !e.target.closest('.ed')) t.click(); };
+    });
+    const open = ui.open && el.querySelector(`td[data-cell="${ui.open}"]`);
+    if (open) { const [p, c] = find(ui.open), inp = open.querySelector('[data-in]');
+      const save = () => { ui.open = null; act.edit(p, c, inp.value); };
+      open.querySelector('[data-save]').onclick = save; inp.onkeydown = e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { ui.open = null; act.draw(); } };
+      open.querySelector('[data-revert]')?.addEventListener('click', () => { ui.open = null; act.revert(p, c); });
+      open.querySelector('[data-check]')?.addEventListener('click', () => { ui.open = null; act.check(p, c); });
+      open.querySelector('[data-x]').onclick = () => { ui.open = null; act.draw(); }; }
+    el.querySelectorAll('[data-ch]').forEach(b => b.onclick = () => act.choose(P.find(p => p.id === b.dataset.ch)));
+    el.querySelectorAll('[data-un]').forEach(b => b.onclick = () => act.unchoose(P.find(p => p.id === b.dataset.un)));
+    el.querySelectorAll('[data-drop]').forEach(b => b.onclick = () => act.drop(P.find(p => p.id === b.dataset.drop)));
+  }
+});
+</script>
+</body>
+</html>

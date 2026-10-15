@@ -1,0 +1,110 @@
+<!--
+  id:        r001-03
+  component: choose-nodes
+  phase:     wireframe
+  parents:   none
+  direction: One shape, the state in words. Every node is Learn's plain disc with Learn's own status glyph (hollow dot open, dot lit, check settled); kind is a small mono kicker above the title (NEED, CRITERION…) and the exact state is a word line under it, with its content: the need's answer, MUST / nice / irrelevant, shortlisted, ★ chosen, the rejected product's full reason, "dismissed · restore". A family counts its products by state. The disc only ever has four looks (dotted, glowing, filled, faded); everything finer is read, not decoded.
+  request:   revision 1
+  inputs:    Choose's node glyphs and states. One glyph per kind (subject, concept, need, criterion, family, product, own) and how every state reads on the graph: concept/family open→lit; need open→answered; criterion open→must/nice/irrelevant; product candidate→shortlisted→chosen or rejected with a reason; dismissed for any kind. Include the legend rows. Write the shared data file first with hard cases (long labels, a rejected product, a dismissed node, many products in a family, one chosen product). Wireframes must differ in mechanism (how kind and state are encoded), not in looks.
+  shared:    ../choose-nodes-data.js, ../assets/node-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>choose-nodes r001-03 · One shape, state in words</title>
+<style>
+.nd{display:flex;align-items:flex-start;gap:12px;width:220px}
+.anchor{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:1px solid #eee;background:#111;color:#eee}
+.anchor svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.anchor svg .f{fill:currentColor;stroke:none}
+.tx{display:block;padding-top:2px;min-width:0}
+.kick{display:block;font:10px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:#999}
+.t{display:block;font-size:13px;line-height:1.45;overflow-wrap:anywhere;color:#eee}
+.st{display:block;font-size:12px;line-height:1.4;color:#bbb;margin-top:2px;overflow-wrap:anywhere}
+.st b{font-weight:700;color:#eee;letter-spacing:.04em}
+.subject .anchor{width:54px;height:54px}.subject .t{font-weight:600}
+.look-open .anchor{border-style:dotted;border-color:#999;color:#999}
+.look-lit .anchor{box-shadow:0 0 0 4px #1c1c1c,0 0 18px 5px rgba(255,255,255,.2)}
+.look-settled .anchor{background:#eee;color:#111}
+.look-faded .anchor{border-style:dotted;border-color:#666;color:#666}
+.look-faded .t,.look-faded .kick{color:#777}.look-faded .st{color:#8a8a8a}
+.rejected .t,.dismissed .t{text-decoration:line-through;text-decoration-color:#666}
+.chosen .st b{border:1px solid #eee;padding:0 4px;border-radius:2px}
+.bare .anchor{margin:6px}
+</style>
+</head>
+<body>
+<script src="../choose-nodes-data.js"></script>
+<script src="../assets/node-kit.js"></script>
+<script>
+const {esc, stateOf} = NodeKit;
+// Learn's three status glyphs, unchanged; the fourth look (faded) reuses the hollow dot
+const GLYPH = {
+  open: '<circle cx="9" cy="9" r="4"/>',
+  lit: '<circle class="f" cx="9" cy="9" r="4"/>',
+  settled: '<path d="m3 9 4 4 8-9"/>',
+  faded: '<circle cx="9" cy="9" r="4"/>',
+};
+const LOOK = {open:'open', candidate:'open', lit:'lit', answered:'settled', must:'settled', nice:'settled', shortlisted:'settled', chosen:'settled',
+  irrelevant:'faded', rejected:'faded', dismissed:'faded', exploring:'lit', decided:'settled', bought:'settled'};
+const KICK = {subject:'choosing', concept:'concept', need:'your need', criterion:'criterion', family:'family', product:'product', own:'yours'};
+function words(n, s) {
+  switch (s) {
+    case 'open': return n.kind === 'need' ? 'to answer' : n.kind === 'criterion' ? 'to rank' : '';
+    case 'candidate': return '';
+    case 'lit': return n.kind === 'family' && n.summary ? familyLine(n.summary) : '';
+    case 'answered': return `→ ${esc(n.answer)}`;
+    case 'must': return '<b>MUST</b>';
+    case 'nice': return 'nice to have';
+    case 'irrelevant': return 'irrelevant';
+    case 'shortlisted': return 'shortlisted';
+    case 'chosen': return '<b>★ chosen</b>';
+    case 'rejected': return `rejected: ${esc(n.reason)}`;
+    case 'dismissed': return 'dismissed · restore';
+    case 'exploring': return 'exploring';
+    case 'decided': return '<b>decided</b>';
+    case 'bought': return '<b>bought</b>';
+  }
+  return '';
+}
+function familyLine(m) {
+  const parts = [`${m.products} products`];
+  if (m.chosen) parts.push('1 chosen');
+  if (m.shortlisted) parts.push(`${m.shortlisted} shortlisted`);
+  if (m.rejected) parts.push(`${m.rejected} rejected`);
+  return parts.join(' · ');
+}
+function renderNode(n, o) {
+  const s = stateOf(n), look = LOOK[s];
+  const disc = `<span class="anchor"><svg viewBox="0 0 18 18" aria-hidden="true">${GLYPH[look]}</svg></span>`;
+  const cls = `nd ${n.kind} ${s} look-${look}${o.bare ? ' bare' : ''}`;
+  if (o.bare) return `<span class="${cls}" style="width:auto">${disc}<span class="tx"><span class="kick">${KICK[n.kind]}</span></span></span>`;
+  const w = words(n, s);
+  return `<span class="${cls}">${disc}<span class="tx"><span class="kick">${KICK[n.kind]}</span><span class="t">${esc(n.title)}</span>${w ? `<span class="st">${w}</span>` : ''}</span></span>`;
+}
+NodeKit.mount({
+  id: 'r001-03', title: 'One shape, state in words', renderNode, colWidth: 260,
+  direction: 'Learn\'s disc and status glyph for everything, so the graph has only four looks (dotted, glowing, filled, faded). The kind is a small word above the title; the exact state is a word line under it, carrying its content: the answer, MUST, the full rejection reason, a family\'s count by state. Nothing to decode, more to read. Click a node, then try its states in the panel.',
+  legend: [
+    {heading: 'Kinds: the word above the title', rows: [
+      {node:{kind:'subject',status:'exploring'}, name:'CHOOSING', text:'The subject: what is being chosen; a larger disc'},
+      {node:{kind:'concept',state:'lit'}, name:'CONCEPT', text:'Something to understand to choose well'},
+      {node:{kind:'need',state:'lit'}, name:'YOUR NEED', text:'A question to you'},
+      {node:{kind:'criterion',state:'lit'}, name:'CRITERION', text:'Something to compare on'},
+      {node:{kind:'family',state:'lit'}, name:'FAMILY', text:'A group of similar products, with its count'},
+      {node:{kind:'product',state:'candidate'}, name:'PRODUCT', text:'A real model'},
+      {node:{kind:'own',state:'lit'}, name:'YOURS', text:'Added by you'},
+    ]},
+    {heading: 'States: four looks on the disc, the rest in words', rows: [
+      {node:{kind:'concept',state:'open'}, name:'Dotted, hollow dot', text:'Open or candidate. Words: “to answer”, “to rank”, or none'},
+      {node:{kind:'concept',state:'lit'}, name:'Glowing, dot', text:'Lit: explained. Subject while exploring'},
+      {node:{kind:'need',state:'answered'}, name:'Filled, check', text:'Settled: answered (→ the answer), MUST, nice to have, shortlisted, ★ chosen, decided, bought'},
+      {node:{kind:'product',state:'rejected'}, name:'Faded', text:'Out: irrelevant, rejected (with the full reason), dismissed · restore'},
+    ]},
+  ],
+});
+</script>
+</body>
+</html>

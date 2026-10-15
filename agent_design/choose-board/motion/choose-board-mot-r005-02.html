@@ -1,0 +1,195 @@
+<!--
+  id:        r005-02
+  component: choose-board
+  phase:     motion
+  parents:   r001-01, r002-01, r003-01, r004-03
+  direction: Spatial, and the teal spine leads. The board unfolds leftward out of the rail (a 320 ms reveal from its edge, decelerating), its sections arriving 40 ms apart, and folds back into the rail in 240 ms. A changed counter rolls: the old value slides up and out as the new one rises in (280 ms). When the board becomes complete, a light runs up the spine (600 ms) and Recommend fills with teal from the left; the chosen card fills the same way (360 ms); a new status slides in.
+  request:   revision 6
+  inputs:    (empty prompt)
+  read as:   everything visual is frozen (structure r001-01, form r002-01, type r003-01, colour r004-03: their CSS is copied
+             verbatim). Only motion varies, under the specs: event-driven only, no ambient loop on the board (RS-33); instant
+             under reduced motion, OS or the prototype switch standing in for Appearance (GV-100, GV-101); no information
+             carried by motion alone (GV-103). "Settle the next thing" changes the board from outside, as the graph would.
+  shared:    ../assets/board-kit-color.js, ../assets/rail-structure.js, ../assets/board-motion.js, ../assets/backdrop.js,
+             ../choose-board-data.js
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose board r005-02 — Unfold from the spine</title>
+</head>
+<body>
+<script src="../choose-board-data.js"></script>
+<script src="../assets/board-kit-color.js"></script>
+<script src="../assets/rail-structure.js"></script>
+<script src="../assets/board-motion.js"></script>
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const lightAt = el => { const r = el.getBoundingClientRect(); document.dispatchEvent(new CustomEvent('lx:light', { detail: { x: r.left + r.width / 2, y: r.top + r.height / 2 } })); };
+
+const EASE_OUT = 'cubic-bezier(.2,.7,.2,1)', EASE_IN = 'cubic-bezier(.5,0,.8,.4)';
+const hooks = {
+  open(s) {
+    s.animate([{ clipPath: 'inset(0 0 0 100%)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 320, easing: EASE_OUT });
+    [...s.querySelectorAll('.top, .missing, .card, .short')].forEach((x, i) =>
+      x.animate([{ opacity: 0, transform: 'translateX(16px)' }, { opacity: 1, transform: 'none' }], { duration: 220, delay: 120 + 40 * i, easing: EASE_OUT, fill: 'backwards' }));
+  },
+  close: (s, done) => s.animate([{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 0 100%)' }], { duration: 240, easing: EASE_IN, fill: 'forwards' }).onfinish = done,
+  counter(c, oldHTML) {
+    const b = c.querySelector('b'), g = b.cloneNode(false); g.innerHTML = oldHTML;
+    g.style.cssText = `position:absolute;left:0;right:0;top:${b.offsetTop}px;margin:0;pointer-events:none`; c.appendChild(g);
+    g.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(-60%)', opacity: 0 }], { duration: 280, easing: EASE_OUT, fill: 'forwards' }).onfinish = () => g.remove();
+    b.animate([{ transform: 'translateY(60%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: EASE_OUT });
+  },
+  ready(r) {
+    const board = r.closest('.board');
+    if (board && r.closest('.rail')) { const run = document.createElement('span'); run.className = 'spine-run'; board.appendChild(run);
+      run.animate([{ transform: 'scaleY(0)', opacity: 1 }, { transform: 'scaleY(1)', opacity: 1, offset: .75 }, { transform: 'scaleY(1)', opacity: 0 }], { duration: 600, easing: EASE_OUT }).onfinish = () => run.remove(); }
+    r.animate([{ clipPath: 'inset(0 100% 0 0 round 999px)' }, { clipPath: 'inset(0 0 0 0 round 999px)' }], { duration: 360, delay: r.closest('.rail') ? 420 : 0, easing: EASE_OUT, fill: 'backwards' });
+  },
+  status: s => s.animate([{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: EASE_OUT }),
+  chosen: c => c.animate([{ clipPath: 'inset(0 100% 0 0 round 10px)' }, { clipPath: 'inset(0 0 0 0 round 10px)' }], { duration: 360, easing: EASE_OUT })
+};
+
+BOARD_KIT.mount({
+  id: 'r005-02', title: "Unfold from the spine", slot: 'rail', render: MOTION.wrap(RAIL_RENDER, hooks),
+  css: `
+  .sheet .top .sp { flex: 1; } .rail .gap { flex: 1; }
+  .main[data-expanded='true'] .graph { display: none; }
+  .main[data-expanded='true'] .board { flex: 1 1 62%; flex-direction: column; }
+  .board { display: flex; flex-direction: column; min-height: 0; }
+  .rail { flex: 1; display: flex; flex-direction: column; cursor: pointer; overflow: auto; text-align: center; }
+  .rail .ctr { position: relative; } .rail .ctr b, .rail .ctr small { display: block; }
+  .rail .ctr .tip { display: none; position: absolute; right: calc(100% + 10px); top: 0; width: 230px; text-align: left; z-index: 5; }
+  .rail .ctr:hover .tip { display: block; }
+  .sheet { flex: 1; overflow: auto; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; }
+  .need { display: grid; align-items: baseline; } .need .x { border: 0; background: transparent; }
+  .add { display: flex; gap: 6px; } .add input { flex: 1; }
+  .crit { display: flex; align-items: center; justify-content: space-between; gap: 10px; } .crit .why { display: block; }
+  .prod .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  @media (max-width: 760px) { .board { flex: 0 0 auto !important; } .rail { flex-direction: row; overflow-x: auto; } .rail .ctr .tip { display: none !important; } .cols { grid-template-columns: 1fr; } }
+
+  :root { --fg: #ededed; --bg: #121212; --mute: #9a9a9a; --faint: #5e5e5e; --hair: #333; --fill: #1b1b1b; }
+  .board { flex: 0 0 88px; border-left: 1px solid var(--hair); }
+  .rail { padding: 18px 8px; gap: 22px; } .rail:hover { background: var(--fill); }
+  .rail .ttl { font-size: 9px; letter-spacing: .22em; color: var(--faint); }
+  .rail .st { border: 0; padding: 0; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+  .rail .st[data-s='bought'] { background: none; color: var(--fg); }
+  .rail .ctr b { font-size: 28px; font-weight: 300; line-height: 1; font-variant-numeric: tabular-nums; }
+  .rail .ctr b .faint { font-size: 14px; }
+  .rail .ctr small { margin-top: 6px; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
+  .rail .ctr.miss b::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--fg); vertical-align: middle; margin: 0 5px 0 -10px; }
+  .rail .ctr .tip { background: var(--bg); border: 1px solid var(--hair); padding: 12px 14px; font-size: 12px; line-height: 1.6; }
+  .rail .miss-n { font-size: 10px; letter-spacing: .08em; color: var(--mute); }
+  .rail .rec { margin: 0 4px; font-size: 11px; border-radius: 999px; padding: 6px 0; } .rail .rec.on { background: var(--fg); color: var(--bg); }
+  .sheet { padding: 32px 40px 80px; }
+  .sheet .top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .sheet .top h2 { margin: 0; font-size: 22px; font-weight: 300; }
+  .sheet .top button { border-radius: 999px; padding: 6px 14px; }
+  .missing { margin: 14px 0 34px; color: var(--mute); font-size: 13px; line-height: 1.7; }
+  .missing b { font-weight: 400; color: var(--fg); margin-right: 6px; } .missing span::after { content: ' · '; color: var(--faint); } .missing span:last-of-type::after { content: ''; }
+  .missing button { margin-left: 10px; border-radius: 999px; font-size: 12px; }
+  .cols { gap: 0; } .cols .card + .card { border-left: 1px solid var(--hair); padding-left: 36px; } .cols .card:first-child { padding-right: 36px; }
+  .card h3 { margin: 0 0 18px; font-size: 10px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--faint); display: flex; gap: 10px; }
+  .need { grid-template-columns: 1fr auto; padding: 0 0 16px; } .need .q { grid-column: 1; font-size: 11px; color: var(--mute); }
+  .need .edit { grid-column: 1; font-size: 15px; border-bottom-color: transparent; } .need .edit:hover { border-bottom-color: var(--hair); }
+  .need .x { grid-column: 2; grid-row: 1 / 3; color: var(--faint); align-self: center; }
+  .need.open .q::before { content: '○ '; color: var(--fg); } .need.open .q { color: var(--fg); }
+  .add { margin-top: 6px; } .add input { font-size: 13px; } .add button { border-radius: 999px; }
+  .grp { margin-bottom: 22px; } .grp h4 { margin: 0 0 8px; font-size: 15px; font-weight: 600; } .grp.irr { opacity: .5; }
+  .crit { padding: 6px 0; } .crit .why { font-size: 11px; color: var(--faint); margin-top: 2px; }
+  .seg { border-color: var(--hair); } .seg button { font-size: 10px; padding: 3px 8px; }
+  .short { margin-top: 40px; border-top: 1px solid var(--hair); padding-top: 26px; }
+  .prods { display: grid; gap: 0; }
+  .prod { display: grid; grid-template-columns: minmax(140px, 1fr) 2fr auto auto; align-items: baseline; gap: 18px; padding: 14px 0; border-bottom: 1px solid var(--fill); }
+  .prod b { font-size: 17px; font-weight: 500; } .prod.candidate b { font-weight: 300; } .prod.chosen b::before { content: '● '; }
+  .prod .acts button { border-radius: 999px; font-size: 11px; }
+  .rej { margin-top: 14px; font-size: 12px; color: var(--faint); }
+  @media (max-width: 760px) { .cols .card + .card { border-left: 0; padding-left: 0; } .prod { grid-template-columns: 1fr; gap: 4px; } .sheet { padding: 20px; } }
+
+  /* ---- type layer (r003-01) ---- */
+  :root {
+  --font-text: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --font-small: 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    --font-body: var(--font-text);
+    --step--1: 11px; --step-0: 12px; --step-1: 13px; --step-2: 15px; --step-3: 18px; --step-4: 24px; --step-5: 30px; --step-6: 38px;
+    --tracking-tight: -0.01em; --tracking-normal: 0; --tracking-wide: 0.01em;
+    --leading-tight: 1.1; --leading-normal: 1.45; --leading-loose: 1.65; }
+  html, body { font-family: var(--font-body); font-size: var(--step-1); line-height: var(--leading-normal); }
+  .rail .ttl, .rail .st, .rail .ctr small, .card h3 { text-transform: none; letter-spacing: var(--tracking-normal); }
+  .rail .ttl { font: 600 var(--step--1) var(--font-small); }
+  .rail .st { font: 400 var(--step--1) var(--font-small); }
+  .rail .ctr b { font: 350 var(--step-5)/var(--leading-tight) var(--font-display); letter-spacing: var(--tracking-tight); font-variant-numeric: tabular-nums; }
+  .rail .ctr b .faint { font-size: var(--step-2); }
+  .rail .ctr small { font: 400 var(--step--1)/1.3 var(--font-small); }
+  .rail .ctr .tip { font: 400 var(--step-0)/var(--leading-loose) var(--font-text); }
+  .rail .miss-n { font: 400 var(--step--1) var(--font-small); letter-spacing: 0; }
+  .rail .rec { font: 600 var(--step--1) var(--font-small); }
+  .sheet .top h2 { font: 350 var(--step-4)/1.2 var(--font-display); letter-spacing: var(--tracking-tight); }
+  .sheet .top button { font: 400 var(--step-0) var(--font-text); }
+  .missing { font: 400 var(--step-1)/var(--leading-loose) var(--font-text); } .missing b { font-weight: 600; }
+  .card h3 { font: 600 var(--step--1) var(--font-small); }
+  .need .q { font: 400 var(--step-0) var(--font-small); }
+  .need .edit { font: 400 var(--step-2)/1.35 var(--font-text); }
+  .grp h4 { font: 600 var(--step-2) var(--font-text); }
+  .crit { font-size: var(--step-1); } .crit .why { font: 400 var(--step--1)/1.35 var(--font-small); }
+  .seg button { font: 400 var(--step--1) var(--font-small); }
+  .prod b { font: 600 var(--step-3)/1.2 var(--font-display); } .prod.candidate b { font-weight: 350; }
+  .prod .mute, .prod .faint { font: 400 var(--step-0) var(--font-text); } .prod .acts button { font: 400 var(--step--1) var(--font-small); }
+  .rej { font: 400 var(--step-0) var(--font-text); }
+
+  /* ---- colour layer (r004-03) ---- */
+  :root {
+    --bg: #101827; --surface: #172132; --surface-2: #1f3034; --ink: #f3e9dc; --ink-mute: #aeb3bf; --line: #3b4558;
+    --accent: #5cc6bd; --accent-ink: #0d211f; --focus: #b6efe6; --node-open: #969ca7; --node-lit: #c8f3ea; --node-understood: #5cc6bd;
+    --glow-near: rgba(118, 222, 206, 0.32); --glow-far: rgba(84, 204, 188, 0.15); --path-muted: #3e625d; --code: #0c1320;
+    --error: #d86a5a; --error-ink: #f0a598; color-scheme: dark;
+    /* the greyscale aliases of the form/type rounds, now mapped to the room tokens */
+    --fg: var(--ink); --mute: var(--ink-mute); --faint: var(--ink-faint); --hair: var(--glass-line); --fill: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .board { background: var(--glass); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-left: 1px solid var(--glass-line); }
+  .rail .ctr .tip { background: var(--surface); border: 1px solid var(--line); color: var(--ink); box-shadow: 0 10px 30px color-mix(in srgb, var(--code) 70%, transparent); }
+  .need .edit { color: var(--ink); } .sheet button { background: var(--surface); }
+  .sheet button:hover { background: var(--surface-2); }
+
+  .board { border-left: 2px solid var(--accent); }
+  .main[data-expanded='true'] .board { border-left: 0; border-top: 2px solid var(--accent); }
+  .rail .ttl { color: var(--accent); } .rail .ctr small, .rail .miss-n { color: var(--ink-mute); }
+  .rail .ctr b { color: var(--accent); } .rail .ctr b .faint { color: var(--ink-faint); }
+  .rail .ctr.miss b { color: var(--ink); } .rail .ctr.miss b::before { background: var(--focus); }
+  .rail .rec { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+  .rail .rec.on, .sheet button[data-rec].on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 0 24px 6px var(--glow-far); }
+  .st { border-color: var(--accent); color: var(--accent); }
+  .st[data-s='ready'] { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .st[data-s='decided'] { background: var(--surface-2); color: var(--focus); border-color: var(--focus); }
+  .st[data-s='bought'] { background: var(--accent); color: var(--accent-ink); }
+  .sheet .top h2 { color: var(--ink); }
+  .card h3 { color: var(--accent); }
+  .missing { color: var(--ink); } .missing b { color: var(--focus); }
+  .missing span { text-decoration: underline; text-decoration-color: var(--focus); text-underline-offset: 4px; }
+  .need .q { color: var(--ink-mute); } .need.open .q { color: var(--focus); } .need.open .q::before { color: var(--focus); }
+  .grp h4 { color: var(--ink); } .grp:has(button.on[data-v='must']) h4 { color: var(--accent); }
+  .seg { border-color: var(--accent); } .seg button { color: var(--ink-mute); } .seg button + button { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+  .seg button.on { background: var(--accent); color: var(--accent-ink); }
+  .prod { border-bottom-color: var(--glass-line); }
+  .prod.chosen { background: var(--accent); color: var(--accent-ink); border-radius: 10px; padding: 14px 16px; margin: 8px 0; }
+  .prod.chosen .mute, .prod.chosen .faint { color: color-mix(in srgb, var(--accent-ink) 75%, var(--accent)); }
+  .prod.chosen b::before { color: var(--accent-ink); }
+  .prod.chosen button { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
+  .prod.chosen button.on { background: var(--bg); color: var(--focus); }
+  .cols .card + .card, .short { border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+
+  /* ---- motion support (r005-02) ---- */
+  .board { position: relative; }
+  .spine-run { position: absolute; left: -2px; top: 0; bottom: 0; width: 2px; background: var(--focus); transform-origin: 50% 100%; pointer-events: none; box-shadow: 0 0 8px var(--glow-near); }
+`
+});
+</script>
+<script src="../assets/backdrop.js"></script>
+<script>document.dispatchEvent(new CustomEvent('lx:screen', { detail: 'graph' }));</script>
+</body>
+</html>

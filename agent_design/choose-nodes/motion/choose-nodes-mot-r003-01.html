@@ -1,0 +1,71 @@
+<!--
+  id:        r003-01
+  component: choose-nodes
+  phase:     motion
+  parents:   r001-01, r002-01
+  direction: Nothing moves, the light only changes. A state change cross-fades the old look into the new one in place: 260 ms out-ease (420 ms, in-ease, when a node fades out: rejected, dismissed, irrelevant). A new badge fades in 120 ms after the disc starts. A glow (lit, chosen) warms up over 420 ms, and a chosen product's second ring fades in over 320 ms. An un-chosen product and the subject's status cross-fade at the same time as the acted node. No particles, no travelling light: the calmest reading of RS-33.
+  request:   revision 3
+  inputs:    next
+  frozen:    structure r001-01 (assets/glyphs-r001-01.js), colour r002-01 (below, verbatim), form and type as in r002-01
+             (assets/node-kit-room.js). Only state changes move; selection, route light, spawn and busy are the graph's
+             (graph-view GV-31 to GV-98) and are not redrawn. Event-driven only, nothing loops (RS-33); under reduced
+             motion (OS or the toggle, GV-100) every change is instant and nothing depends on motion (GV-103).
+  shared:    ../choose-nodes-data.js, ../assets/node-kit.js, ../assets/glyphs-r001-01.js, ../assets/node-kit-room.js,
+             ../assets/node-motion.js, ../assets/backdrop.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>choose-nodes r003-01 · Quiet cross-fade</title>
+<style>
+/* r002-01 Learn's settled light, frozen */
+.look-settled .anchor{background:var(--node-understood);border-color:var(--node-understood);color:var(--accent-ink)}
+.look-settled .badge{background:var(--bg);border-color:var(--node-understood);color:var(--node-understood)}
+.look-quiet .anchor{background:var(--bg);border-color:var(--line);color:var(--ink-mute)}
+.look-quiet .t{color:var(--ink-mute)}.look-quiet .badge{border-color:var(--line);color:var(--ink-mute)}
+.look-faded .badge{border-color:var(--node-open);color:var(--node-open)}
+.chosen .anchor{box-shadow:0 0 14px 2px var(--glow-near),0 0 38px 9px var(--glow-far)}
+.chosen .anchor::before{border-color:var(--focus)}
+.subject.bought .badge,.subject.decided .badge{border-color:var(--node-lit);color:var(--node-lit)}
+
+</style>
+</head>
+<body>
+<script src="../choose-nodes-data.js"></script>
+<script src="../assets/node-kit.js"></script>
+<script src="../assets/glyphs-r001-01.js"></script>
+<script src="../assets/node-kit-room.js"></script>
+<script src="../assets/node-motion.js"></script>
+<script>
+const RANK = {dismissed:0, rejected:0, irrelevant:1, open:1, candidate:1, lit:2, exploring:2, decided:2, answered:3, must:3, nice:3, shortlisted:3, chosen:4, bought:4};
+const GLOWS = s => s === 'lit' || s === 'chosen' || s === 'exploring' || s === 'decided';
+const q = (c, sel) => c.el && c.el.querySelector(sel);
+function warm(anchor, ms, delay = 0) { // a glow warming up from nothing to its static value
+  if (!anchor) return;
+  const shadow = getComputedStyle(anchor).boxShadow;
+  if (shadow === 'none') return;
+  Motion.animate(anchor, [{boxShadow: shadow.replace(/rgba?\([^)]*\)/g, 'rgba(0,0,0,0)')}, {boxShadow: shadow}], {duration: ms, delay, easing: Motion.EASE_OUT, fill: 'backwards'});
+}
+function onStateChange(changes) {
+  for (const c of changes) {
+    const out = RANK[c.to] < RANK[c.from] && RANK[c.to] <= 1;
+    const g = Motion.ghost(c);
+    const a = Motion.animate(g, [{opacity: 1}, {opacity: 0}], {duration: out ? 420 : 260, easing: out ? Motion.EASE_IN : Motion.EASE_OUT, fill: 'forwards'});
+    if (a) a.finished.then(() => Motion.drop(g), () => Motion.drop(g)); else Motion.drop(g);
+    Motion.animate(q(c, '.badge'), [{opacity: 0}, {opacity: 1}], {duration: 200, delay: 120, easing: Motion.EASE_OUT, fill: 'backwards'});
+    const anchor = q(c, '.anchor');
+    if (GLOWS(c.to) && !GLOWS(c.from)) warm(anchor, 420);
+    if (c.to === 'chosen') Motion.animate(anchor, [{opacity: 0}, {opacity: 1}], {duration: 320, delay: 80, easing: Motion.EASE_OUT, pseudoElement: '::before', fill: 'backwards'});
+  }
+}
+NodeKit.mountRoom({
+  phase: 'motion', id: 'r003-01', title: "Quiet cross-fade",
+  direction: "Nothing moves, the light only changes. A state change cross-fades the old look into the new one in place: 260 ms out-ease (420 ms, in-ease, when a node fades out: rejected, dismissed, irrelevant). A new badge fades in 120 ms after the disc starts. A glow (lit, chosen) warms up over 420 ms, and a chosen product's second ring fades in over 320 ms. An un-chosen product and the subject's status cross-fade at the same time as the acted node. No particles, no travelling light: the calmest reading of RS-33. Use Play the story (bottom left), or try states in the panel.",
+  renderNode: GLYPHS.renderNode, legend: GLYPHS.legend, onStateChange,
+});
+Motion.install('r003-01');
+</script>
+</body>
+</html>

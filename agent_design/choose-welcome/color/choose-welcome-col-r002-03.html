@@ -1,0 +1,49 @@
+<!--
+  id:        r002-03
+  component: choose-welcome
+  phase:     color
+  parents:   r001-01, r001-02
+  direction: One lamp on glass. The field is made of the same glass as the cards and the header, so Welcome reads as one family with the board and Gallery: no halo behind it, the underline --line-strong at rest; the capsule is --glass with a --glass-line edge, and only focus lights it (an --accent 50% edge and a --glow-far halo, as Gallery's lifted card). The one bright thing is the primary button, with its halo. The selected tone is --accent text over an --accent underline; the need starters sit on --surface-2 with --node-lit text, like Learn's selected tone. Cards at full strength; Browse all is teal.
+  request:   revision 3
+  inputs:    r001-01 but shit + enter shows r001-02 (with the preset options to choose/clic from). Then jump to the color round and pick the missing choices from other choose room design round to keep it uniform. if in doute of anything ask me. / To keep the lantern feeling over the room stay coherent with the already designed learn room especially for the welcome view.
+  base:      structure r001-01 with r001-02's direction and need starters behind Shift+Enter; form and type from
+             Learn's Welcome (welcome, welcome-context recipes); recent cards from choose-gallery's final card;
+             palette CR-70 (choose-palette). Frozen in ../assets/color-base.js; this file adds only where the light falls.
+  shared:    ../choose-welcome-data.js, ../assets/welcome-kit.js, ../assets/color-base.js, ../assets/backdrop.js
+-->
+<!doctype html>
+<html lang="en" data-room="choose">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose welcome r002-03 — Glass lamp</title>
+</head>
+<body>
+<script src="../choose-welcome-data.js"></script>
+<script src="../assets/welcome-kit.js"></script>
+<script src="../assets/color-base.js"></script>
+<script>
+WELCOME_KIT.mount({
+  id: 'r002-03', title: 'Glass lamp',
+  css: COLOR_BASE.css + `
+  .cap { border-bottom-color: var(--line-strong); transition: border-color .2s, box-shadow .2s; }
+  .cap:not(.on):focus-within { border-bottom-color: var(--accent); }
+  .cap.on { background: var(--glass); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-color: var(--glass-line); }
+  .cap.on.focus { border-color: color-mix(in srgb, var(--accent) 50%, transparent); box-shadow: 0 0 40px 6px var(--glow-far); }
+  .subj, .dirf { caret-color: var(--accent); }
+  .hair { background: var(--glass-line); }
+  .cap .primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 0 26px var(--glow-far); }
+  .cap .primary:hover:not(:disabled) { background: var(--focus); border-color: var(--focus); }
+  .tones button[aria-pressed=true] { color: var(--accent); border-radius: 0; box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+  .starters button { background: var(--surface-2); border: 1px solid transparent; color: var(--node-lit); }
+  .starters button:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+  .browse { color: var(--accent); } .browse:hover { color: var(--focus); }
+`,
+  render: COLOR_BASE.render,
+  wire: COLOR_BASE.wire,
+});
+</script>
+<script src="../assets/backdrop.js"></script>
+<script>document.dispatchEvent(new CustomEvent('lx:screen', { detail: 'welcome' }));</script>
+</body>
+</html>

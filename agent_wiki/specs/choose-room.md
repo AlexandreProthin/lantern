@@ -41,11 +41,51 @@ DM-4).
 - **CR-14** The decision board is a **slim strip next to the graph** in Survey, always visible, with a
   few counters and what is still missing; a click opens it full height. The reading panel stays for
   nodes (q-r6-board).
+  *Designed 2026-10-14* (`agent_design/choose-board/RECIPE.md`, r005-02 *Unfold from the spine*, accepted by the
+  user): a **counter rail** in place of the divider between graph and panel, showing needs answered/total, must
+  criteria (with the nice count), shortlisted, the pick, the subject status, how many things are missing and
+  *Recommend*; a mark on a counter means something is missing there, hovering lists what. A click opens the board
+  **in place of the graph**, full height (Esc or *Back to graph* closes it): the missing items, the needs card and the
+  criteria grouped must / nice / to rank / irrelevant side by side, then the shortlist and pick with *Choose*,
+  *Reject*, *Un-choose* and *Mark as bought*. Its form, type, colours (teal spine) and motion (unfolds from the rail;
+  counters roll; a light runs up the spine when the board becomes complete) are in the recipe; motion is event-driven
+  only and instant under reduced motion.
 - **CR-12** Welcome and Gallery are the room's own ([spaces-per-room-no-home](/decisions/spaces-per-room-no-home.md)):
   Welcome starts a new choice (*What do you want to choose?*) or continues one of the 3 most recent
   Choose subjects; Gallery lists the Choose subjects with their status (CR-24).
+  *Gallery designed 2026-10-15* (`agent_design/choose-gallery/RECIPE.md`, r004-02 *Unfold from the band*, accepted by
+  the user): Learn's Gallery mechanism (WG-51 to WG-71) told in status. A toolbar with **status tabs** *All · Exploring ·
+  Decided · Bought* and their counts, the name filter, sort (*Last opened*, *Created*, *Status*, *Closest to a
+  decision*, *Name*) and the count. Equal cards, each with: a **status band** (status, last opened); the title on one
+  line; a **steps bar** (needs answered, criteria ranked, shortlist, pick) in place of the graph thumbnail; the **pick
+  line** as the largest text (the chosen or bought product with its price, or *n missing* by the board's completeness
+  rule, or *Ready*, or the un-chosen product struck through); and the CR-25 stats. Selecting **lifts the card over the
+  grid at card width**: the pick with its source and date (CR-41), *Open in Survey*, *Rename*, *Reveal*, *Delete…*, the
+  status **history** as a vertical timeline, the board's numbers, the direction and the subject's figures. Rename,
+  delete (Learn's dialog with Choose numbers), keyboard and empty state follow WG-61 to WG-71. Form, type (choose-board's),
+  colours (the band speaks the board's status chip: exploring teal outline, decided `--surface-2` with `--focus`, bought
+  solid `--accent`) and motion (choose-board's language: the lifted card unfolds from its band, cards glide on sort and
+  filter, a status change fills the band, tab counts roll; event-driven, timer-finished, instant under reduced motion)
+  are in the recipe.
+  *Welcome designed 2026-10-15* (`agent_design/choose-welcome/RECIPE.md`, r003-01 *Learn's embers, teal*, accepted by
+  the user): Learn's Welcome (WG-1 to WG-14) for choosing, in the same layout, type and motion. The question field
+  becomes Learn's capsule; tone and model pickers as Learn's; a **locale line** under them (*Prices for France in € ·
+  research on the web · change*, or *web off, from the model's knowledge*, CR-44, CR-90) opening Settings → Choose
+  room; **Continue a choice**: the 3 most recent Choose subjects as **Gallery's resting card** (status band, title,
+  steps bar, pick line, CR-25 stats) with a *Continue* link, dimmed until hovered as Learn's shelf; *Browse all n*.
+  **No *Suggest 3 subjects*** in this room. First run, CLI not ready and library unavailable follow WG-12 to WG-14 with
+  Choose wording; the header shows the four spaces (CR-11). Colours are where Learn's light falls, in teal (CR-70);
+  motion is Learn's shipped embers and capsule, plus the starters appearing like Learn's chips and a light along a
+  card's steps bar on hover.
 - **CR-13** Welcome MUST offer an optional direction field for what the user already knows, like
   Learn's (WG-9): *budget about 500 €, I want to print figurines for my kids* (q-buy-needs).
+  *Designed 2026-10-15* (choose-welcome recipe): the direction is called **the needs** and opens with **Shift+Enter**
+  inside the capsule, exactly as WG-9/WG-10 (keys, 500-character limit, counter, messages), placeholder *Budget, who
+  it's for, what you already know… (optional)*. Under it, **need starters** *Budget (€)*, *Who it's for*, *What for*,
+  *Where it goes*, *Already have*, *Must avoid*: a click inserts only the starter's label at the cursor (*budget about
+  … €*, *it's for …*), never an answer, so the app still never writes the user's needs (WG-11); the currency comes
+  from CR-90. The example line ends with *Shift+Enter adds your budget and needs.* The needs feed the needs card
+  (CR-30, CR-31).
 
 # Node kinds
 
@@ -61,6 +101,11 @@ DM-4).
 | `product` | A real model, with key facts and sources | a named printer |
 | `own` | Added by the user, as in Learn | |
 
+  *Designed 2026-10-15* (`agent_design/choose-nodes/RECIPE.md`, r003-02 *Fill and turn* on r001-01 *Kind inside, state
+  around*, accepted by the user): every kind keeps Learn's 44 px disc (the subject 54 px) and the **pictogram inside
+  names the kind**: subject a target, concept an *i*, need a question mark, criterion a balance, family three clustered
+  circles, product a box, own a pen. The legend has one row per kind (its pictogram) followed by the state rows (CR-21).
+
 # States
 
 - **CR-21** States per kind (q-buy-states):
@@ -73,6 +118,18 @@ DM-4).
 | `product` | `candidate` → `shortlisted` → `chosen`, or `rejected` with a reason |
 | any | `dismissed`, from `open` only, restorable, never re-proposed (as LR-54) |
 
+  *Designed 2026-10-15* (`agent_design/choose-nodes/RECIPE.md`, r003-02): the state reads **around** the pictogram.
+  The ring gives one of Learn's looks, in Choose's tokens: `open` / `candidate` dotted; `lit` glowing; `answered`,
+  `must`, `nice`, `shortlisted`, `chosen` settled (filled `--node-understood`, as Learn's understood); `irrelevant` a
+  quiet grey ring with a muted title; `rejected` and `dismissed` faded (dismissed also struck through). A **20 px badge
+  on the rim** gives the exact state: check answered, `!` must, `+` nice, `–` irrelevant, bookmark shortlisted, star
+  chosen (plus a second `--focus` ring and the lit glow), × rejected. The subject shows its status (CR-24) the same
+  way: ellipsis exploring, check decided, bag bought (filled). A rejected product's reason is in its tooltip,
+  accessible name and the panel, not on the graph. No red on nodes. Motion, on state changes only: rising states fill
+  from the centre (360 ms) and the badge comes out onto the rim; falling ones close into the centre (300 ms); a
+  badge-only change turns the badge over; a pick opens its second ring and its glow blooms. Instant under reduced
+  motion (GV-100). Dismissed opacity follows GV (at most 35 %), not the design's 45 % (the user, 2026-10-15).
+
 - **CR-22** At most one product is `chosen` per subject. Choosing one MUST NOT reject the others
   automatically.
 - **CR-23** A criterion's state can be changed at any time; a need's answer can be edited at any
@@ -81,6 +138,11 @@ DM-4).
   Choosing a product makes the subject `decided`; un-choosing it returns to `exploring`. `bought`
   is the user's action *Mark as bought* on the chosen product. A choice that is not a purchase
   simply stays `decided` (q-r6-status).
+  *Gallery, decided 2026-10-15 with its design:* the subject keeps its **status history** (each change with its time
+  and product, un-choosing included), shown as the timeline of a selected Gallery card. An un-chosen subject is
+  `exploring` again, and its card shows the un-chosen product struck through with when (*un-chosen 6 h ago*) until a
+  product is chosen again; the product itself is back to `shortlisted`. The Gallery's status, pick, counts and
+  history come from the summary cache (WG-35), never from the full subject file.
 - **CR-25** Header compact stats read like *4 needs · 6 criteria · 3 shortlisted* (RS-12 item 5,
   through `statsSummary`).
 
@@ -133,6 +195,21 @@ DM-4).
 - **CR-51** The room fills a product's column when it is shortlisted, and a criterion's row for the
   shortlisted products when the criterion is added. The user can edit any cell: an edited cell is
   marked as the user's and keeps the room's value, as edits do in Learn (DM-16) (q-r6-compare).
+  *Designed 2026-10-15* (`agent_design/choose-compare/RECIPE.md`, r006-03 *Rows stay open, clean lines*, accepted by
+  the user): a full-width **ledger**, products as columns and criteria as rows grouped *Must*, *Nice to have* and,
+  behind *Show irrelevant (n)*, *Irrelevant*; the criterion column is sticky and shows why it matters and how well it is
+  known (*1 manufacturer · 2 measured · ≠ 1 · ? 1*). **Cells show everything inline**: the value, each source as a kind
+  tag (*manufacturer*, *measured*, *opinion*, *model knowledge*; *sponsored* struck, "not used") with its name and date
+  read, a ≠ note when sources disagree, ? when none was found, a price as "an indication, not a promise · seen <date>",
+  and a user's value tagged *yours* with the room's value beside it, struck. **Evidence cards**: a click on a criterion
+  unfolds its row's band (one card per product), a click on the column header unfolds or folds every row, a click on a
+  cell unfolds only that cell's card (inside an unfolded row, only that card stays open). Cells are edited only in a
+  card (*Save as mine*, *Revert to the room's*, *Check this*; a band adds *Check this row*). Product headers carry
+  *Choose* / *Remove*, or *Chosen* with *Un-choose* (CR-22, CR-24). Research shows its current step and *Cancel* in the
+  toolbar while the cells being filled are striped; web off shows a banner and hides *Check this* (CR-44); a single
+  product invites shortlisting more. Form, type (choose-board's), colours (teal spine) and motion (rows grow and fold,
+  columns ease to their new widths, event-driven, instant under reduced motion) are in the recipe. Each cell stores its
+  sources with their kind and its status (ok, filling, none, disagree, edited), for B2.
 
 # Recommendation
 
@@ -141,12 +218,24 @@ DM-4).
 - **CR-61** It can be asked for **at any time**: it then says what is still missing and how sure it is.
   When the board looks complete, the room **offers** it (q-r6-recommend). What counts as complete
   is a design detail of the board.
+  *Decided 2026-10-14 with the board design:* the board is **complete** when every need is answered; at least one
+  criterion is `must` and none is still `open`; at least two products are shortlisted, or one is chosen; and no
+  Compare cell is empty for the shortlisted products × `must` criteria. The answer appears in the reading panel.
+  Once a product is chosen, the status replaces the offer.
 
 # Look
 
 - **CR-70** The Choose lantern is **teal** (q-buy-accent): its own palette under
   `data-room="choose"` (RS-30, RS-31), designed in `agent_design` before it is implemented. The user
   likes copper / rose gold too, likely for a future room.
+  *Designed 2026-10-14* (`agent_design/choose-palette/RECIPE.md`, r001-01 *Same night, teal lantern*, accepted
+  by the user): Learn's house with a teal lamp. Values, binding: `--bg #101827`, `--surface #172132`,
+  `--surface-2 #1f3034`, `--ink #f3e9dc`, `--ink-mute #aeb3bf`, `--line #3b4558`, `--accent #5cc6bd`,
+  `--accent-ink #0d211f`, `--focus #b6efe6`, `--node-open #969ca7`, `--node-lit #c8f3ea`,
+  `--node-understood #5cc6bd`, `--glow-near rgba(118,222,206,.32)`, `--glow-far rgba(84,204,188,.15)`,
+  `--path-muted #3e625d`, `--code #0c1320`, `--error #d86a5a`, `--error-ink #f0a598`. The backdrop (RS-34)
+  re-tints from these tokens with no change. Syntax colours: Learn's set, with `--code-keyword #5cc6bd`
+  (proposed, to confirm when implemented).
 
 # Shared behaviour
 
@@ -165,7 +254,7 @@ DM-4).
 
 # Open
 
-- The board's and the teal palette's look: `agent_design` rounds (CR-10, CR-70).
+- Compare: with a single card open, a click on another criterion opens that row and leaves the card open; whether the row click should fold the card was asked in round 3 and not answered (choose-compare recipe).
 - Which Choose fields go in `data` under `lantern/2` ([decision](/decisions/format-lantern-2.md)), with the v0.2.0 plan.
 
 Related: [rooms-spaces](/specs/rooms-spaces.md), [domain-model](/specs/domain-model.md),

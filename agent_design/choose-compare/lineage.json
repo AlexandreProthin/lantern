@@ -1,0 +1,414 @@
+{
+  "schema_version": 1,
+  "concept": "choose-compare",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-14T20:59:39.204961+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-compare",
+        "revision": 1,
+        "saved_at": "2026-10-14T20:52:52.333131+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "Compare space (CR-11, CR-50, CR-51): a full-width table, shortlisted products as columns and criteria as rows, must first, then nice; irrelevant criteria hidden behind a toggle. Each cell holds a value with its source and the date it was read (CR-41), and follows the source rules (CR-42: manufacturer specs, independent measurements preferred, community reports marked as opinion, affiliate lists never a basis, sponsored sources marked, disagreements shown). The room fills a product's column when it is shortlisted and a criterion's row when it is added; the user can edit any cell, and an edited cell is marked as the user's and keeps the room's value. Hard cases: one product, five products, a cell being filled (research takes 40-65 s), a cell with no source found, sources that disagree, a user-edited cell, a long value, a price (an indication at a date), a chosen product, web use turned off (values from the model's knowledge with its date, CR-44)."
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-14T21:15:46.205450+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-compare",
+        "revision": 2,
+        "saved_at": "2026-10-14T21:13:09.939640+00:00",
+        "based_on_round": 1,
+        "selected_ids": [
+          "r001-01",
+          "r001-03"
+        ],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "r001-01 with the added ability of unfolding the evidence banner from r001-03 if clicking on the very left column (shortlisted column)"
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-14T22:02:16.558842+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-compare",
+        "revision": 3,
+        "saved_at": "2026-10-14T21:58:38.222867+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r001-01",
+          "r001-03",
+          "r002-01"
+        ],
+        "next": {
+          "phase": "form",
+          "mode": "combine",
+          "prompt": "r002-01 but selecting a cell other than one from the first column only unfold its corresponding card. if the entire row is unfolded from a clic from the first column then clicking a cell from the compared choices fold the row if not in it and open the item else just keep this item deployed"
+        }
+      },
+      "node_ids": [
+        "r003-01",
+        "r003-02",
+        "r003-03"
+      ]
+    },
+    {
+      "number": 4,
+      "created_at": "2026-10-14T22:17:44.862697+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-compare",
+        "revision": 4,
+        "saved_at": "2026-10-14T22:15:25.741645+00:00",
+        "based_on_round": 3,
+        "selected_ids": [
+          "r001-01",
+          "r001-03",
+          "r002-01",
+          "r003-01"
+        ],
+        "next": {
+          "phase": "color",
+          "mode": "combine",
+          "prompt": "We skip Type round, just take the same as the one we already selected from the choose-board design. next step color"
+        }
+      },
+      "node_ids": [
+        "r004-01",
+        "r004-02",
+        "r004-03"
+      ]
+    },
+    {
+      "number": 5,
+      "created_at": "2026-10-14T22:23:59.120986+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-compare",
+        "revision": 5,
+        "saved_at": "2026-10-14T22:20:54.896743+00:00",
+        "based_on_round": 4,
+        "selected_ids": [
+          "r001-01",
+          "r001-03",
+          "r002-01",
+          "r003-01",
+          "r004-01"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": ""
+        }
+      },
+      "node_ids": [
+        "r005-01",
+        "r005-02",
+        "r005-03"
+      ]
+    },
+    {
+      "number": 6,
+      "created_at": "2026-10-14T22:39:06.509829+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-compare",
+        "revision": 6,
+        "saved_at": "2026-10-14T22:32:56.861332+00:00",
+        "based_on_round": 5,
+        "selected_ids": [
+          "r001-01",
+          "r001-03",
+          "r002-01",
+          "r003-01",
+          "r004-01",
+          "r005-01"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": "next round is only one proposal. make the columns and row resize smoothly when the selection changes."
+        }
+      },
+      "node_ids": [
+        "r006-01",
+        "r006-02",
+        "r006-03"
+      ],
+      "amendments": [
+        {
+          "at": "2026-10-14T22:48:05.948208+00:00",
+          "node_id": "r006-02",
+          "note": "User, 2026-10-15: \"r006-01 need to be adjusted: do not fold to unfold right after if the row is already unfolded, keep it unfolded; on the fold/unfold do not make unhighlighted lines sudently highlighted. fix it by making r006-02 (second proposition of round 6, r006-01 untouched)\""
+        },
+        {
+          "at": "2026-10-14T22:54:28.566599+00:00",
+          "node_id": "r006-03",
+          "note": "User, 2026-10-15, with a screenshot circling teal vertical lines in the empty cells of an opening evidence row: \"almost there do r006-03 by fixing the line highlight on fold/unfold i screen it during the animation and circled what i mean\""
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "wireframe/choose-compare-wir-r001-01.html",
+      "title": "Sourced cells",
+      "direction": "Sourced cells. Everything is visible at once: each cell shows its value and, under it, its sources as short kind tags with the date read (manufacturer · 12 Oct, measured, opinion, sponsored struck through). Disagreement, no source, research in progress, the user's own value (with the room's beside it and Revert) and price indications are written in the cell. Click a cell to edit it in place or ask Check this. Sticky criterion column and product header; five products scroll sideways.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "wireframe/choose-compare-wir-r001-02.html",
+      "title": "Evidence drawer",
+      "direction": "Evidence drawer. The table stays clean: each cell shows its value and one status mark (≠ sources differ, ? no source, ✎ yours, … researching, a date for a price), plus the kind of its main source as a small tag. Selecting a cell (click, or arrow keys and Enter) opens a drawer on the right with the whole evidence: every source with its kind, value and date, the disagreement explained, sponsored sources listed apart as \"not used\", the room's value next to yours, the edit field and Check this. The table narrows; the selected cell stays in view.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "wireframe/choose-compare-wir-r001-03.html",
+      "title": "Row evidence",
+      "direction": "Row evidence. The table shows values only, but every criterion carries a summary of how well it is known (e.g. \"2 measured · 1 opinion · ≠ 1 · ? 1\"). Opening a row (▸ or Enter on its name) unfolds an evidence band under it, aligned with the columns: for each product its sources stacked with kind, value and date, sponsored ones struck through, the disagreement note, the room's value beside the user's, an edit field and Check this. Several rows can be open, so a criterion is weighed across products at once.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-01",
+      "parents": [
+        "r001-01",
+        "r001-03"
+      ],
+      "file": "wireframe/choose-compare-wir-r002-01.html",
+      "title": "Sourced cells + evidence band",
+      "direction": "r001-01 as it was, plus r001-03's evidence band. Cells keep everything inline (value, every source tag with its date, notes, the user's value beside the room's) and still edit in place on click. Clicking a criterion in the left column unfolds r001-03's band under that row: each product's sources stacked with their values, the disagreement note, an edit field, Check this, and Check this row; the criterion also gets r001-03's evidence summary. Clicking the column's header (\"3 shortlisted\") unfolds or folds every row.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-02",
+      "parents": [
+        "r001-01",
+        "r001-03"
+      ],
+      "file": "wireframe/choose-compare-wir-r002-02.html",
+      "title": "Lean cells, band for detail",
+      "direction": "r001-01's table made lighter, because the band from r001-03 now carries the detail: each cell shows its value, the kind and date of its main source and \"+n\" for the others, a price's date, and ≠ / ? / yours marks. The left column (criterion, why, r001-03's summary) unfolds the band with the full evidence; clicking a cell unfolds its row and puts the cursor in that product's edit field, so there is one place to read and edit. The column header unfolds or folds all.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-03",
+      "parents": [
+        "r001-01",
+        "r001-03"
+      ],
+      "file": "wireframe/choose-compare-wir-r002-03.html",
+      "title": "Rows that open in place",
+      "direction": "r001-01's lean cells, and instead of a band under the row (r001-03), clicking the criterion in the left column opens that row in place: its cells grow into full evidence cells (every source, notes, the room's value beside the user's, edit, Check this) while the other rows stay compact; Check this row appears under the criterion. Clicking a closed cell opens its row the same way. The column header opens or closes all rows, turning the whole table into the full r001-01 view on demand.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01"
+      ],
+      "file": "form/choose-compare-frm-r003-01.html",
+      "title": "Dense ledger",
+      "direction": "High density, hierarchy by alignment. A tight grid with hairlines on every cell, 12 px text and 8 px padding; grey header bars for the product row and the groups; each source on one truncated line (kind tag + name · date); the criterion column narrow, its summary on one line. The band is a flush, slightly lighter strip with the card's sources as compact rows; a single card is marked by a 2 px rule tying it to its cell. Five products fit a laptop width.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01"
+      ],
+      "file": "form/choose-compare-frm-r003-02.html",
+      "title": "Quiet",
+      "direction": "Low density, hierarchy by scale, the same form language as the accepted board (choose-board r002-01): generous padding (16–20 px), no vertical rules, one hairline between rows; values in 16 px with light weight, sources as small muted lines under them; criterion names large in the left column with the why and the summary small beneath. The band is a soft, spaced panel; the open card is lifted by space and a single top rule, its sources in a calm list.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01"
+      ],
+      "file": "form/choose-compare-frm-r003-03.html",
+      "title": "Tonal tiles",
+      "direction": "Hierarchy by grey surfaces, no lines: every cell is a rounded tile with small gaps between, the criterion column a darker pane, product headers lighter tiles. The open card is a raised, lighter tile with a notch pointing up at its cell; a fully unfolded row lays its cards out as a row of raised tiles. Sources sit in inset pills; the chosen column's tiles are a step lighter.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r004-01",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01",
+        "r003-01"
+      ],
+      "file": "color/choose-compare-col-r004-01.html",
+      "title": "Teal spine, as the board",
+      "direction": "The board's colour language (choose-board r004-03) carried into the ledger, so the two spaces read as one room: group labels and the Must group in teal, the open card tied to its cell by a teal rule, the chosen product's column framed by teal rules under a filled teal header, a criterion's open state marked by a teal edge. Things to look at (≠ sources differ, ? no source, the disagreement note, your own value) in --focus. Source tags stay neutral; sponsored ones are struck and faint.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01",
+        "r003-01"
+      ],
+      "file": "color/choose-compare-col-r004-02.html",
+      "title": "Trust in colour",
+      "direction": "Colour encodes how far a fact can be trusted (CR-42): measured and independent sources in teal, manufacturer specifications in ink, community opinion in pale aqua and italic, model knowledge dotted and muted, sponsored or affiliate sources struck in the error tone. A cell's value takes the colour of its best source, so a column of teal reads as \"measured\". Your own value is a --focus tag; the chosen column is a surface-2 band; the open card has a neutral rule.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01",
+        "r003-01"
+      ],
+      "file": "color/choose-compare-col-r004-03.html",
+      "title": "Quiet ink, teal for the decision",
+      "direction": "Almost no colour: text in ink and ink-mute on glass, every source tag neutral (kinds told apart by line style only: solid, dashed, dotted, struck), ≠ and ? in bold ink. Teal appears only for the decision: the chosen column's header text and a thin teal top bar, the Choose buttons, and the research in progress. The open card is tied to its cell by an ink rule. The calmest; colour means \"this is your pick\".",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r005-01",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01",
+        "r003-01",
+        "r004-01"
+      ],
+      "file": "motion/choose-compare-mot-r005-01.html",
+      "title": "Quiet fades",
+      "direction": "Only opacity moves. An evidence band or a single card fades in (160 ms) and out (120 ms); a cell whose value arrives from research, or changes by an edit or a revert, cross-fades (200 ms); a newly chosen column and newly shown irrelevant rows fade up (160–200 ms). Research in progress keeps its static stripes, no pulse.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-02",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01",
+        "r003-01",
+        "r004-01"
+      ],
+      "file": "motion/choose-compare-mot-r005-02.html",
+      "title": "Unfold, as the board",
+      "direction": "The board's accepted motion (choose-board r005-02) carried into Compare. A row's band unfolds downward out of its row (a 280 ms reveal from the top, decelerating), its cards arriving 40 ms apart from left to right; a single card unfolds from its own cell; folding reverses in 200 ms. A value that arrives from research, or changes by an edit or a revert, rolls: the old one slides up and out as the new one rises in (280 ms), like the board's counters. Choosing a product wipes its header to teal from the left (360 ms) while its column's teal rules draw from top to bottom. While research runs, the stripes of the cells being filled drift slowly (busy state, RS-25).",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-03",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01",
+        "r003-01",
+        "r004-01"
+      ],
+      "file": "motion/choose-compare-mot-r005-03.html",
+      "title": "Research light",
+      "direction": "Light, as in the graph and the backdrop. Bands and cards fade in with a 4 px settle (220 ms) and fade out (140 ms). While research runs, the cells being filled breathe softly, like pending nodes (GV-91); when a value arrives, its cell glows once and settles (900 ms) and the backdrop warms there, as a lit node does (at most three lights per arrival). An edit flashes the 'yours' tag in --focus. Choosing a product sends one slow halo around its header (1.2 s) and warms the backdrop at it.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r006-01",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01",
+        "r003-01",
+        "r004-01",
+        "r005-01"
+      ],
+      "file": "motion/choose-compare-mot-r006-01.html",
+      "title": "Quiet fades, smooth resizing",
+      "direction": "r005-01 Quiet fades, with smooth resizing (the saved request): when the selection changes, every column eases from its old width to its new one (240 ms) and the rows re-wrap with it, so nothing jumps; an evidence band or a single card grows open from zero height and shrinks closed before it goes; irrelevant criteria grow in when shown and shrink away when hidden. Values that change, a newly chosen column and the rest keep r005-01's quiet fades. Only height, width and opacity move; nothing slides sideways.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r006-02",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01",
+        "r003-01",
+        "r004-01",
+        "r005-01"
+      ],
+      "file": "motion/choose-compare-mot-r006-02.html",
+      "title": "Smooth resizing, rows stay open",
+      "direction": "r006-01 adjusted at the user's request: a row's evidence that is already unfolded stays unfolded when the selection changes within it (whole row to one card, one card to another, or one card to the whole row): the band eases from its old height to its new one, the cards that go fade out and the new ones fade in, and it never folds and unfolds again. Highlights travel with the motion instead of snapping: the band's teal rules and the criterion's teal edge fade in as a band opens and out as it closes, the open cell's underline fades in and out, and while anything resizes, hover highlights wait for the pointer to move, so a row that slides under a still pointer is not suddenly highlighted. Everything else as r006-01.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r006-03",
+      "parents": [
+        "r001-01",
+        "r001-03",
+        "r002-01",
+        "r003-01",
+        "r004-01",
+        "r005-01"
+      ],
+      "file": "motion/choose-compare-mot-r006-03.html",
+      "title": "Rows stay open, clean lines",
+      "direction": "r006-02 with the line fix the user circled: during a fold or unfold, the empty cells of an evidence row (the other products' columns when a single card is open) no longer show a teal vertical line. The animation's clipping wrapper made them count as non-empty, which switched on the open card's teal rule; empty cells are now left unwrapped, and each cell's rules are read before wrapping. Everything else as r006-02: rows already unfolded stay unfolded, highlights fade with the motion, hover waits while rows resize.",
+      "phase": "motion",
+      "tag": "mot"
+    }
+  ]
+}

@@ -1,7 +1,18 @@
 # Wiki Update Log
 
+## 2026-10-15
+
+* **v0.2.0 B1 complete**: every design in the [v0.2.0 plan](/plans/v0-2-0.md) B1 has a `RECIPE.md` accepted by the user; next is B2.
+* **Compare accepted**: `agent_design/choose-compare`, six rounds, winner r006-03 *Rows stay open, clean lines* (a ledger with inline sources and evidence cards). Recorded in [choose-room](/specs/choose-room.md) CR-50/CR-51; one click rule left open there.
+* **Node glyphs accepted**: `agent_design/choose-nodes`, winner r003-02 *Fill and turn* on r001-01 *Kind inside, state around* (pictogram names the kind, ring and rim badge the state). Recorded under CR-20/CR-21; dismissed opacity follows GV (35 %), the user's call. The empty `choose-glyphs` stub was deleted.
+* **Welcome accepted**: `agent_design/choose-welcome`, winner r003-01 *Learn's embers, teal* (Learn's Welcome, need starters, locale line, Gallery cards for recents). Recorded under CR-12/CR-13.
+* **Gallery accepted**: `agent_design/choose-gallery`, winner r004-02 *Unfold from the band*. Recorded under CR-12/CR-24 (status history).
+* The design workflow tool gained a `single` round mode (one proposal, on request) and `amend`.
+
 ## 2026-10-14
 
+* **v0.2.0 B1, decision board accepted**: `agent_design/choose-board`, five rounds (wireframe → form → type → colour → motion), winner r005-02 *Unfold from the spine* on r001-01 *Counter rail*, r002-01 *Quiet numerals*, r003-01 (the app's own Segoe UI Variable faces, sentence case), r004-03 *Teal spine*. [choose-room](/specs/choose-room.md) CR-14 records the rail and the board opening in place of the graph; CR-61 the completeness rule (needs answered, a must and nothing unranked, two shortlisted or one chosen, no empty Compare cell for must criteria). Next design: Compare (`choose-compare`).
+* **v0.2.0 B1, Choose palette accepted**: `agent_design/choose-palette` (one color round), winner r001-01 *Same night, teal lantern*: Learn's background, surfaces, lines, ink, open nodes, code and error unchanged; accent `#5cc6bd`, lit light, glows, focus, paths and `--surface-2` teal. Values in [choose-room](/specs/choose-room.md) CR-70; the backdrop needs no change. Next design: the decision board (`choose-board`, counter rail picked in round 1).
 * **v0.2.0 released locally and verified**: master `d6fd69d` (version 0.2.0), the installer signed by the user, `latest.json` and the installer in the local update folder (signature key id checked against the app's public key). The user updated from v0.1.5 in the app: "update works, everything as expected". [v0.2.0 plan](/plans/v0-2-0.md) Part A is complete; not yet pushed or tagged.
 
 ## 2026-10-13

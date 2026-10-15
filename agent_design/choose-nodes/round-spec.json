@@ -1,0 +1,35 @@
+{
+  "selection_revision": 3,
+  "proposals": [
+    {
+      "id": "r003-01",
+      "parents": [
+        "r001-01",
+        "r002-01"
+      ],
+      "file": "motion/choose-nodes-mot-r003-01.html",
+      "title": "Quiet cross-fade",
+      "direction": "Nothing moves, the light only changes. A state change cross-fades the old look into the new one in place: 260 ms out-ease (420 ms, in-ease, when a node fades out: rejected, dismissed, irrelevant). A new badge fades in 120 ms after the disc starts. A glow (lit, chosen) warms up over 420 ms, and a chosen product's second ring fades in over 320 ms. An un-chosen product and the subject's status cross-fade at the same time as the acted node. No particles, no travelling light: the calmest reading of RS-33."
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r001-01",
+        "r002-01"
+      ],
+      "file": "motion/choose-nodes-mot-r003-02.html",
+      "title": "Fill and turn",
+      "direction": "The geometry carries the change. Settling fills the disc from its centre outward (clip-path circle, 360 ms out-ease) over the old look, and the badge comes out of the disc onto the rim (from the centre, scale .3 to 1, 240 ms, starting at 200 ms). Un-settling and fading reverse it: the old look closes into its centre (300 ms in-ease) and reveals the new one. A badge-only change (nice to must) turns the badge over (rotateY, 220 ms). A chosen product then opens its second ring outward (scale .8 to 1, 320 ms) and its glow blooms (480 ms). No particles."
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r001-01",
+        "r002-01"
+      ],
+      "file": "motion/choose-nodes-mot-r003-03.html",
+      "title": "Embers on the decision",
+      "direction": "Learn's own light language, used for decisions. Every change cross-fades in place (240 ms; 520 ms in-ease when a node fades out, with no particles, as Learn's cancel emits none). Settling a node releases Learn's settle burst: 12 --node-lit embers from the rim, 800 ms, at most 38 px/s. Lighting a concept gets Learn's passing glow (180 ms) and a fan of 8 embers. Choosing a product sends Learn's travelling light (--focus dot, comet trail, 1250 px/s, 160-650 ms per leg) from the previous pick, or from the subject, along the graph to the new pick; on arrival its ring and glow come on with a 16-ember fan. Marking as bought gives the subject the same 16-ember fan."
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "about": "Board content for the choose-board wireframes. Not real data; products are placeholders (Printer A…) on purpose. Every proposal reads the same scenarios and the same completeness rule (assets/board-model.js).",
+    "scenarios": "one per hard case: id, label, subject, status (exploring | decided | bought, CR-24), needs, criteria, products, compareGaps, graph (a few node boxes so the strip sits next to a real graph)",
+    "needs": "q: the need as a question or a short statement; answer: the user's answer, null when still open (a need node in state open); from: where it was learnt (welcome | node | dialogue | card, CR-30)",
+    "criteria": "name; state: open | must | nice | irrelevant (CR-21); why: why it matters for this user",
+    "products": "name; state: candidate | shortlisted | chosen | rejected (CR-21); reason: only for rejected; fact: one key fact for the shortlist row",
+    "compareGaps": "number of empty Compare cells (shortlisted products × must criteria) the room has not filled yet",
+    "completeness": "proposed rule, to be decided in this design (CR-61): every need answered; at least one must criterion and no open criterion; at least 2 shortlisted (or a chosen product); no empty Compare cell for must criteria. When complete and nothing is chosen, the board offers the recommendation. The recommendation can be asked for at any time."
+  },
+  "scenarios": [
+    {
+      "id": "new", "label": "New subject", "subject": "Family car", "status": "exploring",
+      "needs": [], "criteria": [], "products": [], "compareGaps": 0,
+      "graph": [["Family car", "lit"]]
+    },
+    {
+      "id": "ongoing", "label": "Ongoing", "subject": "3D printer", "status": "exploring",
+      "needs": [
+        {"q": "Budget", "answer": "about 500 €", "from": "welcome"},
+        {"q": "What will you print?", "answer": "small detailed figurines, mostly under 10 cm", "from": "node"},
+        {"q": "Where will it stand?", "answer": "in the kids' room", "from": "dialogue"},
+        {"q": "Will you print ABS?", "answer": null, "from": "node"}
+      ],
+      "criteria": [
+        {"name": "Print quality at small scale", "state": "must", "why": "figurines need fine detail"},
+        {"name": "Noise", "state": "must", "why": "it stands in a bedroom"},
+        {"name": "Build volume", "state": "nice", "why": "10 cm figurines fit any printer"},
+        {"name": "Ease of setup", "state": "nice", "why": "first printer"},
+        {"name": "Enclosure", "state": "open", "why": "matters only if you print ABS"},
+        {"name": "Multi-colour", "state": "irrelevant", "why": "you said single colour is fine"}
+      ],
+      "products": [
+        {"name": "Printer A", "state": "shortlisted", "fact": "enclosed CoreXY, 549 €"},
+        {"name": "Printer B", "state": "candidate", "fact": "open bed-slinger, 329 €"},
+        {"name": "Printer C", "state": "rejected", "reason": "too loud for a bedroom (measured 58 dB)"}
+      ],
+      "compareGaps": 2,
+      "graph": [["3D printer", "lit"], ["FDM or resin?", "lit"], ["What will you print?", "settled"], ["Noise", "settled"], ["Enclosed CoreXY", "lit"], ["Will you print ABS?", "open"]]
+    },
+    {
+      "id": "complete", "label": "Nearly done", "subject": "3D printer", "status": "exploring",
+      "needs": [
+        {"q": "Budget", "answer": "about 500 €, 600 € at most", "from": "welcome"},
+        {"q": "What will you print?", "answer": "small detailed figurines, mostly under 10 cm", "from": "node"},
+        {"q": "Where will it stand?", "answer": "in the kids' room", "from": "dialogue"},
+        {"q": "Will you print ABS?", "answer": "no, PLA only", "from": "node"},
+        {"q": "Time you want to spend tuning", "answer": "as little as possible", "from": "card"}
+      ],
+      "criteria": [
+        {"name": "Print quality at small scale", "state": "must", "why": "figurines need fine detail"},
+        {"name": "Noise", "state": "must", "why": "it stands in a bedroom"},
+        {"name": "Ease of setup", "state": "must", "why": "as little tuning as possible"},
+        {"name": "Build volume", "state": "nice", "why": "10 cm figurines fit any printer"},
+        {"name": "Enclosure", "state": "irrelevant", "why": "PLA only"},
+        {"name": "Multi-colour", "state": "irrelevant", "why": "single colour is fine"}
+      ],
+      "products": [
+        {"name": "Printer A", "state": "shortlisted", "fact": "enclosed CoreXY, 549 €"},
+        {"name": "Printer B", "state": "shortlisted", "fact": "open bed-slinger, 329 €"},
+        {"name": "Printer D", "state": "shortlisted", "fact": "open CoreXY, 449 €"},
+        {"name": "Printer C", "state": "rejected", "reason": "too loud for a bedroom (measured 58 dB)"}
+      ],
+      "compareGaps": 0,
+      "graph": [["3D printer", "lit"], ["FDM or resin?", "lit"], ["What will you print?", "settled"], ["Noise", "settled"], ["Enclosed CoreXY", "lit"], ["Printer A", "settled"], ["Printer D", "settled"]]
+    },
+    {
+      "id": "long", "label": "Long needs list", "subject": "Noise-cancelling headphones for long flights and open-plan offices", "status": "exploring",
+      "needs": [
+        {"q": "Budget", "answer": "under 350 €", "from": "welcome"},
+        {"q": "Main use", "answer": "long-haul flights twice a month, open-plan office every day", "from": "welcome"},
+        {"q": "Glasses?", "answer": "yes, thick frames, so the cushions must not press on the arms", "from": "dialogue"},
+        {"q": "Phone", "answer": "Android, Pixel", "from": "dialogue"},
+        {"q": "Calls", "answer": "Teams calls in the office, the microphone matters", "from": "card"},
+        {"q": "Battery", "answer": "a 14-hour flight without charging", "from": "node"},
+        {"q": "Wired option", "answer": "for the in-flight entertainment", "from": "node"},
+        {"q": "Fold flat?", "answer": null, "from": "node"},
+        {"q": "Head size", "answer": "large", "from": "card"},
+        {"q": "Sound signature", "answer": null, "from": "node"},
+        {"q": "Multipoint (laptop + phone)", "answer": "yes, essential", "from": "dialogue"},
+        {"q": "Colour", "answer": "anything but white", "from": "card"}
+      ],
+      "criteria": [
+        {"name": "Noise cancelling on engine drone", "state": "must", "why": "flights"},
+        {"name": "Comfort with glasses", "state": "must", "why": "thick frames"},
+        {"name": "Microphone in noise", "state": "open", "why": "Teams calls"},
+        {"name": "Battery life", "state": "nice", "why": "14-hour flight"}
+      ],
+      "products": [{"name": "Headphones A", "state": "shortlisted", "fact": "30 h, multipoint, 329 €"}],
+      "compareGaps": 1,
+      "graph": [["Headphones", "lit"], ["How ANC works", "lit"], ["Glasses?", "settled"], ["Comfort", "settled"], ["Sound signature", "open"]]
+    },
+    {
+      "id": "chosen", "label": "Chosen (decided)", "subject": "Road bike for commuting", "status": "decided",
+      "needs": [
+        {"q": "Budget", "answer": "1 200 €", "from": "welcome"},
+        {"q": "Commute", "answer": "14 km each way, some gravel", "from": "welcome"},
+        {"q": "Rain", "answer": "all year, so mudguards", "from": "node"}
+      ],
+      "criteria": [
+        {"name": "Mudguard and rack mounts", "state": "must", "why": "all-year commuting"},
+        {"name": "Tyre clearance", "state": "must", "why": "some gravel"},
+        {"name": "Weight", "state": "nice", "why": "stairs at the office"},
+        {"name": "Electronic shifting", "state": "irrelevant", "why": "not at this budget"}
+      ],
+      "products": [
+        {"name": "Bike A", "state": "chosen", "fact": "alloy, 40 mm clearance, 1 149 €"},
+        {"name": "Bike B", "state": "shortlisted", "fact": "steel, 35 mm clearance, 999 €"}
+      ],
+      "compareGaps": 0,
+      "recommendation": "Bike A: it takes 40 mm tyres and full mudguards, both must-haves. You give up 1.2 kg and 150 € compared with Bike B.",
+      "graph": [["Road bike", "settled"], ["Gravel or road?", "lit"], ["Mounts", "settled"], ["Bike A", "settled"], ["Bike B", "settled"]]
+    },
+    {
+      "id": "bought", "label": "Bought", "subject": "Heat pump", "status": "bought",
+      "needs": [
+        {"q": "House", "answer": "1970s, 120 m², radiators", "from": "welcome"},
+        {"q": "Budget after grants", "answer": "8 000 €", "from": "card"}
+      ],
+      "criteria": [
+        {"name": "Works with existing radiators", "state": "must", "why": "no new floor heating"},
+        {"name": "Outdoor noise", "state": "must", "why": "close to the neighbours"},
+        {"name": "Seasonal efficiency (SCOP)", "state": "nice", "why": "running cost"}
+      ],
+      "products": [
+        {"name": "Heat pump A", "state": "chosen", "fact": "high-temperature, 55 °C flow"},
+        {"name": "Heat pump B", "state": "shortlisted", "fact": "monobloc, 47 dB(A)"},
+        {"name": "Heat pump C", "state": "rejected", "reason": "needs underfloor heating"}
+      ],
+      "compareGaps": 0,
+      "recommendation": "Heat pump A: the only one that runs your radiators at 55 °C; you give up about 0.3 SCOP.",
+      "graph": [["Heat pump", "settled"], ["Flow temperature", "lit"], ["Radiators", "settled"], ["Heat pump A", "settled"]]
+    }
+  ]
+}

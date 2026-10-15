@@ -1,0 +1,97 @@
+<!--
+  id:        r001-03
+  component: choose-compare
+  phase:     wireframe
+  parents:   none
+  direction: Row evidence. The table shows values only, but every criterion carries a summary of how well it is known (e.g. "2 measured · 1 opinion · ≠ 1 · ? 1"). Opening a row (▸ or Enter on its name) unfolds an evidence band under it, aligned with the columns: for each product its sources stacked with kind, value and date, sponsored ones struck through, the disagreement note, the room's value beside the user's, an edit field and Check this. Several rows can be open, so a criterion is weighed across products at once.
+  request:   revision 1
+  inputs:    Compare space (CR-11, CR-50, CR-51): a full-width table, shortlisted products as columns and criteria as rows, must first, then nice; irrelevant criteria hidden behind a toggle. Each cell holds a value with its source and the date it was read (CR-41), and follows the source rules (CR-42: manufacturer specs, independent measurements preferred, community reports marked as opinion, affiliate lists never a basis, sponsored sources marked, disagreements shown). The room fills a product's column when it is shortlisted and a criterion's row when it is added; the user can edit any cell, and an edited cell is marked as the user's and keeps the room's value. Hard cases: one product, five products, a cell being filled (research takes 40-65 s), a cell with no source found, sources that disagree, a user-edited cell, a long value, a price (an indication at a date), a chosen product, web use turned off (values from the model's knowledge with its date, CR-44).
+  shared:    ../assets/compare-kit.js with ../choose-compare-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose compare r001-03 — Row evidence</title>
+</head>
+<body>
+<script src="../choose-compare-data.js"></script>
+<script src="../assets/compare-kit.js"></script>
+<script>
+const day = d => /^\d{4}-\d\d-\d\d$/.test(d) ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : d;
+COMPARE_KIT.mount({
+  id: 'r001-03', title: 'Row evidence',
+  css: `
+  .scroll { position: absolute; inset: 0; overflow: auto; padding-bottom: 70px; }
+  table { border-collapse: separate; border-spacing: 0; min-width: 100%; table-layout: fixed; }
+  col.c0 { width: 250px; } col.cp { width: 220px; }
+  th, td { text-align: left; vertical-align: top; }
+  thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 12px; border-bottom: 1px solid var(--fg); }
+  thead th:first-child, tbody th { position: sticky; left: 0; z-index: 1; background: var(--bg); }
+  thead th:first-child { z-index: 3; } thead th.chosen { border-bottom: 3px solid var(--fg); }
+  thead th .acts { display: flex; gap: 4px; margin-top: 6px; font-weight: 400; } thead th .acts button { font-size: 11px; padding: 1px 7px; }
+  tr.grp th { background: var(--fill); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); padding: 4px 12px; }
+  tr.crow > * { border-bottom: 1px solid var(--hair); } tr.crow.irr { color: var(--faint); }
+  tr.crow th { padding: 8px 12px; font-weight: 400; cursor: pointer; } tr.crow th:hover { background: var(--fill); }
+  tr.crow th .tw { display: inline-block; width: 14px; } tr.crow th .sum { display: block; font-size: 11px; color: var(--mute); margin: 3px 0 0 14px; }
+  tr.crow td { padding: 8px 12px; } tr.crow td.chosen { background: var(--fill); }
+  tr.crow td .m { font-weight: 700; margin-right: 4px; } tr.crow td.none, tr.crow td.filling { color: var(--mute); font-style: italic; }
+  tr.crow td.filling { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--fill) 6px 12px); }
+  tr.crow td .d { display: block; font-size: 11px; color: var(--mute); }
+  tr.ev > * { border-bottom: 1px solid var(--fg); background: var(--fill); padding: 10px 12px 14px; }
+  tr.ev th { font-weight: 400; font-size: 12px; color: var(--mute); }
+  tr.ev th .why { display: block; margin-bottom: 8px; } tr.ev th button { font-size: 11px; }
+  .src { display: grid; gap: 1px; padding: 5px 0; border-bottom: 1px dashed var(--hair); font-size: 12px; } .src:last-of-type { border-bottom: 0; }
+  .src .meta { font-size: 11px; color: var(--mute); display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .src.sponsored { color: var(--faint); } .src.sponsored .sv { text-decoration: line-through; }
+  .note { border-left: 2px solid var(--fg); padding-left: 6px; font-size: 11px; margin: 4px 0 6px; }
+  .yours { font-size: 12px; margin-bottom: 6px; } .ed { display: grid; gap: 4px; margin-top: 8px; } .ed .row { display: flex; gap: 4px; flex-wrap: wrap; } .ed button { font-size: 11px; padding: 1px 7px; }
+  .more { color: var(--mute); font-weight: 400; border: 1px dashed var(--hair); padding: 8px; }`,
+  render(el, { s, rows, cell, act, esc, kindLabel }) {
+    const ui = act.ui; ui.open = ui.open || new Set(); const P = s.products;
+    const mark = x => ({ disagree: '≠', none: '?', edited: '✎', filling: '…' }[x.status] || '');
+    const summary = c => {
+      const xs = P.map(p => cell(p, c)), n = {}; xs.forEach(x => x.sources.forEach(z => n[z.kind] = (n[z.kind] || 0) + 1));
+      const parts = ['spec', 'measured', 'opinion', 'model'].filter(k => n[k]).map(k => `${n[k]} ${kindLabel[k]}`);
+      const dis = xs.filter(x => x.status === 'disagree').length, none = xs.filter(x => x.status === 'none').length, ed = xs.filter(x => x.status === 'edited').length, fil = xs.filter(x => x.status === 'filling').length;
+      return [...parts, dis && `≠ ${dis}`, none && `? ${none}`, ed && `✎ ${ed}`, fil && `… ${fil}`].filter(Boolean).join(' · ') || 'no sources yet';
+    };
+    const evCell = (p, c) => {
+      const x = cell(p, c), key = `${p.id}:${c.id}`;
+      const src = z => `<div class="src ${z.kind}"><span class="sv">${esc(z.value || '—')}</span><span class="meta"><span class="k" data-k="${z.kind}">${kindLabel[z.kind]}</span>${esc(z.name)} · ${esc(day(z.date))}${z.kind === 'sponsored' ? ' · not used' : ''}</span></div>`;
+      return `<td class="${p.state === 'chosen' ? 'chosen' : ''}">
+        ${x.status === 'edited' ? `<div class="yours"><span class="k" data-k="user">yours</span> ${esc(x.value)}<br><span class="mute">the room's: ${esc(x.room)}</span></div>` : ''}
+        ${x.note ? `<div class="note">${esc(x.note)}</div>` : ''}
+        ${x.status === 'filling' ? '<div class="mute">Researching: sources appear here as they are read.</div>' : x.sources.map(src).join('') || '<div class="mute">No source.</div>'}
+        ${x.kind === 'price' ? '<div class="mute" style="font-size:11px;margin-top:4px">An indication at that date, not a promise.</div>' : ''}
+        <div class="ed"><input class="edit" data-in="${key}" value="${esc(x.status === 'edited' ? x.value : '')}" placeholder="your value…" aria-label="Your value for ${esc(p.name)}, ${esc(c.name)}">
+          <div class="row"><button data-save="${key}">Save</button>${x.status === 'edited' ? `<button data-revert="${key}">Revert</button>` : ''}${s.web && x.status !== 'filling' ? `<button data-check="${key}">Check this</button>` : ''}</div></div></td>`;
+    };
+    let lastState = null;
+    const body = rows.map(c => { let g = ''; if (c.state !== lastState) { lastState = c.state; g = `<tr class="grp"><th colspan="${P.length + 1}">${{ must: 'Must', nice: 'Nice to have', irrelevant: 'Irrelevant' }[c.state]}</th></tr>`; }
+      const open = ui.open.has(c.id);
+      return g + `<tr class="crow ${c.state === 'irrelevant' ? 'irr' : ''}"><th data-row="${c.id}" tabindex="0" aria-expanded="${open}"><span class="tw">${open ? '▾' : '▸'}</span>${esc(c.name)}${c.filling ? ' <span class="mute">· researching…</span>' : ''}<span class="sum">${summary(c)}</span></th>
+        ${P.map(p => { const x = cell(p, c); return `<td class="${x.status} ${p.state === 'chosen' ? 'chosen' : ''}"><span class="m">${mark(x)}</span>${x.status === 'filling' ? 'researching' : x.status === 'none' ? 'no source found' : esc(x.value)}${x.kind === 'price' && x.sources[0] ? `<span class="d">seen ${esc(day(x.sources[0].date))}</span>` : ''}</td>`; }).join('')}</tr>
+        ${open ? `<tr class="ev"><th><span class="why">Why it matters: ${esc(c.why)}</span>${s.web ? `<button data-checkrow="${c.id}">Check this row</button>` : ''}</th>${P.map(p => evCell(p, c)).join('')}</tr>` : ''}`; }).join('');
+    el.innerHTML = `<div class="scroll"><table><colgroup><col class="c0">${P.map(() => '<col class="cp">').join('')}${s.candidates ? '<col class="cp">' : ''}</colgroup>
+      <thead><tr><th>${P.length} shortlisted <button data-all style="font-size:11px;font-weight:400;margin-left:6px">${ui.open.size ? 'Close all' : 'Open all'}</button></th>${P.map(p => `<th class="${p.state === 'chosen' ? 'chosen' : ''}">${p.state === 'chosen' ? '✓ ' : ''}${esc(p.name)}${p.filling ? ' <span class="mute" style="font-weight:400">· researching…</span>' : ''}
+      <div class="acts">${p.state === 'chosen' ? `chosen <button data-un="${p.id}">Un-choose</button>` : `<button data-ch="${p.id}">Choose</button><button data-drop="${p.id}">Remove</button>`}</div></th>`).join('')}
+      ${s.candidates ? `<th><div class="more">Shortlist more to compare: ${s.candidates.map(esc).join(', ')}</div></th>` : ''}</tr></thead><tbody>${body}</tbody></table></div>`;
+    const sc = el.querySelector('.scroll'); if (ui.scroll) [sc.scrollLeft, sc.scrollTop] = ui.scroll; sc.onscroll = () => ui.scroll = [sc.scrollLeft, sc.scrollTop];
+    const find = k => { const [pid, cid] = k.split(':'); return [P.find(p => p.id === pid), s.criteria.find(c => c.id === cid)]; };
+    el.querySelectorAll('[data-row]').forEach(h => { const tog = () => { ui.open.has(h.dataset.row) ? ui.open.delete(h.dataset.row) : ui.open.add(h.dataset.row); act.draw(); el.querySelector(`[data-row="${h.dataset.row}"]`)?.focus(); };
+      h.onclick = tog; h.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tog(); } }; });
+    el.querySelector('[data-all]').onclick = () => { if (ui.open.size) ui.open.clear(); else rows.forEach(c => ui.open.add(c.id)); act.draw(); };
+    el.querySelectorAll('[data-save]').forEach(b => { const k = b.dataset.save, inp = el.querySelector(`[data-in="${k}"]`); b.onclick = () => act.edit(...find(k), inp.value); inp.onkeydown = e => { if (e.key === 'Enter') act.edit(...find(k), inp.value); }; });
+    el.querySelectorAll('[data-revert]').forEach(b => b.onclick = () => act.revert(...find(b.dataset.revert)));
+    el.querySelectorAll('[data-check]').forEach(b => b.onclick = () => act.check(...find(b.dataset.check)));
+    el.querySelectorAll('[data-checkrow]').forEach(b => b.onclick = () => { const c = s.criteria.find(q => q.id === b.dataset.checkrow); P.slice(1).forEach(p => { const x = cell(p, c); if (x.status !== "filling") { x.prev = JSON.parse(JSON.stringify(x)); x.status = 'filling'; } }); act.check(P[0], c); });
+    el.querySelectorAll('[data-ch]').forEach(b => b.onclick = () => act.choose(P.find(p => p.id === b.dataset.ch)));
+    el.querySelectorAll('[data-un]').forEach(b => b.onclick = () => act.unchoose(P.find(p => p.id === b.dataset.un)));
+    el.querySelectorAll('[data-drop]').forEach(b => b.onclick = () => act.drop(P.find(p => p.id === b.dataset.drop)));
+  }
+});
+</script>
+</body>
+</html>

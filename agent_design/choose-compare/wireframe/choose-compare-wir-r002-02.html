@@ -1,0 +1,143 @@
+<!--
+  id:        r002-02
+  component: choose-compare
+  phase:     wireframe
+  parents:   r001-01, r001-03
+  direction: r001-01's table made lighter, because the band from r001-03 now carries the detail: each cell shows its value, the kind and date of its main source and "+n" for the others, a price's date, and ≠ / ? / yours marks. The left column (criterion, why, r001-03's summary) unfolds the band with the full evidence; clicking a cell unfolds its row and puts the cursor in that product's edit field, so there is one place to read and edit. The column header unfolds or folds all.
+  request:   revision 2
+  inputs:    r001-01 with the added ability of unfolding the evidence banner from r001-03 if clicking on the very left column (shortlisted column)
+  read as:   "the very left column (shortlisted column)" = the criterion column, whose header reads "n shortlisted": a click on a
+             criterion unfolds that row's evidence, a click on the header unfolds or folds all of them.
+  shared:    ../assets/compare-kit.js with ../choose-compare-data.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose compare r002-02 — Lean cells, band for detail</title>
+</head>
+<body>
+<script src="../choose-compare-data.js"></script>
+<script src="../assets/compare-kit.js"></script>
+<script>
+const ID = 'r002-02', TITLE = "Lean cells, band for detail", MODE = 'lean';
+const CSS = `
+  .scroll { position: absolute; inset: 0; overflow: auto; padding-bottom: 70px; }
+  table { border-collapse: separate; border-spacing: 0; min-width: 100%; }
+  th, td { border-bottom: 1px solid var(--hair); border-right: 1px solid var(--fill); vertical-align: top; text-align: left; }
+  thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 12px; border-bottom: 1px solid var(--fg); min-width: 210px; }
+  thead th:first-child, tbody th { position: sticky; left: 0; z-index: 1; background: var(--bg); width: 240px; min-width: 210px; }
+  thead th:first-child { z-index: 3; cursor: pointer; } thead th:first-child:hover, tbody tr.crow th:hover { background: #111; }
+  thead th:first-child small { display: block; font-weight: 400; color: var(--mute); font-size: 11px; margin-top: 4px; }
+  thead th .acts { display: flex; gap: 4px; margin-top: 6px; } thead th .acts button { font-size: 11px; padding: 1px 7px; }
+  thead th.chosen { border: 2px solid var(--fg); border-bottom-width: 1px; } thead th .pn { font-size: 14px; }
+  thead th.filling .pn::after { content: ' · researching…'; font-weight: 400; font-size: 11px; color: var(--mute); }
+  tbody tr.crow th { padding: 10px 12px; font-weight: 400; cursor: pointer; }
+  tbody th .tw { display: inline-block; width: 14px; } tbody th .why, tbody th .sum { display: block; font-size: 11px; margin-left: 14px; }
+  tbody th .why { color: var(--faint); } tbody th .sum { color: var(--mute); margin-top: 3px; }
+  tr.grp th { background: var(--fill); padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); cursor: default; }
+  tr.irr th, tr.irr td { color: var(--faint); }
+  tr.crow.open > * { border-bottom-color: transparent; }
+  td { padding: 9px 12px; cursor: pointer; max-width: 300px; } td:hover { background: var(--fill); }
+  td.chosen { border-left: 2px solid var(--fg); border-right: 2px solid var(--fg); }
+  td .v { display: block; font-size: 14px; } td .v.none { color: var(--mute); font-style: italic; font-size: 13px; }
+  td .srcs { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 5px; font-size: 11px; color: var(--mute); align-items: center; }
+  td .note, .ev .note { display: block; margin-top: 5px; font-size: 11px; border-left: 2px solid var(--fg); padding-left: 6px; }
+  td.disagree .v::before { content: '≠ '; } td.none .v::before { content: '? '; }
+  td.filling { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--fill) 6px 12px); color: var(--mute); }
+  td .room { display: block; font-size: 11px; color: var(--mute); margin-top: 4px; }
+  td .price { display: block; font-size: 11px; color: var(--mute); }
+  td.edit-open { outline: 2px solid var(--fg); outline-offset: -2px; background: var(--fill); cursor: default; }
+  .ed { margin-top: 8px; display: grid; gap: 6px; } .ed .row { display: flex; gap: 6px; flex-wrap: wrap; } .ed button { font-size: 11px; padding: 1px 7px; }
+  tr.ev > * { background: var(--fill); border-bottom: 1px solid var(--fg); padding: 10px 12px 14px; cursor: default; }
+  tr.ev th { font-weight: 400; font-size: 12px; color: var(--mute); } tr.ev th button { font-size: 11px; margin-top: 6px; }
+  .src { display: grid; gap: 1px; padding: 5px 0; border-bottom: 1px dashed var(--hair); font-size: 12px; } .src:last-of-type { border-bottom: 0; }
+  .src .meta { font-size: 11px; color: var(--mute); display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .src.sponsored { color: var(--faint); } .src.sponsored .sv { text-decoration: line-through; }
+  .yours { font-size: 12px; margin-bottom: 6px; }
+  td.inplace { background: var(--fill); cursor: default; } td.inplace .v { margin-bottom: 4px; }
+  .more { border: 1px dashed var(--hair); padding: 12px; color: var(--mute); min-width: 200px; font-weight: 400; }`;
+
+const day = d => /^\d{4}-\d\d-\d\d$/.test(d) ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : d;
+const RANK = { spec: 0, measured: 1, opinion: 2, model: 3, sponsored: 4 };
+COMPARE_KIT.mount({
+  id: ID, title: TITLE, css: CSS,
+  render(el, { s, rows, cell, act, esc, kindLabel }) {
+    const ui = act.ui, P = s.products; ui.open = ui.open || new Set();
+    const isOpen = c => ui.open.has(c.id);
+    const summary = c => {
+      const xs = P.map(p => cell(p, c)), n = {}; xs.forEach(x => x.sources.forEach(z => n[z.kind] = (n[z.kind] || 0) + 1));
+      const parts = ['spec', 'measured', 'opinion', 'model'].filter(k => n[k]).map(k => `${n[k]} ${kindLabel[k]}`);
+      const cnt = st => xs.filter(x => x.status === st).length;
+      return [...parts, cnt('disagree') && `≠ ${cnt('disagree')}`, cnt('none') && `? ${cnt('none')}`, cnt('edited') && `✎ ${cnt('edited')}`, cnt('filling') && `… ${cnt('filling')}`].filter(Boolean).join(' · ') || 'no sources yet';
+    };
+    const tags = x => {
+      const used = x.sources.filter(z => z.kind !== 'sponsored'), spons = x.sources.filter(z => z.kind === 'sponsored');
+      if (MODE !== 'band') { const m = [...used].sort((a, b) => RANK[a.kind] - RANK[b.kind])[0];
+        return `<span class="srcs">${m ? `<span class="k" data-k="${m.kind}">${kindLabel[m.kind]}</span><span>${esc(day(m.date))}</span>` : ''}${used.length + spons.length > 1 ? `<span>+${used.length + spons.length - 1}</span>` : ''}</span>`; }
+      return `<span class="srcs">${used.map(z => `<span class="k" data-k="${z.kind}">${kindLabel[z.kind]}</span><span>${esc(z.name)} · ${esc(day(z.date))}</span>`).join('')}
+        ${spons.map(z => `<span class="k" data-k="sponsored">sponsored</span><span>${esc(z.name)}: not used</span>`).join('')}</span>`;
+    };
+    const src = z => `<div class="src ${z.kind}"><span class="sv">${esc(z.value || '—')}</span><span class="meta"><span class="k" data-k="${z.kind}">${kindLabel[z.kind]}</span>${esc(z.name)} · read ${esc(day(z.date))}${z.kind === 'sponsored' ? ' · not used' : ''}</span></div>`;
+    const editor = (p, c, x) => { const key = `${p.id}:${c.id}`;
+      return `<div class="ed"><input class="edit" data-in="${key}" value="${esc(x.status === 'edited' ? x.value : '')}" placeholder="your value…" aria-label="Your value for ${esc(p.name)}, ${esc(c.name)}">
+        <div class="row"><button data-save="${key}">Save as mine</button>${x.status === 'edited' ? `<button data-revert="${key}">Revert to the room's</button>` : ''}${s.web && x.status !== 'filling' ? `<button data-check="${key}">Check this</button>` : ''}${MODE === 'band' && ui.edit === key ? '<button data-x>Close</button>' : ''}</div></div>`; };
+    const evidence = (p, c, x) => `${x.status === 'edited' ? `<div class="yours"><span class="k" data-k="user">yours</span> ${esc(x.value)}${x.user.note ? ' · ' + esc(x.user.note) : ''}<br><span class="mute">the room's: ${esc(x.room)}</span></div>` : ''}
+        ${x.note ? `<div class="note">${esc(x.note)}</div>` : ''}
+        ${x.status === 'filling' ? '<div class="mute">Researching: sources appear here as they are read.</div>' : x.sources.map(src).join('') || '<div class="mute">No source.</div>'}
+        ${x.kind === 'price' ? '<div class="mute" style="font-size:11px;margin-top:4px">A price is an indication at that date, not a promise.</div>' : ''}${editor(p, c, x)}`;
+    const value = x => x.status === 'filling' ? '<span class="v none">Researching…</span>' : x.status === 'none' ? '<span class="v none">No source found</span>' : `<span class="v">${esc(x.value)}</span>`;
+    const td = (p, c) => {
+      const x = cell(p, c), key = `${p.id}:${c.id}`, ch = p.state === 'chosen' ? 'chosen' : '';
+      if (MODE === 'inplace' && isOpen(c)) return `<td class="${x.status} ${ch} inplace" data-cell="${key}">${value(x)}${evidence(p, c, x)}</td>`;
+      const full = MODE === 'band';
+      let b = value(x);
+      if (x.status !== 'filling') {
+        if (x.kind === 'price' && x.sources[0]) b += `<span class="price">${full ? 'an indication, not a promise · ' : ''}seen ${esc(day(x.sources[0].date))}</span>`;
+        if (x.status === 'edited') b += `<span class="srcs"><span class="k" data-k="user">yours</span>${full ? `<span>${esc(day(x.user.date))}</span>` : ''}</span>${full ? `<span class="room">The room's value: <s>${esc(x.room)}</s></span>` : ''}`;
+        if (full && x.note && x.status !== 'edited') b += `<span class="note">${esc(x.note)}</span>`;
+        if (x.status !== 'edited' || full) b += tags(x);
+      }
+      const ed = MODE === 'band' && ui.edit === key;
+      return `<td class="${x.status} ${ch} ${ed ? 'edit-open' : ''}" data-cell="${key}" tabindex="0">${b}${ed ? editor(p, c, x) : ''}</td>`;
+    };
+    let lastState = null;
+    const body = rows.map(c => { let g = ''; if (c.state !== lastState) { lastState = c.state; g = `<tr class="grp"><th colspan="${P.length + 1}">${{ must: 'Must', nice: 'Nice to have', irrelevant: 'Irrelevant' }[c.state]}</th></tr>`; }
+      const open = isOpen(c);
+      const head = `<th data-row="${c.id}" tabindex="0" aria-expanded="${open}"><span class="tw">${open ? '▾' : '▸'}</span>${esc(c.name)}${c.filling ? ' <span class="mute">· researching…</span>' : ''}<span class="why">${esc(c.why)}</span><span class="sum">${summary(c)}</span>
+        ${open && MODE === 'inplace' && s.web ? `<button data-checkrow="${c.id}" style="font-size:11px;margin:8px 0 0 14px">Check this row</button>` : ''}</th>`;
+      const band = open && MODE !== 'inplace' ? `<tr class="ev"><th>Evidence for ${esc(c.name)}${s.web ? `<br><button data-checkrow="${c.id}">Check this row</button>` : ''}</th>${P.map(p => `<td class="${p.state === 'chosen' ? 'chosen' : ''}">${evidence(p, c, cell(p, c))}</td>`).join('')}</tr>` : '';
+      return g + `<tr class="crow ${c.state === 'irrelevant' ? 'irr' : ''} ${open ? 'open' : ''}">${head}${P.map(p => td(p, c)).join('')}</tr>${band}`; }).join('');
+    const allOpen = rows.length && rows.every(isOpen);
+    el.innerHTML = `<div class="scroll"><table><thead><tr><th data-all tabindex="0" aria-label="${allOpen ? 'Fold' : 'Unfold'} the evidence of every criterion">${P.length} shortlisted<small>${allOpen ? '▾ fold all evidence' : '▸ unfold all evidence'}</small></th>${P.map(p => `<th class="${p.state === 'chosen' ? 'chosen' : ''} ${p.filling ? 'filling' : ''}"><span class="pn">${p.state === 'chosen' ? '✓ ' : ''}<b>${esc(p.name)}</b></span>
+      <div class="acts">${p.state === 'chosen' ? '<b>Chosen</b><button data-un="' + p.id + '">Un-choose</button>' : `<button data-ch="${p.id}">Choose</button><button data-drop="${p.id}">Remove</button>`}</div></th>`).join('')}
+      ${s.candidates ? `<th><div class="more">Shortlist more to compare: ${s.candidates.map(esc).join(', ')} are candidates in the board.</div></th>` : ''}</tr></thead><tbody>${body}</tbody></table></div>`;
+    const sc = el.querySelector('.scroll'); if (ui.scroll) [sc.scrollLeft, sc.scrollTop] = ui.scroll; sc.onscroll = () => ui.scroll = [sc.scrollLeft, sc.scrollTop];
+    const find = k => { const [pid, cid] = k.split(':'); return [P.find(p => p.id === pid), s.criteria.find(c => c.id === cid)]; };
+    const key = (e, f) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); f(); } };
+    el.querySelectorAll('[data-row]').forEach(h => { const tog = () => { ui.open.has(h.dataset.row) ? ui.open.delete(h.dataset.row) : ui.open.add(h.dataset.row); act.draw(); el.querySelector(`[data-row="${h.dataset.row}"]`)?.focus(); };
+      h.onclick = e => { if (!e.target.closest('button')) tog(); }; h.onkeydown = e => key(e, tog); });
+    const all = el.querySelector('[data-all]'), togAll = () => { if (allOpen) ui.open.clear(); else rows.forEach(c => ui.open.add(c.id)); act.draw(); };
+    all.onclick = togAll; all.onkeydown = e => key(e, togAll);
+    el.querySelectorAll('td[data-cell]').forEach(t => { const k = t.dataset.cell;
+      const go = () => {
+        if (MODE === 'band') { ui.edit = k; act.draw(); el.querySelector(`[data-in="${k}"]`)?.focus(); return; }
+        const [, c] = find(k); ui.open.add(c.id); act.draw(); el.querySelector(`[data-in="${k}"]`)?.focus();
+      };
+      t.onclick = e => { if (e.target.closest('.ed, .src, button')) return; if (t.classList.contains('inplace')) return; go(); }; t.onkeydown = e => { if (!e.target.closest('.ed')) key(e, go); }; });
+    el.querySelectorAll('[data-save]').forEach(b => { const k = b.dataset.save, inp = el.querySelector(`[data-in="${k}"]`), save = () => { ui.edit = null; act.edit(...find(k), inp.value); };
+      b.onclick = save; inp.onkeydown = e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { ui.edit = null; act.draw(); } }; });
+    el.querySelectorAll('[data-revert]').forEach(b => b.onclick = () => { ui.edit = null; act.revert(...find(b.dataset.revert)); });
+    el.querySelectorAll('[data-check]').forEach(b => b.onclick = () => { ui.edit = null; act.check(...find(b.dataset.check)); });
+    el.querySelector('[data-x]')?.addEventListener('click', () => { ui.edit = null; act.draw(); });
+    el.querySelectorAll('[data-checkrow]').forEach(b => b.onclick = e => { e.stopPropagation(); const c = s.criteria.find(q => q.id === b.dataset.checkrow);
+      P.slice(1).forEach(p => { const x = cell(p, c); if (x.status !== 'filling') { x.prev = JSON.parse(JSON.stringify(x)); x.status = 'filling'; } }); act.check(P[0], c); });
+    el.querySelectorAll('[data-ch]').forEach(b => b.onclick = () => act.choose(P.find(p => p.id === b.dataset.ch)));
+    el.querySelectorAll('[data-un]').forEach(b => b.onclick = () => act.unchoose(P.find(p => p.id === b.dataset.un)));
+    el.querySelectorAll('[data-drop]').forEach(b => b.onclick = () => act.drop(P.find(p => p.id === b.dataset.drop)));
+  }
+});
+</script>
+</body>
+</html>

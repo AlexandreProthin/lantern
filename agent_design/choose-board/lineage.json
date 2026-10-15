@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "concept": "choose-board",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-14T16:58:11.471994+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-board",
+        "revision": 2,
+        "saved_at": "2026-10-14T16:52:39.796519+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "Decision board in Survey (CR-10, CR-14): a slim strip next to the graph, always visible, with a few counters and what is still missing before a decision; a click opens it full height; the reading panel stays for nodes. It collects the needs card (editable at any time, CR-31), the criteria ranked must / nice / irrelevant (CR-21, CR-23), the shortlist and the pick (CR-22), the subject status exploring / decided / bought (CR-24), and when it looks complete it offers the recommendation (CR-61; what counts as complete is decided here). Hard cases: a new subject with nothing settled, a nearly complete board, a long needs list, a chosen product, bought."
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-14T17:17:43.831581+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-board",
+        "revision": 3,
+        "saved_at": "2026-10-14T17:14:31.131874+00:00",
+        "based_on_round": 1,
+        "selected_ids": [
+          "r001-01"
+        ],
+        "next": {
+          "phase": "form",
+          "mode": "combine",
+          "prompt": "accepted"
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-14T17:34:34.873218+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-board",
+        "revision": 4,
+        "saved_at": "2026-10-14T17:32:53.264921+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r001-01",
+          "r002-01"
+        ],
+        "next": {
+          "phase": "type",
+          "mode": "combine",
+          "prompt": "r002-01, next is type."
+        }
+      },
+      "node_ids": [
+        "r003-01",
+        "r003-02",
+        "r003-03"
+      ]
+    },
+    {
+      "number": 4,
+      "created_at": "2026-10-14T17:41:10.032315+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-board",
+        "revision": 5,
+        "saved_at": "2026-10-14T17:38:45.900898+00:00",
+        "based_on_round": 3,
+        "selected_ids": [
+          "r001-01",
+          "r002-01",
+          "r003-01"
+        ],
+        "next": {
+          "phase": "color",
+          "mode": "combine",
+          "prompt": ""
+        }
+      },
+      "node_ids": [
+        "r004-01",
+        "r004-02",
+        "r004-03"
+      ]
+    },
+    {
+      "number": 5,
+      "created_at": "2026-10-14T18:24:30.995979+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "choose-board",
+        "revision": 6,
+        "saved_at": "2026-10-14T18:21:06.800384+00:00",
+        "based_on_round": 4,
+        "selected_ids": [
+          "r001-01",
+          "r002-01",
+          "r003-01",
+          "r004-03"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": ""
+        }
+      },
+      "node_ids": [
+        "r005-01",
+        "r005-02",
+        "r005-03"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "wireframe/choose-board-wir-r001-01.html",
+      "title": "Counter rail",
+      "direction": "Counter rail. A 76 px rail between the graph and the reading panel (where the divider is) stacks four counters (needs, criteria, shortlist, pick), each marked when something is missing there, the status, a missing count and Recommend. Hovering a counter lists what is missing; a click opens the board in place of the graph, full height, as a two-column sheet (needs card | criteria by rank) over a shortlist row. The panel never moves.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "wireframe/choose-board-wir-r001-02.html",
+      "title": "Journey band",
+      "direction": "Journey band. A 56 px band across the top of the graph shows the decision as five stations on a line: Needs → Criteria → Shortlist → Compare → Pick, each solid when settled or hollow with a short \"what is missing\" under it; a sixth end station, Recommend, lights up when the board is complete. A click on a station drops the board down over the graph, full height, as five columns in the same order, with the clicked one in front. The panel never moves.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "wireframe/choose-board-wir-r001-03.html",
+      "title": "Next step",
+      "direction": "Next step. A 200 px column on the graph's left edge leads with readiness (five checks: needs answered, criteria ranked, a must, two shortlisted, Compare filled) and the one next missing thing, actionable right there: answer a need inline, rank a criterion, shortlist a candidate, fill Compare, or, when complete, get the recommendation. Counters sit below. \"Open board\" widens it over the graph into a single-column decision sheet: checklist, needs card, one ranked criteria list, shortlist with a pick. The panel never moves.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-01",
+      "parents": [
+        "r001-01"
+      ],
+      "file": "form/choose-board-frm-r002-01.html",
+      "title": "Quiet numerals",
+      "direction": "Low density, hierarchy by scale. From r001-01: the whole structure. Rail 88 px with large light numerals and small tracked labels, no rules between counters, only space; a dot left of a numeral marks something missing. The open sheet is airy: a light 22 px title, the missing items as one quiet line, needs as question-over-answer pairs, criteria under large group names, products as wide rows. One vertical hairline between the two columns.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r002-02",
+      "parents": [
+        "r001-01"
+      ],
+      "file": "form/choose-board-frm-r002-02.html",
+      "title": "Dense ledger",
+      "direction": "High density, hierarchy by alignment. From r001-01: the whole structure. A compact 64 px rail with 15 px semibold numerals and tiny labels between hairlines; a 2 px bar on the left edge marks a counter with something missing. The open sheet reads as a ledger: 12 px text, 26 px rows, a hairline grid, grey header bars, needs as a two-column table, criteria as rows under group labels, products as table rows (name, fact, state, actions). Everything visible without scrolling on a laptop.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r002-03",
+      "parents": [
+        "r001-01"
+      ],
+      "file": "form/choose-board-frm-r002-03.html",
+      "title": "Tonal panes",
+      "direction": "Hierarchy by grey surfaces, no lines. From r001-01: the whole structure. The rail is a raised grey pane whose counters are rounded tiles; a missing counter carries a light top edge. The open sheet sits on a darker ground with rounded cards in a lighter grey, the missing items in a pale band across the top, Recommend as the one light filled button, and the chosen product as an inverted (light) card.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r001-01",
+        "r002-01"
+      ],
+      "file": "type/choose-board-typ-r003-01.html",
+      "title": "Display numerals, sentence case",
+      "direction": "From r002-01 (form) on r001-01 (structure). Uses the app's own type moves: rail numerals and the sheet title in Segoe UI Variable Display at 350 (the weight of the Welcome title and the Gallery heading), labels and questions in Variable Small, body in Variable Text. Every label in sentence case like the app (\"Needs\", not \"NEEDS\"); scale 11 / 12 / 13 / 15 / 18 / 24 / 30.",
+      "phase": "type",
+      "tag": "typ"
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r001-01",
+        "r002-01"
+      ],
+      "file": "type/choose-board-typ-r003-02.html",
+      "title": "One face, weight-led",
+      "direction": "From r002-01 (form) on r001-01 (structure). Only Segoe UI Variable Text, as in the reading panel: hierarchy comes from weight, not size. Numerals 22 px semibold, title 18 px semibold, group names 13 px semibold, everything else 12–14 px regular; labels in sentence case, muted rather than small. The calmest and closest to the panel next to it; a narrow scale 11 / 12 / 13 / 14 / 18 / 22.",
+      "phase": "type",
+      "tag": "typ"
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r001-01",
+        "r002-01"
+      ],
+      "file": "type/choose-board-typ-r003-03.html",
+      "title": "Hairline numerals, tracked labels",
+      "direction": "From r002-01 (form) on r001-01 (structure). The furthest from the panel: the numerals become instrument-like, Segoe UI Variable Display at 200, 36 px, with the denominator in Small; every label stays small uppercase and tracked as in r002-01, now in Variable Small at 600; the sheet title Display 200 at 30 px; counts and facts in tabular figures. Wide scale 10 / 12 / 14 / 16 / 20 / 30 / 36.",
+      "phase": "type",
+      "tag": "typ"
+    },
+    {
+      "id": "r004-01",
+      "parents": [
+        "r001-01",
+        "r002-01",
+        "r003-01"
+      ],
+      "file": "color/choose-board-col-r004-01.html",
+      "title": "Ink, teal for decisions",
+      "direction": "From r001-01 (structure), r002-01 (form) and r003-01 (type), in the accepted Choose palette over the backdrop, on glass. Text stays ink and ink-mute; teal appears only where something is decided or ready: the filled Recommend when the board is complete, a decided or bought status, the chosen product, the must criteria's group name. A missing counter carries a pale --node-lit dot. Toggles look like Learn's tone picker (surface-2, node-lit).",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r001-01",
+        "r002-01",
+        "r003-01"
+      ],
+      "file": "color/choose-board-col-r004-02.html",
+      "title": "Node light",
+      "direction": "From r001-01, r002-01 and r003-01, in the Choose palette on glass. The board speaks the graph's language: a counter with something missing shows its numeral in --node-open with a dotted ring, like an open node; a settled one turns --node-understood teal. When the board is complete, Recommend glows like a lit node (surface-2, node-lit, glow-near and glow-far). Open needs carry an open node's dotted circle, must criteria a solid teal dot, nice a lit ring, irrelevant a faded dotted ring; the chosen product is a lit card.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r001-01",
+        "r002-01",
+        "r003-01"
+      ],
+      "file": "color/choose-board-col-r004-03.html",
+      "title": "Teal spine",
+      "direction": "From r001-01, r002-01 and r003-01, in the Choose palette on glass. Teal carries the board: the rail has a 2 px teal spine on its graph side and teal numerals for settled counters; a counter with something missing keeps ink numerals with a --focus dot. Section labels and the Must group are teal, missing items are underlined in --focus. Recommend, once ready, is filled teal with a far glow; the chosen product is an inverted teal card (accent ground, accent-ink text).",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r005-01",
+      "parents": [
+        "r001-01",
+        "r002-01",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/choose-board-mot-r005-01.html",
+      "title": "Quiet fades",
+      "direction": "Everything still and quick: only opacity moves, nothing travels or scales. The board fades in over the graph in 160 ms and out in 120 ms; a changed counter cross-fades its numeral (200 ms); Recommend, a new status and the chosen card fade up to their state (200–240 ms). No glow, no backdrop reaction. The closest reading of RS-33's calm frame.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-02",
+      "parents": [
+        "r001-01",
+        "r002-01",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/choose-board-mot-r005-02.html",
+      "title": "Unfold from the spine",
+      "direction": "Spatial, and the teal spine leads. The board unfolds leftward out of the rail (a 320 ms reveal from its edge, decelerating), its sections arriving 40 ms apart, and folds back into the rail in 240 ms. A changed counter rolls: the old value slides up and out as the new one rises in (280 ms). When the board becomes complete, a light runs up the spine (600 ms) and Recommend fills with teal from the left; the chosen card fills the same way (360 ms); a new status slides in.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-03",
+      "parents": [
+        "r001-01",
+        "r002-01",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/choose-board-mot-r005-03.html",
+      "title": "Lantern light",
+      "direction": "Light, not movement, the language of the graph and the backdrop. The board opens with a soft fade and a 1.5 % settle (240 ms). A counter that changes glows briefly as it settles to teal (900 ms). Becoming complete sends one slow halo around Recommend (1.2 s, once) and warms the backdrop at that spot, as a lit node does; choosing a product and a new status do the same at the card and the chip. Each light is a single event, never a loop.",
+      "phase": "motion",
+      "tag": "mot"
+    }
+  ]
+}
