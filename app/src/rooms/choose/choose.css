@@ -1,0 +1,23 @@
+/* The Choose room: Learn's house with a teal lamp (CR-70, agent_design/choose-palette/RECIPE.md). */
+:root[data-room='choose'] {
+  --bg: #101827;
+  --surface: #172132;
+  --surface-2: #1f3034;
+  --ink: #f3e9dc;
+  --ink-mute: #aeb3bf;
+  --line: #3b4558;
+  --accent: #5cc6bd;
+  --accent-ink: #0d211f;
+  --focus: #b6efe6;
+  --node-open: #969ca7;
+  --node-lit: #c8f3ea;
+  --node-understood: #5cc6bd;
+  --glow-near: rgba(118, 222, 206, 0.32);
+  --glow-far: rgba(84, 204, 188, 0.15);
+  --path-muted: #3e625d;
+  --code: #0c1320;
+  --error: #d86a5a;
+  --error-ink: #f0a598;
+  color-scheme: dark;
+}
+:root[data-room='choose'] { --code-keyword:#5cc6bd; --code-string:#a6d189; --code-number:#d4a5e8; --code-function:#8cc4ec; --code-type:#7fd4c8; --code-attr:#f2a97f; --code-comment:#7d8698; }

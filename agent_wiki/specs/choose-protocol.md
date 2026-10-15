@@ -80,11 +80,15 @@ puts in `data` and which values it allows (DM-66).
 | `check` | *Check this* on a node, a reply, a cell or a row | yes; hidden when off (CR-44) | a model turn with the verdict; refreshed facts or cells |
 | `recommend` | *Recommend* on the board or the rail | no | a model turn on the subject node with the pick |
 
+  *(B4 slice 3, agreed by the user 2026-10-15.)* *Explain* stores its text as the node's content. *Find products* on the subject needs the subject
+  lit (after `intro`).
 - **CP-11** With *Use the web* off, `find` and `fill` still run, from the model's knowledge, and
   every source they return is `kind: "model"` with the knowledge date (CR-44) *(round 7, q-r7-rules)*.
 - **CP-12** `recommend` never chooses: the panel shows the answer with *Choose <product>* when it
   names one. Its answer is a model turn on the subject node, so it stays readable and editable like
-  any reply (CR-61, *the answer appears in the reading panel*).
+  any reply (CR-61, *the answer appears in the reading panel*). *(B4 slice 3, agreed by the user 2026-10-15.)* The recommended product behind *Choose
+  <product>* is kept for the session only: after a restart the answer is still in the subject's dialogue,
+  without the button.
 - **CP-13** A `check` never overwrites the user's own value (CP-5 `user`); it updates the room's
   value beside it, and the turn says what changed. On a concept or a reply, the verdict is the turn.
 
@@ -180,7 +184,8 @@ Slots as TP-12: each template ends with its required ending; blocks are those of
   3. `<cells>`: only cells listed in TARGET are written; others are ignored. A `user` value is
      never touched (CP-13).
   4. `<need>` is not applied: the panel shows *Add to needs: <question> — <answer>* with *Add* and
-     *Ignore*; *Add* creates an `answered` need under the subject, `createdBy: user`.
+     *Ignore*; *Add* creates an `answered` need under the subject, `createdBy: user`, titled with the
+     question *(B4 slice 3, agreed by the user 2026-10-15.)*.
   5. `<recommend>`: `product` must be a shortlisted or chosen product's id, otherwise it is read
      as `null`. The turn is stored; nothing changes state. *(B4 slice 2, agreed by the user 2026-10-15.)* A missing or invalid `confidence` reads `low`;
      `missing` keeps at most 8 entries of 120 characters.
@@ -261,6 +266,9 @@ Slots as TP-12: each template ends with its required ending; blocks are those of
   *nothing found* cell counts as filled, *(B4 slice 2, agreed by the user 2026-10-15.)*). Queued cells are coalesced
   into `fill` calls of at most one product column or one criterion row, oldest first, shown
   striped (*Researching…*). Cancel stops the running call and drops the queue.
+  *(B4 slice 3, agreed by the user 2026-10-15.)* Fills are queued per product column; ranking a criterion queues its row as one group; *Fill
+  Compare* queues every empty cell, column by column. A failed fill shows the error with *Try again*,
+  which queues its cells again.
 - **CP-41** A **research lane** *(round 7, q-r7-fill)*: one `fill` call at a time per subject runs alongside the one
   generation of LR-40 (amended for Choose, CR-80). A fill writes only cells, so it never blocks *Light it up*,
   a reply or *Recommend*; it is applied atomically and checked against the graph when it lands (LR-1,

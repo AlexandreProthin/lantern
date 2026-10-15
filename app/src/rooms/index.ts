@@ -6,6 +6,9 @@ export const rooms: readonly RoomDefinition[] = [learnRoom];
 /** Development builds opened with ?sampleRoom add a sample second room, to test the frame with
  * two rooms (RS-5, RS-12, RS-23). Release builds drop the import: import.meta.env.DEV is false there. */
 export async function roomsWithDevSample(): Promise<readonly RoomDefinition[]> {
-  if (import.meta.env.DEV && new URLSearchParams(location.search).has('sampleRoom')) return [...rooms, (await import('./sample/definition')).sampleRoom];
+  const query = new URLSearchParams(location.search);
+  if (import.meta.env.DEV && query.has('sampleRoom')) return [...rooms, (await import('./sample/definition')).sampleRoom];
+  /** v0.2.0 B4: the Choose room is reachable in development builds with ?chooseRoom until its acceptance (B5). */
+  if (import.meta.env.DEV && query.has('chooseRoom')) return [...rooms, (await import('./choose/definition')).chooseRoom];
   return rooms;
 }
