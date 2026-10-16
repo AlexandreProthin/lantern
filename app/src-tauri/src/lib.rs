@@ -17,7 +17,7 @@ pub fn run() {
             commands::delete_subject, commands::subject_thumbnail, commands::reveal_subject, commands::subject_file, commands::import_poc, provider::commands::generate,
             provider::commands::cancel_generation, provider::commands::provider_status,
             commands::load_settings, commands::save_settings, commands::open_external,
-            commands::pick_library, commands::validate_library, commands::switch_library, commands::reveal_library, commands::save_window_state,
+            commands::pick_library, commands::validate_library, commands::switch_library, commands::reveal_library, commands::save_window_state, commands::snap_layouts,
             updates::check_update, updates::install_update, updates::release_update])
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             use tauri::Manager;
