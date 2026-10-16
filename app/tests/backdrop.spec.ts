@@ -61,3 +61,25 @@ test('RS-34: a still frame in reduced motion, and Appearance → Backdrop off re
   await expect(page.locator('.panel').getByRole('button', { name: 'Mechanism 1', exact: false })).toBeVisible();
   await expect(page.locator('[data-testid=backdrop]')).toHaveCount(0);
 });
+
+/** Red share minus blue share of the light above the background, over the whole light canvas. */
+const warmth = (page: Page) => page.evaluate(() => {
+  const haze = document.querySelector<HTMLCanvasElement>('[data-testid=backdrop] canvas')!;
+  const d = haze.getContext('2d')!.getImageData(0, 0, haze.width, haze.height).data;
+  let r = 0, b = 0; for (let i = 0; i < d.length; i += 16) { r += Math.max(0, d[i] - 16); b += Math.max(0, d[i + 2] - 39); }
+  return (r - b) / (r + b || 1);
+});
+
+test('RS-34: a room switch repaints the backdrop in the new room’s colours, both ways', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('[data-testid=backdrop]')).toHaveCount(1);
+  await expect(page.locator('html')).toHaveAttribute('data-room', 'learn');
+  await expect.poll(() => warmth(page)).toBeGreaterThan(0);
+  const chip = page.locator('header').getByRole('button', { name: 'Learn', exact: true });
+  await chip.click(); await page.getByRole('menuitemradio', { name: 'Choose' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-room', 'choose');
+  await expect.poll(() => warmth(page)).toBeLessThan(0);
+  await page.locator('header').getByRole('button', { name: 'Choose', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'Learn' }).click();
+  await expect.poll(() => warmth(page)).toBeGreaterThan(0);
+});

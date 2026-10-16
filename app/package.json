@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "tauri": "tauri",
-    "installer:preview": "tauri build --bundles nsis --config src-tauri/tauri.preview.conf.json",
+    "installer:preview": "node scripts/installer-preview.mjs",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
     "eval": "tsx evals/run.ts",

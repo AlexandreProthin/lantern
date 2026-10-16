@@ -32,6 +32,8 @@ export const backdropMotion = {
   PRESET_RATE: .7, PAN_RATE: 2.2, POINTER_RATE: .9, LAMP_RATE: .7,
   LIT_RISE_S: 1.4, LIT_FADE_S: 3.8, LIT_FLARE: .2, LIT_LIGHT: .7, LIT_POOL_ALPHA: .05, LIT_PUSH_PX: 6, LIT_REACH: .18,
   ZOOM_MIN: .5, ZOOM_MAX: 2.5,
+  /** Covers the CSS room-token fade (.45s in app.css) with a frame to spare. */
+  ROOM_FADE_MS: 520,
   /** The lights' pan parallax is bounded to this many widths, so a long pan never sends them off screen. */
   PAN_LIMIT: 1
 } as const;
@@ -112,7 +114,7 @@ export class Backdrop {
   private pan = { x: 0, y: 0, k: 1 }; private sPan = { x: 0, y: 0, k: 1 };
   private pointerAt = { x: .5, y: .5 }; private sPointer = { x: .5, y: .5 }; private lamp = { x: 0, y: 0 };
   private lits: { x: number; y: number; t0: number }[] = [];
-  private started = false; private frame = 0; private lastDraw = 0; private w = 1; private h = 1; private ratio = 1;
+  private started = false; private fadeUntil = 0; private frame = 0; private lastDraw = 0; private w = 1; private h = 1; private ratio = 1;
   private colors!: Colors; private sprites!: { warm: HTMLCanvasElement; cool: HTMLCanvasElement };
   private readonly motes = createMotes();
   constructor(private haze: HTMLCanvasElement, private dust: HTMLCanvasElement, private reduced: () => boolean) {}
@@ -125,10 +127,11 @@ export class Backdrop {
     else if (document.hidden) this.halt();
     else if (!this.frame) { this.lastDraw = performance.now() - backdropMotion.FRAME_MS; this.frame = requestAnimationFrame(this.tick); }
   }
-  /** The room changed: its tokens repaint the haze, lights and motes. */
+  /** The room changed: its tokens repaint the haze, lights and motes. They fade in CSS
+   * (data-room-fade), so the loop keeps reading them until that fade is over. */
   recolor() {
     if (!this.started) return;
-    this.readColors();
+    this.readColors(); this.fadeUntil = performance.now() + backdropMotion.ROOM_FADE_MS;
     if (this.reduced()) this.refresh();
   }
   setSpace(space: string) {
@@ -176,6 +179,7 @@ export class Backdrop {
     this.frame = requestAnimationFrame(this.tick);
     if (now - this.lastDraw < backdropMotion.FRAME_MS - 1) return;
     const dt = Math.min(backdropMotion.MAX_DT_S, (now - this.lastDraw) / 1000); this.lastDraw = now;
+    if (now < this.fadeUntil) this.readColors();
     this.advance(dt); this.draw(now / 1000);
   };
   private advance(dt: number) {

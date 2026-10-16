@@ -227,6 +227,7 @@
     roomMenu=false;
     if (id===room.id || !rooms.some(r => r.id===id)) return;
     openByRoom[room.id]=session?.subject.id ?? null;
+    document.documentElement.dataset.roomFade='on';
     roomId=id; settings.ui.lastRoom=id; preferencesChanged();
     const keep=openByRoom[id]; session=(keep && owned.get(keep)?.session) || null;
     space='welcome'; readonlyFile=null; subjectMenu=false; revision++;
@@ -316,7 +317,7 @@
 </div>{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
-{#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts:''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
+{#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts(rooms.map(r=>r.name)):''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>
   :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; } header { height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid var(--glass-line); background:var(--glass); backdrop-filter:var(--glass-blur); }
   :global(#app) {display:flex;flex-direction:column;} header {flex-shrink:0;} .banner {flex-shrink:0;}

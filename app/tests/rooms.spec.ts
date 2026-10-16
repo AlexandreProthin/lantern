@@ -36,7 +36,9 @@ test('RS-12/23/10: the room menu and Ctrl+Shift switch rooms; each keeps its sub
   await expect(page.locator('html')).toHaveAttribute('data-room', 'sample');
   await expect(page.locator('header .room')).toHaveText('Sample');
   await expect(page.getByRole('list', { name: 'Sample subjects' }).getByRole('listitem')).toHaveText(['Printer']);
-  expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())).toBe('#4fc1c0');
+  // The room tokens fade (registered colours), so the value settles as rgb() a moment later.
+  await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())).toBe('rgb(79, 193, 192)');
+  await expect(page).toHaveTitle('Lantern · Sample');
   // Ctrl+Shift+1 returns to Learn's Welcome; Study still shows the subject Learn had open.
   await page.keyboard.press('Control+Shift+1');
   await expect(page.locator('html')).toHaveAttribute('data-room', 'learn');

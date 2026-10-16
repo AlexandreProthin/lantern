@@ -20,6 +20,21 @@
   color-scheme: dark;
 }
 
+/* Room switch: the tokens that differ between rooms are registered colours, so they fade
+   instead of snapping. The frame sets data-room-fade on the first switch, never at launch. */
+@property --surface-2 { syntax:'<color>'; inherits:true; initial-value:#302b2a; }
+@property --accent { syntax:'<color>'; inherits:true; initial-value:#e8b66e; }
+@property --accent-ink { syntax:'<color>'; inherits:true; initial-value:#211b14; }
+@property --focus { syntax:'<color>'; inherits:true; initial-value:#ffe0ab; }
+@property --node-lit { syntax:'<color>'; inherits:true; initial-value:#ffe1aa; }
+@property --node-understood { syntax:'<color>'; inherits:true; initial-value:#e8b66e; }
+@property --glow-near { syntax:'<color>'; inherits:true; initial-value:rgba(255, 199, 118, 0.34); }
+@property --glow-far { syntax:'<color>'; inherits:true; initial-value:rgba(255, 182, 88, 0.15); }
+@property --path-muted { syntax:'<color>'; inherits:true; initial-value:#6f5c42; }
+:root[data-room-fade] { transition:--surface-2 .45s ease, --accent .45s ease, --accent-ink .45s ease, --focus .45s ease, --node-lit .45s ease, --node-understood .45s ease, --glow-near .45s ease, --glow-far .45s ease, --path-muted .45s ease; }
+@media (prefers-reduced-motion: reduce) { :root[data-room-fade] { transition:none; } }
+:root[data-room-fade][data-reduce-motion='on'] { transition:none; }
+
 /* RS-34: frosted glass over the backdrop; solid surfaces when the backdrop is off. */
 :root {
   --glass: color-mix(in srgb, var(--surface) 55%, transparent);

@@ -34,7 +34,7 @@ The idle 50-subject browser gate is `LANTERN_PERF=1 npx playwright test tests/li
 remove it after the run). Its native cached-list companion is
 `cargo test --manifest-path src-tauri/Cargo.toml --locked fifty_cached_summaries_meet_wg43 -- --ignored --nocapture`.
 
-Build the unsigned per-user Windows preview installer with `npm run installer:preview`.
+Build the unsigned per-user Windows preview installer with `npm run installer:preview`. It lands in `src-tauri/target/release/bundle/preview/` under a timestamped name, and a release installer of the same version in `bundle/nsis/` is left as it was.
 The result is under `src-tauri/target/release/bundle/nsis/`. This explicit preview
 configuration disables updater artifact signing, so a preview build is never
 published. A release build (specs/updates.md, UP-40..44) needs the public key in
