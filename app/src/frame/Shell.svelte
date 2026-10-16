@@ -293,7 +293,7 @@
   });
 </script>
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
-{#if !loading && settings.appearance.backdrop}<Backdrop {space} reduceSetting={settings.appearance.reduceMotion} />{/if}
+{#if !loading && settings.appearance.backdrop}<Backdrop {space} room={room.id} reduceSetting={settings.appearance.reduceMotion} />{/if}
 <header data-tauri-drag-region>
   <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}><span class="mark-art" aria-hidden="true">{@html lanternMark}</span></button>{#if rooms.length>1}<span class="room-chip" data-tauri-drag-region><button class="room" aria-haspopup="menu" aria-expanded={roomMenu} title={strings.rooms} onclick={()=>roomMenu=!roomMenu}>{room.name}</button>{#if roomMenu}<div class="room-menu" role="menu" aria-label={strings.rooms}>{#each rooms as r, i (r.id)}<button role="menuitemradio" aria-checked={r.id===room.id} title={`Ctrl+Shift+${i+1}`} onclick={()=>switchRoom(r.id)}><span class="swatch" style:background={r.accent['--accent']}></span>{r.name}</button>{/each}</div>{/if}</span>{:else}<span class="room">{room.name}</span>{/if}
   <nav data-tauri-drag-region>{#each room.spaces as item}<button aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space===item.id?'page':undefined} disabled={item.id!=='welcome' && !subjectCount} onclick={()=>navigate(item.id)}>{item.icon}</button>{/each}</nav>

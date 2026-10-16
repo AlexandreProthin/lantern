@@ -125,6 +125,12 @@ export class Backdrop {
     else if (document.hidden) this.halt();
     else if (!this.frame) { this.lastDraw = performance.now() - backdropMotion.FRAME_MS; this.frame = requestAnimationFrame(this.tick); }
   }
+  /** The room changed: its tokens repaint the haze, lights and motes. */
+  recolor() {
+    if (!this.started) return;
+    this.readColors();
+    if (this.reduced()) this.refresh();
+  }
   setSpace(space: string) {
     this.space = space; this.pan = { x: 0, y: 0, k: 1 };
     if (this.reduced()) this.refresh();
