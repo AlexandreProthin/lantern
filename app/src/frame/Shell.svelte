@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { invoke } from '@tauri-apps/api/core';
   import { strings } from '../ui/strings';
-  // RS-53: header mark is the ember favicon of the accepted identity release, unchanged.
+  // RS-53: header mark is the ember favicon of the accepted identity release; only its flame takes the room accent (see style).
   // Inlined as markup: an image URL would be a data: URI, which the app CSP blocks.
   import lanternMark from '../assets/identity/ember-on-dark-32.svg?raw';
   import { providerMode } from './provider-mode';
@@ -25,6 +25,7 @@
   import { shouldCheckAtLaunch, shouldShowNotice } from './updates';
   import SettingsPanel from './SettingsPanel.svelte';
   import Backdrop from './Backdrop.svelte';
+  import WindowControls from './WindowControls.svelte';
   import ModelPicker from '../ui/ModelPicker.svelte';
   import { isValidModel } from '../core/models';
   const desktop = '__TAURI_INTERNALS__' in window;
@@ -291,12 +292,13 @@
 </script>
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
 {#if !loading && settings.appearance.backdrop}<Backdrop {space} reduceSetting={settings.appearance.reduceMotion} />{/if}
-<header>
+<header data-tauri-drag-region>
   <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}><span class="mark-art" aria-hidden="true">{@html lanternMark}</span></button>{#if rooms.length>1}<span class="room-chip"><button class="room" aria-haspopup="menu" aria-expanded={roomMenu} title={strings.rooms} onclick={()=>roomMenu=!roomMenu}>{room.name}</button>{#if roomMenu}<div class="room-menu" role="menu" aria-label={strings.rooms}>{#each rooms as r, i (r.id)}<button role="menuitemradio" aria-checked={r.id===room.id} title={`Ctrl+Shift+${i+1}`} onclick={()=>switchRoom(r.id)}><span class="swatch" style:background={r.accent['--accent']}></span>{r.name}</button>{/each}</div>{/if}</span>{:else}<span class="room">{room.name}</span>{/if}
   <nav>{#each room.spaces as item}<button aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space===item.id?'page':undefined} disabled={item.id!=='welcome' && !subjectCount} onclick={()=>navigate(item.id)}>{item.icon}</button>{/each}</nav>
   {#if session && space!=='welcome'}<button class="subject" onclick={()=>subjectMenu=!subjectMenu} title={session.subject.title}>{session.subject.title}{#if running}<span class="busy-dot">·</span>{/if}</button>{/if}
-  {#if summary && space!=='welcome'}<small title={settings.appearance.showTokenStats?summary.tooltip:undefined}>{summary.text}</small>{/if}
+  {#if summary && space!=='welcome'}<small data-tauri-drag-region title={settings.appearance.showTokenStats?summary.tooltip:undefined}>{summary.text}</small>{/if}
   <button class="gear" aria-label={strings.settings} title={strings.settings} onclick={()=>{settingsSection='general';settingsOpen=true;}}>⚙</button>
+  {#if desktop}<WindowControls />{/if}
 </header>
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
 {#if unavailable}<div class="banner provider-notice" role="alert"><div><strong>{strings.errorKinds[unavailable.kind]}</strong><p>{unavailable.kind==='not-installed'?strings.installInstructions:strings.signinInstructions}</p></div><button onclick={()=>{settingsSection='provider';settingsOpen=true;}}>{strings.settings}</button><button disabled={anyRunning||checkingReady} onclick={checkReady}>{strings.checkAgain}</button>{#if checkingReady}<button onclick={()=>readyController?.abort()}>{strings.cancel}</button>{/if}</div>{/if}
@@ -320,7 +322,10 @@
   header, .banner, .spaces { position:relative; z-index:1; }
   /* The room menu opens from the header, so the header sits above the spaces. */
   header { z-index:2; }
-  header button { background:none; padding:5px 9px; min-width:32px; }.mark { display:flex; align-items:center; padding:4px 6px; }.mark-art, .mark-art :global(svg) { display:block; width:28px; height:28px; }.room { color:var(--accent); font-size:13px; } nav { display:flex; gap:4px; } [aria-current='page'] { border-color:var(--accent); color:var(--accent); }
+  header button { background:none; padding:5px 9px; min-width:32px; }.mark { display:flex; align-items:center; padding:4px 6px; }.mark-art, .mark-art :global(svg) { display:block; width:28px; height:28px; }
+  /* The flame is the mark's only path with its own fill; it takes the room's accent. */
+  .mark-art :global(path[fill]) { fill:var(--accent); transition:fill .4s ease; }
+  .room { color:var(--accent); font-size:13px; } nav { display:flex; gap:4px; } [aria-current='page'] { border-color:var(--accent); color:var(--accent); }
   .subject { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:35vw; border:0; } header small { color:var(--ink-mute); font-size:13px; margin-left:auto; }.gear { margin-left:auto; }
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast.update-notice { top:auto; bottom:18px; display:flex; align-items:center; gap:8px; }
