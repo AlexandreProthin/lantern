@@ -75,8 +75,8 @@ Entries move out of here into a versioned plan when the user schedules them. New
 # Companion behaviour spec
 
 - **Status:** specced 2026-10-16 in spec workshop rounds 8–9: [companion](/specs/companion.md), agreed
-  by the user the same day. The companion is named **Amber**; the user put every feature in the first version. Next: a
-  versioned plan, then implementation.
+  by the user the same day. The companion is named **Amber**; the user put every feature in the first version. Planned
+  2026-10-17 as [v0.4.0](/plans/v0-4-0.md).
 - **Added:** 2026-10-06, on the user's request ("point 2 in a future session add it to the backlog").
 - **What:** specify how the identity's companion behaves in the app. The release
   `lantern-identity-v0.2` gives it six finite gestures (rest, curiosity, a few steps, suspension,
