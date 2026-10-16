@@ -2,6 +2,7 @@
 
 ## 2026-10-16
 
+* **v0.2.0 plan complete**: the user closed `choose-1`'s eval runs 2 and 3, since their real use cases in v0.3.0 confirmed the prompt ([plan](/plans/v0-2-0.md) B5). [Roadmap](/plans/roadmap.md) and the root README brought up to v0.3.0; nothing is scheduled next, candidates are in the [backlog](/plans/backlog.md).
 * **v0.3.0 released**: `app/ACCEPTANCE-CHOOSE.md` passed; master fast-forwarded to `a46a774`, tagged `v0.3.0` and pushed; GitHub release v0.3.0 (Latest) carries the signed installer and `latest.json` (signature key id checked against the app's public key); the same two files are in the local update folder, now recorded in [v010-release](/components/v010-release.md).
 * **v0.3.0 prepared**: the user chose v0.3.0 for Part B, released before eval runs 2 and 3. Choose is registered in release builds (RS-4; `?singleRoom` keeps the one-room frame testable), the version bumped. Next: the user builds and signs the installer, runs `app/ACCEPTANCE-CHOOSE.md`, then merge and release.
 * **v0.2.0 B5 eval gate**: SOURCES amended in CP-20; the three-run gate hit the subscription's session limit in run 2 (run 1 18/19, the one failure the checker's). Case 4's checker corrected. The user accepted run 1 as the gate's first run; runs 2 and 3 later, one per session window ([plan](/plans/v0-2-0.md)).
