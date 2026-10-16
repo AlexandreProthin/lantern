@@ -9,6 +9,29 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T00:30:00Z }
 
 Entries move out of here into a versioned plan when the user schedules them. Newest first.
 
+# Local models for Amber (experiment)
+
+- **Added:** 2026-10-17, on the user's request, after the [companion](/specs/companion.md) spec was agreed.
+- **Why:** token efficiency first (the user's priority), then latency, then giving Amber a little
+  natural language of its own. The user wants to experiment with this.
+- **Where:** a dedicated feature branch, after Amber ships; nothing here changes the agreed spec until
+  the experiment says so.
+- **Before starting:** the user explains **jev/laya** (the classification models they have in mind);
+  do not guess what they are.
+- **Context:** Ask Amber is one Haiku 5.5 call that names its category (app, subject, general) before
+  answering (CO-42). Most of the wait is the CLI start and the time to the first word, so a local
+  classifier alone saves tokens more than time.
+- **Steps, in order:**
+  1. **Local answers for app questions**: embeddings over the tips, guide lines and shortcut table;
+     a good match is answered locally (instant, free, offline), otherwise Haiku. Biggest win.
+  2. **Local classification** before the call, so the Haiku call carries only its category's context
+     (CO-43 sends everything today).
+  3. **A small generative model** for Amber's own lines (varied greetings and waiting lines), weighed
+     against installer size (roughly 300 MB to 1 GB), CPU and RAM. Not for facts about the app.
+- **Measure:** tokens per Ask Amber question and time to the first word, before and after; installer
+  size; the classification accuracy on Amber's eval cases (CO-48).
+- **Would amend:** CO-40 (only Ask Amber calls a model), CO-43 (context per category), the evals.
+
 # Future rooms: Think, Explore, Interview
 
 - **Added:** 2026-10-12, on the user's request, when the Choose room was picked as the second room.
