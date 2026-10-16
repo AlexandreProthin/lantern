@@ -29,7 +29,8 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
   *(user; r8)* The entry points without Amber are:
   - tips and the guide: the guide's list is also under *?* (the shortcuts overlay gains a
     *What can I do here?* part for the current space); tips have no other entry and are not needed;
-  - Ask Amber: **Ctrl+J**, and an **Ask** button in the header shown only while Amber is off (CO-41);
+  - Ask Amber: **Ctrl+J**, and an **Ask** button in the header's capsule, after settings, shown only
+    while Amber is off (CO-41);
   - Ask Amber on a selection: the selection popover's button and **Alt+D** (CO-45);
   - release notes: the update notice's link to the release page (UP-13);
   - the generation state: the busy state the app shows today.
@@ -101,7 +102,9 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
 - **CO-40** **Ask Amber** is a temporary chat answered by Amber's own model calls. Only Ask Amber calls
   the model: tips, the guide, greetings and the waiting lines are predefined. *(r8, r9)*
 - **CO-41** It opens from the bubble's field, from **Ctrl+J** anywhere (with Amber on: the bubble with the
-  field focused), and, while Amber is off, from an **Ask** button in the header (RS-12). With Amber off
+  field focused), and, while Amber is off, from an **Ask** button in the header (RS-12): with the top bar of
+  `agent_design/top-bar` (r005-02), it is the capsule's last segment, after settings *(user,
+  2026-10-17)*. With Amber off
   the same box opens on its own, with no character beside it. *(r9)*
 - **CO-42** **One call per question.** Amber's reply first names, silently, what the question is about:
   the **app**, the **current subject**, or a **general** question; then answers in the way the prompt

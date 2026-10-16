@@ -87,7 +87,9 @@ frame, empty header space drags the window, and a double-click on it maximises o
      the window is in the background. *(Amended 2026-10-16 by the user: frameless window.)*
 
   *(Amended 2026-10-16, spec workshop round 9.)* While Amber is off, an **Ask** button sits just
-  before the gear and opens Ask Amber ([companion](/specs/companion.md) CO-41). While Amber is on,
+  before the gear and opens Ask Amber ([companion](/specs/companion.md) CO-41). With the accepted top
+  bar (`agent_design/top-bar`, r005-02) it becomes the capsule's last segment, after settings *(user,
+  2026-10-17)*. While Amber is on,
   its rope is tied to the header's bottom edge and it hangs below it (CO-10, CO-11); the header's
   controls are never covered.
 - **RS-53** *Identity assets.* The header mark (RS-12) MUST use `ember-on-dark-32.svg` from

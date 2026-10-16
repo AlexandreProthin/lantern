@@ -119,3 +119,8 @@ Spec changes this design needs, to agree in chat before building (rooms-spaces):
   an ink underline and an accent dot, never a boxed button.
 - **Header intro**: the top strip of the bar drags the window, under a 3 px resize edge.
 - The header-mark rules of RS-53 are unchanged.
+- **Companion** (added 2026-10-17, user): while Amber is off, an **Ask** button is the capsule's last
+  segment, after settings, styled like the other segments; it opens Ask Amber
+  ([companion](../../agent_wiki/specs/companion.md) CO-41). While Amber is on it is absent, and Amber
+  hangs below the bar (CO-10, CO-11); the field's panel draws above Amber (CO-17). Ctrl+J stays Amber's
+  key; Ctrl+K stays the panel's.
