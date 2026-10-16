@@ -42,3 +42,6 @@ manual check and install. `tauri.conf.json` carries the endpoint
 mode; the public key stays empty until the user generates the pair, and with an empty key the app reports
 *Updates are not set up in this build* instead of failing. Release routine: `app/README.md` (build signed,
 `app/scripts/make-latest-json.mjs`, upload both files). The preview overlay still turns updater signing off.
+
+The user's local update folder (UP-60..66) is `C:\Users\alexp\LanternReleases`: pass it to
+`make-latest-json.mjs --out` so installed builds see the release while the repository is private.
