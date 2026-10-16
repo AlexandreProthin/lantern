@@ -1,0 +1,120 @@
+window.TOP_BAR_DATA = {
+  "meta": {
+    "about": "Shared content for every top-bar proposal. Rooms and spaces are the app's real ones (app/src/rooms/*/definition.ts); stats use each room's real header wording.",
+    "fields": {
+      "rooms[]": "id, name, spaces[] (id, label, shortcut), stats (the room's header stats line), statsHover (token total)",
+      "subjects": "short / long subject titles per room; long is the truncation case",
+      "states[]": "the rows every proposal shows: id, caption, room, space, subject (key into subjects or null), width, menu (null or which menu is open)",
+      "recent": "recent subject titles per room, for menus and palettes that list subjects"
+    },
+    "fixed": "Lantern mark leads to the room's Welcome; window controls flush right; empty space drags; title opens the subject menu; at 1024 px mark, spaces, title, settings and window controls stay (RS-18)."
+  },
+  "rooms": [
+    {
+      "id": "learn",
+      "name": "Learn",
+      "spaces": [
+        {
+          "id": "welcome",
+          "label": "Welcome",
+          "shortcut": "Ctrl+1"
+        },
+        {
+          "id": "study",
+          "label": "Study",
+          "shortcut": "Ctrl+2"
+        },
+        {
+          "id": "gallery",
+          "label": "Gallery",
+          "shortcut": "Ctrl+3"
+        }
+      ],
+      "stats": "12 lit · 4 understood · 9 dark",
+      "statsHover": "Tokens spent: 48.3k in / 21.0k out"
+    },
+    {
+      "id": "choose",
+      "name": "Choose",
+      "spaces": [
+        {
+          "id": "welcome",
+          "label": "Welcome",
+          "shortcut": "Ctrl+1"
+        },
+        {
+          "id": "survey",
+          "label": "Survey",
+          "shortcut": "Ctrl+2"
+        },
+        {
+          "id": "compare",
+          "label": "Compare",
+          "shortcut": "Ctrl+3"
+        },
+        {
+          "id": "gallery",
+          "label": "Gallery",
+          "shortcut": "Ctrl+4"
+        }
+      ],
+      "stats": "5 needs · 8 criteria · 3 shortlisted",
+      "statsHover": "Tokens spent: 112.6k in / 38.4k out"
+    }
+  ],
+  "subjects": {
+    "learn-short": "Ocean tides",
+    "learn-long": "How the Moon and the Sun together shape the height and timing of ocean tides around the world",
+    "choose-short": "A quiet dishwasher",
+    "choose-long": "A quiet, compact dishwasher under 600 € that fits a 45 cm gap and dries plastics well"
+  },
+  "states": [
+    {
+      "id": "study",
+      "caption": "Learn · Study · long title · 1360 px",
+      "room": "learn",
+      "space": "study",
+      "subject": "learn-long",
+      "width": 1360,
+      "menu": null
+    },
+    {
+      "id": "menu",
+      "caption": "Learn · Study · its room / space menu open",
+      "room": "learn",
+      "space": "study",
+      "subject": "learn-short",
+      "width": 1360,
+      "menu": "room"
+    },
+    {
+      "id": "narrow",
+      "caption": "Choose · Compare · 1024 px (RS-18 collapse)",
+      "room": "choose",
+      "space": "compare",
+      "subject": "choose-long",
+      "width": 1024,
+      "menu": null
+    },
+    {
+      "id": "empty",
+      "caption": "Choose · Welcome · no subject open",
+      "room": "choose",
+      "space": "welcome",
+      "subject": null,
+      "width": 1360,
+      "menu": null
+    }
+  ],
+  "recent": {
+    "learn": [
+      "Ocean tides",
+      "Plate tectonics",
+      "Why bread rises"
+    ],
+    "choose": [
+      "A quiet dishwasher",
+      "A first road bike"
+    ]
+  }
+};

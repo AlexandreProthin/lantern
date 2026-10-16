@@ -1,0 +1,50 @@
+{
+  "selection_revision": 5,
+  "proposals": [
+    {
+      "id": "r005-01",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/top-bar-mot-r005-01.html",
+      "title": "Still and quick",
+      "direction": "Near-native: 80 ms hover; the space marker fades out and back at the new place (90 ms each), no travel; the panel arrives as one piece (140 ms fade, 4 px drop) and leaves in 100 ms; room switch is the spec's 0.45 s crossfade."
+    },
+    {
+      "id": "r005-02",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/top-bar-mot-r005-02.html",
+      "title": "Gliding marker",
+      "direction": "One thing travels: underline and dot glide to the new space (240 ms, soft ease-out). The panel grows out of the field (a widening clip, 220 ms) and folds back into it (160 ms). Field hover lifts its accent edge 45 % to 70 %. Room switch 0.45 s."
+    },
+    {
+      "id": "r005-03",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/top-bar-mot-r005-03.html",
+      "title": "The lantern relights",
+      "direction": "Motion from the flame: the accent dot re-lights at the new space (grows with a brief glow, 320 ms); the panel's rows rise 22 ms apart and the field's edge breathes once; on a room switch the flame changes first (200 ms), the room follows 120 ms later in 0.45 s."
+    }
+  ]
+}

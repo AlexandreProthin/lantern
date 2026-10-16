@@ -1,0 +1,52 @@
+<!--
+  sheet:     round 2 review sheet (component exception, AGENTS.md): the round's five files stacked at full
+             width, each labelled with the ID to pick in the gallery. Not a proposal; not in the ledger.
+  component: top-bar
+  phase:     wireframe
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar round 2 · review sheet</title>
+<style>
+:root{--bg:#101827;--ink:#e8eaee;--mute:#9aa1ad;--line:rgba(232,234,238,.32);font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+body{margin:0;padding:24px 24px 60px;background:var(--bg)}
+header{position:sticky;top:0;z-index:2;background:var(--bg);padding:8px 0 12px;border-bottom:1px solid var(--line);margin-bottom:18px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+h1{font:600 15px ui-monospace,Consolas,monospace;margin:0}
+nav a{color:var(--mute);margin-right:14px;text-decoration:none;font:12px ui-monospace,Consolas,monospace}nav a:hover{color:var(--ink)}
+.tip{color:var(--mute);font-size:12px}
+section{margin:0 0 34px}
+.label{display:flex;gap:12px;align-items:baseline;margin:0 0 8px}
+.label b{font:600 22px ui-monospace,Consolas,monospace;letter-spacing:.02em}
+.label span{color:var(--mute)}
+.label a{color:var(--mute);font-size:12px;margin-left:auto}
+.frame{width:100%;overflow:hidden}
+iframe{display:block;border:0;width:1440px;transform-origin:0 0;background:var(--bg)}
+</style>
+</head>
+<body>
+<header><h1>top-bar · round 2 · wireframe</h1><nav id="nav"></nav><span class="tip">Pick by label in the gallery (../index.html), write feedback, save, then say next top-bar.</span></header>
+<main id="list"></main>
+<script>
+const round = [
+  ['r002-01', 'Capsule left, field centre'],
+  ['r002-02', 'The room lives in the field'],
+  ['r002-03', 'One field for the subject, menu included'],
+];
+const list = document.getElementById('list'), nav = document.getElementById('nav'), frames = {};
+for (const [id, title] of round) {
+  const file = `top-bar-wir-${id}.html`;
+  nav.insertAdjacentHTML('beforeend', `<a href="#${id}">${id}</a>`);
+  list.insertAdjacentHTML('beforeend', `<section id="${id}"><div class="label"><b>${id}</b><span>${title}</span><a href="${file}" target="_blank">open full size</a></div><div class="frame"><iframe src="${file}" title="${id} ${title}" height="1400"></iframe></div></section>`);
+  frames[id] = list.lastElementChild.querySelector('iframe');
+}
+// Each file reports its height; the sheet scales the 1440 px frames down to fit narrower windows.
+const fit = () => { const k = Math.min(1, (document.body.clientWidth - 48) / 1440);
+  for (const f of Object.values(frames)) { f.style.transform = `scale(${k})`; f.parentElement.style.height = `${(f.dataset.h || f.height) * k}px`; } };
+addEventListener('message', e => { const f = frames[e.data?.topBar]; if (f && e.data.height) { f.dataset.h = e.data.height; f.style.height = `${e.data.height}px`; fit(); } });
+addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

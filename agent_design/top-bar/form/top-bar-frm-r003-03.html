@@ -1,0 +1,54 @@
+<!--
+  id:        r003-03
+  component: top-bar
+  phase:     form
+  parents:   r001-01, r001-02, r001-03, r001-05, r002-03
+  direction: A 64 px bar where the subject leads: a wider 40 % field with a 14 px semibold title, while the capsule steps back (32 px, fainter outline, 12 px labels, only the current space at full ink). The extra height gives an 11 px top strip that is easy to grab. Strongest scale contrast of the three.
+  request:   revision 3
+  inputs:    the saved request (revision 3, form, combine r001-01, r001-02, r001-03, r001-05, r002-03, empty prompt):
+             r002-03's structure frozen. Added from chat: the strip along the top of the bar, above the capsule,
+             field and stats, drags the window (the top 3 px stay the resize edge)
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r003-03 · Title leads</title>
+<style>
+:root{--barH:64px}
+.bar{gap:14px}
+.mark{width:28px;height:28px}
+.cap2{display:flex;align-items:center;height:32px;border:1px solid rgba(232,234,238,.2);border-radius:16px;padding:0 4px;flex:none;position:relative;z-index:1}
+.cap2 .btn{height:30px;padding:0 9px;border-radius:0;font-size:12px}.cap2 .sep{height:16px}
+.cap2 .off{color:var(--mute)}
+.mid{background:none}
+.field{height:36px;border-radius:18px;background:var(--bg)}
+.field .title{font-size:14px;font-weight:600}
+.stats{padding:0 14px;font-size:12px;position:relative;z-index:1}
+.kv{display:grid;grid-template-columns:90px 1fr;gap:4px 10px;padding:4px 8px 8px}.kv span:nth-child(odd){color:var(--mute)}
+.box2{border:1px solid var(--hair);border-radius:4px;padding:2px 8px}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r003-03', title: 'Title leads',
+  lede: 'Form on r002-03 (structure frozen): 64 px bar, 32 px capsule, 12 px labels, 40 % field, 14 px title, 12 px stats. The hatched strip along the top drags the window; the dotted top 3 px are the resize edge.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn ${x.id === c.space.id ? 'on ul' : 'off'}">${c.glyph(x.id)}${c.narrow ? '' : x.label}</span>`).join('');
+    const cap = `<div class="cap2"><span class="btn">${c.room.name}<span class="caret">▾</span></span><span class="sep"></span>${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span></div>`;
+    const field = `<div class="mid" style="width:${c.narrow ? 34 : 40}%"><div class="field">${c.subject ? `<span class="title">${c.subject}</span>` : '<span class="off">Open a subject…</span>'}<span class="kbd" style="margin-left:auto">Ctrl+K</span></div></div>`;
+    const bar = `${c.mark()}${cap}${c.drag()}${field}${c.subject && !c.narrow ? `<span class="stats">${c.room.stats}</span>` : ''}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar, band: 11 };
+    const menu = `<div class="head">This subject</div><div class="kv" style="min-width:410px"><span>Title</span><span class="box2">${c.subject} ✎</span><span>Tone</span><span class="box2">Curious ▾</span><span>Direction</span><span class="box2 off">Where should it start, or head?</span><span>Model</span><span class="box2">opus ▾</span><span>Effort</span><span class="box2">medium ▾</span></div><hr>` +
+      `<div class="row">${c.glyph('search')}<span class="off">Type a subject, a room, a space…</span></div><div class="head">Other subjects</div>` +
+      c.D.recent[c.room.id].filter(t => t !== c.subject).map(t => `<div class="row">${t}</div>`).join('') + '<div class="head">Rooms · spaces</div>' +
+      `<div class="row">● ${c.D.rooms.map(r => r.name).join('  ·  ')}</div><div class="row">${c.room.spaces.map(x => x.label).join('  ·  ')}</div><hr><div class="row">${c.glyph('settings')}Settings</div>`;
+    return { bar, band: 11, menu, menuAt: [408, 60], menuH: 500 };
+  } });
+</script>
+</body>
+</html>

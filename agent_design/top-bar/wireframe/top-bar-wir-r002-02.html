@@ -1,0 +1,51 @@
+<!--
+  id:        r002-02
+  component: top-bar
+  phase:     wireframe
+  parents:   r001-01, r001-02, r001-03, r001-05
+  direction: The room lives in the field. The capsule of r001-03 holds only what changes often: the spaces as
+             words with a glyph, underlined when current (r001-01), and settings as its last segment (r001-01).
+             The centred field of r001-05 starts with the room as a token, Learn ›, then the subject title. A
+             click on the room token opens the palette already narrowed to rooms; a click on the title opens the
+             subject menu; anywhere else or Ctrl+K opens the full palette. Stats in settings' old place
+             (r001-02). At 1024 px the room token shrinks to its first letter and the space words fold to glyphs.
+             Spec: the room chip (RS-12 item 2) moves into the field; room switching goes through the palette.
+  request:   revision 2
+  inputs:    the saved request: keep r001-01's labelled spaces and settings ending the left cluster, r001-02's
+             stats where settings was, r001-03's capsule, r001-05's centred Ctrl+K field; not r001-04
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r002-02 · The room lives in the field</title>
+<style>
+.cap2{display:flex;align-items:center;height:36px;border:1px solid var(--line);border-radius:18px;padding:0 4px;flex:none}
+.cap2 .btn{height:34px;padding:0 9px;border-radius:0}.cap2 .sep{height:18px}
+.token{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border:1px solid var(--line);border-radius:11px;flex:none}
+.gt{color:var(--faint)}.stats{padding:0 14px}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r002-02', title: 'The room lives in the field',
+  lede: 'Capsule: spaces as words | settings. Centred field: [Learn] › subject title. Room token → palette narrowed to rooms; title → subject menu; elsewhere or Ctrl+K → full palette.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn ${x.id === c.space.id ? 'on ul' : 'off'}">${c.glyph(x.id)}${c.narrow ? '' : x.label}</span>`).join('');
+    const cap = `<div class="cap2">${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span></div>`;
+    const room = c.narrow ? c.room.name[0] : c.room.name;
+    const field = `<div class="mid" style="width:${c.narrow ? 28 : 32}%"><div class="field"><span class="token">${room}<span class="caret">▾</span></span><span class="gt">›</span>${c.subject ? `<span class="title">${c.subject}</span><span class="caret">▾</span>` : '<span class="off">Open a subject…</span>'}<span class="kbd" style="margin-left:auto">Ctrl+K</span></div></div>`;
+    const bar = `${c.mark()}${cap}${c.drag()}${field}${c.subject && !c.narrow ? `<span class="stats">${c.room.stats}</span>` : ''}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar };
+    const menu = `<div class="row" style="min-width:420px"><span class="token">Rooms</span>${c.glyph('search')}<span class="off">Type a room…</span></div>` +
+      c.D.rooms.map((r, i) => `<div class="row ${r.id === c.room.id ? 'cur' : ''}"><span>●</span>${r.name}<span class="off" style="font-size:12px">${r.spaces.map(x => x.label).join(' · ')}</span><span class="kbd" style="margin-left:auto">Ctrl+Shift+${i + 1}</span></div>`).join('') +
+      '<hr><div class="row off" style="font-size:12px">Backspace clears “Rooms” and shows subjects, spaces and Settings too</div>';
+    return { bar, menu, menuAt: [455, 50], menuH: 190, notes: '<span class="note" style="left:60px;top:80px">a click on the room token: the palette narrowed to rooms</span>' };
+  } });
+</script>
+</body>
+</html>

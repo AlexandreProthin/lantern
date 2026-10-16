@@ -1,0 +1,77 @@
+<!--
+  id:        r004-01
+  component: top-bar
+  phase:     color
+  parents:   r001-01, r001-02, r001-03, r001-05, r002-03, r003-01
+  direction: Today's language, refined. The bar is the app's glass (surface at 55 %) over the backdrop. The capsule is an outline in --line; the room name is in the accent, as the room chip is now, and the current space is ink with a 2 px accent underline. The field is a quiet --surface-2 well. Stats and settings stay --ink-mute. The accent appears three times: flame, room name, underline.
+  request:   revision 4
+  inputs:    the saved request (revision 4, color, combine r001-01, r001-02, r001-03, r001-05, r002-03, r003-01):
+             "make sure the room / space menu open is centered/well placed. Next is color (for the type keep things
+             coherent)". Read as a direction, not a scheme: the rooms' own binding palettes (rooms-spaces RS-31,
+             choose.css), three ways to spend them. Type is the app's (Segoe UI Variable Text) at r003-01's sizes.
+             Form is r003-01, frozen; the open panel is centred under the field
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r004-01 · Accent marks the place</title>
+<style>
+:root{--barH:56px;font-family:'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif}
+
+[data-room=learn]{--bg:#101827;--surface:#172132;--surface-2:#302b2a;--ink:#f3e9dc;--mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e;--accent-ink:#211b14;--focus:#ffe0ab;--glow:rgba(255,182,88,.10)}
+[data-room=choose]{--bg:#101827;--surface:#172132;--surface-2:#1f3034;--ink:#f3e9dc;--mute:#aeb3bf;--line:#3b4558;--accent:#5cc6bd;--accent-ink:#0d211f;--focus:#b6efe6;--glow:rgba(84,204,188,.10)}
+section{--hair:color-mix(in srgb,var(--mute) 16%,transparent);--faint:color-mix(in srgb,var(--mute) 60%,transparent)}
+
+body{color:#f3e9dc}
+.cap{color:#aeb3bf}
+.win{background:var(--bg);color:var(--ink);border-color:var(--line)}
+.bar{gap:14px;border-bottom-color:color-mix(in srgb,var(--mute) 16%,transparent)}
+.mark{width:26px;height:26px}.mark g{fill:#eeeeee}.mark .flame{fill:var(--accent);stroke:none}
+.cap2{display:flex;align-items:center;height:36px;border:1px solid var(--line);border-radius:18px;padding:0 4px;flex:none;position:relative;z-index:1}
+.cap2 .btn{height:34px;padding:0 9px;border-radius:0;font-size:13px}.cap2 .sep{height:18px;background:var(--line)}
+.btn.off,.btn.mute{color:var(--mute)}.caret{color:var(--mute)}
+.mid{background:none}
+.field{height:34px;border-radius:17px;color:var(--ink)}.field .off{color:var(--mute)}
+.field .title{font-size:13px;font-weight:500}.field .g{stroke:var(--mute)}
+.stats{padding:0 14px;font-size:12px;color:var(--mute)}
+.wc span{color:var(--mute)}.wc span:last-child:hover{background:#c42b1c;color:#fff}
+.menu{background:var(--surface);border-color:var(--line);color:var(--ink);box-shadow:0 12px 32px rgba(0,0,0,.45)}
+.menu .head{color:var(--mute)}.menu .row.cur{outline-color:var(--accent)}.menu hr{border-top-color:var(--line)}
+.kv{display:grid;grid-template-columns:90px 1fr;gap:4px 10px;padding:4px 8px 8px}.kv span:nth-child(odd){color:var(--mute)}
+.box2{border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--bg)}
+.kbd{color:var(--mute)}
+
+.bar{background:color-mix(in srgb,var(--surface) 55%,transparent);backdrop-filter:blur(20px)}
+.cap2{border-color:var(--line)}
+.cap2 .room{color:var(--accent)}
+.cap2 .on{color:var(--ink)}.ul{box-shadow:inset 0 -2px 0 var(--accent)}
+.field{background:var(--surface-2);border-color:transparent}
+
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r004-01', title: 'Accent marks the place', clean: true,
+  lede: 'Colour on r003-01 (form frozen), in each room\'s own tokens: Learn amber, Choose teal. The panel opens centred under the field.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn ${x.id === c.space.id ? 'on ul' : 'off'}">${c.glyph(x.id)}${c.narrow ? '' : x.label}</span>`).join('');
+    const cap = `<div class="cap2"><span class="btn room">${c.room.name}<span class="caret">▾</span></span><span class="sep"></span>${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span></div>`;
+    const field = `<div class="mid" style="width:${c.narrow ? 28 : 34}%"><div class="field">${c.subject ? `<span class="title">${c.subject}</span>` : '<span class="off">Open a subject…</span>'}<span class="kbd" style="margin-left:auto">Ctrl+K</span></div></div>`;
+    const mark = c.mark().replace('fill="none" stroke="#cfd3da" stroke-width="4"', 'class="flame"').replace('fill="#cfd3da"', '');
+    const bar = `${mark}${cap}${c.drag()}${field}${c.subject && !c.narrow ? `<span class="stats">${c.room.stats}</span>` : ''}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar, band: 7 };
+    const menu = `<div class="head">This subject</div><div class="kv" style="min-width:420px"><span>Title</span><span class="box2">${c.subject} ✎</span><span>Tone</span><span class="box2">Curious ▾</span><span>Direction</span><span class="box2 off" style="color:var(--mute)">Where should it start, or head?</span><span>Model</span><span class="box2">opus ▾</span><span>Effort</span><span class="box2">medium ▾</span></div><hr>` +
+      `<div class="row">${c.glyph('search')}<span style="color:var(--mute)">Type a subject, a room, a space…</span></div><div class="head">Other subjects</div>` +
+      c.D.recent[c.room.id].filter(t => t !== c.subject).map(t => `<div class="row">${t}</div>`).join('') + '<div class="head">Rooms</div>' +
+      c.D.rooms.map((r, i) => `<div class="row ${r.id === c.room.id ? 'cur' : ''}"><span style="color:${r.id === 'learn' ? '#e8b66e' : '#5cc6bd'}">●</span>${r.name}<span class="kbd" style="margin-left:auto">Ctrl+Shift+${i + 1}</span></div>`).join('') +
+      `<hr><div class="row">${c.glyph('settings')}Settings</div>`;
+    return { bar, band: 7, menu, menuAt: 'center', menuTop: 52, menuH: 500 };
+  } });
+</script>
+</body>
+</html>

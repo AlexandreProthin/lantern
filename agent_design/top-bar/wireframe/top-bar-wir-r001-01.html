@@ -1,0 +1,45 @@
+<!--
+  id:        r001-01
+  component: top-bar
+  phase:     wireframe
+  parents:   none
+  direction: Lamp and room as one chip, spaces as labelled words. The mark and the room name sit in one
+             chip: the mark goes to Welcome, the name opens a room menu that also lists every room's spaces,
+             so another room's Survey is one pick away. The spaces follow as quiet words with a small glyph and
+             an underline for the current one, no boxes. Settings closes that left cluster after a divider.
+             The subject title and its stats are one centred group. At 1024 px the space words fold to glyphs
+             and the stats hide. Spec: RS-12 order changes (settings moves to item 4), RS-20 adds labels.
+  request:   revision 1
+  inputs:    the saved brief (five mechanisms; room chip and spaces unified or rethought; settings off the far
+             right; no boxed space buttons; stats centred or in settings' old place)
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r001-01 · Lamp and room as one chip</title>
+<style>
+.chip{display:flex;align-items:center;gap:4px;height:34px;padding:0 6px 0 4px;border:1px solid var(--line);border-radius:17px}
+.space{padding:0 6px;height:56px;border-radius:0}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r001-01', title: 'Lamp and room as one chip',
+  lede: 'Mark + room name are one chip (mark → Welcome, name → room menu with every room\'s spaces). Spaces are words with a glyph, underlined when current. Settings ends the left cluster. Title and stats are centred together.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn space ${x.id === c.space.id ? 'on ul' : 'off'}">${c.glyph(x.id)}${c.narrow ? '' : x.label}</span>`).join('');
+    const mid = c.subject ? `<div class="mid"><span class="title">${c.subject}</span><span class="caret">▾</span>${c.narrow ? '' : `<span class="stats">· ${c.room.stats}</span>`}</div>` : '';
+    const bar = `<span class="chip">${c.mark()}<span class="btn" style="padding:0 2px">${c.room.name}</span><span class="caret">▾</span></span>${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span>${c.drag()}${mid}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar };
+    const rooms = c.D.rooms.map(r => `<div class="row ${r.id === c.room.id ? 'cur' : ''}"><span>●</span><b>${r.name}</b><span class="kbd" style="margin-left:auto">Ctrl+Shift+${c.D.rooms.indexOf(r) + 1}</span></div>` +
+      r.spaces.map(x => `<div class="row" style="padding-left:30px">${c.glyph(x.id)}<span class="${r.id === c.room.id && x.id === c.space.id ? 'on' : 'off'}">${x.label}</span></div>`).join('')).join('<hr>');
+    return { bar, menu: rooms, menuAt: [16, 52], menuH: 360 };
+  } });
+</script>
+</body>
+</html>

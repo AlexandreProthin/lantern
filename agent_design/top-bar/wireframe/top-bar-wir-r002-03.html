@@ -1,0 +1,53 @@
+<!--
+  id:        r002-03
+  component: top-bar
+  phase:     wireframe
+  parents:   r001-01, r001-02, r001-03, r001-05
+  direction: One field for the subject, menu included. The capsule of r001-03 holds the room name (its menu lists
+             rooms), the spaces as words with a glyph and an underline (r001-01), and settings last, ending the
+             left cluster (r001-01). The centred field of r001-05 is the only subject control: a click or Ctrl+K
+             opens one panel whose top part is this subject's menu (Rename, Tone, Direction, Model, Effort) and
+             whose lower part is the palette (other subjects, rooms, spaces, Settings). One place for everything
+             about the subject instead of a separate pop-over. Stats in settings' old place (r001-02). At 1024 px
+             the space words fold to glyphs and the stats hide. Spec: RS-15's subject menu becomes the top of
+             the palette; new Ctrl+K.
+  request:   revision 2
+  inputs:    the saved request: keep r001-01's labelled spaces and settings ending the left cluster, r001-02's
+             stats where settings was, r001-03's capsule, r001-05's centred Ctrl+K field; not r001-04
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r002-03 · One field for the subject, menu included</title>
+<style>
+.cap2{display:flex;align-items:center;height:36px;border:1px solid var(--line);border-radius:18px;padding:0 4px;flex:none}
+.cap2 .btn{height:34px;padding:0 9px;border-radius:0}.cap2 .sep{height:18px}
+.stats{padding:0 14px}
+.kv{display:grid;grid-template-columns:90px 1fr;gap:4px 10px;padding:4px 8px 8px}.kv span:nth-child(odd){color:var(--mute)}
+.box2{border:1px solid var(--hair);border-radius:4px;padding:2px 8px}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r002-03', title: 'One field for the subject, menu included',
+  lede: 'Capsule: room ▾ | spaces as words | settings. The centred field opens one panel: this subject\'s settings on top, the palette below. Stats before the window controls.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn ${x.id === c.space.id ? 'on ul' : 'off'}">${c.glyph(x.id)}${c.narrow ? '' : x.label}</span>`).join('');
+    const cap = `<div class="cap2"><span class="btn">${c.room.name}<span class="caret">▾</span></span><span class="sep"></span>${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span></div>`;
+    const field = `<div class="mid" style="width:${c.narrow ? 26 : 30}%"><div class="field">${c.subject ? `<span class="title">${c.subject}</span>` : '<span class="off">Open a subject…</span>'}<span class="kbd" style="margin-left:auto">Ctrl+K</span></div></div>`;
+    const bar = `${c.mark()}${cap}${c.drag()}${field}${c.subject && !c.narrow ? `<span class="stats">${c.room.stats}</span>` : ''}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar };
+    const menu = `<div class="head">This subject</div><div class="kv" style="min-width:410px"><span>Title</span><span class="box2">${c.subject} ✎</span><span>Tone</span><span class="box2">Curious ▾</span><span>Direction</span><span class="box2 off">Where should it start, or head?</span><span>Model</span><span class="box2">opus ▾</span><span>Effort</span><span class="box2">medium ▾</span></div><hr>` +
+      `<div class="row">${c.glyph('search')}<span class="off">Type a subject, a room, a space…</span></div><div class="head">Other subjects</div>` +
+      c.D.recent[c.room.id].filter(t => t !== c.subject).map(t => `<div class="row">${t}</div>`).join('') + '<div class="head">Rooms · spaces</div>' +
+      `<div class="row">● ${c.D.rooms.map(r => r.name).join('  ·  ')}</div><div class="row">${c.room.spaces.map(x => x.label).join('  ·  ')}</div><hr><div class="row">${c.glyph('settings')}Settings</div>`;
+    return { bar, menu, menuAt: [475, 50], menuH: 500 };
+  } });
+</script>
+</body>
+</html>

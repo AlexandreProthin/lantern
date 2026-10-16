@@ -1,0 +1,46 @@
+<!--
+  id:        r001-02
+  component: top-bar
+  phase:     wireframe
+  parents:   none
+  direction: A path you can open at every step. Left reads as one sentence: mark / Learn ▾ / Study ▾ / Ocean
+             tides ▾. Each segment is its own small menu: the room segment switches rooms, the space segment
+             lists the room's spaces with their shortcuts, the title opens the subject menu. No space icons at
+             all, so nothing is boxed; where you are is the words. Settings sits right after the mark, the app
+             corner. The stats take settings' old place, just before the window controls. At 1024 px the room
+             segment shrinks to its first letter. Spec: RS-20 (icon buttons) becomes a space menu, a space
+             switch costs two clicks or Ctrl+N; RS-12 order changes.
+  request:   revision 1
+  inputs:    the saved brief (five mechanisms; room chip and spaces unified or rethought; settings off the far
+             right; no boxed space buttons; stats centred or in settings' old place)
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r001-02 · A path you can open at every step</title>
+<style>
+.slash{color:var(--faint);padding:0 2px}
+.seg{display:inline-flex;align-items:center;gap:4px;padding:0 4px;height:30px}
+.path{display:flex;align-items:center;min-width:0;flex:0 1 auto;overflow:hidden}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r001-02', title: 'A path you can open at every step',
+  lede: 'mark / room ▾ / space ▾ / subject ▾ — every segment is a menu. No space icons. Settings beside the mark; stats where settings was.',
+  render(s, c) {
+    const room = c.narrow ? c.room.name[0] : c.room.name;
+    const title = c.subject ? `<span class="slash">/</span><span class="seg" style="min-width:0"><span class="title">${c.subject}</span><span class="caret">▾</span></span>` : '';
+    const bar = `${c.mark()}<span class="btn mute">${c.glyph('settings')}</span><span class="sep"></span><div class="path"><span class="seg">${room}<span class="caret">▾</span></span><span class="slash">/</span><span class="seg on">${c.space.label}<span class="caret">▾</span></span>${title}</div>${c.drag()}${c.subject && !c.narrow ? `<span class="stats" style="padding:0 14px">${c.room.stats}</span>` : ''}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar };
+    const menu = '<div class="head">Learn · spaces</div>' + c.room.spaces.map(x => `<div class="row ${x.id === c.space.id ? 'cur' : ''}"><span class="${x.id === c.space.id ? 'on' : 'off'}">${x.label}</span><span class="kbd" style="margin-left:auto">${x.shortcut}</span></div>`).join('');
+    return { bar, menu, menuAt: [148, 50], menuH: 170, notes: '<span class="note" style="left:340px;top:150px">the room segment opens the same kind of list, of rooms</span>' };
+  } });
+</script>
+</body>
+</html>

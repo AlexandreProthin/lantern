@@ -1,0 +1,45 @@
+<!--
+  id:        r001-04
+  component: top-bar
+  phase:     wireframe
+  parents:   none
+  direction: The lantern is the app menu; spaces are centred tabs. The mark still goes to Welcome, and a caret
+             beside it opens the app menu: rooms, then Settings, Shortcuts and About, so everything app-wide has
+             one home and the bar keeps no gear. The room name stays next to the mark as plain text. The spaces
+             are text tabs centred in the window, the current one underlined. The subject title and its stats
+             sit on the right, in settings' old place. At 1024 px the tabs fold to glyphs. Spec: settings costs
+             two clicks (or Ctrl+,), against RS-12 item 6 and the brief's one-click wish; this shows the price.
+  request:   revision 1
+  inputs:    the saved brief (five mechanisms; room chip and spaces unified or rethought; settings off the far
+             right; no boxed space buttons; stats centred or in settings' old place)
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r001-04 · The lantern is the app menu</title>
+<style>
+.tab{height:56px;padding:0 12px;border-radius:0}
+.right{display:flex;align-items:center;gap:8px;min-width:0;max-width:24%;padding:0 14px;background:var(--bg);position:relative;z-index:2}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r001-04', title: 'The lantern is the app menu; spaces are centred tabs',
+  lede: 'Mark → Welcome; its caret opens the app menu (rooms, Settings, Shortcuts, About). No gear in the bar. Space tabs centred. Title and stats on the right.',
+  render(s, c) {
+    const tabs = c.room.spaces.map(x => `<span class="btn tab ${x.id === c.space.id ? 'on ul' : 'off'}">${c.narrow ? c.glyph(x.id) : x.label}</span>`).join('');
+    const right = c.subject ? `<div class="right"><span class="title">${c.subject}</span><span class="caret">▾</span>${c.narrow ? '' : `<span class="stats">· ${c.room.stats}</span>`}</div>` : '';
+    const bar = `${c.mark()}<span class="caret" style="margin-left:-6px">▾</span><span class="btn mute">${c.room.name}</span>${c.drag()}<div class="mid" style="padding:0">${tabs}</div>${right}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar };
+    const menu = '<div class="head">Rooms</div>' + c.D.rooms.map((r, i) => `<div class="row ${r.id === c.room.id ? 'cur' : ''}"><span>●</span>${r.name}<span class="kbd" style="margin-left:auto">Ctrl+Shift+${i + 1}</span></div>`).join('') +
+      `<hr><div class="row">${c.glyph('settings')}Settings<span class="kbd" style="margin-left:auto">Ctrl+,</span></div><div class="row">${c.glyph('menu')}Shortcuts<span class="kbd" style="margin-left:auto">?</span></div><div class="row">${c.glyph('welcome')}About Lantern</div>`;
+    return { bar, menu, menuAt: [14, 52], menuH: 250 };
+  } });
+</script>
+</body>
+</html>

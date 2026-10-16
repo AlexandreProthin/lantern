@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "concept": "top-bar",
+  "revision": 6,
+  "saved_at": "2026-10-16T22:28:28.336596+00:00",
+  "based_on_round": 5,
+  "selected_ids": [
+    "r001-01",
+    "r001-02",
+    "r001-03",
+    "r001-05",
+    "r002-03",
+    "r003-01",
+    "r004-03",
+    "r005-02"
+  ],
+  "next": {
+    "phase": "motion",
+    "mode": "combine",
+    "prompt": "final"
+  }
+}

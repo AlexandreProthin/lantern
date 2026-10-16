@@ -1,0 +1,94 @@
+<!--
+  id:        r005-03
+  component: top-bar
+  phase:     motion
+  parents:   r001-01, r001-02, r001-03, r001-05, r002-03, r003-01, r004-03
+  direction: Motion borrowed from the flame. Switching space moves the underline at once, while the accent dot re-lights at the new space: it grows from nothing with a brief soft glow (320 ms). The panel fades in (160 ms) and its rows rise 4 px one after another, 22 ms apart; the field's accent edge breathes once as it opens (600 ms). Room switch: the flame changes first (200 ms), the rest of the room follows in 0.45 s, 120 ms later, as if the lamp re-lit the room.
+  request:   revision 5
+  inputs:    the saved request (revision 5, motion, combine r001-01, r001-02, r001-03, r001-05, r002-03, r003-01,
+             r004-03, empty prompt): r004-03's look frozen (form r003-01, colour "Quiet bar, lit field"). What may
+             move: hover, the current-space marker, the panel, the field's accent edge, the room crossfade (RS-30,
+             0.45 s, rooms-spaces RS-33 keeps the frame calm). Reduced motion: everything instant
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js, ../assets/bar-motion.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r005-03 · The lantern relights</title>
+<style>
+:root{--barH:56px;--k:1;font-family:'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif}
+@media (prefers-reduced-motion: reduce){:root{--k:0 !important}}
+
+@property --accent{syntax:'<color>';inherits:true;initial-value:#e8b66e}
+@property --flame{syntax:'<color>';inherits:true;initial-value:#e8b66e}
+@property --glow{syntax:'<color>';inherits:true;initial-value:transparent}
+[data-room=learn]{--bg:#101827;--surface:#172132;--ink:#f3e9dc;--mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e;--flame:#e8b66e;--glow:rgba(255,182,88,.10)}
+[data-room=choose]{--bg:#101827;--surface:#172132;--ink:#f3e9dc;--mute:#aeb3bf;--line:#3b4558;--accent:#5cc6bd;--flame:#5cc6bd;--glow:rgba(84,204,188,.10)}
+section{--hair:color-mix(in srgb,var(--mute) 16%,transparent);--faint:color-mix(in srgb,var(--mute) 60%,transparent)}
+
+body{color:#f3e9dc;padding-top:64px}
+.cap{color:#aeb3bf}
+.win{background:var(--bg);color:var(--ink);border-color:var(--line)}
+.bar{gap:14px;border-bottom-color:color-mix(in srgb,var(--mute) 16%,transparent);background:color-mix(in srgb,var(--surface) 55%,transparent);backdrop-filter:blur(20px)}
+.mark{width:26px;height:26px}.mark g{fill:#eeeeee}.mark .flame{fill:var(--flame);stroke:none}
+.cap2{display:flex;align-items:center;height:36px;border:1px solid var(--line);border-radius:18px;padding:0 4px;flex:none;position:relative;z-index:1}
+.cap2 .btn{height:34px;padding:0 9px;border-radius:0;font-size:13px;cursor:pointer}.cap2 .sep{height:18px;background:var(--line)}
+.cap2 .btn:hover{color:var(--ink)}
+.btn.off,.btn.mute{color:var(--mute)}.btn.on{color:var(--ink)}.caret{color:var(--mute)}.room{cursor:pointer}
+.ul{box-shadow:none}
+.ind{position:absolute;bottom:0;height:1px;background:var(--ink)}
+.dot2{position:absolute;top:7px;width:5px;height:5px;margin-left:-2px;border-radius:50%;background:var(--accent)}
+.cap2.instant .ind,.cap2.instant .dot2{transition:none !important}
+.mid{background:none}
+.field{height:34px;border-radius:17px;color:var(--ink);cursor:pointer;border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 6%,var(--bg))}
+.field .off{color:var(--mute)}.field .title{font-size:13px;font-weight:500}.field .kbd{color:var(--accent)}
+.stats{padding:0 14px;font-size:12px;color:var(--mute)}
+.wc span{color:var(--mute)}
+.menu{background:var(--surface);border-color:var(--line);color:var(--ink);box-shadow:0 12px 32px rgba(0,0,0,.45)}
+.menu .head{color:var(--mute)}.menu .row.cur{outline:0;box-shadow:inset 2px 0 0 var(--accent)}.menu hr{border-top-color:var(--line)}
+.kv{display:grid;grid-template-columns:90px 1fr;gap:4px 10px;padding:4px 8px 8px}.kv span:nth-child(odd){color:var(--mute)}
+.box2{border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--bg)}
+.kbd{color:var(--mute)}
+.play{position:fixed;top:0;left:0;right:0;z-index:9;display:flex;gap:16px;align-items:center;padding:12px 32px;background:#101827;border-bottom:1px solid #3b4558;font-size:12px;color:#aeb3bf}
+.play button{font:inherit;color:#f3e9dc;background:#172132;border:1px solid #3b4558;border-radius:6px;padding:6px 12px;cursor:pointer}
+
+.btn{transition:color calc(var(--k)*160ms)}
+.dot2.lit{animation:relight calc(var(--k)*320ms) cubic-bezier(.2,.8,.2,1)}
+@keyframes relight{0%{transform:scale(0);box-shadow:0 0 0 0 var(--accent)}60%{transform:scale(1.25);box-shadow:0 0 8px 2px color-mix(in srgb,var(--accent) 60%,transparent)}100%{transform:scale(1);box-shadow:0 0 0 0 transparent}}
+.menu{opacity:0;pointer-events:none;transition:opacity calc(var(--k)*120ms) ease-in}
+.menu.open{opacity:1;pointer-events:auto;transition:opacity calc(var(--k)*160ms) ease-out}
+.menu .stag{animation:rise calc(var(--k)*200ms) cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;translate:0 4px}to{opacity:1;translate:0 0}}
+.field.breathe{animation:breathe calc(var(--k)*600ms) ease-in-out}
+@keyframes breathe{50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent);border-color:var(--accent)}}
+section{transition:--flame calc(var(--k)*200ms) ease,--accent calc(var(--k)*450ms) ease calc(var(--k)*120ms),--glow calc(var(--k)*450ms) ease calc(var(--k)*120ms)}
+
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script src="../assets/bar-motion.js"></script>
+<script>
+BAR.page({ id: 'r005-03', title: 'The lantern relights', clean: true,
+  lede: 'Motion on r004-03 (everything visual frozen). Play the sequence, or click: a space, the field (Esc closes), the room name. Reduced motion makes it all instant.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn ${x.id === c.space.id ? 'on' : 'off'}">${c.glyph(x.id)}${c.narrow ? '' : x.label}</span>`).join('');
+    const cap = `<div class="cap2"><span class="btn room">${c.room.name}<span class="caret">▾</span></span><span class="sep"></span>${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span></div>`;
+    const field = `<div class="mid" style="width:${c.narrow ? 28 : 34}%"><div class="field">${c.subject ? `<span class="title">${c.subject}</span>` : '<span class="off">Open a subject…</span>'}<span class="kbd" style="margin-left:auto">Ctrl+K</span></div></div>`;
+    const mark = c.mark().replace('fill="none" stroke="#cfd3da" stroke-width="4"', 'class="flame"').replace('fill="#cfd3da"', '');
+    const bar = `${mark}${cap}${c.drag()}${field}${c.subject && !c.narrow ? `<span class="stats">${c.room.stats}</span>` : ''}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar, band: 7 };
+    const menu = `<div class="head">This subject</div><div class="kv" style="min-width:420px"><span>Title</span><span class="box2">${c.subject} ✎</span><span>Tone</span><span class="box2">Curious ▾</span><span>Direction</span><span class="box2" style="color:var(--mute)">Where should it start, or head?</span><span>Model</span><span class="box2">opus ▾</span><span>Effort</span><span class="box2">medium ▾</span></div><hr>` +
+      `<div class="row">${c.glyph('search')}<span style="color:var(--mute)">Type a subject, a room, a space…</span></div><div class="head">Other subjects</div>` +
+      c.D.recent[c.room.id].filter(t => t !== c.subject).map(t => `<div class="row">${t}</div>`).join('') + '<div class="head">Rooms</div>' +
+      c.D.rooms.map((r, i) => `<div class="row ${r.id === c.room.id ? 'cur' : ''}"><span style="color:${r.id === 'learn' ? '#e8b66e' : '#5cc6bd'}">●</span>${r.name}<span class="kbd" style="margin-left:auto">Ctrl+Shift+${i + 1}</span></div>`).join('') +
+      `<hr><div class="row">${c.glyph('settings')}Settings</div>`;
+    return { bar, band: 7, menu, menuAt: 'center', menuTop: 52, menuH: 540 };
+  } });
+BARM.enhance({ slide: false, relight: true, stagger: 22, breathe: true });
+</script>
+</body>
+</html>

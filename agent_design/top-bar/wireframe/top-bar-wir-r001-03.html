@@ -1,0 +1,46 @@
+<!--
+  id:        r001-03
+  component: top-bar
+  phase:     wireframe
+  parents:   none
+  direction: One capsule holds the room. A single outlined capsule contains the room name, then its spaces as
+             bare glyphs, then settings as its last segment: one group, one outline, never a row of boxes. The
+             current space is a dot under its glyph; each glyph names itself on hover. The room name opens the
+             room menu (rooms only, each with its lantern). The subject title and its stats stack on two lines,
+             centred in the window. At 1024 px the room name shrinks to its first letter inside the capsule.
+             Spec: RS-12 moves settings into the room group; RS-20 marks the current space with a dot.
+  request:   revision 1
+  inputs:    the saved brief (five mechanisms; room chip and spaces unified or rethought; settings off the far
+             right; no boxed space buttons; stats centred or in settings' old place)
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r001-03 · One capsule holds the room</title>
+<style>
+.cap2{display:flex;align-items:center;height:34px;border:1px solid var(--line);border-radius:17px;padding:0 4px}
+.cap2 .btn{height:32px;padding:0 9px}.cap2 .sep{height:18px}
+.mini{font-size:11px}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r001-03', title: 'One capsule holds the room',
+  lede: 'Room name, its spaces (bare glyphs, a dot under the current one) and settings live in one outlined capsule. Title over stats, centred.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn ${x.id === c.space.id ? 'on dot' : 'off'}" title="${x.label}">${c.glyph(x.id)}</span>`).join('');
+    const room = c.narrow ? c.room.name[0] : c.room.name;
+    const mid = c.subject ? `<div class="mid"><div class="two"><span class="title" style="max-width:100%">${c.subject} <span class="caret">▾</span></span>${c.narrow ? '' : `<span class="stats mini">${c.room.stats}</span>`}</div></div>` : '';
+    const bar = `${c.mark()}<div class="cap2"><span class="btn">${room}<span class="caret">▾</span></span><span class="sep"></span>${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span></div>${c.drag()}${mid}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar };
+    const menu = c.D.rooms.map((r, i) => `<div class="row ${r.id === c.room.id ? 'cur' : ''}">${c.mark()}<span>${r.name}</span><span class="kbd" style="margin-left:auto">Ctrl+Shift+${i + 1}</span></div>`).join('');
+    return { bar, menu, menuAt: [52, 52], menuH: 130 };
+  } });
+</script>
+</body>
+</html>

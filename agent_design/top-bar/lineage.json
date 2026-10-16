@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "concept": "top-bar",
+  "rounds": [
+    {
+      "number": 1,
+      "created_at": "2026-10-16T20:56:52.992256+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "top-bar",
+        "revision": 1,
+        "saved_at": "2026-10-16T20:52:09.969409+00:00",
+        "based_on_round": 0,
+        "selected_ids": [],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "Wireframe the Lantern top bar: the app header, which is also the frameless window's title bar (rooms-spaces RS-12, RS-18, RS-20). Five mechanisms, differing in how they work, not how they look.\nOpen questions to explore:\n1. The room chip and the space icons can be unified or rethought: one control for where am I (room and space), or two that read as one group.\n2. Settings leaves its lone far-right spot: next to the mark and room, inside a unified menu, or another place, and still reachable in one click.\n3. Space buttons must not read as boxed square buttons.\n4. Stats: centred, alone or grouped with the subject title, or taking the settings' old place.\nFixed: the Lantern mark leads to the room's Welcome; window controls flush right; empty space drags the window; the subject title opens the subject menu; at 1024 px the mark, spaces, title, settings and window controls stay.\nShow each with its room or space menu open, at 1024 px in Choose, and with no subject open (Welcome). Use Learn and Choose with their real spaces. Where a mechanism needs a spec change, say so in its direction."
+        }
+      },
+      "node_ids": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-04",
+        "r001-05"
+      ]
+    },
+    {
+      "number": 2,
+      "created_at": "2026-10-16T21:16:38.394692+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "top-bar",
+        "revision": 2,
+        "saved_at": "2026-10-16T21:14:26.658144+00:00",
+        "based_on_round": 1,
+        "selected_ids": [
+          "r001-01",
+          "r001-02",
+          "r001-03",
+          "r001-05"
+        ],
+        "next": {
+          "phase": "wireframe",
+          "mode": "combine",
+          "prompt": "Things i like per proposition:\n- top-bar r001-01: Spaces are words with a glyph, current one is clear. Settings ends the left cluster\n- top-bar r001-02: stats where settings was\n- top-bar r001-03: the capsule\n- top-bar r001-04: not that one\n- top-bar r001-05: the command field/palette (Ctrl+K) centered"
+        }
+      },
+      "node_ids": [
+        "r002-01",
+        "r002-02",
+        "r002-03"
+      ]
+    },
+    {
+      "number": 3,
+      "created_at": "2026-10-16T21:58:37.030389+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "top-bar",
+        "revision": 3,
+        "saved_at": "2026-10-16T21:56:12.685614+00:00",
+        "based_on_round": 2,
+        "selected_ids": [
+          "r001-01",
+          "r001-02",
+          "r001-03",
+          "r001-05",
+          "r002-03"
+        ],
+        "next": {
+          "phase": "form",
+          "mode": "combine",
+          "prompt": ""
+        }
+      },
+      "node_ids": [
+        "r003-01",
+        "r003-02",
+        "r003-03"
+      ]
+    },
+    {
+      "number": 4,
+      "created_at": "2026-10-16T22:16:32.490096+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "top-bar",
+        "revision": 4,
+        "saved_at": "2026-10-16T22:14:18.460395+00:00",
+        "based_on_round": 3,
+        "selected_ids": [
+          "r001-01",
+          "r001-02",
+          "r001-03",
+          "r001-05",
+          "r002-03",
+          "r003-01"
+        ],
+        "next": {
+          "phase": "color",
+          "mode": "combine",
+          "prompt": "make sure the room / space menu open is centered/well placed. Next is color (for the type keep things coherent)"
+        }
+      },
+      "node_ids": [
+        "r004-01",
+        "r004-02",
+        "r004-03"
+      ]
+    },
+    {
+      "number": 5,
+      "created_at": "2026-10-16T22:23:08.847219+00:00",
+      "request": {
+        "schema_version": 1,
+        "concept": "top-bar",
+        "revision": 5,
+        "saved_at": "2026-10-16T22:20:01.653876+00:00",
+        "based_on_round": 4,
+        "selected_ids": [
+          "r001-01",
+          "r001-02",
+          "r001-03",
+          "r001-05",
+          "r002-03",
+          "r003-01",
+          "r004-03"
+        ],
+        "next": {
+          "phase": "motion",
+          "mode": "combine",
+          "prompt": ""
+        }
+      },
+      "node_ids": [
+        "r005-01",
+        "r005-02",
+        "r005-03"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "r001-01",
+      "parents": [],
+      "file": "wireframe/top-bar-wir-r001-01.html",
+      "title": "Lamp and room as one chip",
+      "direction": "Mark and room name in one chip (mark → Welcome, name → a room menu that also lists every room's spaces). Spaces as quiet words with a glyph, underlined when current, no boxes. Settings closes the left cluster. Title and stats centred together. Spec: settings moves to RS-12 item 4; RS-20 gains labels.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-02",
+      "parents": [],
+      "file": "wireframe/top-bar-wir-r001-02.html",
+      "title": "A path you can open at every step",
+      "direction": "mark / Learn ▾ / Study ▾ / title ▾: every segment is a menu (rooms, spaces with shortcuts, subject). No space icons, so nothing is boxed. Settings beside the mark; stats in settings' old place. Spec: RS-20 icon buttons become a space menu (two clicks or Ctrl+N).",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-03",
+      "parents": [],
+      "file": "wireframe/top-bar-wir-r001-03.html",
+      "title": "One capsule holds the room",
+      "direction": "One outlined capsule holds the room name, its spaces as bare glyphs (a dot under the current one) and settings as its last segment. Title over stats, centred in the window. Spec: settings joins the room group; RS-20 marks the current space with a dot.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-04",
+      "parents": [],
+      "file": "wireframe/top-bar-wir-r001-04.html",
+      "title": "The lantern is the app menu; spaces are centred tabs",
+      "direction": "Mark → Welcome; a caret beside it opens the app menu (rooms, Settings, Shortcuts, About), so the bar has no gear. Spaces are text tabs centred in the window. Title and stats on the right. Spec: settings costs two clicks or Ctrl+, (against RS-12 item 6); shown to weigh that price.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r001-05",
+      "parents": [],
+      "file": "wireframe/top-bar-wir-r001-05.html",
+      "title": "A command field in the middle",
+      "direction": "A centred field reads Learn › Study › title and opens a Ctrl+K palette (rooms, spaces, recent subjects, Settings); its title part opens the subject menu. Spaces stay as quick bare glyphs on the left, settings after them; stats on the right. Spec: new palette; the room chip becomes part of the field.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-01",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05"
+      ],
+      "file": "wireframe/top-bar-wir-r002-01.html",
+      "title": "Capsule left, field centre",
+      "direction": "r001-03's capsule holds the room (menu of rooms), r001-01's labelled spaces underlined when current, and settings last, ending the left cluster. r001-05's centred field shows only the subject: title → subject menu, elsewhere or Ctrl+K → palette (subjects, rooms, spaces, Settings). r001-02's stats before the window controls.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-02",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05"
+      ],
+      "file": "wireframe/top-bar-wir-r002-02.html",
+      "title": "The room lives in the field",
+      "direction": "The capsule holds only the spaces as labelled words (r001-01) and settings last. The centred field starts with a room token, Learn ›, then the title: the token opens the palette narrowed to rooms, the title the subject menu, Ctrl+K the full palette (r001-05). Stats where settings was (r001-02). Spec: the room chip moves into the field.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r002-03",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05"
+      ],
+      "file": "wireframe/top-bar-wir-r002-03.html",
+      "title": "One field for the subject, menu included",
+      "direction": "Capsule as in r002-01 (room, labelled spaces, settings last). The centred field is the only subject control: one panel with this subject's settings on top (Rename, Tone, Direction, Model, Effort) and the palette below. Stats where settings was (r001-02). Spec: RS-15's subject menu becomes the top of the palette.",
+      "phase": "wireframe",
+      "tag": "wir"
+    },
+    {
+      "id": "r003-01",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03"
+      ],
+      "file": "form/top-bar-frm-r003-01.html",
+      "title": "Calm and roomy",
+      "direction": "Today's 56 px bar with more air on r002-03: 36 px capsule, 13 px labels, 34 % field, 14 px gaps; quiet hierarchy, stats muted. 7 px top drag strip (from chat).",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r003-02",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03"
+      ],
+      "file": "form/top-bar-frm-r003-02.html",
+      "title": "Compact title bar",
+      "direction": "A 44 px bar closer to a native title bar: 30 px capsule, 12 px labels, 28 % field, 10 px gaps; 12 px more for the spaces. Only a 4 px top drag strip, showing what a thin bar costs.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r003-03",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03"
+      ],
+      "file": "form/top-bar-frm-r003-03.html",
+      "title": "Title leads",
+      "direction": "A 64 px bar led by the subject: 40 % field, 14 px semibold title; the capsule steps back (fainter outline, only the current space at full ink). An 11 px top drag strip, easy to grab.",
+      "phase": "form",
+      "tag": "frm"
+    },
+    {
+      "id": "r004-01",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03",
+        "r003-01"
+      ],
+      "file": "color/top-bar-col-r004-01.html",
+      "title": "Accent marks the place",
+      "direction": "Today's language refined on r003-01: glass bar, capsule outlined in --line, room name in the accent, current space ink with an accent underline, the field a quiet --surface-2 well. Accent three times: flame, room name, underline.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-02",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03",
+        "r003-01"
+      ],
+      "file": "color/top-bar-col-r004-02.html",
+      "title": "A lit capsule",
+      "direction": "The capsule is filled with the room's --surface-2 and has no outline; the current space is an accent pill with --accent-ink text, the bar's one strong colour. The field is only a --line outline on the glass.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r004-03",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03",
+        "r003-01"
+      ],
+      "file": "color/top-bar-col-r004-03.html",
+      "title": "Quiet bar, lit field",
+      "direction": "Bar and capsule stay ink and --ink-mute; the current space gets an ink underline and a small accent dot. The field carries the room: accent hairline at 45 %, a faint accent wash, Ctrl+K in accent; the panel's current rows use an accent edge.",
+      "phase": "color",
+      "tag": "col"
+    },
+    {
+      "id": "r005-01",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/top-bar-mot-r005-01.html",
+      "title": "Still and quick",
+      "direction": "Near-native: 80 ms hover; the space marker fades out and back at the new place (90 ms each), no travel; the panel arrives as one piece (140 ms fade, 4 px drop) and leaves in 100 ms; room switch is the spec's 0.45 s crossfade.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-02",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/top-bar-mot-r005-02.html",
+      "title": "Gliding marker",
+      "direction": "One thing travels: underline and dot glide to the new space (240 ms, soft ease-out). The panel grows out of the field (a widening clip, 220 ms) and folds back into it (160 ms). Field hover lifts its accent edge 45 % to 70 %. Room switch 0.45 s.",
+      "phase": "motion",
+      "tag": "mot"
+    },
+    {
+      "id": "r005-03",
+      "parents": [
+        "r001-01",
+        "r001-02",
+        "r001-03",
+        "r001-05",
+        "r002-03",
+        "r003-01",
+        "r004-03"
+      ],
+      "file": "motion/top-bar-mot-r005-03.html",
+      "title": "The lantern relights",
+      "direction": "Motion from the flame: the accent dot re-lights at the new space (grows with a brief glow, 320 ms); the panel's rows rise 22 ms apart and the field's edge breathes once; on a room switch the flame changes first (200 ms), the room follows 120 ms later in 0.45 s.",
+      "phase": "motion",
+      "tag": "mot"
+    }
+  ]
+}

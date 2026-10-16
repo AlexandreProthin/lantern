@@ -1,0 +1,54 @@
+<!--
+  id:        r003-02
+  component: top-bar
+  phase:     form
+  parents:   r001-01, r001-02, r001-03, r001-05, r002-03
+  direction: A 44 px bar, closer to a native title bar: a 30 px capsule, 12 px labels, a 28 % field and 10 px gaps, giving the spaces below 12 px more height. Dense and even. The top drag strip is only 4 px, so this one mostly drags from the gaps; it shows what a thin bar costs.
+  request:   revision 3
+  inputs:    the saved request (revision 3, form, combine r001-01, r001-02, r001-03, r001-05, r002-03, empty prompt):
+             r002-03's structure frozen. Added from chat: the strip along the top of the bar, above the capsule,
+             field and stats, drags the window (the top 3 px stay the resize edge)
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r003-02 · Compact title bar</title>
+<style>
+:root{--barH:44px}
+.bar{gap:10px}
+.mark{width:22px;height:22px}
+.cap2{display:flex;align-items:center;height:30px;border:1px solid rgba(232,234,238,.32);border-radius:15px;padding:0 4px;flex:none;position:relative;z-index:1}
+.cap2 .btn{height:28px;padding:0 7px;border-radius:0;font-size:12px}.cap2 .sep{height:15px}
+.cap2 .off{color:var(--mute)}
+.mid{background:none}
+.field{height:28px;border-radius:14px;background:var(--bg)}
+.field .title{font-size:12.5px;font-weight:500}
+.stats{padding:0 14px;font-size:11px;position:relative;z-index:1}
+.kv{display:grid;grid-template-columns:90px 1fr;gap:4px 10px;padding:4px 8px 8px}.kv span:nth-child(odd){color:var(--mute)}
+.box2{border:1px solid var(--hair);border-radius:4px;padding:2px 8px}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r003-02', title: 'Compact title bar',
+  lede: 'Form on r002-03 (structure frozen): 44 px bar, 30 px capsule, 12 px labels, 28 % field, 12.5 px title, 11 px stats. The hatched strip along the top drags the window; the dotted top 3 px are the resize edge.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn ${x.id === c.space.id ? 'on ul' : 'off'}">${c.glyph(x.id)}${c.narrow ? '' : x.label}</span>`).join('');
+    const cap = `<div class="cap2"><span class="btn">${c.room.name}<span class="caret">▾</span></span><span class="sep"></span>${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span></div>`;
+    const field = `<div class="mid" style="width:${c.narrow ? 22 : 28}%"><div class="field">${c.subject ? `<span class="title">${c.subject}</span>` : '<span class="off">Open a subject…</span>'}<span class="kbd" style="margin-left:auto">Ctrl+K</span></div></div>`;
+    const bar = `${c.mark()}${cap}${c.drag()}${field}${c.subject && !c.narrow ? `<span class="stats">${c.room.stats}</span>` : ''}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar, band: 4 };
+    const menu = `<div class="head">This subject</div><div class="kv" style="min-width:410px"><span>Title</span><span class="box2">${c.subject} ✎</span><span>Tone</span><span class="box2">Curious ▾</span><span>Direction</span><span class="box2 off">Where should it start, or head?</span><span>Model</span><span class="box2">opus ▾</span><span>Effort</span><span class="box2">medium ▾</span></div><hr>` +
+      `<div class="row">${c.glyph('search')}<span class="off">Type a subject, a room, a space…</span></div><div class="head">Other subjects</div>` +
+      c.D.recent[c.room.id].filter(t => t !== c.subject).map(t => `<div class="row">${t}</div>`).join('') + '<div class="head">Rooms · spaces</div>' +
+      `<div class="row">● ${c.D.rooms.map(r => r.name).join('  ·  ')}</div><div class="row">${c.room.spaces.map(x => x.label).join('  ·  ')}</div><hr><div class="row">${c.glyph('settings')}Settings</div>`;
+    return { bar, band: 4, menu, menuAt: [490, 40], menuH: 500 };
+  } });
+</script>
+</body>
+</html>

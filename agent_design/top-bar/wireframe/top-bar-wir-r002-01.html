@@ -1,0 +1,51 @@
+<!--
+  id:        r002-01
+  component: top-bar
+  phase:     wireframe
+  parents:   r001-01, r001-02, r001-03, r001-05
+  direction: Capsule left, field centre. The capsule of r001-03 holds the room name (its menu lists rooms), then
+             the spaces as words with a glyph and an underline under the current one (r001-01), then settings as
+             the capsule's last segment, so settings ends the left cluster (r001-01). The centred field of
+             r001-05 now shows only the subject (room and space are already in the capsule): its title opens the
+             subject menu, the rest of the field or Ctrl+K opens the palette of subjects, rooms, spaces and
+             Settings. Stats sit in settings' old place before the window controls (r001-02). At 1024 px the
+             space words fold to glyphs and the stats hide. Spec: RS-12 order and contents change; new Ctrl+K.
+  request:   revision 2
+  inputs:    the saved request: keep r001-01's labelled spaces and settings ending the left cluster, r001-02's
+             stats where settings was, r001-03's capsule, r001-05's centred Ctrl+K field; not r001-04
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r002-01 · Capsule left, field centre</title>
+<style>
+.cap2{display:flex;align-items:center;height:36px;border:1px solid var(--line);border-radius:18px;padding:0 4px;flex:none}
+.cap2 .btn{height:34px;padding:0 9px;border-radius:0}.cap2 .sep{height:18px}
+.stats{padding:0 14px}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r002-01', title: 'Capsule left, field centre',
+  lede: 'Capsule: room ▾ | spaces as words (underlined when current) | settings. Centred field: the subject title (opens the subject menu) and Ctrl+K for the palette. Stats before the window controls.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn ${x.id === c.space.id ? 'on ul' : 'off'}">${c.glyph(x.id)}${c.narrow ? '' : x.label}</span>`).join('');
+    const cap = `<div class="cap2"><span class="btn">${c.room.name}<span class="caret">▾</span></span><span class="sep"></span>${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span></div>`;
+    const field = `<div class="mid" style="width:${c.narrow ? 26 : 30}%"><div class="field">${c.glyph('search')}${c.subject ? `<span class="title">${c.subject}</span><span class="caret">▾</span>` : '<span class="off">Open a subject…</span>'}<span class="kbd" style="margin-left:auto">Ctrl+K</span></div></div>`;
+    const bar = `${c.mark()}${cap}${c.drag()}${field}${c.subject && !c.narrow ? `<span class="stats">${c.room.stats}</span>` : ''}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar };
+    const menu = `<div class="row" style="min-width:410px">${c.glyph('search')}<span class="off">Type a subject, a room, a space…</span></div><div class="head">Recent subjects</div>` +
+      c.D.recent[c.room.id].map(t => `<div class="row">${t}</div>`).join('') + '<div class="head">Rooms</div>' +
+      c.D.rooms.map((r, i) => `<div class="row ${r.id === c.room.id ? 'cur' : ''}"><span>●</span>${r.name}<span class="kbd" style="margin-left:auto">Ctrl+Shift+${i + 1}</span></div>`).join('') + '<div class="head">Spaces</div>' +
+      c.room.spaces.map(x => `<div class="row">${c.glyph(x.id)}${x.label}<span class="kbd" style="margin-left:auto">${x.shortcut}</span></div>`).join('') +
+      `<hr><div class="row">${c.glyph('settings')}Settings</div>`;
+    return { bar, menu, menuAt: [475, 50], menuH: 470, notes: '<span class="note" style="left:60px;top:80px">palette open (Ctrl+K or a click on the field outside the title)</span>' };
+  } });
+</script>
+</body>
+</html>

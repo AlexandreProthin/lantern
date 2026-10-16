@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-10-17
+
+* **Top bar accepted**: `agent_design/top-bar`, five rounds (wireframe ×2 → form → colour → motion), winner r005-02 *Gliding marker* on r004-03 *Quiet bar, lit field*, r003-01 *Calm and roomy* and r002-03 *One field for the subject, menu included* (`RECIPE.md`). A capsule holds room, spaces (glyph + word) and settings; a centred field opens one panel (subject settings, then a Ctrl+K palette) that closes on a press outside; stats before the window controls; the top strip drags. The rooms-spaces changes it needs (RS-12, RS-15–19, RS-18, RS-20, Ctrl+K in GV-76) are listed in the recipe, to agree before implementation. The design tool gained `init --per-round` (round 1 held five proposals, a `top-bar` exception in AGENTS.md); AGENTS.md now names the folder `agent_design/`.
+
 ## 2026-10-16
 
 * **Top bar catch-up** (before the `top-bar` design phase): the window is frameless and the header is its title bar, with window controls and Snap Layouts (RS-12 item 7, RS-18); the flame takes the room accent while the app runs, an exception also noted in the identity release (RS-53); room tokens and the backdrop crossfade on a room switch (RS-30); window title and launch background (RS-54); per-room shortcut lines (RS-23); preview installers kept apart from releases, and the installer icon ([updates](/specs/updates.md) UP-43). Shipped in `c67451d`, `05bcc83`, `8c26f73`, `0f8dc6b`, `1522ee2`.

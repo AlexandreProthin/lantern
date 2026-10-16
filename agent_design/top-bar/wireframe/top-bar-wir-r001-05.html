@@ -1,0 +1,48 @@
+<!--
+  id:        r001-05
+  component: top-bar
+  phase:     wireframe
+  parents:   none
+  direction: A command field in the middle. The centre of the bar is one wide field that reads Learn › Study ›
+             Ocean tides; clicking it (or Ctrl+K) opens a palette for rooms, spaces, recent subjects and
+             Settings, typed or picked. The title part of the field still opens the subject menu directly. Left:
+             the mark and the spaces as bare glyphs with an underline, the quick path. Settings sits after them.
+             The stats take settings' old place on the right. At 1024 px the field drops the room and space words.
+             Spec: new Ctrl+K palette; the room chip (RS-12 item 2) becomes part of the field.
+  request:   revision 1
+  inputs:    the saved brief (five mechanisms; room chip and spaces unified or rethought; settings off the far
+             right; no boxed space buttons; stats centred or in settings' old place)
+  shared:    ../top-bar-data.js, ../assets/bar-kit.js
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>top-bar r001-05 · A command field in the middle</title>
+<style>
+.sp{height:56px;padding:0 9px;border-radius:0}
+.crumb{color:var(--mute)}.gt{color:var(--faint);padding:0 4px}
+</style>
+</head>
+<body>
+<script src="../top-bar-data.js"></script>
+<script src="../assets/bar-kit.js"></script>
+<script>
+BAR.page({ id: 'r001-05', title: 'A command field in the middle',
+  lede: 'A centred field shows room › space › subject and opens a palette (Ctrl+K) for rooms, spaces, subjects and Settings. Spaces stay as quick glyphs on the left. Stats where settings was.',
+  render(s, c) {
+    const spaces = c.room.spaces.map(x => `<span class="btn sp ${x.id === c.space.id ? 'on ul' : 'off'}" title="${x.label}">${c.glyph(x.id)}</span>`).join('');
+    const words = c.narrow ? '' : `<span class="crumb">${c.room.name}</span><span class="gt">›</span><span class="crumb">${c.space.label}</span><span class="gt">›</span>`;
+    const field = `<div class="mid" style="width:38%"><div class="field">${c.glyph('search')}${words}${c.subject ? `<span class="title">${c.subject}</span><span class="caret">▾</span>` : '<span class="off">Open a subject, a room or a space…</span>'}<span class="kbd" style="margin-left:auto">Ctrl+K</span></div></div>`;
+    const bar = `${c.mark()}${spaces}<span class="sep"></span><span class="btn mute">${c.glyph('settings')}</span>${c.drag()}${field}${c.subject && !c.narrow ? `<span class="stats" style="padding:0 14px">${c.room.stats}</span>` : ''}${c.windowControls()}`;
+    if (s.menu !== 'room') return { bar };
+    const menu = `<div class="row" style="min-width:470px">${c.glyph('search')}<span class="off">Type to filter</span></div><div class="head">Rooms</div>` +
+      c.D.rooms.map(r => `<div class="row ${r.id === c.room.id ? 'cur' : ''}"><span>●</span>${r.name}</div>`).join('') + '<div class="head">Spaces</div>' +
+      c.room.spaces.map(x => `<div class="row">${c.glyph(x.id)}${x.label}<span class="kbd" style="margin-left:auto">${x.shortcut}</span></div>`).join('') +
+      '<div class="head">Recent subjects</div>' + c.D.recent[c.room.id].map(t => `<div class="row">${t}</div>`).join('') + `<hr><div class="row">${c.glyph('settings')}Settings</div>`;
+    return { bar, menu, menuAt: [445, 50], menuH: 420 };
+  } });
+</script>
+</body>
+</html>
