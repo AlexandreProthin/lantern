@@ -62,8 +62,10 @@ Data side: [domain-model](/specs/domain-model.md). The three Learn spaces are sp
 
 # Header
 
-One bar across the full window width, below the native OS title bar. It acts on the whole app and
-the open subject; it is rarely touched. The stats stay secondary.
+One bar across the full window width. It acts on the whole app and the open subject; it is rarely
+touched. The stats stay secondary. The header is the window's title bar: the window has no system
+frame, empty header space drags the window, and a double-click on it maximises or restores.
+*(Amended 2026-10-16 by the user: frameless window.)*
 
 - **RS-12** The header MUST contain, left to right:
   1. **Lantern mark**: leads to the current room's Welcome. Tooltip *Welcome*. Drawn with the
@@ -79,9 +81,16 @@ the open subject; it is rarely touched. The stats stay secondary.
   5. **Compact stats**: *12 lit · 4 understood · 9 dark*. Hover shows the token total
      (*Tokens spent: 48.3k in / 21.0k out*), computed as in WG-31. Hidden with no subject open.
   6. **Settings gear**: opens Settings; always visible; never hidden by narrow widths.
+  7. **Window controls**: minimise, maximise/restore and close, Windows-style, flush with the right
+     edge. Hovering maximise opens the Windows 11 Snap Layouts, only while the window is in front.
+     Close saves first, as the system close did (the close-request flush). The controls fade while
+     the window is in the background. *(Amended 2026-10-16 by the user: frameless window.)*
 - **RS-53** *Identity assets.* The header mark (RS-12) MUST use `ember-on-dark-32.svg` from
-  `agent_identity/projects/lantern/final/lantern-identity-v0.2/exports/favicon/`, shown at 28 px,
-  with no recolouring (its tokens are part of the release). The Windows app icon MUST be built from
+  `agent_identity/projects/lantern/final/lantern-identity-v0.2/exports/favicon/`, shown at 28 px.
+  *(Amended 2026-10-16 by the user.)* While the app runs, the flame takes the room accent
+  (`--accent`), in the header mark and in the window and taskbar icon (drawn from the same SVG); the
+  ink frame is unchanged. The installer and exe icons keep the release's amber flame. The identity
+  release records this exception. The Windows app icon MUST be built from
   the same release: ember favicon PNGs for 16, 24, 32 and 48 px and `mark-on-dark` PNGs for 64 and
   256 px, each size taken from its own export rather than downscaled from one image. A new identity
   release replaces these files together; the release's `IDENTITY.md` is the source of the rules.
@@ -108,7 +117,7 @@ the open subject; it is rarely touched. The stats stay secondary.
   it started with.
 - **RS-18** Narrow-width collapse order (window ≥ 1024 px): stats lose the token hover first,
   then the stats text hides, then the room chip shrinks to its first letter. The mark, space
-  navigation, title and gear never disappear.
+  navigation, title, gear and window controls never disappear.
 
 # Space navigation
 
@@ -128,6 +137,7 @@ Space navigation is not necessarily tabs; it must be intuitive.
   canonical shortcut table of [graph-view](/specs/graph-view.md) GV-76, which this spec does not
   restate. They MUST work from any focus, including text inputs. *(Amended 2026-10-12, round 5, for v0.2.0.)* Room shortcuts **Ctrl+Shift+1**, **Ctrl+Shift+2**… follow the
   registration order (RS-4) and open that room's Welcome (q-r5-switch); they are added to GV-76.
+  The shortcuts help lists one Ctrl+Shift line per room, built from the room list (amended 2026-10-16).
   Ctrl+1/2/3 address the current room's spaces in its own order (Ctrl+4 and on for a room with more spaces, such as
   Choose's Gallery; v0.2.0 B4). Ctrl+2 with no open subject
   opens the most recently opened subject (from the app-side recents, [subject-storage](/specs/subject-storage.md)
@@ -146,7 +156,9 @@ Space navigation is not necessarily tabs; it must be intuitive.
 
 - **RS-30** Each room MUST define its palette as CSS custom properties applied on `:root`, scoped
   by a `data-room="<id>"` attribute on `<html>`; switching room swaps the attribute. Shared
-  structure (typography, spacing, radii, layout) MUST NOT vary by room.
+  structure (typography, spacing, radii, layout) MUST NOT vary by room. *(Amended 2026-10-16 by the
+  user.)* On a room switch the tokens that differ between rooms and the backdrop crossfade over
+  0.45 s (registered colour properties); with reduced motion they change at once. Launch never fades.
 - **RS-31** The mandatory token set is: `--bg --surface --surface-2 --ink --ink-mute --line
   --accent --accent-ink --focus`; plus node tokens `--node-open --node-lit --node-understood
   --glow-near --glow-far --path-muted`; plus `--code`. Learn's values are the final learning-node
@@ -221,6 +233,9 @@ Space navigation is not necessarily tabs; it must be intuitive.
   maximised window restores maximised.
 - **RS-52** Interface language is English; every string comes from one module
   (q-ui-language).
+- **RS-54** *(2026-10-16, by the user.)* The window title is *Lantern · <Room>*, shown in Alt-Tab
+  and the taskbar. The window's own background is the room `--bg` (`#101827`), so launch never
+  flashes white.
 
 # Open
 

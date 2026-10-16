@@ -15,6 +15,7 @@ Not adopted (draft kept): r016-c03 app tile, r016-c04 flat 32–64 tier, r016-c0
 ## Invariants and variants
 Keep suspension loop, split frame, asymmetric flame and rounded base recognizable. Lower flame bowl and eyes stay anchored in the actor. Feet optional; suspension attaches to the loop. Do not stretch proportions or recolor individual layers outside the token sets.
 - Ember favicon (default for tabs/taskbar): 16 uses the optical enlarged-loop source, 24–48 the master. Ink #eeeeee + flame #f39a3a on dark; ink #181818 + flame #d0561a on light. No eyes, glow or motion.
+  - App exception (2026-10-16, by the user): inside the running Lantern app the flat flame takes the current room's accent (header mark, window and taskbar icon); the ink and geometry are unchanged. Installer and exe icons keep #f39a3a. See rooms-spaces RS-53.
 - Mono favicon: single ink, for OS masks and one-color contexts.
 - Mark: face-free warm layered flame, lit frame, per-background tokens; 64/128/256/512 for on-dark, on-learn, on-light.
 - Companion: face and feet vocabulary, six static poses per background at 64/128/256, plus the animated runtime.

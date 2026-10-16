@@ -73,7 +73,10 @@ contacts GitHub, so the content security policy and the capability list do not c
   `app/scripts/make-latest-json.mjs` writes it from a signed build; the release routine is in
   [v010-release](/components/v010-release.md).
 - **UP-43** A release published without `latest.json` can never update itself. The preview builds
-  (`npm run installer:preview`) keep updater signing off and are never published.
+  (`npm run installer:preview`) keep updater signing off and are never published. *(Amended
+  2026-10-16.)* They are written to `src-tauri/target/release/bundle/preview/` under a timestamped
+  name and never replace a release installer in `bundle/nsis/` (`app/scripts/installer-preview.mjs`).
+  Every installer carries the app icon (NSIS `installerIcon`).
 - **UP-44** The first release that carries the key and endpoint cannot be reached by builds installed before
   it (they have no endpoint): the user installs it by hand once; every later release updates in place.
 - **UP-45** While the repository is private the GitHub endpoint answers 404, which is a failed check (UP-2:
