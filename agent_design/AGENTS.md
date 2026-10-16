@@ -6,10 +6,10 @@ and a reliable record of user choices matter more than production architecture.
 
 ## Scope and layout
 
-All paths below are relative to `design/`, not the repository root.
+All paths below are relative to `agent_design/`, not the repository root.
 
 ```
-design/
+agent_design/
   AGENTS.md                   this contract
   index.html                  component hub
   tool/                       shared workflow tooling; never a component
@@ -30,7 +30,7 @@ design/
     assets/                   supporting files, only when needed
 ```
 
-`design/index.html` is the workspace hub, linking the component galleries. Component
+`agent_design/index.html` is the workspace hub, linking the component galleries. Component
 experiments are designs for Lantern, not replacements for the workflow interface.
 An overall app composition can be explored as its own component. Do not replace the
 hub with a winning mockup unless the user explicitly asks to redesign the tooling.
@@ -48,7 +48,7 @@ no-tooling/no-server rule. Shared infrastructure belongs only in `tool/`.
 From the repository root:
 
 ```powershell
-python design/tool/workflow.py serve
+python agent_design/tool/workflow.py serve
 ```
 
 The hub opens at `http://127.0.0.1:8765/index.html`. `--no-open` suppresses opening a
@@ -73,7 +73,7 @@ Saving queues a brief; it does not start an agent. The user then says **next <co
 Create it in the hub with its name, first phase and prompt, or run:
 
 ```powershell
-python design/tool/workflow.py init <component> --phase wireframe --prompt "The first brief"
+python agent_design/tool/workflow.py init <component> --phase wireframe --prompt "The first brief"
 ```
 
 Initialization creates the component page and JSON files, without design proposals or
@@ -89,7 +89,7 @@ confirmation; its default is wireframe.
 
 For **every** generation, including the first:
 
-1. Read this contract and run `python design/tool/workflow.py context <component>`.
+1. Read this contract and run `python agent_design/tool/workflow.py context <component>`.
    This reads `selections.json` and `lineage.json`. Read the selected parents' HTML and
    shared data, too. Do not infer picks from chat, a screenshot or previous memory.
 2. Honor the saved phase, continuation mode and prompt verbatim. If chat conflicts
@@ -99,7 +99,7 @@ For **every** generation, including the first:
 3. Use `publish_template` from context as `<component>/round-spec.json`. It supplies
    exact IDs, files and parents. Fill in titles and directions. Write the specified
    experiment files, with the requested changes and the required header.
-4. Publish via `python design/tool/workflow.py publish <component> <spec-path>`.
+4. Publish via `python agent_design/tool/workflow.py publish <component> <spec-path>`.
    This validates the request revision and appends the nodes and a full saved-request
    snapshot atomically to the ledger. The gallery reads it automatically on reload.
 5. Report the new IDs and a sentence per proposition; identify how they use the picks.
@@ -129,6 +129,15 @@ Continuation mode is part of the saved request:
 - **single** (on request only): when the user's saved prompt asks for one proposal, publish the template's
   first entry alone by adding `"single": true` to the round spec. Combine or fresh mode only; say in the
   experiment header that the prompt asked for it. (Added 2026-10-15 at the user's request.)
+
+- **Component exception: stacked bars** (`top-bar` only; added 2026-10-16 at the user's request). The component
+  was initialized with `--per-round 5`: round 1 held **5** proposals. From round 2 the user set it back to the
+  standard counts (3; branch 3 per pick); the per-file states and the review sheet stay.
+  Each proposal is still its own registered file (one bar on the flat app background `#101827`, plus its
+  open-menu state, its 1024 px width and its no-subject state), so picks, parents and lineage work unchanged.
+  Every round also gets one review sheet, `<phase>/top-bar-<tag>-rNNN-sheet.html`, stacking that round's
+  files at full width, each labelled with its ID; the user reviews the sheet and picks the same IDs in the
+  gallery. Wireframes draw in white and grey hairlines on `#101827` instead of black on white; still no accent.
 
 The very first round needs no parents. Later combine/branch rounds require at least
 one pick. Picks can come from any round and any age, including different rounds.

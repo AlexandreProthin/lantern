@@ -68,6 +68,23 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual([p["parents"] for p in spec["proposals"]], [["r001-03"]] * 3 + [["r001-01"]] * 3)
         w.publish(self.root, "panel", spec)
 
+    def test_per_round_count_for_combine_and_fresh_only(self):
+        w.initialize(self.root, "bar", prompt="Five bars", per_round=5)
+        self.assertEqual(len(w.context(self.root, "bar")["publish_template"]["proposals"]), 5)
+        with self.assertRaises(ValueError):
+            w.initialize(self.root, "wide", per_round=9)
+        spec = w.context(self.root, "bar")["publish_template"]
+        for node in spec["proposals"]:
+            node.update(title="Bar", direction="A bar")
+            path = self.root / "bar" / node["file"]; path.parent.mkdir(exist_ok=True)
+            path.write_text("<!doctype html><html><body>Bar</body></html>", encoding="utf-8")
+        w.publish(self.root, "bar", spec)
+        state = w.state(self.root, "bar")
+        payload = copy.deepcopy(state["selection"])
+        payload.update(based_on_round=1, selected_ids=["r001-02", "r001-04"], next={"phase": "form", "mode": "branch", "prompt": "Branch"})
+        w.save_selection(self.root, "bar", payload)
+        self.assertEqual(len(w.context(self.root, "bar")["publish_template"]["proposals"]), 6)  # branch stays 3 per pick
+
     def test_single_proposal_on_request(self):
         spec = self.prepare()
         single = {"selection_revision": spec["selection_revision"], "single": True, "proposals": spec["proposals"][:1]}

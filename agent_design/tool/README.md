@@ -5,11 +5,11 @@ repository root. The server resolves its design directory from its own file, so
 it also works when launched from another directory.
 
 ```powershell
-python design/tool/workflow.py serve
+python agent_design/tool/workflow.py serve
 ```
 
 Opens `http://127.0.0.1:8765/index.html`. Use `--no-open` to keep it headless, or
-`--port 8766` if 8765 is occupied. Ctrl+C stops it. It serves only `design/` and
+`--port 8766` if 8765 is occupied. Ctrl+C stops it. It serves only `agent_design/` and
 binds to the loopback interface. Component pages require this server for saving;
 individual experiment HTML files still work when opened directly.
 
@@ -46,11 +46,11 @@ Copy unsaved feedback elsewhere before reloading if you want to keep it.
 
 ## The agent loop
 
-Read `design/AGENTS.md` first. To create a component from the command line:
+Read `agent_design/AGENTS.md` first. To create a component from the command line:
 
 ```powershell
-python design/tool/workflow.py init graph-panel --phase wireframe --prompt "Explore navigation through a graph of ideas"
-python design/tool/workflow.py context graph-panel
+python agent_design/tool/workflow.py init graph-panel --phase wireframe --prompt "Explore navigation through a graph of ideas"
+python agent_design/tool/workflow.py context graph-panel
 ```
 
 `context` reads the saved request and ledger, then prints:
@@ -65,7 +65,7 @@ the template IDs, paths, parents or order. Create only the phase directory in us
 Then register the completed proposals:
 
 ```powershell
-python design/tool/workflow.py publish graph-panel design/graph-panel/round-spec.json
+python agent_design/tool/workflow.py publish graph-panel design/graph-panel/round-spec.json
 ```
 
 Example spec shape (use the actual output from context):

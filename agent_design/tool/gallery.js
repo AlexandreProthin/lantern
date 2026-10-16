@@ -62,7 +62,7 @@ async function component(slug) {
     <div class="topline"><div><a class="eyebrow" href="/index.html">← All components</a><h1>${esc(slug)}</h1></div>
       <div class="actions"><span class="meta" id="count"></span><button id="clear">Clear picks</button><button class="primary" id="save">Save next round</button></div></div>
     <div class="settings"><label>Next round type<select id="phase">${phaseOptions}</select></label>
-      <label>Use selected designs<select id="mode"><option value="combine">Combine picks · 3 proposals</option><option value="branch">Branch each pick · 3 per pick</option><option value="fresh">Fresh start · 3 proposals</option></select></label>
+      <label>Use selected designs<select id="mode"><option value="combine">Combine picks · ${ledger.per_round || 3} proposals</option><option value="branch">Branch each pick · 3 per pick</option><option value="fresh">Fresh start · ${ledger.per_round || 3} proposals</option></select></label>
       <label class="prompt">Next round prompt<textarea id="prompt" maxlength="20000" placeholder="What should stay? What should change?"></textarea></label></div>
     <div class="status" id="status" role="status" aria-live="polite"></div></header>
     <div class="preview-tools"><label>Page format<select id="page-format">${formatOptions}</select></label><span class="meta">Scaled to fit · Double-click a page to preview</span></div>

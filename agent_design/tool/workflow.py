@@ -61,14 +61,20 @@ def inside(folder, relative):
     return path
 
 
-def initialize(root, slug, phase="wireframe", prompt=""):
+def initialize(root, slug, phase="wireframe", prompt="", per_round=3):
     folder = concept_dir(root, slug)
+    if not isinstance(per_round, int) or not 3 <= per_round <= 8:
+        raise ValueError("Proposals per round must be 3 to 8.")
     if phase not in TAGS:
         raise ValueError("Unknown phase.")
     if not isinstance(prompt, str) or len(prompt) > 20000:
         raise ValueError("Prompt must be text, at most 20,000 characters.")
     folder.mkdir()  # Never overwrite an existing component.
-    write(folder / "lineage.json", {"schema_version": 1, "concept": slug, "rounds": [], "nodes": []})
+    ledger = {"schema_version": 1, "concept": slug, "rounds": [], "nodes": []}
+    if per_round != 3:
+        # A component exception agreed with the user (AGENTS.md): combine and fresh rounds hold this many.
+        ledger["per_round"] = per_round
+    write(folder / "lineage.json", ledger)
     write(folder / "selections.json", {
         "schema_version": 1, "concept": slug, "revision": 1, "saved_at": now(),
         "based_on_round": 0, "selected_ids": [],
@@ -132,7 +138,7 @@ def context(root, slug):
     groups = groups or [[]]
     proposals = []
     for parents in groups:
-        for _ in range(3):
+        for _ in range(3 if selection["next"]["mode"] == "branch" else ledger.get("per_round", 3)):
             ident = f"r{number:03d}-{len(proposals) + 1:02d}"
             proposals.append({"id": ident, "parents": parents,
                               "file": f"{phase}/{slug}-{TAGS[phase]}-{ident}.html",
@@ -318,6 +324,7 @@ def main():
     init.add_argument("concept")
     init.add_argument("--phase", choices=TAGS, default="wireframe")
     init.add_argument("--prompt", default="")
+    init.add_argument("--per-round", type=int, default=3, help="proposals per combine/fresh round (3-8), a component exception")
     ctx = sub.add_parser("context")
     ctx.add_argument("concept")
     pub = sub.add_parser("publish")
@@ -343,7 +350,7 @@ def main():
             return
         with project_lock(ROOT):
             if args.command == "init":
-                result = initialize(ROOT, args.concept, args.phase, args.prompt)
+                result = initialize(ROOT, args.concept, args.phase, args.prompt, args.per_round)
             elif args.command == "context":
                 result = context(ROOT, args.concept)
             elif args.command == "amend":
