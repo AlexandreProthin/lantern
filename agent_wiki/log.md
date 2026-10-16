@@ -2,7 +2,7 @@
 
 ## 2026-10-16
 
-* **v0.2.0 B5 eval gate**: SOURCES amended in CP-20; the three-run gate hit the subscription's session limit in run 2 (run 1 18/19, the one failure the checker's). Case 4's checker corrected; three fresh runs to do, see the [plan](/plans/v0-2-0.md).
+* **v0.2.0 B5 eval gate**: SOURCES amended in CP-20; the three-run gate hit the subscription's session limit in run 2 (run 1 18/19, the one failure the checker's). Case 4's checker corrected. The user accepted run 1 as the gate's first run; runs 2 and 3 later, one per session window ([plan](/plans/v0-2-0.md)).
 
 ## 2026-10-15
 

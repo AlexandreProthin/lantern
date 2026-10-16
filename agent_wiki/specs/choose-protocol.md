@@ -303,6 +303,8 @@ Slots as TP-12: each template ends with its required ending; blocks are those of
   ([choose-web-tools](/decisions/choose-web-tools.md)), and the evals should test the model the room
   actually uses. A full run is about 20 research calls, roughly $5 at API prices; the runner prints the
   cost (PQ-34).
+  *2026-10-16, the user:* a run costs about $10 at API prices and most of a subscription session window, so the
+  three runs may be spread over several windows; run 1 of 2026-10-15 (18/19, its one failure the checker's) counts.
 
 # Open
 
