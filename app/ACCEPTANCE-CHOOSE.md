@@ -5,9 +5,8 @@ Welcome to a recommendation and *Mark as bought*, with real web results. Automat
 (unit tests, Playwright with the fake provider, the `choose-1` evals) do not sign these off.
 The contract is `../agent_wiki/specs/choose-room.md` and `choose-protocol.md`.
 
-**Before the build:** the Choose room is registered only in development builds (`?chooseRoom`).
-An acceptance build needs it in the room list (`app/src/rooms/index.ts`, RS-4); whether that build
-is the release itself is the user's call (the plan's *Open*: Part B's version number).
+**Build:** v0.3.0 registers the Choose room (RS-4). Build and sign it as in `README.md`, install it over
+v0.2.0 through the local update folder, then go through this list. Eval runs 2 and 3 come later (plan B5).
 
 ## Start
 

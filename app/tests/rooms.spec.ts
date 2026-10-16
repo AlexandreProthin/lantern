@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { createSubject } from '../src/core/model';
 import { newLearnSubject } from '../src/rooms/learn/rules';
 
-// RS-4/5/10/12/23, SE-12, DM-1, ST-6: the frame with one room, and with the development-only sample room.
+// RS-4/5/10/12/23, SE-12, DM-1, ST-6: the frame with one room (?singleRoom), and with Choose and the development-only sample room.
 const tides = newLearnSubject('Tides');
 const printer = createSubject('Printer', 'sample', { model: 'opus', effort: 'medium', data: {}, root: { kind: 'subject', state: 'open' } });
 test.beforeEach(async ({ page }) => {
@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('RS-5: with Learn alone there is no room menu, Ctrl+Shift+2 does nothing, and other rooms’ subjects stay out', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?singleRoom');
   await expect(page.locator('header .room')).toHaveText('Learn');
   await expect(page.locator('header').getByRole('button', { name: 'Learn' })).toHaveCount(0);
   await page.keyboard.press('Control+Shift+2'); await expect(page.locator('html')).toHaveAttribute('data-room', 'learn');
@@ -24,7 +24,7 @@ test('RS-12/23/10: the room menu and Ctrl+Shift switch rooms; each keeps its sub
   const chip = page.locator('header').getByRole('button', { name: 'Learn', exact: true });
   await chip.click();
   const menu = page.getByRole('menu', { name: 'Rooms' });
-  await expect(menu.getByRole('menuitemradio')).toHaveText(['Learn', 'Sample']);
+  await expect(menu.getByRole('menuitemradio')).toHaveText(['Learn', 'Choose', 'Sample']);
   await expect(menu.getByRole('menuitemradio', { name: 'Learn' })).toHaveAttribute('aria-checked', 'true');
   // Learn's Gallery lists only Learn subjects; open Tides in Study.
   await page.keyboard.press('Escape'); await expect(menu).toHaveCount(0);
@@ -52,11 +52,11 @@ test('RS-12/23/10: the room menu and Ctrl+Shift switch rooms; each keeps its sub
   await expect(dialog.getByText('Applies to new subjects.')).toBeVisible();
   await dialog.getByRole('button', { name: 'Close', exact: true }).click();
   // RS-10: the app reopens the room it was closed in, on its Welcome.
-  await page.keyboard.press('Control+Shift+2'); await expect(page.locator('html')).toHaveAttribute('data-room', 'sample');
+  await page.keyboard.press('Control+Shift+3'); await expect(page.locator('html')).toHaveAttribute('data-room', 'sample');
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.settings')!).ui.lastRoom)).toBe('sample');
   await page.reload();
   await expect(page.locator('header .room')).toHaveText('Sample');
   await expect(page.getByRole('heading', { name: 'Sample room' })).toBeVisible();
   // Without the sample room registered, a stored unknown room falls back to Learn.
-  await page.goto('/'); await expect(page.locator('html')).toHaveAttribute('data-room', 'learn');
+  await page.goto('/?singleRoom'); await expect(page.locator('html')).toHaveAttribute('data-room', 'learn');
 });
