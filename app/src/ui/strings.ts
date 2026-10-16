@@ -84,6 +84,9 @@ export const strings = {
   transferLibrary:'Bring your subjects to this library?', transferHint:'Move copies and verifies every file before removing originals. Copy keeps the originals. Leave them switches folders only.',
   moveSubjects:'Move', copySubjects:'Copy', leaveSubjects:'Leave them', resetDefaults:'Reset to defaults', confirmReset:'Reset this section to its defaults?',
   invalidName:'Use 1–40 characters.', invalidModel:'Use 1–100 letters, numbers, dots, underscores, colons or hyphens.', invalidBudget:'Use a whole number from 2000 to 100000.',
+  companion:'Companion', showAmber:'Show Amber', amberModel:'Amber’s model', amberEffortHint:'Used for Ask Amber, at low effort.',
+  amberSpent:(total:string, input:string, output:string, calls:number)=>`Amber has spent ${total} tokens (${input} in / ${output} out) over ${calls} question${calls===1?'':'s'}.`,
+  amberSpentNone:'Amber has not answered any questions yet.', amberHiddenHint:'Off: Amber shows up nowhere. Ctrl+J, Alt+D and ? still work.',
   found:'Found', notFound:'Not found', signedIn:'Signed in', notSignedIn:'Not signed in'
   , chooseModel:'Choose a model',copyDetails:'Copy details'
   , understoodByYou:'understood by you',preparing:'preparing',jumpLatest:'Jump to latest'

@@ -197,7 +197,7 @@ test('v0.1.1 B4/I1/I2: subject menu closes outside, offers the model list; graph
   // B4 and SE-48 in the subject menu.
   await page.locator('header .subject').click();
   const menu=page.locator('.subject-menu');
-  await expect(menu.locator('#subject-model option')).toHaveCount(11);
+  await expect(menu.locator('#subject-model option')).toHaveCount(12);
   await menu.locator('#subject-model').selectOption('claude-haiku-4-5');
   await expect.poll(()=>page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('lantern.subject.')).map(k=>localStorage.getItem(k)).join(''))).toContain('claude-haiku-4-5');
   await page.locator('.graph').click({position:{x:40,y:300}});

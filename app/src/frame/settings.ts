@@ -7,19 +7,21 @@ export interface Settings {
   appearance: { reduceMotion: 'system' | 'on'; backdrop: boolean; showTokenStats: boolean; [key: string]: unknown };
   updates: { checkAtLaunch: boolean; [key: string]: unknown };
   developer: { updateFolder: string; [key: string]: unknown };
+  /** SE-11, CO-1, CO-46: Amber on or off, and its model (effort is always low). */
+  companion: { show: boolean; model: string; [key: string]: unknown };
   ui: { studySplitPercent: number; studyCollapsed: 'none' | 'graph' | 'panel'; legendCollapsed: boolean; lastRoom: string; graphLayout: 'free' | 'tree'; textLinks: boolean; lastUpdateCheck: number; dismissedUpdate: string; [key: string]: unknown };
   [key: string]: unknown;
 }
 export function defaultSettings(library = '', name = '', rooms: readonly RoomSettingsSpec[] = []): Settings {
   return { ...Object.fromEntries(rooms.map(room => [room.id, { ...room.settings.defaults }])), format: 'lantern-settings/1', library: { path: library }, user: { displayName: name }, provider: { defaultModel: 'opus', defaultEffort: 'medium' },
     appearance: { reduceMotion: 'system', backdrop: true, showTokenStats: true },
-    updates: { checkAtLaunch: true }, developer: { updateFolder: '' },
+    updates: { checkAtLaunch: true }, developer: { updateFolder: '' }, companion: { show: true, model: 'claude-haiku-5-5' },
     ui: { studySplitPercent: 44, studyCollapsed: 'none', legendCollapsed: false, lastRoom: rooms[0]?.id ?? '', graphLayout: 'free', textLinks: true, lastUpdateCheck: 0, dismissedUpdate: '' } };
 }
 export function validateSettings(input: unknown, defaults = defaultSettings(), rooms: readonly RoomSettingsSpec[] = []): Settings {
   const raw = input && typeof input === 'object' && !Array.isArray(input) ? input as Record<string, any> : {};
   const out = { ...raw, format: defaults.format } as Settings;
-  for (const group of ['library','user','provider','appearance','updates','developer','ui'] as const) {
+  for (const group of ['library','user','provider','appearance','updates','developer','companion','ui'] as const) {
     const stored = raw[group] && typeof raw[group] === 'object' && !Array.isArray(raw[group]) ? raw[group] : {};
     (out[group] as object) = { ...defaults[group], ...stored };
   }
@@ -32,6 +34,9 @@ export function validateSettings(input: unknown, defaults = defaultSettings(), r
   if (typeof out.user.displayName !== 'string' || out.user.displayName.trim().length > 40 || !out.user.displayName.trim()) out.user.displayName = defaults.user.displayName;
   else out.user.displayName = out.user.displayName.trim();
   if (typeof p.defaultModel !== 'string' || !/^[A-Za-z0-9._:-]{1,100}$/.test(p.defaultModel)) p.defaultModel = defaults.provider.defaultModel;
+  const c = out.companion;
+  if (typeof c.show !== 'boolean') c.show = defaults.companion.show;
+  if (typeof c.model !== 'string' || !/^[A-Za-z0-9._:-]{1,100}$/.test(c.model)) c.model = defaults.companion.model;
   if (!['low','medium','high','xhigh','max'].includes(p.defaultEffort)) p.defaultEffort = defaults.provider.defaultEffort;
   // GV-100 forbids overriding an OS reduced-motion preference with "never reduce".
   if (!['system','on'].includes(a.reduceMotion)) a.reduceMotion = 'system';

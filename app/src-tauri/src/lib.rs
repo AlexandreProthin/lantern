@@ -14,6 +14,7 @@ pub fn run() {
         .manage(updates::Pending::default())
         .invoke_handler(tauri::generate_handler![commands::default_library, commands::load_subject,
             commands::save_subject, commands::list_subjects, commands::record_open, commands::read_state,
+            commands::save_companion_state, commands::append_amber_log, commands::amber_log_totals,
             commands::delete_subject, commands::subject_thumbnail, commands::reveal_subject, commands::subject_file, commands::import_poc, provider::commands::generate,
             provider::commands::cancel_generation, provider::commands::provider_status,
             commands::load_settings, commands::save_settings, commands::open_external,

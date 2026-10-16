@@ -181,6 +181,37 @@ pub fn record_open(config: &Path, id: &str, at: &str) -> Result<AppState> {
     state.last_opened_at.insert(id.into(), at.into()); state.recents.retain(|s| s != id); state.recents.insert(0, id.into());
     write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)?; Ok(state)
 }
+/// SE-50, CO-15, CO-21: Amber's spots per space and seen tips, under `companion`; other keys of the file are kept.
+pub fn save_companion_state(config: &Path, companion: &Value) -> Result<()> {
+    let ok_id=|s:&str| (1..=80).contains(&s.len()) && s.chars().all(|c| c.is_ascii_alphanumeric() || "._:/-".contains(c));
+    let spots_ok=companion["spots"].as_object().is_some_and(|m| m.iter().all(|(k,v)| ok_id(k) && v.as_str().is_some_and(ok_id)));
+    let tips_ok=companion["seenTips"].as_array().is_some_and(|a| a.iter().all(|v| v.as_str().is_some_and(ok_id)));
+    if !spots_ok || !tips_ok { return Err("Invalid companion state".into()); }
+    let mut state=read_state(config)?;
+    if state.format!=state_format() { return Err("Newer app state is read-only".into()); }
+    state.extra.insert("companion".into(), serde_json::json!({"spots":companion["spots"],"seenTips":companion["seenTips"]}));
+    write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)
+}
+/// CO-47: Amber's app-level call log, one JSON record per line, beside `state.json`.
+fn amber_log_path(config: &Path) -> PathBuf { config.join("amber-log.jsonl") }
+pub fn append_amber_log(config: &Path, record: &Value) -> Result<()> {
+    if !record.is_object() || record["requestId"].as_str().is_none() || !record["usage"].is_object() { return Err("Invalid Amber log record".into()); }
+    use std::io::Write;
+    fs::create_dir_all(config).map_err(io)?;
+    let mut line=serde_json::to_vec(record).map_err(io)?; line.push(b'\n');
+    let mut file=fs::OpenOptions::new().create(true).append(true).open(amber_log_path(config)).map_err(io)?;
+    file.write_all(&line).map_err(io)
+}
+/// The tokens *Settings → Companion* shows (input and output, as a subject counts them); unreadable lines are skipped.
+pub fn amber_log_totals(config: &Path) -> Result<Value> {
+    let (mut input, mut output, mut calls)=(0u64, 0u64, 0u64);
+    if let Ok(text)=fs::read_to_string(amber_log_path(config)) {
+        for record in text.lines().filter_map(|l| serde_json::from_str::<Value>(l).ok()).filter(|r| r.is_object()) {
+            input+=record["usage"]["input"].as_u64().unwrap_or(0); output+=record["usage"]["output"].as_u64().unwrap_or(0); calls+=1;
+        }
+    }
+    Ok(serde_json::json!({"input":input,"output":output,"calls":calls}))
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CacheEntry { #[serde(default)] pub version: u32, pub modified_ns: u128, pub size: u64, pub summary: Value }

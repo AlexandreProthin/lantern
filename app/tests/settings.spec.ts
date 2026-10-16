@@ -30,7 +30,7 @@ test('SE-6/14/16/42: validation, scoped reset, provider health and live reduced 
   await expect(dialog.getByRole('status')).toContainText('Signed in · fake-tutor');
   const model=dialog.getByRole('combobox',{name:'Default model'});
   // SE-48: the whole list is offered, whatever the current value.
-  await expect(model.locator('option')).toHaveCount(11);
+  await expect(model.locator('option')).toHaveCount(12);
   await model.selectOption('other');
   const custom=dialog.getByRole('textbox',{name:'Default model'});
   await custom.fill('not valid');await custom.press('Enter');
@@ -67,4 +67,25 @@ test('SE-47: missing CLI instructions and Check again use the shared readiness h
   await expect(frame).toHaveCount(0);
   await page.locator('.panel').getByRole('button',{name:'Retry',exact:true}).click();
   await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+});
+test('SE-11, CO-1, CO-46, CO-47: the Companion section sits before Appearance, with show, model and tokens spent', async ({page}) => {
+  await page.goto('/?study=1&subject=Companion');
+  await page.evaluate(()=>localStorage.setItem('lantern.amberLog',JSON.stringify([{requestId:'a',usage:{input:1200,output:300}},{requestId:'b',usage:{input:800,output:200}}])));
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const dialog=page.getByRole('dialog');
+  const sections=await dialog.locator('nav button').allTextContents();
+  expect(sections.indexOf('Companion')).toBe(sections.indexOf('Appearance')-1);
+  expect(sections.indexOf('Companion')).toBeGreaterThan(sections.indexOf('Learn'));
+  await dialog.getByRole('button',{name:'Companion',exact:true}).click();
+  await expect(dialog.getByTestId('amber-tokens')).toHaveText('Amber has spent 2.5k tokens (2.0k in / 500 out) over 2 questions.');
+  const model=dialog.getByRole('combobox',{name:'Amber’s model'});
+  await expect(model).toHaveValue('claude-haiku-5-5');
+  const show=dialog.getByRole('checkbox',{name:'Show Amber'});
+  await expect(show).toBeChecked();await show.uncheck();
+  await expect(dialog.getByText(/Ctrl\+J, Alt\+D and \? still work/)).toBeVisible();
+  await model.selectOption('claude-sonnet-5-5');
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')!).companion)).toEqual({show:false,model:'claude-sonnet-5-5'});
+  await dialog.getByRole('button',{name:'Reset to defaults',exact:true}).click();
+  await dialog.getByRole('button',{name:'Reset to defaults',exact:true}).click();
+  await expect(show).toBeChecked();await expect(model).toHaveValue('claude-haiku-5-5');
 });

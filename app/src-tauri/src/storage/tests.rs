@@ -92,6 +92,30 @@ fn state_unknown_fields_legacy_backup_and_future_shapes_are_preserved() {
     fs::write(&path,b"{bad").unwrap();assert!(read_state(config.path()).unwrap().recents.is_empty());assert!(fs::read_dir(config.path()).unwrap().any(|e|e.unwrap().file_name().to_string_lossy().starts_with("state.json.corrupt-")));
 }
 #[test]
+fn companion_state_keeps_other_keys_and_refuses_bad_or_newer_state() {
+    let config=tempfile::tempdir().unwrap();
+    record_open(config.path(),"tides-k3f9","2026-10-17T12:00:00Z").unwrap();
+    save_companion_state(config.path(),&json!({"spots":{"learn/study":"hang-7"},"seenTips":["frame.ask"]})).unwrap();
+    let state=read_state(config.path()).unwrap();
+    assert_eq!(state.extra["companion"]["spots"]["learn/study"],"hang-7");assert_eq!(state.recents,vec!["tides-k3f9".to_string()]);
+    assert!(save_companion_state(config.path(),&json!({"spots":{"bad key!":"x"},"seenTips":[]})).is_err());
+    assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[1]})).is_err());
+    fs::write(config.path().join("state.json"),br#"{"format":"lantern-state/2"}"#).unwrap();
+    assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[]})).is_err());
+}
+#[test]
+fn amber_log_appends_lines_and_sums_tokens_skipping_bad_lines() {
+    let config=tempfile::tempdir().unwrap();
+    assert_eq!(amber_log_totals(config.path()).unwrap(),json!({"input":0,"output":0,"calls":0}));
+    let record=|i:u64,o:u64| json!({"requestId":"r","usage":{"input":i,"output":o,"thinking":0,"cacheRead":5,"cacheWrite":0}});
+    append_amber_log(config.path(),&record(100,20)).unwrap();append_amber_log(config.path(),&record(50,5)).unwrap();
+    let mut file=fs::OpenOptions::new().append(true).open(config.path().join("amber-log.jsonl")).unwrap();
+    std::io::Write::write_all(&mut file,b"{broken\n").unwrap();
+    assert_eq!(amber_log_totals(config.path()).unwrap(),json!({"input":150,"output":25,"calls":2}));
+    assert!(append_amber_log(config.path(),&json!({"usage":{}})).is_err());
+    assert!(!config.path().join("state.json").exists());
+}
+#[test]
 fn library_copy_preserves_originals_and_renames_collisions() {
     let old=tempfile::tempdir().unwrap(); let new=tempfile::tempdir().unwrap(); let install=tempfile::tempdir().unwrap(); let config=tempfile::tempdir().unwrap();
     let s=subject(3); save_subject(old.path(),&s,None,true).unwrap(); save_subject(new.path(),&s,None,true).unwrap();

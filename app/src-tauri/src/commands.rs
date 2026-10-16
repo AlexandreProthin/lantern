@@ -29,6 +29,18 @@ pub fn read_state(app: AppHandle, lock: State<StorageLock>) -> Result<AppState, 
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::read_state(&config(&app)?)
 }
 #[tauri::command]
+pub fn save_companion_state(app: AppHandle, companion: Value, lock: State<StorageLock>) -> Result<(), String> {
+    let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::save_companion_state(&config(&app)?, &companion)
+}
+#[tauri::command]
+pub fn append_amber_log(app: AppHandle, record: Value, lock: State<StorageLock>) -> Result<(), String> {
+    let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::append_amber_log(&config(&app)?, &record)
+}
+#[tauri::command]
+pub fn amber_log_totals(app: AppHandle, lock: State<StorageLock>) -> Result<Value, String> {
+    let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::amber_log_totals(&config(&app)?)
+}
+#[tauri::command]
 pub fn delete_subject(app: AppHandle, library: PathBuf, id: String, lock: State<StorageLock>) -> Result<(), String> {
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::delete_subject(&library, &config(&app)?, &id)
 }
