@@ -25,3 +25,4 @@ Stable specs from the spec workshop, rounds 1–3 (2026-10-01/02), agreed with t
 * [Platform and quality bar](platform-quality.md) - Windows, i18n readiness, tests, prompt evals, installer.
 * [Choose room](choose-room.md) - The second room: from knowing nothing to a reasoned choice; needs, criteria, shortlist, sources.
 * [Choose protocol](choose-protocol.md) - Choose's data under lantern/2, the choose-1 prompts and blocks, context with needs and board, evals (B2).
+* [Companion](companion.md) - Amber, the identity's little lantern in the app: placement and moving, tips, guide, Ask Amber, gestures, calm; optional (workshop rounds 8–9, agreed 2026-10-16).

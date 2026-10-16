@@ -138,6 +138,10 @@ corrections as truth.
 - **NP-53** The popover closes on Esc, a click elsewhere, scroll, or a changed selection, and is
   also reachable by keyboard: with a selection present, **Alt+A** asks and **Alt+N** makes a node
   (table in [graph-view](/specs/graph-view.md) GV-76). Bold key terms keep the `--focus` colour as in the PoC.
+- **NP-54** *(Added 2026-10-16, spec workshop round 9.)* The popover's third button is **Ask Amber**
+  (**Alt+D**): a definition or more information about the selection, on Amber's model, in a card
+  anchored to the selection, not saved; the card offers *Ask the tutor*, which does what NP-51 does.
+  It works the same with Amber off. Behaviour in [companion](/specs/companion.md) CO-45.
 
 # Streaming display
 

@@ -55,6 +55,11 @@
       "id": "buy",
       "title": "Choose room",
       "blurb": "The second room: help me choose (and buy) something I know nothing about yet."
+    },
+    {
+      "id": "companion",
+      "title": "Companion",
+      "blurb": "How the little lantern of the identity lives in the app."
     }
   ],
   "rounds": [
@@ -92,6 +97,16 @@
       "number": 7,
       "created_at": "2026-10-15T20:00:00+00:00",
       "intro": "**Round 7: Choose, ready for code (v0.2.0 B2).** All six Choose designs are accepted and recorded. The new spec **Choose protocol** (Specs tab, draft) writes down what the room stores, what the model is told and must answer (with the source rules in its system prompt), what each call receives, and the evals.\n\nMost of it follows from your earlier answers. These questions are the points I had to invent. When they are answered, the protocol and Choose room specs go to review, and B3 (the provider's web tools) can start."
+    },
+    {
+      "number": 8,
+      "created_at": "2026-10-16T21:00:00Z",
+      "intro": "**Round 8: the companion.** The little lantern of the identity (release v0.2: six finite gestures, no behaviour yet) comes into the app. The new spec **Companion** (Specs tab, draft) already holds your four opening notes as rules:\n\n- **CO-1** It can be turned off in Settings, and then it shows up nowhere.\n- **CO-2** No feature depends on it: whatever it gives access to (a chat, for example) keeps its own entry point and keeps working without it.\n- **CO-3** On Welcome, interacting with it gives tips, predefined, not generated.\n- **CO-4** Anywhere, it can be the guide to using the app; that is where its role starts.\n\nThese questions turn that into behaviour: where it sits, what a click does, what *guide* means first, the gestures, calm in Study, hiding, colour and idle. One sketch shows four placements in the three spaces."
+    },
+    {
+      "number": 9,
+      "created_at": "2026-10-16T22:00:00Z",
+      "intro": "**Round 9: Amber.** Your round 8 answers are in the **Companion** spec (Specs tab): the name, hanging from the header with a rope you can grab, the resting positions, tips, the guide, Ask Amber on Haiku 5.5, the gestures and the rules. RS-33 is amended as you accepted.\n\nYour notes added a lot, and a few of them pull against boxes you ticked. The first four questions put each conflict side by side; the rest fill in the new features. The last question sorts everything into a first version and later."
     }
   ],
   "questions": [
@@ -3426,6 +3441,966 @@
       "settled": {
         "summary": "All good: no change to the draft.",
         "spec": "specs/choose-protocol.md"
+      }
+    },
+    {
+      "id": "q-r8-place",
+      "area": "companion",
+      "kind": "single",
+      "title": "Where does the companion live?",
+      "context": "It must be at least 64 px to keep its face legible, so it cannot sit inside the header row. It must never cover content or catch clicks outside its own box. Try each placement in the three spaces in the sketch.",
+      "illustration": "sketches/companion-placement.html",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "A",
+          "label": "A · Corner dock, the same spot in every space",
+          "detail": "Bottom-right, 72 px. Predictable; you always know where it is."
+        },
+        {
+          "id": "B",
+          "label": "B · Hosts Welcome, docked in the corner elsewhere",
+          "detail": "Larger beside the subject field on Welcome (where the tips are), 72 px in the corner of the other spaces.",
+          "recommended": true
+        },
+        {
+          "id": "C",
+          "label": "C · Hangs from the header by its loop",
+          "detail": "Uses the suspension pose: very *lantern*, but it sits over the top of the content in every space."
+        },
+        {
+          "id": "D",
+          "label": "D · Welcome only; called elsewhere from a header button",
+          "detail": "Out of the way by default outside Welcome; one more control in the header."
+        }
+      ],
+      "take": "**B**. Welcome is where you start and where the tips live, so it can be generous there; elsewhere a fixed corner stays predictable and out of the reading area. C is charming but sits over the graph and the Gallery's first row. D adds a header control and makes the guide harder to find, which works against CO-4.",
+      "round": 8,
+      "settled": {
+        "summary": "Amber hangs from the header by a rope and can be grabbed and moved; rope, swing, bottom resting positions, fly or fall to the nearest (CO-10 to CO-13). Details in round 9.",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-role",
+      "area": "companion",
+      "kind": "multi",
+      "title": "What is it for, besides tips and the guide?",
+      "context": "CO-3 and CO-4 give tips and the guide. Tick anything else you want in its role now; what you leave unticked can come later. Because it can be turned off (CO-1), it can never be the only place a piece of information appears.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "tips",
+          "label": "Tips on Welcome (yours, CO-3)",
+          "recommended": true
+        },
+        {
+          "id": "guide",
+          "label": "Guide to using the app (yours, CO-4)",
+          "recommended": true
+        },
+        {
+          "id": "react",
+          "label": "Reacts to your milestones",
+          "detail": "A short gesture when a subject is created, a node becomes *understood*, or a product is chosen in Choose. Only after your own action, never on its own."
+        },
+        {
+          "id": "status",
+          "label": "Shows the app's state",
+          "detail": "For example *heat and lift* while a generation runs. The state is already shown elsewhere; this would only echo it."
+        },
+        {
+          "id": "greet",
+          "label": "Greets you on first run",
+          "detail": "One welcome line the very first time Lantern opens, then never again."
+        }
+      ],
+      "take": "Tips, guide, and **react** to milestones: finite, triggered by you, and it makes reaching an *understood* node feel good (C07). **Greet** once is pleasant but makes it speak unasked; I'd leave it out to keep C09 strict. **Status** duplicates what the app already shows, and it would have to stop the moment the companion is turned off; I'd skip it.",
+      "round": 8,
+      "settled": {
+        "summary": "Tips, guide, app state during a generation, launch greeting (CO-20, CO-21, CO-25, CO-26). Conflicts with the rules in round 9.",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-tips",
+      "area": "companion",
+      "kind": "single",
+      "title": "How do tips work?",
+      "context": "Tips are predefined (CO-3), written in the strings module like every label (PQ-4), and can be per room. The question is the mechanism.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "cycle",
+          "label": "Click: a bubble with one tip; click again: the next tip",
+          "detail": "It goes through the pool, ones you haven't seen first, and remembers which you have seen. Esc or a click outside closes it.",
+          "recommended": true
+        },
+        {
+          "id": "random",
+          "label": "Click: one random tip each time",
+          "detail": "Simpler; you may see the same tip twice in a row."
+        },
+        {
+          "id": "list",
+          "label": "Click: a small panel listing all the tips",
+          "detail": "Browse them like a cheat sheet."
+        }
+      ],
+      "take": "**cycle**. One tip at a time keeps it light, and showing unseen tips first means the pool stays useful as it grows. The full list overlaps with what the guide could become.",
+      "round": 8,
+      "settled": {
+        "summary": "One tip per click in a bubble, unseen first, remembered (CO-20).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-guide",
+      "area": "companion",
+      "kind": "multi",
+      "title": "What does *guide* mean first?",
+      "context": "CO-4 says the guide starts with help using the app. Tick the forms you want in the first version. Any of them must also be reachable without the companion (CO-2): from the shortcuts overlay (?), a Help entry or Settings.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "here",
+          "label": "What can I do here? for the current space",
+          "detail": "A short predefined list for the space you're in (Welcome, Study, Gallery, and Choose's spaces), each line naming the action and its key.",
+          "recommended": true
+        },
+        {
+          "id": "tour",
+          "label": "A first-run walkthrough",
+          "detail": "A few steps that point at the parts of the screen, offered once, which you can skip and replay later."
+        },
+        {
+          "id": "point",
+          "label": "It looks or points at the control a tip is about",
+          "detail": "Its eyes or a short step toward the button the tip names."
+        },
+        {
+          "id": "chat",
+          "label": "Ask it a question about Lantern (a help chat)",
+          "detail": "Generated answers about using the app. Needs a model call and its own prompt; under CO-2 the chat would also have its own entry point."
+        }
+      ],
+      "take": "**here** first: predefined, cheap, and it extends the tips naturally. **point** is a nice touch if it stays a glance (eyes only). The **tour** and a **help chat** are each a feature of their own; I'd put them on the backlog and decide them separately.",
+      "round": 8,
+      "settled": {
+        "summary": "*What can I do here?* per space (CO-21).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-chat",
+      "area": "companion",
+      "kind": "single",
+      "title": "Which chat did you mean in CO-2?",
+      "context": "Your note: if it ever interacts with a chat, the chat survives without it. I want to write the rule for the right chat.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "help",
+          "label": "A future help chat about using Lantern",
+          "detail": "The companion would be one way in; there would be another."
+        },
+        {
+          "id": "room",
+          "label": "The rooms' dialogues (Learn's node dialogue, Choose's)",
+          "detail": "For example the companion reacting to or presenting replies. The dialogues stay exactly as they are when it's off."
+        },
+        {
+          "id": "any",
+          "label": "Any chat, present or future: it's a general rule",
+          "recommended": true
+        }
+      ],
+      "take": "**any**: written as a general rule, CO-2 covers both without naming either.",
+      "round": 8,
+      "settled": {
+        "summary": "Asking Amber about a selection in the reading panel; CO-2 written as a general rule (CO-2, CO-24).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-gestures",
+      "area": "companion",
+      "kind": "scope",
+      "title": "When does each gesture play?",
+      "context": "Gestures are the six accepted ones: **attention** (rest, looks up), **curiosity** (leans, eyes follow), **a few steps** (feet appear, small travel), **suspension** (hangs from its loop, sways), **heat and lift** (the flame brightens, it rises), **descent and landing**. Place each one. They are all finite (a few seconds) and only ever follow something you did. A gesture interrupted by another settles over 180 ms first.",
+      "items": [
+        {
+          "id": "attention",
+          "label": "Attention",
+          "detail": "Rest, looks up."
+        },
+        {
+          "id": "curiosity",
+          "label": "Curiosity",
+          "detail": "Leans, eyes follow."
+        },
+        {
+          "id": "steps",
+          "label": "A few steps",
+          "detail": "Feet appear, small travel."
+        },
+        {
+          "id": "suspension",
+          "label": "Suspension",
+          "detail": "Hangs from its loop, sways."
+        },
+        {
+          "id": "heat",
+          "label": "Heat and lift",
+          "detail": "Flame brightens, it rises."
+        },
+        {
+          "id": "descent",
+          "label": "Descent and landing",
+          "detail": "Comes back down and settles."
+        }
+      ],
+      "buckets": [
+        {
+          "id": "hover",
+          "label": "Hover or focus on it"
+        },
+        {
+          "id": "click",
+          "label": "Click (tip or guide opens)"
+        },
+        {
+          "id": "milestone",
+          "label": "After a milestone"
+        },
+        {
+          "id": "arrive",
+          "label": "When it appears or is turned back on"
+        },
+        {
+          "id": "none",
+          "label": "Not used for now"
+        }
+      ],
+      "take": "Hover → **attention**. Click → **curiosity** (it leans in as the bubble opens). Milestone → **heat and lift** then **descent and landing** (a little rise of joy). Turned back on → **a few steps** (it walks back in). **Suspension**: not for now, unless you pick placement C.",
+      "round": 8,
+      "settled": {
+        "summary": "Hover attention, click curiosity, appears hanging or with a few steps (CO-30). Heat and descent reopened in round 9.",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-study",
+      "area": "companion",
+      "kind": "single",
+      "title": "How calm is it in Study, while you read?",
+      "context": "C10: calm while learning. Study is the graph and the reading panel; Choose has its own working spaces.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "still",
+          "label": "Present but still; it moves only when you hover or click it",
+          "detail": "No milestone reactions while you read.",
+          "recommended": true
+        },
+        {
+          "id": "milestone",
+          "label": "Present; also reacts to understood",
+          "detail": "One short gesture when you mark a node understood."
+        },
+        {
+          "id": "hidden",
+          "label": "Not shown in Study at all",
+          "detail": "Only on Welcome and Gallery (and their Choose counterparts)."
+        }
+      ],
+      "take": "**still**, with one exception I'd ask you about: marking a node *understood* is the moment you stop reading, so a reaction there doesn't interrupt anything. If you ticked *react* above, the **milestone** option is consistent too.",
+      "round": 8,
+      "settled": {
+        "summary": "Still while reading (CO-33). The generation case reopened in round 9.",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-hide",
+      "area": "companion",
+      "kind": "single",
+      "title": "How do you hide it and bring it back?",
+      "context": "CO-1 gives a Settings switch. C09 also says you can make it still or hide it, and it never comes back on its own.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "settings",
+          "label": "Only the Settings switch",
+          "detail": "*Appearance → Companion*, on by default."
+        },
+        {
+          "id": "menu",
+          "label": "The switch, plus Hide in its own menu",
+          "detail": "Right-click (or its menu key) offers *Hide*, which turns the same setting off and says where to turn it back on. Back on only from Settings.",
+          "recommended": true
+        },
+        {
+          "id": "session",
+          "label": "The switch, plus a quick Hide for now",
+          "detail": "Hidden until the app restarts; the setting stays on."
+        }
+      ],
+      "take": "**menu**: one setting, two ways to reach it, and the toast tells you how to get it back. A temporary hide that returns on restart would make it come back on its own, which C09 rules out.",
+      "round": 8,
+      "settled": {
+        "summary": "Settings switch plus *Hide* in its menu; back only from Settings (CO-1, CO-4).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-tint",
+      "area": "companion",
+      "kind": "single",
+      "title": "Does it take the room's colours?",
+      "context": "The header mark's flame now takes the room accent. The identity rules say the companion's warm layers keep their tokens and only the token set changes with the background (neutral, Learn, light).",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "identity",
+          "label": "Keep the identity: same warm flame everywhere",
+          "detail": "Only the frame and halo set follows the background. A strong constant across rooms (C08)."
+        },
+        {
+          "id": "flame",
+          "label": "Its flame takes the room accent, like the header mark",
+          "detail": "Needs a token set per room, checked for the face's contrast; a change to the identity release."
+        },
+        {
+          "id": "halo",
+          "label": "Warm flame, room-tinted halo and frame light",
+          "detail": "Body and flame stay identity; the light it casts is the room's.",
+          "recommended": true
+        }
+      ],
+      "take": "**halo**: the flame is what makes it recognisable, so it stays; the light around it tells you which room you're in, as the backdrop already does. Going further (flame) means reopening the identity package.",
+      "round": 8,
+      "settled": {
+        "summary": "Warm flame and body everywhere; halo and frame light take the room tokens (CO-34).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-idle",
+      "area": "companion",
+      "kind": "single",
+      "title": "Between gestures, is anything alive?",
+      "context": "The identity's flame has a living contour (1.2 s cycle) and inner layers (2.4 s), but the body is still by default and no idle loop is allowed until agreed. RS-33 today allows no frame animation besides hover feedback, the pulses and the backdrop, so it will be amended either way.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "still",
+          "label": "Fully still between gestures",
+          "detail": "A static pose; the flame moves only during a gesture."
+        },
+        {
+          "id": "flame",
+          "label": "The flame lives; the body stays still",
+          "detail": "The accepted flame motion runs, nothing else. Stops when the window is hidden and in reduced motion.",
+          "recommended": true
+        },
+        {
+          "id": "glance",
+          "label": "Flame lives, plus a rare small glance",
+          "detail": "An occasional look every minute or so."
+        }
+      ],
+      "take": "**flame**: you asked for a flame you can feel is alive (D0017), and it's no busier than the backdrop. A spontaneous glance would be the first motion that isn't yours or the backdrop's; I'd keep that out.",
+      "round": 8,
+      "settled": {
+        "summary": "The flame lives, the body stays still (CO-32).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-rules",
+      "area": "companion",
+      "kind": "multi",
+      "title": "Which of these small rules do you accept?",
+      "context": "Rules the spec needs. Tick the ones you accept; say in the notes how to change the others.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "noinfo",
+          "label": "It is never the only place a piece of information or an action appears",
+          "detail": "Follows from CO-1 and CO-2; GV-103 says the same for motion.",
+          "recommended": true
+        },
+        {
+          "id": "nollm",
+          "label": "It never calls the model",
+          "detail": "Tips and the guide are predefined; a future help chat would be its own feature.",
+          "recommended": true
+        },
+        {
+          "id": "quiet",
+          "label": "It never speaks or moves unless you did something",
+          "detail": "No bubble on its own; gestures only after your action.",
+          "recommended": true
+        },
+        {
+          "id": "keyboard",
+          "label": "It is a real button: focusable, named, opened with Enter",
+          "detail": "Its menu (Hide) on the context-menu key or Shift+F10.",
+          "recommended": true
+        },
+        {
+          "id": "reduced",
+          "label": "Reduced motion: static poses, no gestures",
+          "detail": "The tip bubble still opens. Same rule as GV-100.",
+          "recommended": true
+        },
+        {
+          "id": "hidden",
+          "label": "Nothing runs while the window is hidden",
+          "detail": "A gesture in progress is cancelled and not replayed.",
+          "recommended": true
+        },
+        {
+          "id": "rooms",
+          "label": "Each room contributes its own tips and guide entries",
+          "detail": "Through the room definition, like its Settings section (SE-12), so new rooms add theirs.",
+          "recommended": true
+        },
+        {
+          "id": "rs33",
+          "label": "RS-33 is amended to admit the companion",
+          "detail": "Its gestures and, if agreed, its flame.",
+          "recommended": true
+        }
+      ],
+      "take": "All of them; each is the strict reading of a rule you already set (C09, C10, C13, CO-1, CO-2).",
+      "round": 8,
+      "settled": {
+        "summary": "All eight accepted (CO-3, CO-22, CO-35 to CO-37, RS-33 amended); *never calls the model* overridden by your note: Ask Amber runs on Haiku 5.5 (round 9 confirms the reading).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r8-anything",
+      "area": "companion",
+      "kind": "text",
+      "title": "Anything else about the companion?",
+      "context": "More of your ideas, things to avoid, or the tips you already have in mind.",
+      "round": 8,
+      "settled": {
+        "summary": "Ask Amber chat on Haiku 5.5 with a silent category step (CO-23); eyes follow the pointer (CO-31).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-study",
+      "area": "companion",
+      "kind": "single",
+      "title": "In Study: still while reading, but what during a generation?",
+      "context": "You chose *still while reading* (CO-33) and also *shows the app's state and entertains you during a generation* (CO-25). Most generations happen in Study. Ask Amber on a selection also starts there.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "gen",
+          "label": "Still while reading; it works while a generation you started runs, and stops when the text starts to stream",
+          "detail": "The wait before the first words is the long part; once text streams, you're reading again.",
+          "recommended": true
+        },
+        {
+          "id": "genall",
+          "label": "Still while reading; it works for the whole generation",
+          "detail": "Including while the explanation streams in."
+        },
+        {
+          "id": "nostudy",
+          "label": "No generation state in Study, only elsewhere",
+          "detail": "For example while a new subject is created from Welcome."
+        }
+      ],
+      "take": "**gen**. It covers exactly the empty wait the latency decision is about, and goes quiet the moment there is something to read (C10).",
+      "round": 9,
+      "settled": {
+        "summary": "Still while reading; works only while a generation you started waits for its first words (CO-35, CO-36, CO-53).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-entertain",
+      "area": "companion",
+      "kind": "multi",
+      "title": "What does keeping you company during a generation look like?",
+      "context": "CO-25. Tick what you want. Whatever it shows is also shown by the app (CO-3), and it all goes away with Amber off.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "work",
+          "label": "A calm working motion: it tends its flame",
+          "detail": "A new, slow, looping motion, only while waiting. Needs identity work (see the motions question)."
+        },
+        {
+          "id": "line",
+          "label": "A short line in its bubble saying what is happening",
+          "detail": "*Lighting up Tides…*, *Looking for products…*, from the strings module."
+        },
+        {
+          "id": "time",
+          "label": "The elapsed time",
+          "detail": "Already in the busy state today."
+        },
+        {
+          "id": "fact",
+          "label": "A light remark to pass the time",
+          "detail": "Predefined lines, one per wait, never about the subject (so no model call and nothing to get wrong)."
+        }
+      ],
+      "take": "**work** and **line**. The motion carries the wait, the line says it isn't stuck. Time is already shown. Remarks get old fast in a predefined pool.",
+      "round": 9,
+      "settled": {
+        "summary": "A calm working motion and a short line saying what is happening (CO-35).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-milestone",
+      "area": "companion",
+      "kind": "single",
+      "title": "Heat and lift, descent and landing: for milestones or for moving?",
+      "context": "You put both on *after a milestone*, but left *reacts to your milestones* unticked. Your placement note also needs a fly and a fall (CO-13), which are what these two gestures look like.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "move",
+          "label": "For moving only: it flies up with heat and lift, comes down with descent and landing",
+          "detail": "No milestone reactions.",
+          "recommended": true
+        },
+        {
+          "id": "both",
+          "label": "Both: moving, and a small rise of joy after a milestone",
+          "detail": "A subject created, a node understood, a product chosen. Not while reading in Study (CO-33)."
+        },
+        {
+          "id": "milestone",
+          "label": "Milestones only; the fly and the fall get new motions",
+          "detail": ""
+        }
+      ],
+      "take": "**move**: it gives the two gestures a purpose that always follows your own hand, and keeps the milestone question for later if you miss it once Amber is in.",
+      "round": 9,
+      "settled": {
+        "summary": "Heat and lift and descent and landing are its flight and fall; no milestone reactions (CO-14, CO-50).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-greet",
+      "area": "companion",
+      "kind": "single",
+      "title": "The launch greeting: how often, and how does it leave?",
+      "context": "You want a short greeting at launch, a special one on first launch, and release notes after an update. You also ticked *it never speaks or moves unless you did something*. Opening the app is something you did, so a greeting can count, but a line every launch can get old.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "every",
+          "label": "Every launch: one short line that fades after about 6 seconds",
+          "detail": "Varied from a small predefined pool. First launch and after an update get their own line.",
+          "recommended": true
+        },
+        {
+          "id": "daily",
+          "label": "The first launch of the day only",
+          "detail": "Plus first launch and after an update."
+        },
+        {
+          "id": "special",
+          "label": "Only first launch and after an update",
+          "detail": ""
+        }
+      ],
+      "take": "**every**, short and fading on its own: a hello, not a message to dismiss. It waits while a banner (CLI missing, library missing) is up, so it never covers a real problem.",
+      "round": 9,
+      "settled": {
+        "summary": "One line every launch, fades after about 6 s, hover pauses it; first launch has its own line (CO-30, CO-32).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-notes",
+      "area": "companion",
+      "kind": "single",
+      "title": "After an update, how does Amber bring the release notes?",
+      "context": "UP-13 says the update notice carries release notes only as a link to the release page, never inline. CO-3: the notes must also be reachable without Amber.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "summary",
+          "label": "A two- or three-line summary in its bubble, and a link to the full notes",
+          "detail": "The summary is written per release, in the release's own files; UP-13 is amended for Amber's bubble only."
+        },
+        {
+          "id": "link",
+          "label": "Just *What's new in 0.4.0* as a link to the release page",
+          "detail": "UP-13 unchanged.",
+          "recommended": true
+        },
+        {
+          "id": "panel",
+          "label": "A *What's new* panel in the app, which Amber opens",
+          "detail": "The panel is also in Settings → General, next to the version."
+        }
+      ],
+      "take": "**link** for the first version: no new release content to write each time. **panel** is the nicer one later, and it gives the notes an entry point without Amber.",
+      "round": 9,
+      "settled": {
+        "summary": "After an update the notes show in the bubble, cut and expandable, ending with the release page link; UP-13 amended for this bubble only (CO-31).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-llm",
+      "area": "companion",
+      "kind": "single",
+      "title": "Which of Amber's words come from the model?",
+      "context": "You ticked *it never calls the model*, then noted *Amber can have its own inference on Haiku 5.5 even for this early implementation*. My reading is below; correct it if it's wrong.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "ask",
+          "label": "Only Ask Amber (the chat and the selection) calls the model",
+          "detail": "Tips, the guide, greetings and the waiting lines stay predefined.",
+          "recommended": true
+        },
+        {
+          "id": "more",
+          "label": "Ask Amber, and also some of its other lines",
+          "detail": "Say which in the notes (a greeting that knows your subjects, for example)."
+        }
+      ],
+      "take": "**ask**. Predefined lines are instant, free and checked once; generated ones would need evals and make a fast thing slow.",
+      "round": 9,
+      "settled": {
+        "summary": "Only Ask Amber calls the model (CO-40).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-click",
+      "area": "companion",
+      "kind": "single",
+      "title": "What does a click on Amber open?",
+      "context": "A click gives a tip (CO-20), and you noted it should also offer a way to ask a question. The guide needs a way in too.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "bubble",
+          "label": "Its bubble: a tip, with Next tip and What can I do here? below it, and an Ask Amber field at the bottom",
+          "detail": "Everything in one place; Enter in the field asks.",
+          "recommended": true
+        },
+        {
+          "id": "menu",
+          "label": "A small menu first: Tip · What can I do here? · Ask Amber",
+          "detail": "One more click for everything."
+        },
+        {
+          "id": "split",
+          "label": "Click gives a tip; the guide and Ask Amber are in its right-click menu",
+          "detail": "Fast tips, hidden rest."
+        }
+      ],
+      "take": "**bubble**: one click shows everything Amber offers, and the tip is still the first thing you read.",
+      "round": 9,
+      "settled": {
+        "summary": "The bubble: tip, Next tip, What can I do here?, and the Ask field (CO-20).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-askentry",
+      "area": "companion",
+      "kind": "single",
+      "title": "How do you reach Ask Amber when Amber is off?",
+      "context": "CO-2: the chat keeps its own entry point. The same box opens whether Amber is on or off; with Amber off there's no character beside it.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "key",
+          "label": "A shortcut, Ctrl+J, listed in the ? overlay",
+          "detail": "Opens the Ask box anywhere. With Amber on, it opens Amber's bubble with the field focused."
+        },
+        {
+          "id": "keybtn",
+          "label": "The shortcut, plus a small Ask button in the header when Amber is off",
+          "detail": "Visible for people who don't use shortcuts.",
+          "recommended": true
+        },
+        {
+          "id": "help",
+          "label": "A Help entry in the header (?) opening Ask, the guide and the shortcuts",
+          "detail": "One place for all help, with or without Amber."
+        }
+      ],
+      "take": "**keybtn**: the shortcut for speed, and something visible so the chat isn't hidden once Amber is off. The header button only appears when Amber is off, so the header doesn't grow for most people.",
+      "round": 9,
+      "settled": {
+        "summary": "Ctrl+J, plus an Ask button in the header while Amber is off (CO-41, RS-12).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-ask",
+      "area": "companion",
+      "kind": "multi",
+      "title": "Ask Amber: which of these rules do you accept?",
+      "context": "The chat on Haiku 5.5 (CO-23) and the selection action (CO-24). Tick what you accept; say in the notes how to change the others.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "onecall",
+          "label": "One call, not two: Amber names the category first in its reply, silently, then answers",
+          "detail": "Your two steps stay (category first, then the answer written for it), at half the waiting time. The thinking motion runs until the answer starts.",
+          "recommended": true
+        },
+        {
+          "id": "turns",
+          "label": "A short conversation until you close it, then it's forgotten",
+          "detail": "Follow-up questions see the earlier ones. Nothing is saved to the subject.",
+          "recommended": true
+        },
+        {
+          "id": "context",
+          "label": "The subject category gets the open subject's title and the focused node's explanation; the app category gets the tips, guide and shortcut table; general gets nothing",
+          "detail": "No web tools.",
+          "recommended": true
+        },
+        {
+          "id": "log",
+          "label": "Its calls go to an app-level log, not the subject's generation log, and don't count in a subject's tokens",
+          "detail": "Settings → Companion shows Amber's tokens spent.",
+          "recommended": true
+        },
+        {
+          "id": "model",
+          "label": "Settings → Companion holds Amber's model (Haiku 5.5 by default) and its switch",
+          "detail": "The switch moves from Appearance to its own section.",
+          "recommended": true
+        },
+        {
+          "id": "evals",
+          "label": "Amber's prompt passes the eval bar (PQ-33) on Haiku 5.5 before it ships",
+          "detail": "Including the category step: app, subject and general questions.",
+          "recommended": true
+        },
+        {
+          "id": "errors",
+          "label": "A failure shows the usual fix-it message in its bubble",
+          "detail": "Same vocabulary as SE-45.",
+          "recommended": true
+        }
+      ],
+      "take": "All of them. *onecall* is the one change to your proposal: same behaviour, one wait instead of two.",
+      "round": 9,
+      "settled": {
+        "summary": "All seven: one call, short conversation, context, app-level log, Settings → Companion with the model, evals, errors (CO-42 to CO-49).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-select",
+      "area": "companion",
+      "kind": "single",
+      "title": "Ask Amber on a selection: where does the answer appear?",
+      "context": "The reading panel's selection popover has *Ask about this* (into the tutor's dialogue) and *Make it a node* (NP-50). *Ask Amber* gives a definition or more information, on Haiku, not saved.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "pop",
+          "label": "In a small card anchored to the selection; Amber leans toward it",
+          "detail": "With Amber off, the same card appears on its own (CO-2). Alt+D; Esc closes. It offers Ask the tutor to continue in the dialogue.",
+          "recommended": true
+        },
+        {
+          "id": "bubble",
+          "label": "In Amber's bubble, wherever Amber is",
+          "detail": "With Amber off, in the Ask box."
+        },
+        {
+          "id": "dialogue",
+          "label": "Added to the node's dialogue as Amber's reply",
+          "detail": "Saved with the subject."
+        }
+      ],
+      "take": "**pop**: the answer stays next to the words you asked about, and it works the same with Amber off. Saving it into the dialogue would mix two voices in the tutor's thread.",
+      "round": 9,
+      "settled": {
+        "summary": "A card anchored to the selection, Alt+D, Ask the tutor to continue; same with Amber off (CO-45, NP-54).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-move",
+      "area": "companion",
+      "kind": "multi",
+      "title": "Moving Amber: which of these rules do you accept?",
+      "context": "CO-10 to CO-13. Tick what you accept; say in the notes how to change the others.",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "range",
+          "label": "Hanging, it can be anywhere along the header's width; the rope is 0 to 160 px long",
+          "detail": "It never hangs over the window controls.",
+          "recommended": true
+        },
+        {
+          "id": "spaces",
+          "label": "Every space has bottom resting positions, given by the room definition; the default is the two bottom corners",
+          "detail": "Study has your three; Welcome, Gallery and Choose's spaces get corners unless their room says otherwise.",
+          "recommended": true
+        },
+        {
+          "id": "remember",
+          "label": "Its spot is remembered per space and kept across restarts",
+          "detail": "In the app state file (SE-50), not in settings.",
+          "recommended": true
+        },
+        {
+          "id": "keys",
+          "label": "Its menu has Move to…, listing the resting positions, for the keyboard",
+          "detail": "Same result as dragging.",
+          "recommended": true
+        },
+        {
+          "id": "pass",
+          "label": "Clicks outside its drawn shape and rope pass through to what's underneath",
+          "detail": "It never blocks a control; popovers and dialogs draw above it.",
+          "recommended": true
+        },
+        {
+          "id": "reduced",
+          "label": "In reduced motion it moves straight to the spot: no swing, flight or fall",
+          "detail": "",
+          "recommended": true
+        }
+      ],
+      "take": "All of them; they make your drag work with the keyboard, without blocking anything, and the same in every room.",
+      "round": 9,
+      "settled": {
+        "summary": "All six, with 10 equally spaced hanging positions it snaps to (CO-11 to CO-17, CO-56).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-motions",
+      "area": "companion",
+      "kind": "single",
+      "title": "The new motions: who designs them?",
+      "context": "Your notes need motions the identity release doesn't have: grabbed and dangling, the rope, the swing, thinking, working, and eyes that follow the pointer. Flying and falling may reuse heat and lift and descent and landing (question above).",
+      "allow_other": true,
+      "options": [
+        {
+          "id": "identity",
+          "label": "An identity round first (agent_identity), then code",
+          "detail": "Same review loop as the six gestures; implementation uses only accepted motions.",
+          "recommended": true
+        },
+        {
+          "id": "code",
+          "label": "Designed directly in the app; you judge them there",
+          "detail": "Faster to see in place, outside the identity process."
+        },
+        {
+          "id": "mix",
+          "label": "Physics in code, character in the identity round",
+          "detail": "Rope, swing and fall are simulated in the app; thinking, working and eyes go through an identity round."
+        }
+      ],
+      "take": "**mix**, really: the rope and the swing are physics, which is best tuned in the app, while thinking and working are character, which the identity rounds are made for. If you'd rather keep one process, **identity**.",
+      "round": 9,
+      "settled": {
+        "summary": "Designed in the app and judged there; an identity round only if the feeling is off (CO-54).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-scope",
+      "area": "companion",
+      "kind": "scope",
+      "title": "What goes in the first version?",
+      "context": "Everything here is agreed or about to be. Sort it into the first version with Amber in the app, and later. The first version is planned after this round.",
+      "items": [
+        {
+          "id": "hang",
+          "label": "Hanging from the header, static rope"
+        },
+        {
+          "id": "drag",
+          "label": "Grab and move: rope, swing, fly and fall, resting positions"
+        },
+        {
+          "id": "tips",
+          "label": "Tips"
+        },
+        {
+          "id": "guide",
+          "label": "Guide: What can I do here?"
+        },
+        {
+          "id": "gestures",
+          "label": "Hover, click and arrival gestures, living flame"
+        },
+        {
+          "id": "eyes",
+          "label": "Eyes follow the pointer"
+        },
+        {
+          "id": "gen",
+          "label": "Keeping you company during a generation"
+        },
+        {
+          "id": "greet",
+          "label": "Launch greeting, first launch, after an update"
+        },
+        {
+          "id": "ask",
+          "label": "Ask Amber chat (Haiku 5.5)"
+        },
+        {
+          "id": "select",
+          "label": "Ask Amber on a selection"
+        },
+        {
+          "id": "hide",
+          "label": "Settings switch and Hide"
+        }
+      ],
+      "buckets": [
+        {
+          "id": "first",
+          "label": "First version"
+        },
+        {
+          "id": "later",
+          "label": "Later"
+        }
+      ],
+      "take": "First: hang (static rope), tips, guide, gestures, hide, greeting, and **Ask Amber** with the selection action, since they share one prompt and one eval set. Later: drag with the rope physics, eyes, and keeping you company, all of which need the new motions.",
+      "round": 9,
+      "settled": {
+        "summary": "Everything in the first version, rope animated (spec intro, CO-12).",
+        "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r9-anything",
+      "area": "companion",
+      "kind": "text",
+      "title": "Anything else?",
+      "context": "More ideas, things to avoid, or tips and greeting lines you already have in mind.",
+      "round": 9,
+      "settled": {
+        "summary": "Nothing added.",
+        "spec": "specs/companion.md"
       }
     }
   ]

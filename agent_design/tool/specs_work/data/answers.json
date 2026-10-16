@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 23,
-  "saved_at": "2026-10-15T16:44:33.937854+00:00",
+  "revision": 33,
+  "saved_at": "2026-10-16T21:49:22.545730+00:00",
   "answers": {
     "q-poc-off": {
       "notes": "missing: \n- node content author (model name who wrote it, thinking effort if available + user name if he edited it), this i a node metadata like the state (\"LIT\", ...) tag\n- token count as generation go (to know how many the graph cost to reach a given state)\n- side pannel need to be resizable\n- generation time i am ok to wait no a constraint here (keep the live stream as tokens arrive)\n- Exactly 3 options is too restrictive: i want to be able to dismiss one, ask for others, or add my own\n- i want a way to edit/correct a node content (to influence, orient or adjust the next one generation context), will be handy in case the model halucinate wrong/false info\n- delete or regenerate a node and a cancel while it streams => yes\n- home screen needs more work to be welcoming, allow edits, see progress ...\n- need the ability to choose/change llm model (even mid session)\n- a room setting pannel (sub menu in the global app setting)\n- a proper prompt engineer pre-prompt and an optimized context managment\n- ctrl + clic multiple node to generate a new node merging the ideas\n- settings pannel: to connect the llm provider (v0.1.0 is focused to work with a claude code subscription plan but later codex or other provider even api key suport, when implemented we will have a focus on security here (probably nex version))\nLantern is like Prism, the lantern app (will) have multiple room to do different things. Each room can have multiple spaces.\nLantern spaces example:\n- learning space (the poc)\n- welcome (landing) space to start a new subject or pick a recent one to continue a previous session (up to 3 most recent session)\n- gallery to browse the knowlege exploration with associated stats ",
@@ -694,6 +694,202 @@
     "q-r7-anything": {
       "notes": "all good",
       "updated_at": "2026-10-15T16:44:28.850Z"
+    },
+    "q-r8-place": {
+      "choice": [
+        "C"
+      ],
+      "updated_at": "2026-10-16T20:14:18.887Z",
+      "notes": "Make it hangs can allow grab and replace. That way if the user wants it else where he just replace it where its convinient. While dragged within the top 1/4 screen height the rope extend/retract until it snaps. approaching the top again restic the rope so the user can let it go and amber settle from a natural (maybe simulated) swing animation. Amber can also be placed in the bottom (3 possible positions: left/right of the graph view and in the bottom right of the read pannel). if dropped too far amber fly or fall to the nearest resting position. If falling, Amber lands on his feets smoothly.\nResting position are hinted while amber is grabbed.",
+      "flag": null
+    },
+    "q-r8-role": {
+      "choice": [
+        "tips",
+        "guide",
+        "status",
+        "greet"
+      ],
+      "updated_at": "2026-10-16T20:21:54.654Z",
+      "notes": "to give a tips amber can pop in a speech bubble.\nsmall and concise greeting on app launch, special greet on first launch/fresh install can be handy to show the release note on app update.\nShow the app state and entertain the user during response generation (hidding the delay and long generation time)\n"
+    },
+    "q-r8-tips": {
+      "choice": [
+        "cycle"
+      ],
+      "updated_at": "2026-10-16T20:22:56.182Z"
+    },
+    "q-r8-anything": {
+      "notes": "# Temporary chat feature\nclicking it also offer a way of asking Amber a question (temporary chat) at any time. it runs on haiku 5.5. I propose a two step response:\n- Amber (Haiku 5.5) ilently determines what the user question is about (the app, the subject or a general question), no output yet (maybe a think animation)\n- then according to the category a preprompt is injected to personalize the response Amber will provide\n\n# more interaction\n- if the mouse get close to Amber its eyes follow the pointer (he pays attention to a potentially comming interaction)",
+      "updated_at": "2026-10-16T20:33:22.936Z"
+    },
+    "q-r8-guide": {
+      "choice": [
+        "here"
+      ],
+      "updated_at": "2026-10-16T20:30:24.559Z"
+    },
+    "q-r8-chat": {
+      "notes": "what i meant: on the right pannel user can select some text and an option would show up with ask amber to get a definition or more info",
+      "updated_at": "2026-10-16T20:36:36.165Z",
+      "choice": [
+        "other"
+      ]
+    },
+    "q-r8-gestures": {
+      "placement": {
+        "curiosity": "click",
+        "attention": "hover",
+        "heat": "milestone",
+        "steps": "arrive",
+        "suspension": "arrive",
+        "descent": "milestone"
+      },
+      "updated_at": "2026-10-16T20:40:36.768Z"
+    },
+    "q-r8-study": {
+      "choice": [
+        "still"
+      ],
+      "updated_at": "2026-10-16T20:41:26.537Z"
+    },
+    "q-r8-hide": {
+      "choice": [
+        "menu"
+      ],
+      "updated_at": "2026-10-16T20:41:59.238Z"
+    },
+    "q-r8-tint": {
+      "choice": [
+        "halo"
+      ],
+      "updated_at": "2026-10-16T20:42:13.703Z"
+    },
+    "q-r8-idle": {
+      "choice": [
+        "flame"
+      ],
+      "updated_at": "2026-10-16T20:43:09.343Z"
+    },
+    "q-r8-rules": {
+      "choice": [
+        "noinfo",
+        "nollm",
+        "quiet",
+        "keyboard",
+        "reduced",
+        "hidden",
+        "rooms",
+        "rs33"
+      ],
+      "updated_at": "2026-10-16T20:46:08.795Z",
+      "notes": "Amber can have its own inference on haiku 5.5 even for this early implementation"
+    },
+    "q-r9-study": {
+      "choice": [
+        "gen"
+      ],
+      "updated_at": "2026-10-16T21:35:05.664Z"
+    },
+    "q-r9-entertain": {
+      "choice": [
+        "work",
+        "line"
+      ],
+      "updated_at": "2026-10-16T21:25:28.057Z"
+    },
+    "q-r9-milestone": {
+      "choice": [
+        "move"
+      ],
+      "updated_at": "2026-10-16T21:26:59.829Z"
+    },
+    "q-r9-greet": {
+      "choice": [
+        "every"
+      ],
+      "updated_at": "2026-10-16T21:29:45.762Z",
+      "notes": "i can put the mouse over it to pause the 6 sec timer. if release note are long clic to expand (read the full release note)"
+    },
+    "q-r9-notes": {
+      "choice": [
+        "link"
+      ],
+      "updated_at": "2026-10-16T21:32:04.450Z",
+      "notes": "see q-r9-greet nuance. link to the release page anyway at the end (not a big deal to point to the currently private repo as it will be public the day we launch)"
+    },
+    "q-r9-llm": {
+      "choice": [
+        "ask"
+      ],
+      "updated_at": "2026-10-16T21:33:08.520Z"
+    },
+    "q-r9-click": {
+      "choice": [
+        "bubble"
+      ],
+      "updated_at": "2026-10-16T21:33:37.337Z"
+    },
+    "q-r9-askentry": {
+      "choice": [
+        "keybtn"
+      ],
+      "updated_at": "2026-10-16T21:36:15.901Z"
+    },
+    "q-r9-ask": {
+      "choice": [
+        "onecall",
+        "turns",
+        "context",
+        "log",
+        "model",
+        "evals",
+        "errors"
+      ],
+      "updated_at": "2026-10-16T21:41:29.118Z",
+      "notes": "one call not two: explain me how the backend will handle it then (respond in chat directly), i am fine with it just asking"
+    },
+    "q-r9-select": {
+      "choice": [
+        "pop"
+      ],
+      "updated_at": "2026-10-16T21:41:46.621Z"
+    },
+    "q-r9-move": {
+      "choice": [
+        "range",
+        "spaces",
+        "remember",
+        "keys",
+        "pass",
+        "reduced"
+      ],
+      "updated_at": "2026-10-16T21:45:49.752Z",
+      "notes": "i would prefer: \"Hanging, it can be anywhere along the header's width but forced to snap/clic to10 predefined positions equally spaced\""
+    },
+    "q-r9-motions": {
+      "choice": [
+        "code"
+      ],
+      "updated_at": "2026-10-16T21:47:34.685Z",
+      "notes": "do your best if the feeling is still off we will then do a proper identity round for it but i am sure you can do it first try"
+    },
+    "q-r9-scope": {
+      "placement": {
+        "hang": "first",
+        "drag": "first",
+        "tips": "first",
+        "guide": "first",
+        "gestures": "first",
+        "eyes": "first",
+        "gen": "first",
+        "greet": "first",
+        "ask": "first",
+        "select": "first",
+        "hide": "first"
+      },
+      "updated_at": "2026-10-16T21:49:07.913Z",
+      "notes": "the card says static rope but you can animate/physics it "
     }
   }
 }

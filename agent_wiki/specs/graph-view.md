@@ -181,6 +181,8 @@ Active when the graph has focus (Tab reaches the focused node; the graph is one 
 - **GV-72** **Esc** closes the shortcuts overlay, a popover or a dialog first; then it cancels an edit in progress; otherwise it cancels the
   running generation of the subject. It does nothing when none applies.
 - **GV-73** **`?`** opens a shortcuts overlay listing all keys of the app; Esc or `?` closes it.
+  *(Amended 2026-10-16, spec workshop round 9.)* It also shows *What can I do here?* for the current
+  space, the same lines as Amber's guide ([companion](/specs/companion.md) CO-2, CO-22).
 - **GV-74** **Home** focuses the root.
 - **GV-75** Keyboard moves update the focus, the panel and the route highlight together
   (GV-80), and pan the view if needed (GV-34).
@@ -197,7 +199,8 @@ Active when the graph has focus (Tab reaches the focused node; the graph is one 
 | Ctrl+Enter | composer; an edit field | Send the message; in an edit field, save the edit |
 | Esc | anywhere | Close the overlay, popover or dialog; else cancel the edit in progress; else cancel the running generation (GV-72) |
 | Ctrl+1 / Ctrl+2 / Ctrl+3 | anywhere, any focus | Welcome / Study / Gallery; Ctrl+2 with no subject open opens the most recent one |
-| Alt+A / Alt+N | with a text selection | *Ask about this* / *Make it a node* (the selection popover) |
+| Alt+A / Alt+N / Alt+D | with a text selection | *Ask about this* / *Make it a node* / *Ask Amber* (the selection popover; Alt+D from 2026-10-16, NP-54) |
+| Ctrl+J | anywhere, any focus | Ask Amber: opens Amber's bubble with its field focused, or the Ask box when Amber is off ([companion](/specs/companion.md) CO-41) |
 | ? | anywhere outside a text field | Show or hide the shortcuts |
 | Ctrl+Shift+1 / Ctrl+Shift+2 | anywhere, any focus | Learn / Choose room, on its Welcome (RS-23, from v0.2.0) |
 | Ctrl+, | anywhere | Open Settings |

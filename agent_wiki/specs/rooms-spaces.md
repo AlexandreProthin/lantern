@@ -38,7 +38,7 @@ Data side: [domain-model](/specs/domain-model.md). The three Learn spaces are sp
   component rendered under Settings → the room's name); `prompts` (builders and versions);
   `nodeKinds` and `nodeStates` (labels, glyphs, legend rows); `statsSummary(subject)` (the
   header's compact stats text and hover); `legend` (legend rows, RS-35); and `newSubject(title,
-  tone)` (creates the room visit's initial graph). The frame MUST call only these members. *(Amended 2026-10-13, v0.2.0 A2.)* Also: `validate(visit)` (the room's values, DM-66), `summarize(visitSummary)` (its Welcome and Gallery stats from the storage summary, ST-7). *(Amended 2026-10-13, v0.2.0 A3.)* And: `settings` (its settings group's defaults and validation, SE-12), `defaultTone(settings)`, `applySettings(session, settings)` (settings that reach open sessions), `fakeProvider(delay, error)` (IP-71, per room in the browser build), and `subjectMenu` (a component for the room's own fields in the subject menu, RS-15/RS-19: Learn's tone and direction; the frame keeps title, model and effort). The room list is `app/src/rooms/index.ts`; development builds opened with `?sampleRoom` add a sample room to test the frame with two rooms, and release builds do not contain it.
+  tone)` (creates the room visit's initial graph). The frame MUST call only these members. *(Amended 2026-10-13, v0.2.0 A2.)* Also: `validate(visit)` (the room's values, DM-66), `summarize(visitSummary)` (its Welcome and Gallery stats from the storage summary, ST-7). *(Amended 2026-10-13, v0.2.0 A3.)* And: `settings` (its settings group's defaults and validation, SE-12), `defaultTone(settings)`, `applySettings(session, settings)` (settings that reach open sessions), `fakeProvider(delay, error)` (IP-71, per room in the browser build), and `subjectMenu` (a component for the room's own fields in the subject menu, RS-15/RS-19: Learn's tone and direction; the frame keeps title, model and effort). *(Amended 2026-10-16, spec workshop round 9.)* And for the companion ([companion](/specs/companion.md) CO-23): `companion` (the room's tips, its *What can I do here?* lines per space, and each space's bottom resting positions, defaulting to the two bottom corners). The room list is `app/src/rooms/index.ts`; development builds opened with `?sampleRoom` add a sample room to test the frame with two rooms, and release builds do not contain it.
 - **RS-4** v0.1.0 MUST register exactly one room, Learn, with spaces Welcome, Study, Gallery in
   that order, and default space Study. *(Amended 2026-10-12, round 5, for v0.2.0.)* The rooms are registered in one list, in this
   order: Learn, then [Choose](/specs/choose-room.md). The frame MUST NOT name a room anywhere else
@@ -85,6 +85,11 @@ frame, empty header space drags the window, and a double-click on it maximises o
      edge. Hovering maximise opens the Windows 11 Snap Layouts, only while the window is in front.
      Close saves first, as the system close did (the close-request flush). The controls fade while
      the window is in the background. *(Amended 2026-10-16 by the user: frameless window.)*
+
+  *(Amended 2026-10-16, spec workshop round 9.)* While Amber is off, an **Ask** button sits just
+  before the gear and opens Ask Amber ([companion](/specs/companion.md) CO-41). While Amber is on,
+  its rope is tied to the header's bottom edge and it hangs below it (CO-10, CO-11); the header's
+  controls are never covered.
 - **RS-53** *Identity assets.* The header mark (RS-12) MUST use `ember-on-dark-32.svg` from
   `agent_identity/projects/lantern/final/lantern-identity-v0.2/exports/favicon/`, shown at 28 px.
   *(Amended 2026-10-16 by the user.)* While the app runs, the flame takes the room accent
@@ -171,9 +176,11 @@ Space navigation is not necessarily tabs; it must be intuitive.
   is a defect. Status colours not in the token set (error) MUST be tokens too (`--error`,
   `#d86a5a`, text `#f0a598`, as in the PoC).
 - **RS-33** The look is a calm, warm light in a peaceful place: no animation runs in the frame
-  except hover/press feedback, the pulses of RS-25 and the ambient backdrop of RS-34; the frame
+  except hover/press feedback, the pulses of RS-25, the ambient backdrop of RS-34 and the companion
+  Amber ([companion](/specs/companion.md): its gestures and its living flame); the frame
   honours the reduced-motion rules of [graph-view](/specs/graph-view.md) GV-100 to GV-103.
-  *Amended 2026-10-08 by the user to admit the backdrop.*
+  *Amended 2026-10-08 by the user to admit the backdrop, and 2026-10-16 (spec workshop round 8) to
+  admit the companion.*
 - **RS-34** *Backdrop.* Behind every space the frame draws one ambient layer, the final `backdrop`
   design (`agent_design/backdrop/RECIPE.md`, r005-03 *Calm orbits, amber only*): five soft lights
   orbit slowly (52–120 s per turn) around an anchor set per space, and fine motes drift upward,

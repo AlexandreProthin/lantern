@@ -40,6 +40,9 @@ contacts GitHub, so the content security policy and the capability list do not c
   always shows its result.
 - **UP-12** The notice MUST NOT appear while the Learn room is generating; it waits until nothing is running.
 - **UP-13** The notice MUST carry the release notes only as a link to the release page, never inline.
+  *Amended 2026-10-16 (spec workshop round 9):* the one exception is Amber's greeting on the first
+  launch after an update, which shows the notes inline, expandable, ending with that link
+  ([companion](/specs/companion.md) CO-31). The notice itself is unchanged.
 
 ## Checking by hand
 

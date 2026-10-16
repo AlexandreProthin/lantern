@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Companion placement</title>
+<style>
+:root{--bg:#101827;--surface:#172132;--surface-2:#1d2a3f;--ink:#f3e9dc;--ink-mute:#aeb3bf;--line:#3b4558;--accent:#e8b66e;--accent-ink:#211b14;--focus:#ffe0ab}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.4 system-ui,"Segoe UI",sans-serif;overflow-x:hidden}
+body{padding:10px 14px 14px;max-width:1180px;margin:0 auto}
+h1{font-size:17px;margin:0 0 2px}
+.lede{color:var(--ink-mute);margin:0 0 10px;max-width:95ch;font-size:12.5px}
+button{font:inherit;color:inherit;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:4px 9px;cursor:pointer}
+button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:12px}
+figure{margin:0}
+figcaption{margin:0 0 4px;font-weight:600}
+figcaption span{font-weight:400;color:var(--ink-mute)}
+.app{border:1px solid var(--line);border-radius:8px;background:var(--surface);height:300px;display:flex;flex-direction:column;overflow:hidden;position:relative}
+header{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--line);background:var(--surface-2);height:36px;position:relative;z-index:2}
+header .m{color:var(--accent);font-weight:700}
+header .sp{flex:1}
+header .ic{width:22px;height:22px;border:1px solid var(--line);border-radius:5px;display:inline-grid;place-items:center;font-size:11px;color:var(--ink-mute)}
+main{flex:1;position:relative;padding:14px}
+.ph{background:var(--surface-2);border:1px dashed var(--line);border-radius:6px;color:var(--ink-mute);display:grid;place-items:center;font-size:11px}
+.welcome .field{height:34px;margin:30px auto 10px;width:62%}
+.welcome .cards{display:flex;gap:8px;justify-content:center}
+.welcome .cards .ph{width:110px;height:70px}
+.study{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;height:100%}
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.gallery .ph{height:70px}
+.co{position:absolute;cursor:pointer;background:none;border:0;padding:0;z-index:3}
+.co img{display:block;width:100%;height:auto}
+.bubble{position:absolute;background:var(--surface-2);border:1px solid var(--accent);border-radius:10px;padding:7px 10px;width:220px;font-size:12px;z-index:4;display:none}
+.bubble.on{display:block}
+.bubble small{display:block;color:var(--ink-mute);margin-top:4px}
+.hang-line{position:absolute;width:1px;background:var(--line);z-index:2}
+.summon{border-color:var(--accent)!important;color:var(--accent)!important;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>Where the companion lives</h1>
+<p class="lede">Four placements, each shown in the three Learn spaces. Click the companion to open a sample tip
+(in D, click the lantern button in the header first). Sizes are real proportions: 72 px in a corner, 120 px on
+Welcome. Poses are the accepted static exports (rest, curiosity, suspension). Nothing moves here; motion is a
+separate question.</p>
+<div class="bar" role="group" aria-label="Space">
+  <span>Space:</span>
+  <button data-space="welcome" aria-pressed="true">Welcome</button>
+  <button data-space="study" aria-pressed="false">Study</button>
+  <button data-space="gallery" aria-pressed="false">Gallery</button>
+</div>
+<div class="grid" id="grid"></div>
+<script>
+const TIP = 'Tip: press <b>?</b> anywhere to see every shortcut.<small>Click again for the next tip · Esc closes</small>';
+const OPTS = [
+  {id:'A', name:'Corner dock', note:'same spot in every space, bottom-right'},
+  {id:'B', name:'Welcome host, corner elsewhere', note:'larger beside the field on Welcome, docked in other spaces'},
+  {id:'C', name:'Hangs from the header', note:'suspended by its loop under the header, right side'},
+  {id:'D', name:'Welcome only, called elsewhere', note:'elsewhere a lantern button in the header brings it out'},
+];
+function spaceHtml(s){
+  if(s==='welcome') return '<div class="welcome"><div class="ph field">subject field</div><div class="cards"><div class="ph">recent</div><div class="ph">recent</div><div class="ph">recent</div></div></div>';
+  if(s==='study') return '<div class="study"><div class="ph">graph</div><div class="ph">reading panel</div></div>';
+  return '<div class="gallery">'+'<div class="ph">card</div>'.repeat(8)+'</div>';
+}
+function companion(opt, s){
+  // returns {html} positioned inside .app (header 36px tall)
+  const img = (f,w,style)=>`<button class="co" style="width:${w}px;${style}" aria-label="Companion"><img src="companion/${f}" alt=""></button>`;
+  if(opt==='A') return img('gesture-01-on-learn.svg',72,'right:10px;bottom:6px');
+  if(opt==='B') return s==='welcome' ? img('gesture-02-on-learn.svg',120,'left:20px;top:70px') : img('gesture-01-on-learn.svg',72,'right:10px;bottom:6px');
+  if(opt==='C') return '<div class="hang-line" style="right:52px;top:36px;height:8px"></div>'+img('gesture-04-on-learn.svg',72,'right:16px;top:38px');
+  if(opt==='D') return s==='welcome' ? img('gesture-02-on-learn.svg',120,'left:20px;top:70px') : '';
+}
+function render(space){
+  const g = document.getElementById('grid'); g.innerHTML='';
+  for(const o of OPTS){
+    const f = document.createElement('figure');
+    const summon = o.id==='D' && space!=='welcome';
+    f.innerHTML = `<figcaption>${o.id} · ${o.name} <span>— ${o.note}</span></figcaption>
+      <div class="app"><header><span class="m">◆ Lantern</span><span class="sp"></span>
+      ${summon?'<span class="ic summon" title="Companion">🏮</span>':''}<span class="ic">⌂</span><span class="ic">◎</span><span class="ic">▦</span><span class="ic">⚙</span></header>
+      <main>${spaceHtml(space)}</main>${companion(o.id,space)}<div class="bubble">${TIP}</div></div>`;
+    g.appendChild(f);
+    const app = f.querySelector('.app'), b = f.querySelector('.bubble');
+    const place = btn => { const r = btn.getBoundingClientRect(), a = app.getBoundingClientRect();
+      let x = r.left-a.left + r.width/2 - 110, y = r.top-a.top - 70;
+      if(y < 40) y = r.bottom-a.top + 6;
+      b.style.left = Math.max(6, Math.min(x, a.width-226))+'px'; b.style.top = y+'px'; };
+    const co = f.querySelector('.co');
+    if(co) co.onclick = () => { place(co); b.classList.toggle('on'); };
+    const s = f.querySelector('.summon');
+    if(s) s.onclick = () => { const main = f.querySelector('main');
+      if(!f.querySelector('.co')){ app.insertAdjacentHTML('beforeend', companion('A',space));
+        const c = f.querySelector('.co'); c.onclick = () => { place(c); b.classList.toggle('on'); }; }
+      else { f.querySelector('.co').remove(); b.classList.remove('on'); } };
+  }
+}
+document.querySelectorAll('[data-space]').forEach(btn => btn.onclick = () => {
+  document.querySelectorAll('[data-space]').forEach(x => x.setAttribute('aria-pressed', x===btn));
+  render(btn.dataset.space);
+});
+document.addEventListener('keydown', e => { if(e.key==='Escape') document.querySelectorAll('.bubble').forEach(b=>b.classList.remove('on')); });
+render('welcome');
+</script>
+</body>
+</html>

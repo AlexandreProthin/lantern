@@ -292,6 +292,42 @@
         "q-r7-evals",
         "q-r7-anything"
       ]
+    },
+    {
+      "id": "companion",
+      "title": "Companion",
+      "area": "companion",
+      "status": "agreed",
+      "file": "specs/companion.md",
+      "summary": "Amber, the identity's little lantern: hangs from the header and can be moved, tips, guide, Ask Amber on Haiku 5.5, gestures, calm; optional, nothing depends on it.",
+      "questions": [
+        "q-r8-place",
+        "q-r8-role",
+        "q-r8-tips",
+        "q-r8-guide",
+        "q-r8-chat",
+        "q-r8-gestures",
+        "q-r8-study",
+        "q-r8-hide",
+        "q-r8-tint",
+        "q-r8-idle",
+        "q-r8-rules",
+        "q-r8-anything",
+        "q-r9-study",
+        "q-r9-entertain",
+        "q-r9-milestone",
+        "q-r9-greet",
+        "q-r9-notes",
+        "q-r9-llm",
+        "q-r9-click",
+        "q-r9-askentry",
+        "q-r9-ask",
+        "q-r9-select",
+        "q-r9-move",
+        "q-r9-motions",
+        "q-r9-scope",
+        "q-r9-anything"
+      ]
     }
   ]
 }
