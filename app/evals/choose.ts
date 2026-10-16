@@ -98,8 +98,9 @@ function cases(): Case[] {
         const p = parseReply(raw, 'find', { today, web: true, focusKind: 'family' }), rawList = blockJson(raw, 'products') ?? [], f: string[] = [];
         const all: Source[] = (Array.isArray(rawList) ? rawList : []).flatMap((x: { facts?: { sources?: Source[] }[] }) => (x.facts ?? []).flatMap(y => y.sources ?? []));
         if (all.some(x => /reddit|forum|community|facebook|discord/i.test(`${x.name} ${x.url ?? ''}`) && x.kind !== 'opinion')) f.push('community source not marked opinion');
-        if (all.some(x => /best|top-?\d|deal|coupon|affiliate/i.test(`${x.url ?? ''}`) && !['sponsored', 'opinion', 'shop'].includes(x.kind))) f.push('affiliate-looking source used as a fact source');
-        for (const x of p.products) for (const y of x.facts) if (/volume|dimension|size|speed|weight|nozzle|temperature/i.test(y.label) && !y.sources.some(z => z.kind === 'manufacturer')) f.push(`spec "${y.label}" without the manufacturer`);
+        // An affiliate-looking address (best-of list, deals, coupons) that is not a review or test.
+        if (all.some(x => /best|top-?\d|deal|coupon|affiliate/i.test(`${x.url ?? ''}`) && !/review|test/i.test(`${x.url ?? ''}`) && !['sponsored', 'opinion', 'shop'].includes(x.kind))) f.push('affiliate-looking source used as a fact source');
+        for (const x of p.products) for (const y of x.facts) if (/volume|dimension|size|speed|weight|nozzle|temperature/i.test(y.label) && !y.sources.some(z => z.kind === 'manufacturer' || z.kind === 'shop')) f.push(`spec "${y.label}" without the manufacturer`); // a shop quoting the maker is allowed (SOURCES, amended 2026-10-15)
         return [...findJudge(v, true)(raw), ...f]; } }); }
     { const { v, ids } = printer('3D printer', { noise: true }); const target = ['a1', 'mk4s', 'k1c'].map(k => ({ productId: ids[k], criterionId: ids.noise }));
       push({ id: `5-disagree-${rep}`, research: true, task: 'fill', web: true, v, focusId: ids.noise, target, judge: raw => {

@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-10-16
+
+* **v0.2.0 B5 eval gate**: SOURCES amended in CP-20; the three-run gate hit the subscription's session limit in run 2 (run 1 18/19, the one failure the checker's). Case 4's checker corrected; three fresh runs to do, see the [plan](/plans/v0-2-0.md).
+
 ## 2026-10-15
 
 * **v0.2.0 B5 started**: the nine B4 points recorded in [choose-room](/specs/choose-room.md); acceptance checklist `app/ACCEPTANCE-CHOOSE.md`; Choose eval runner `app/evals/choose.ts`. First real run 16/19 (84 %), under the 95 % bar: the model sourced specs from shops when the maker's site blocked it, and wrote three facts without an allowed source; a SOURCES amendment is proposed in the [plan](/plans/v0-2-0.md).

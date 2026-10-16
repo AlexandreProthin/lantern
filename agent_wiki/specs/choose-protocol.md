@@ -102,6 +102,9 @@ puts in `data` and which values it allows (DM-66).
   else. Outside research tasks, do not search.* Off, *You have no web access. Every product fact
   comes from your own knowledge: mark its source as kind "model" with your knowledge date, and say
   that prices may have changed.*
+  *SOURCES amended 2026-10-15 by the user after the first eval run (v0.2.0 B5): the paragraph after rule 7
+  (the maker's page unreadable, no own knowledge in research, no sponsored-only or empty facts). `choose-1` had not
+  shipped, so the version stays.*
 - **CP-22** Prompt versions are `choose-<n>`, bumped as TP-20, recorded per call (TP-21), kept only
   after the evals pass (TP-22, CP-60).
 
@@ -130,6 +133,7 @@ SOURCES
 6. Every product fact has its source and the date you read it. A price is an indication at that date, in the user's currency, from a shop in the user's country when there is one; never a promise.
 7. When sources disagree, say so and give each value; never pick one silently.
 If you found nothing reliable, say so: an empty value is better than a guess.
+When the maker's page cannot be read, use a search result from the maker's own site as kind "manufacturer", or a shop quoting the maker's figures as kind "shop" and say so in the prose. In a research task with web access, never cite your own knowledge. Leave out any fact you have no source for other than a sponsored one; never write an empty fact.
 
 TONE
 {{TONE_LINE}}
