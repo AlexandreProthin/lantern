@@ -106,7 +106,10 @@ The bar's bottom line is `--ink-mute` at 16 %. Close hover stays Windows red `#c
 
 ## For the implementation
 
-Spec changes this design needs, to agree in chat before building (rooms-spaces):
+Spec changes this design needs (rooms-spaces). **Agreed with the user on 2026-10-17** and written into
+[rooms-spaces](../../agent_wiki/specs/rooms-spaces.md) (header intro, RS-12, RS-14, RS-15, RS-18, RS-20, RS-25, RS-53) and
+[graph-view](../../agent_wiki/specs/graph-view.md) GV-76 on branch `claude/lantern-top-bar`; the specs are the reference
+from here. Palette subjects are this room's only; renaming happens in the panel; the room name stays whole at 1024 px.
 
 - **RS-12** new order and contents: mark · capsule (room ▾, spaces, settings) · centred field · stats · window
   controls. The room chip joins the capsule; settings moves from the far right into the capsule; stats move to just

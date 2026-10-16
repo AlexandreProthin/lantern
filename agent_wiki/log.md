@@ -2,6 +2,8 @@
 
 ## 2026-10-17
 
+* **Top bar spec agreed** (branch `claude/lantern-top-bar`) for the implementation of `agent_design/top-bar` r005-02: [rooms-spaces](/specs/rooms-spaces.md) header intro (top drag strip), RS-12 rewritten (mark · capsule with room, spaces, settings and Ask · centred field · stats · window controls), RS-14 (stats 12 px), RS-15 (the subject menu becomes the top of the field's panel, with a palette of this room's subjects, the rooms and Settings; closes on Esc, a second click, a press outside or a choice), RS-18 (new collapse order; the room name stays whole), RS-20 (glyph and word, ink underline and accent dot, 240 ms glide), RS-25 (busy dot in the field), RS-53 (mark at 26 px); [graph-view](/specs/graph-view.md) GV-76 gains Ctrl+K and Esc closes the panel.
+
 * **Top bar accepted**: `agent_design/top-bar`, five rounds (wireframe ×2 → form → colour → motion), winner r005-02 *Gliding marker* on r004-03 *Quiet bar, lit field*, r003-01 *Calm and roomy* and r002-03 *One field for the subject, menu included* (`RECIPE.md`). A capsule holds room, spaces (glyph + word) and settings; a centred field opens one panel (subject settings, then a Ctrl+K palette) that closes on a press outside; stats before the window controls; the top strip drags. The rooms-spaces changes it needs (RS-12, RS-15–19, RS-18, RS-20, Ctrl+K in GV-76) are listed in the recipe, to agree before implementation. The design tool gained `init --per-round` (round 1 held five proposals, a `top-bar` exception in AGENTS.md); AGENTS.md now names the folder `agent_design/`.
 
 ## 2026-10-16

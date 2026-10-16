@@ -65,35 +65,44 @@ Data side: [domain-model](/specs/domain-model.md). The three Learn spaces are sp
 One bar across the full window width. It acts on the whole app and the open subject; it is rarely
 touched. The stats stay secondary. The header is the window's title bar: the window has no system
 frame, empty header space drags the window, and a double-click on it maximises or restores.
-*(Amended 2026-10-16 by the user: frameless window.)*
+*(Amended 2026-10-16 by the user: frameless window.)* A strip along the top of the bar, above its
+controls, drags the window too; the top 3 px stay the resize edge. *(Amended 2026-10-17 by the user: the accepted top bar, `agent_design/top-bar` r005-02.)*
 
-- **RS-12** The header MUST contain, left to right:
+- **RS-12** The header MUST contain, left to right. *(Amended 2026-10-17 by the user: the accepted top bar, `agent_design/top-bar` r005-02.)* The measures, colours and
+  timings are the design's `RECIPE.md`.
   1. **Lantern mark**: leads to the current room's Welcome. Tooltip *Welcome*. Drawn with the
      ember favicon of the accepted identity release `lantern-identity-v0.2` (RS-53), not a text glyph.
-  2. **Room chip**: the room name (*Learn*) in the room accent. A label with no action in
-     v0.1.0; it becomes the room switcher when a second room ships. *(Amended 2026-10-12, round 5, for v0.2.0.)* With two or more
-     rooms, clicking it opens a small menu of the rooms, each with its name and its lantern colour,
-     the current one marked; choosing one opens that room's Welcome (q-r5-switch). Each room keeps
-     its own open subject for the session, so coming back to a room's graph space shows it again.
-  3. **Space navigation** (RS-20): icon buttons for the room's spaces, the active one marked.
-  4. **Subject title**: the open subject's title, truncated with an ellipsis, full text in the
-     tooltip. Absent when no subject is open (Welcome and Gallery before any choice).
-  5. **Compact stats**: *12 lit · 4 understood · 9 dark*. Hover shows the token total
-     (*Tokens spent: 48.3k in / 21.0k out*), computed as in WG-31. Hidden with no subject open.
-  6. **Settings gear**: opens Settings; always visible; never hidden by narrow widths.
-  7. **Window controls**: minimise, maximise/restore and close, Windows-style, flush with the right
+  2. **The capsule**: one outlined group (never a row of boxed buttons) holding, in order:
+     - the **room name** in ink, with a caret. With two or more rooms, clicking it opens a small menu
+       of the rooms, each with its name and its lantern colour, the current one marked; choosing one
+       opens that room's Welcome (q-r5-switch). Each room keeps its own open subject for the
+       session, so coming back to a room's graph space shows it again. *(Room switcher amended
+       2026-10-12, round 5, for v0.2.0; the name was in the room accent until 2026-10-17.)* With one
+       room it is a label;
+     - the **spaces** (RS-20);
+     - **settings** (gear glyph): opens Settings; always visible; never hidden by narrow widths;
+     - **Ask**, while Amber is off (below).
+  3. **The field**, centred in the window: the open subject's title (truncated with an ellipsis, full
+     text in the tooltip), or *Open a subject…* when none is open, with *Ctrl+K* at its right. A
+     click on it, or Ctrl+K, opens the field's panel (RS-15). While a generation runs, the pulsing
+     busy dot of RS-25 sits after the title.
+  4. **Compact stats**, just before the window controls: *12 lit · 4 understood · 9 dark*. Hover shows
+     the token total (*Tokens spent: 48.3k in / 21.0k out*), computed as in WG-31. Hidden with no
+     subject open.
+  5. **Window controls**: minimise, maximise/restore and close, Windows-style, flush with the right
      edge. Hovering maximise opens the Windows 11 Snap Layouts, only while the window is in front.
      Close saves first, as the system close did (the close-request flush). The controls fade while
      the window is in the background. *(Amended 2026-10-16 by the user: frameless window.)*
 
   *(Amended 2026-10-16, spec workshop round 9.)* While Amber is off, an **Ask** button sits just
-  before the gear and opens Ask Amber ([companion](/specs/companion.md) CO-41). With the accepted top
-  bar (`agent_design/top-bar`, r005-02) it becomes the capsule's last segment, after settings *(user,
-  2026-10-17)*. While Amber is on,
+  after the gear, as the capsule's last segment, styled like the others, and opens Ask Amber ([companion](/specs/companion.md) CO-41). With the accepted top
+  bar (`agent_design/top-bar`, r005-02) it is the capsule's last segment, after settings *(user,
+  2026-10-17)*. While Amber is on, there is no Ask button,
   its rope is tied to the header's bottom edge and it hangs below it (CO-10, CO-11); the header's
   controls are never covered.
 - **RS-53** *Identity assets.* The header mark (RS-12) MUST use `ember-on-dark-32.svg` from
-  `agent_identity/projects/lantern/final/lantern-identity-v0.2/exports/favicon/`, shown at 28 px.
+  `agent_identity/projects/lantern/final/lantern-identity-v0.2/exports/favicon/`, shown at 26 px
+  (28 px until the top bar of 2026-10-17).
   *(Amended 2026-10-16 by the user.)* While the app runs, the flame takes the room accent
   (`--accent`), in the header mark and in the window and taskbar icon (drawn from the same SVG); the
   ink frame is unchanged. The installer and exe icons keep the release's amber flame. The identity
@@ -104,14 +113,20 @@ frame, empty header space drags the window, and a double-click on it maximises o
 - **RS-13** The three numbers and the token total MUST use the single definition of
   [welcome-gallery](/specs/welcome-gallery.md) WG-30 and WG-31 (*lit* includes understood, *dark* is the open nodes,
   dismissed nodes are not counted), the same as the Gallery card. This spec does not restate it.
-- **RS-14** The stats MUST be rendered in `--ink-mute` at 13 px so that they stay secondary; the
+- **RS-14** The stats MUST be rendered in `--ink-mute` at 12 px (13 px until the top bar of 2026-10-17) so that they stay secondary; the
   token total MUST be omitted when "Show token stats" is off (Appearance setting).
-- **RS-15** *Subject menu.* Clicking the title MUST open a compact menu
-  next to it holding, for the open subject: **Rename**; **Tone** (ELI5, Curious, Student,
-  Engineer, Expert, Custom… with a free-text field); **Direction** (v0.1.1, RS-19); **Model** (the model list of [settings](/specs/settings.md) SE-48, or a free-text
-  id); **Effort** (low, medium, high, xhigh, max). The menu is a pop-over anchored under the title,
-  closed by Esc, a click outside or choosing Rename (which turns the title into an input;
-  Enter saves, Esc cancels, an empty title is rejected).
+- **RS-15** *The field's panel.* *(Amended 2026-10-17 by the user: the accepted top bar, `agent_design/top-bar` r005-02.)* Clicking the field (RS-12) or Ctrl+K MUST open
+  one panel, centred under the field just below the bar, in two parts:
+  1. **This subject** (the subject menu), with the open subject only: **Title**, renamed in place
+     (Enter saves, Esc cancels, an empty title is rejected); **Tone** (ELI5, Curious, Student,
+     Engineer, Expert, Custom… with a free-text field); **Direction** (v0.1.1, RS-19); **Model** (the
+     model list of [settings](/specs/settings.md) SE-48, or a free-text id); **Effort** (low, medium,
+     high, xhigh, max).
+  2. **The palette**: a filter field; this room's other subjects, the most recently opened first
+     (rooms keep their own subjects, RS-5); the rooms; Settings. Typing filters the list, the arrow
+     keys move through it, Enter opens the selection, as a click does.
+  With no subject open, only the palette shows. The panel closes on Esc, a second click on the
+  field, a press anywhere outside it, or a choice in the palette.
 - **RS-16** Changing tone, direction, model or effort in the menu MUST affect new generations only and MUST
   show a toast *Applies to your next message* once per session. It MUST NOT trigger a
   generation. The values are stored on the room visit (`tone`, `model`, effort; DM-40).
@@ -123,16 +138,20 @@ frame, empty header space drags the window, and a double-click on it maximises o
 - **RS-17** While a generation runs, the menu MUST stay usable; the running call keeps the values
   it started with.
 - **RS-18** Narrow-width collapse order (window ≥ 1024 px): stats lose the token hover first,
-  then the stats text hides, then the room chip shrinks to its first letter. The mark, space
-  navigation, title, gear and window controls never disappear.
+  then the stats text hides, then the space words fold to their glyphs, then the field narrows
+  (34 % to 28 % of the width). The mark, the whole capsule (room name, spaces, settings, Ask), the
+  field and the window controls never disappear; the room name stays whole. *(Amended 2026-10-17 by the user: the accepted top bar, `agent_design/top-bar` r005-02.)*
 
 # Space navigation
 
 Space navigation is not necessarily tabs; it must be intuitive.
 
-- **RS-20** Header navigation MUST show one icon button per space: Welcome (lantern/home glyph),
-  Study (graph glyph), Gallery (grid glyph). Each has a tooltip with its name and shortcut. The
-  current space is marked with the room accent and `aria-current="page"`.
+- **RS-20** Header navigation MUST show one entry per space in the capsule (RS-12), each a glyph
+  and its word, never a boxed button: Welcome (lantern/home glyph), Study (graph glyph), Gallery
+  (grid glyph), and each room's own. Each has a tooltip with its name and shortcut. The current
+  space is in ink with a 1 px ink underline and an accent dot, and `aria-current="page"`; the others
+  are in `--ink-mute`. On a switch the underline and the dot glide to the new space (240 ms); with
+  reduced motion they move at once. *(Amended 2026-10-17 by the user: the accepted top bar, `agent_design/top-bar` r005-02.)*
 - **RS-21** *Removed 2026-10-05 (v0.1.1 I1).* The graph view no longer repeats the Welcome and
   Gallery icons ([graph-view](/specs/graph-view.md) GV-50); the header icons (RS-20) are the
   only ones.
@@ -155,7 +174,7 @@ Space navigation is not necessarily tabs; it must be intuitive.
   persisted across restarts); the Study split position is persisted app-wide
   ([graph-view](/specs/graph-view.md) GV-83). Welcome's subject field draft is cleared on leaving.
 - **RS-25** A running generation MUST continue when the user switches space; the busy state is
-  visible in the header (the title shows a small pulsing dot) and in Study on return.
+  visible in the header (the field shows a small pulsing dot after the title, RS-12) and in Study on return.
 - **RS-26** Opening a different subject while another has a running generation MUST NOT cancel
   it; the generation finishes and saves to its own subject.
 
