@@ -22,6 +22,19 @@ export class ObservedProvider implements InferenceProvider {
     catch(error) { if(error instanceof ProviderError && error.kind!=='cancelled') this.report(error); throw error; }
   }
 }
+/** IP-71: the browser build's fakes hold their first words `ms` longer (`?wait=`), so a test can watch the wait itself. */
+export class HeldProvider implements InferenceProvider {
+  constructor(private inner: InferenceProvider, private ms: number) {}
+  async stream(request: Request, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void): Promise<Completion> {
+    if (this.ms > 0) await new Promise<void>((resolve, reject) => {
+      const done = () => { clearTimeout(timer); request.cancel.removeEventListener('abort', abort); };
+      const abort = () => { done(); reject(new ProviderError('cancelled', '')); };
+      const timer = setTimeout(() => { done(); resolve(); }, this.ms);
+      if (request.cancel.aborted) abort(); else request.cancel.addEventListener('abort', abort, { once: true });
+    });
+    return this.inner.stream(request, onText, onTool);
+  }
+}
 export class DesktopProvider implements InferenceProvider {
   async stream(request: Request, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void): Promise<Completion> {
     if (request.cancel.aborted) throw new ProviderError('cancelled', '');
