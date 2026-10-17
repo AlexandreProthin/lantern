@@ -15,13 +15,16 @@ Written 2026-10-17. The why is in [the decision](/decisions/web-demo-prepared-an
 
 1. **Built** on branch `worktree-web-demo` (worktree `.claude/worktrees/web-demo`): the demo build, the
    scripted tutor, the TCP and Blender scripts, the banner, the workflow, unit and end-to-end tests,
-   the README link. Committed locally, **not pushed**.
-2. **The user tries it** locally (`npm run build:demo`, then `npx vite preview --mode demo`) and asks for changes.
+   the README link. **Done.**
+2. **The user tries it** locally (`npm run build:demo`, then `npx vite preview --mode demo`). **Done**, accepted.
 3. **Before going public**: scan the whole history for secrets, and list what becomes public. **Done
-   2026-10-17, clear to go public** (see *Pre-public check* below); the user has not switched yet.
-4. **The user** makes the repository public and sets *Settings → Pages → Source: GitHub Actions*.
-5. **On the user's word**: merge the branch into `master`, push, then run *Actions → Web demo → Run
-   workflow* once (or wait for the next `v*` tag). Check the site and the README link.
+   2026-10-17, clear to go public** (see *Pre-public check* below).
+4. **Merged into `master` and pushed** on the user's word, 2026-10-17, before going public (the
+   workflow only runs on tags and by hand, so nothing deployed).
+5. **The user** chooses a licence, makes the repository public and sets *Settings → Pages → Source:
+   GitHub Actions*.
+6. Run *Actions → Web demo → Run workflow* once (or wait for the next `v*` tag). Check the site and the
+   README link.
 
 # Exit checks
 

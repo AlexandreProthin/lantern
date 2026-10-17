@@ -373,7 +373,7 @@ test('CO-51: the eyes turn toward a pointer that comes close, and back when it l
   await expect.poll(eyes).toBeCloseTo(44, 1);
 });
 test('CO-42, CO-54: Amber thinks while its answer is on the way', async ({ page }) => {
-  await page.goto('/?study=1&subject=Tides&delay=120');
+  await page.goto('/?study=1&subject=Tides&wait=3000');
   await expect(amber(page)).toHaveAttribute('data-act', '', { timeout: 6000 });
   await page.keyboard.press('Control+j');
   const field = bubble(page).getByRole('textbox', { name: 'Ask Amber' });
@@ -473,16 +473,19 @@ test('CO-31: after an update, the version, the notes kept at install (cut, then 
 });
 test('CO-35/36: while a generation waits for its first words Amber works and says so; it stops when the text streams', async ({ page }) => {
   await page.addInitScript(v => localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v, lastGreeting: 'greet.1' })), appVersion);
-  await page.goto('/?study=1&subject=Tides&delay=150');
+  // The fake holds its first words 3 s (`wait`): the wait itself must outlast Amber's appearance and a round trip under load.
+  await page.goto('/?study=1&subject=Tides&wait=3000');
   await expect(says(page)).toHaveText('Lighting up Tides…');
   const lid = () => amber(page).evaluate(b => Number(b.querySelector('mask ellipse')!.getAttribute('ry')));
   await expect.poll(lid).toBeLessThan(2.2);
   await expect(page.locator('.panel .md')).toContainText('This subject connects');
   await expect(says(page).filter({ hasText: 'Lighting up Tides…' })).toHaveCount(0);
+  // Once the text streams it stops: the eyes open again.
+  await expect.poll(lid).toBe(3.2);
 });
 test('CO-35: the Choose room says its own waiting line', async ({ page }) => {
   await page.addInitScript(v => { localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v })); const s = JSON.parse(localStorage.getItem('lantern.settings') ?? '{}'); s.ui = { ...(s.ui ?? {}), lastRoom: 'choose' }; localStorage.setItem('lantern.settings', JSON.stringify(s)); }, appVersion);
-  await page.goto('/?study=1&subject=3D%20printer&delay=150');
+  await page.goto('/?study=1&subject=3D%20printer&wait=3000');
   await expect(says(page)).toHaveText('Sizing up 3D printer…');
 });
 test('CO-1, CO-30: with Amber off there is no greeting and no waiting line; the busy state stays', async ({ page }) => {
