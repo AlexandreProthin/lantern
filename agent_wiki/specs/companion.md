@@ -91,10 +91,17 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
 - **CO-30** At each launch Amber greets the user with **one short line** in its bubble, from a small
   predefined pool, which fades after about **6 seconds**. Hovering the bubble pauses the timer. The
   first launch after a fresh install has its own line. *(r8, r9)*
+  *Agreed 2026-10-17 (slice 8):* the launch line never repeats the previous launch's. With Amber off at
+  launch nothing is said and nothing counts as greeted, so a pending update's notes wait for the next
+  launch with Amber on.
 - **CO-31** The first launch **after an update** shows the **release notes** in the bubble, taken from
   the release's `notes` (`latest.json`, UP-42). Long notes are cut, and a click expands them to the
   full text. A link to the release page ends them. Like every greeting, hovering pauses the fade.
   *(r9; amends UP-13 for this bubble only)*
+  *Agreed 2026-10-17 (slice 8):* the notes are kept when *Install* is pressed and cut at a word near 280
+  characters; the bubble stays 6 s plus 30 ms per character shown (at most 15 s), and at least 15 s after
+  *Show all*. An update from a version older than Amber (subjects exist, no version saved) gets the update
+  line and the link without notes.
 - **CO-32** A greeting waits while a frame banner is up (RS-40, RS-41), so it never covers a real
   problem. *(r9)*
 
@@ -105,6 +112,10 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
   (*Lighting up Tides…*, *Looking for products…*), from the strings module. *(r8, r9)*
 - **CO-36** It stops when the text starts to stream: the user is reading again (C10). The busy state
   the app already shows stays as it is (CO-3). *(r9)*
+- *Agreed 2026-10-17 (slice 8):* the waiting line wins over a greeting, which shows once the text streams.
+  It is for the open subject of the current room, and only for tasks that have a line of their own (the
+  room's `companion.waiting`): no line for an answer to *Test me* (a reply) nor for Welcome's subject
+  ideas (Welcome already says so); Choose's *more* uses *Looking for more directions…*.
 
 # Ask Amber
 
