@@ -127,7 +127,11 @@ planned.
 - **CE-51** Thinking (`reasoning_content`, or inline `<think>…</think>`) is **removed before the text
   reaches the parser or the UI**, and counted as `thinking` tokens.
 - **CE-52** `effort` maps to `reasoning_effort` when the preset says the server accepts it, otherwise
-  it is ignored and reported as such (IP-3).
+  it is ignored and reported as such (IP-3). *(Amended 2026-10-17, slice 0, by the user.)* On a local
+  endpoint, thinking is **set per pinned model in Settings**, an advanced control: *Off*, *On* or
+  *Model default*, default *Off* (Gemma 4 thinks by default, which roughly doubled reply time on the
+  user's CPU). Lantern sends it as `think` (Ollama native) or `reasoning_effort: "none"` when off
+  (compatible API). A subject's effort is then ignored on that model (`resolvedEffort` absent, IP-3).
 - **CE-53** Once a local token has been spent, the stats hover and the Gallery show **Claude** and
   **local** tokens on separate lines; cloud endpoints count with Claude. Until then they look exactly
   as today (CE-2).
@@ -235,9 +239,9 @@ Implementation-time only:
   model's full 131072 when no size was sent, so the size Lantern sends also bounds memory use.
 - Each server's exact error wording and events, captured as fixtures (CE-42, CE-90); Ollama's are in
   `app/src-tauri/fixtures/endpoint/` (slice 0).
-- Raised by slice 0, for the user: whether TP-31 accepts an `<options>` array left unclosed at the end
-  of a reply (Gemma 4 E2B did this in 3 of 6 replies), which would change the parser for Claude Code
-  too (CE-2); and how `effort` maps to Ollama's `think` (CE-52), since the model thinks by default.
+- Slice 0's two questions are settled: TP-31 accepts an unclosed final `<options>` array for every
+  provider (the user accepted this change to the Claude Code path, CE-2); thinking is a per-model
+  setting (CE-52).
 
 Related: [inference-provider](/specs/inference-provider.md), [settings](/specs/settings.md),
 [context-assembly](/specs/context-assembly.md), [choose-room](/specs/choose-room.md),

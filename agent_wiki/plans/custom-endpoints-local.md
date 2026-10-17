@@ -88,8 +88,10 @@ user, CPU only on this machine. Fixtures are recorded against it first.
   5. Usage: native `prompt_eval_count`, `prompt_eval_cached_count` (cache read), `eval_count` (thinking
      included); compatible `usage` only with `include_usage`. Missing model: 404 with `error` text in
      both shapes.
-  **For the user before slice 1:** (a) accept an unclosed final `<options>` array in TP-31, a parser
-  change that also applies to Claude Code (CE-2); (b) how `effort` maps to `think` on Ollama (CE-52).
+  **Settled by the user, 2026-10-17:** (a) TP-31 accepts an unclosed final `<options>` array, for every
+  provider (a Claude Code path change the user accepted, CE-2), built in slice 2 with the fixture
+  replies as tests; (b) thinking is a per-model setting in Settings → Endpoints, *Off* by default
+  (CE-52), sent by slice 1 and shown by slice 3.
 
 # Slice 1. The endpoint provider in Rust
 
@@ -98,7 +100,8 @@ user, CPU only on this machine. Fixtures are recorded against it first.
   rustls, a new dependency, pinned like the others.
   - Request: `system` as the first message, `prompt` as the user message, `stream: true`; on the
     compatible API `stream_options.include_usage`; on Ollama's native API `options.num_ctx` from the
-    endpoint's context size (CE-32). No tools, ever.
+    endpoint's context size (CE-32); thinking from the model's setting, as `think` (native) or
+    `reasoning_effort: "none"` when off (compatible) (CE-52). No tools, ever.
   - Two readers behind one parser: SSE (`data:` lines, `[DONE]`) and Ollama's NDJSON. Text deltas go to
     the callback (IP-4); thinking is removed before the callback, from `reasoning_content` or inline
     `<think>…</think>` split across chunks, and counted as `thinking` (CE-51).
@@ -128,8 +131,11 @@ user, CPU only on this machine. Fixtures are recorded against it first.
 - `app/src/core/models.ts`: `parseModelId`, `isEndpointModel`, display names (*Ollama · gemma4:e4b*),
   `isValidModel` with `/` (settings amendment). `modelName` keeps its Claude behaviour.
 - The fake providers (IP-71) gain an endpoint mode: a slow first byte (CE-41), every new error type,
-  and a reply with a missing `<options>` block (CE-57 is TP-34, so nothing new in the parser; this only
-  checks it with an endpoint model).
+  and a reply with a missing `<options>` block (CE-57 is TP-34).
+- Learn's parser (`app/src/rooms/learn/protocol.ts`) accepts an unclosed final `<options>` array
+  (TP-31, amended), tested with the three recorded replies that left it open, plus one cut short
+  (still invalid). Check whether Choose's parser reads `<options>` the same way, and if so ask the user
+  before changing it too.
 - **Exit:** unit tests for id parsing, routing (Claude model → unchanged request, endpoint model →
   endpoint field, web call on an endpoint subject → Claude fallback chain), and the fakes.
 
@@ -139,7 +145,8 @@ user, CPU only on this machine. Fixtures are recorded against it first.
 - `SettingsPanel.svelte`: the *Claude Code* section stays as it is and first; the **Endpoints** list
   follows (CE-20): add from a preset (Ollama, llama.cpp, LM Studio, Custom URL, CE-12), rename, remove,
   the LAN confirmation (CE-80); per endpoint the fetched models with pins, each pinned model's context
-  size (read from the server, editable, CE-30) and *Test* on one chosen model (CE-24). Nothing calls a
+  size (read from the server, editable, CE-30) and thinking (*Off*, *On*, *Model default*, CE-52), and
+  *Test* on one chosen model (CE-24). Nothing calls a
   server until the user presses something (IP-41's rule).
 - The frame banner (CE-26): with an endpoint set and no Claude Code installed, *not installed* shows
   only when a Claude Code model is picked or used. With no endpoint, nothing changes.
@@ -219,4 +226,3 @@ user, CPU only on this machine. Fixtures are recorded against it first.
 
 - The context size sent to Ollama by default (slice 5), from the spec's *Open*.
 - The HTTP client crate (slice 1); `ureq` is the proposal.
-- Slice 0's two questions: the unclosed `<options>` tolerance and `effort` → `think`.
