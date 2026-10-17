@@ -365,6 +365,10 @@ user, CPU only on this machine. Fixtures are recorded against it first.
   - Not driven here: a Choose research call through the UI. The checklist has it; the CLI web path is
     covered by the real-CLI test above.
 - **Acceptance checklist:** `app/ACCEPTANCE-ENDPOINTS.md`, for the user to run in a preview installer.
+- **Feature branch 2026-10-17 (CE-6, the user):** the worktree's branch was renamed
+  `claude/lantern-custom-endpoints`, with its 14 commits, in the same worktree; nothing pushed. Preview
+  installer built from it, version 0.4.0: `app/src-tauri/target/release/bundle/preview/Lantern_0.4.0-preview-202610172010_x64-setup.exe (5,330,556 bytes, about 91 KB more than v0.4.0's 5,239,744)`. Next: the user runs the checklist, then the
+  release question (CE-5); only the user merges into `master`.
 
 # Risks to retire early
 
