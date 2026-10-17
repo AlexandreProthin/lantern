@@ -63,6 +63,9 @@ headers are kept.
 | `nvidia-probe-user-only`, `nvidia-probe-text-parts` | Later the same evening, **200** (`Nvcf-Status: fulfilled`) in 26 s and 19 s: the 500s were transient, since a system message, plain or as text parts, works. SSE; thinking in `delta.reasoning_content`; usage in the stream **without** `include_usage`, with `completion_tokens_details.reasoning_tokens` (866 of 1166, 1040 of 1322). The `<options>` block is closed. |
 | `nvidia-probe-not-streamed` | 200 in 41 s, `application/json`, `message.reasoning_content` beside `content`. |
 | all three | The response's `model` is **`private/nvidia/nemotron-3.5-super-120b-a12b`**, not the id asked for (`nvidia/nemotron-3.5-super-vl-120b-a12b`). |
+| `nvidia-compat-ok`, `nvidia-compat-no-usage` | The full run: 200 in about 8.5 s. Usage in both (95 in, about 1000 out, about 750 to 815 of it reasoning), options closed. |
+| `nvidia-compat-reasoning-none`, `nvidia-probe-no-thinking` | **500 in 0.4 s**, the same *Failed to generate completions*, while the cases around them succeeded: this model refuses `reasoning_effort: "none"` and `chat_template_kwargs.enable_thinking`. **Thinking cannot be turned off here.** |
+| `nvidia-compat-too-long` | About 200k tokens of prompt **accepted** (200 in 34 s, `prompt_tokens` 208098): the model's window is about 1M, so NVIDIA gave no over-long error to record. |
 
 ## What the recordings show
 

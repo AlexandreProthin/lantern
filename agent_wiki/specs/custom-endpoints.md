@@ -87,6 +87,11 @@ planned.
 - **CE-24** **Test** works on **one model at a time**, chosen in the endpoint's row, which matters for
   NVIDIA's long catalogue. It lists the models, then makes one tiny call on the chosen model, and shows
   the result like IP-41. Nothing runs automatically.
+- **CE-27** *(Added 2026-10-17, cloud slice 0, with the user.)* When a server answers with a model name
+  other than the one asked for (NVIDIA answered `nvidia/nemotron-3.5-super-vl-120b-a12b` as
+  `private/nvidia/nemotron-3.5-super-120b-a12b`), Lantern keeps the id the user picked as the model,
+  records the served name beside it (`servedModel` in the log), and warns: on *Test*, in the meta line,
+  and in the endpoint's row.
 - **CE-25** The node meta line names the endpoint: *Ollama · gemma4 · 4.1k in / 900 out · 6 s*.
 - **CE-26** **Lantern works with no Claude Code installed** once an endpoint is set: the *not installed*
   banner shows only when a Claude Code model is picked or used.

@@ -500,5 +500,145 @@
       "Nvcf-Reqid": "d57e1fb6-2da6-492f-9865-e5862cdd8c02",
       "Nvcf-Status": "fulfilled"
     }
+  },
+  "nvidia-compat-ok": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      }
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 8.5,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "37ce71ad-a293-4d41-a0c6-29045d7995c1",
+      "Nvcf-Status": "fulfilled"
+    }
+  },
+  "nvidia-compat-no-usage": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 8.8,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "e2d7edc9-4211-401a-a722-6924bf5cc318",
+      "Nvcf-Status": "fulfilled"
+    }
+  },
+  "nvidia-compat-reasoning-none": {
+    "status": 500,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "reasoning_effort": "none"
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.4,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json",
+      "Nvcf-Reqid": "95bc549f-7701-40e5-abf2-0977e94efa39",
+      "Nvcf-Status": "errored"
+    }
+  },
+  "nvidia-probe-no-thinking": {
+    "status": 500,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.4,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json",
+      "Nvcf-Reqid": "166a1d23-42de-4474-9c14-6f83afd88702",
+      "Nvcf-Status": "errored"
+    }
+  },
+  "nvidia-compat-too-long": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "note": "large prompt, not stored",
+      "chars": 806464
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 33.9,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "c6d79d59-02fe-41a1-b483-8e16e87dd005",
+      "Nvcf-Status": "fulfilled"
+    }
   }
 }

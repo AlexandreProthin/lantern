@@ -77,9 +77,18 @@ The local plan's rules hold. In particular:
        stores the server's name today (`<endpointId>:<server's model>`), which would match no pinned model,
        so lookups (context size, labels, pickers) would miss it. The NVIDIA preset must keep the id it asked
        for.
-  - Still to record: the original stream cases (with and without `include_usage`, `reasoning_effort:
-    "none"`), thinking off through `chat_template_kwargs` (new probe), and the over-long prompt. Next: the
-    user's full run.
+- **Done 2026-10-17**, with the user's full run. There are 13 NVIDIA fixtures, none holding anything
+  key-shaped. Beyond the probes:
+  1. **Thinking cannot be turned off on this model.** `reasoning_effort: "none"` and
+     `chat_template_kwargs.enable_thinking: false` are both refused at once with the 500, while plain calls
+     answer in about 8.5 s. So the NVIDIA preset sends neither: its thinking choice is *Model default* only,
+     and Settings says so.
+  2. About 200k tokens of prompt were accepted (window about 1M), so there is no over-long fixture. The
+     *context-too-long* path rests on Lantern's own check (CE-33) and the classification's text rules.
+  3. **The model name**, decided with the user: Lantern stores the id the user picked (so pins, context
+     size and labels keep working), logs the name the server answered with beside it (`servedModel`), and
+     **warns** when they differ: on *Test*, in the node meta line, and in the endpoint's row in Settings.
+     This is for slice 2.
 
 # Slice 1. Keys in Rust
 
@@ -172,5 +181,5 @@ The local plan's rules hold. In particular:
 
 # Open
 
-- The NVIDIA model id of the user's Gemma 4 (slice 0, from the model list).
+- *(Settled, slice 0.)* The NVIDIA model is `nvidia/nemotron-3.5-super-vl-120b-a12b`, the user's choice.
 - The version number for the joint release (slice 6, the user).
