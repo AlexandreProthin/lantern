@@ -2,6 +2,7 @@
 
 ## 2026-10-17
 
+* **Custom endpoints: cloud version planned**: by the user, the local version stays unreleased and ships with cloud in one bump (CE-5). [custom-endpoints-cloud](/plans/custom-endpoints-cloud.md) has seven slices: NVIDIA fixtures recorded by the user, keys in Credential Manager through `windows-sys`, the NVIDIA preset with per-preset capabilities, settings with consent, cloud tokens counted with Claude, real use, then acceptance and the joint release. Keys never reach the agent or the webview.
 * **Custom endpoints, local version accepted**: the user passed `app/ACCEPTANCE-ENDPOINTS.md` in the preview installer (27 of 27). Open: whether to release it now or with the cloud version (CE-5) ([plan](/plans/custom-endpoints-local.md)).
 * **Custom endpoints on its feature branch**: by the user, the work moved to `claude/lantern-custom-endpoints` (the worktree branch renamed, nothing pushed), and a preview installer was built for `app/ACCEPTANCE-ENDPOINTS.md` ([plan](/plans/custom-endpoints-local.md)).
 * **Custom endpoints, slice 8 checks done**: every suite passes, apart from the known animation flake; the real Ollama and Claude CLI tests pass too. The Claude Code regression pass in the desktop build (*Test*, an Opus intro, Ask Amber on Haiku) matches v0.4.0. Two error wordings were fixed on the way (the LAN refusal, *Fetch models* errors). `app/ACCEPTANCE-ENDPOINTS.md` waits for the user ([plan](/plans/custom-endpoints-local.md)).

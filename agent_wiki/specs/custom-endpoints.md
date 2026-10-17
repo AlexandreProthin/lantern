@@ -39,6 +39,9 @@ planned.
   phase, for now. The numbers are not fixed and need not be consecutive minor versions. When the local
   version is ready, the agent **asks the user** whether to release it or to wait and release local and
   cloud in the same version bump.
+  *(Decided 2026-10-17, after the local version's acceptance: **wait**. The local version stays
+  unreleased on `claude/lantern-custom-endpoints`; the cloud version is planned next, and both ship in one
+  version bump, its number chosen then.)*
 - **CE-6** **Branches** (the user, round 11): the work starts in a worktree. When the user judges the
   implementation good enough (at the latest once the local endpoint can be tested), it moves to a
   dedicated feature branch to be finished there. Only the user decides when that branch merges into

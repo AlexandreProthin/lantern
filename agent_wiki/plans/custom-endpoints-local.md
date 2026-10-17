@@ -371,7 +371,8 @@ user, CPU only on this machine. Fixtures are recorded against it first.
   release question (CE-5); only the user merges into `master`.
 - **Accepted by the user 2026-10-17** in that preview installer: `app/ACCEPTANCE-ENDPOINTS.md` fully
   ticked (27 of 27, the optional run without Claude Code included), no notes. Slices 0 to 8 are done.
-  Next: the user's answer to CE-5 (release the local version now, or wait and release it with cloud).
+  The user's answer to CE-5: **wait**. This version stays unreleased; the cloud version follows in
+  [custom-endpoints-cloud](/plans/custom-endpoints-cloud.md), and both ship in one version bump.
 
 # Risks to retire early
 
