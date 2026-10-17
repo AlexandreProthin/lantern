@@ -8,7 +8,9 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fastRetransmitReply } from './learn-tcp';
+import { tcpScript } from './learn-tcp';
+
+const fastRetransmitReply = tcpScript.light['Fast retransmit'].trim();
 
 const BASE = 'http://localhost:1431';
 const images = fileURLToPath(new URL('../../docs/images/', import.meta.url));

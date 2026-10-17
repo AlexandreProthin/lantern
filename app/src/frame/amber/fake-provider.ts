@@ -1,5 +1,6 @@
 import { ProviderError, zeroUsage } from '../provider';
 import type { Completion, ErrorKind, InferenceProvider, Request } from '../provider';
+import { strings } from '../../ui/strings';
 /**
  * IP-71: Amber's fake for the browser build and Playwright. The answer names its category the way the prompt
  * asks; a message containing `[no tag]` answers without a tag; `failNext` injects one error.
@@ -11,7 +12,7 @@ export class AmberFakeProvider implements InferenceProvider {
     const selected = /^SELECTED TEXT: "([^"]*)"/m.exec(req.prompt)?.[1];
     const earlier = (req.prompt.match(/^USER: /gm) ?? []).length;
     const category = selected ? 'subject' : /lantern|shortcut|key|button|setting|amber|room|space/i.test(message) ? 'app' : /this|node|subject|explanation/i.test(message) ? 'subject' : 'general';
-    const answer = selected ? `“${selected}” here means the part of the idea the explanation leans on.`
+    const answer = import.meta.env.VITE_DEMO ? strings.demoAmber : selected ? `“${selected}” here means the part of the idea the explanation leans on.`
       : category === 'app' ? 'Press Ctrl+J anywhere to ask me, and ? for every shortcut.'
       : category === 'subject' ? 'The focused node explains the mechanism in a few steps.' : 'That depends on the details; here is the short version.';
     const text = `${message.includes('[no tag]') ? '' : `<category>${category}</category>`}${answer}${earlier ? ` (follow-up ${earlier + 1})` : ''}`;

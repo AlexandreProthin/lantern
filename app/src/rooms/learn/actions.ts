@@ -15,7 +15,8 @@ export function nodeActions(visit: RoomVisit, node: GraphNode, running: { nodeId
   if (node.state === 'open') actions.push({ id: 'light', label: strings.lightUp, disabled: !!running, task: true });
   if (node.state === 'dismissed') actions.push({ id: 'restore', label: strings.restore, disabled: busy });
   if (node.state === 'lit' || node.state === 'understood') actions.push(
-    { id: 'more', label: strings.moreOptions, disabled: !!running, task: true },
+    // The web demo has no further directions prepared, so it offers no "More options".
+    ...(import.meta.env.VITE_DEMO ? [] : [{ id: 'more' as const, label: strings.moreOptions, disabled: !!running, task: true }]),
     { id: 'own', label: strings.ownNode, disabled: busy, toPanel: true });
   if (node.state === 'open') actions.push({ id: 'dismiss', label: strings.dismiss, disabled: busy || running?.nodeId === node.parents[0] });
   if (node.id !== visit.rootId) actions.push({ id: 'delete', label: strings.delete, disabled: false, toPanel: true });

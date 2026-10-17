@@ -25,3 +25,4 @@ mark it `status: deprecated` and have the replacement link back to it.
 * [Welcome and Gallery belong to each room](spaces-per-room-no-home.md) - No Home yet; the app reopens the last room.
 * [Choose research calls may search the web](choose-web-tools.md) - WebSearch and WebFetch only, for Choose research tasks; no cheaper web model.
 * [lantern/2 makes the format room-neutral](format-lantern-2.md) - Neutral roles, a data container for room fields; Learn files converted.
+* [The web demo replays prepared answers](web-demo-prepared-answers.md) - Free Learn demo on GitHub Pages: scripted tutor, two subjects, release tags.

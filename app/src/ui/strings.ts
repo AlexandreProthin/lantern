@@ -122,4 +122,14 @@ export const strings = {
   , installInstructions: 'Install Claude Code from the setup page, then return to Lantern and choose Check again.', installClaude: 'Install Claude Code',
   signinInstructions: 'Start Claude Code once outside Lantern and follow its browser sign-in with your Claude account. Then return here and choose Check again.',
   shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\nCtrl+1 / Ctrl+2 / Ctrl+3 — Welcome / Study / Gallery\nAlt+A / Alt+N / Alt+D with selected text — Ask / Make it a node / Ask Amber\n? — show or hide shortcuts\nCtrl+K — open or close the subject field’s panel\nCtrl+J — Ask Amber\nCtrl+, — Settings\nCtrl+F in Study — search nodes; Enter / Shift+Enter next / previous, Esc close'
+  // Web demo build only (VITE_DEMO): prepared answers, no inference.
+  , demoBadge: 'Web demo', demoBadgeTitle: 'Prepared answers: no model runs and nothing leaves your browser.',
+  demoReset: 'Reset', demoResetTitle: 'Start the demo again from the beginning', demoGetApp: 'Get Lantern',
+  demoAppUrl: 'https://github.com/AlexandreProthin/lantern/releases/latest',
+  demoNoIntro: (title: string) => `*This web demo has no live tutor.* Its prepared subjects are **Blender 3D** and **How TCP congestion control works**. In Lantern, the tutor would now introduce **${title}** and offer three ways in. [Get Lantern](https://github.com/AlexandreProthin/lantern/releases/latest) to explore your own subjects.`,
+  demoNoLight: (title: string) => `*The demo's prepared answers stop here.* In Lantern, the tutor would now explain **${title}** in depth, building on what is already lit around it, then offer three ways to go on.`,
+  demoNoCheck: '*No question is prepared for this node in the demo.* In Lantern, the tutor would ask one question about understanding here: apply it, predict, or explain why.',
+  demoNoAnswer: '*In the demo, answers are not read.* In Lantern, the tutor would say what is right in your answer, correct what is not, and mark the node understood once you have shown it. Choose *I get it* if you are sure.',
+  demoNoQuestion: '*This web demo has no live tutor, so free questions get no answer.* In Lantern, the tutor answers here, in the context of this node and the map around it.',
+  demoAmber: 'In this web demo I cannot answer free questions: that needs Lantern on your computer. My tips and the guide still work, so click me.'
 };

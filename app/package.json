@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "dev:demo": "vite --mode demo --port 1432",
+    "build:demo": "vite build --mode demo",
+    "test:demo": "playwright test -c playwright.demo.config.ts",
     "tauri": "tauri",
     "installer:preview": "node scripts/installer-preview.mjs",
     "check": "svelte-check --tsconfig ./tsconfig.json",

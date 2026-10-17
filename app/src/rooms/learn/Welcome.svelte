@@ -10,7 +10,8 @@
   let { visible, settings, library, revision, navigate }: SpaceProps = $props();
   const room: WelcomeRoomView = {
     defaultTone: settings => learnSettings(settings).defaultTone,
-    suggestions: (provider, changed) => new SubjectSuggestions(provider, changed)
+    // The web demo has nothing prepared to suggest.
+    suggestions: import.meta.env.VITE_DEMO ? undefined : (provider, changed) => new SubjectSuggestions(provider, changed)
   };
 </script>
 {#snippet visual(summary: SubjectSummary)}<Thumbnail {summary} {library}/>{/snippet}

@@ -110,7 +110,7 @@
     if (!settings.companion.show) { amberGreeted = true; return; }
     if (banner || unavailable) return;
     amberGreeted = true;
-    const said = untrack(() => greeting(amberState, __APP_VERSION__, subjectCount > 0, { first: strings.amberFirstLaunch, updated: strings.amberUpdated, pool: strings.amberGreetings }));
+    const said = untrack(() => greeting(amberState, __APP_VERSION__, subjectCount > 0 && !import.meta.env.VITE_DEMO /* the demo's seeded subject is no past visit */, { first: strings.amberFirstLaunch, updated: strings.amberUpdated, pool: strings.amberGreetings }));
     amberGreeting = said.greeting; saveAmberState(said.next);
   });
   /** UP-13: the release page, in the browser. */

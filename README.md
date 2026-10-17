@@ -13,6 +13,9 @@ A desktop workspace for thinking with an AI, not just asking it things.
 
 ![version](https://img.shields.io/badge/version-0.4.0-e8913a) ![platform](https://img.shields.io/badge/platform-Windows-2b3a55) ![Tauri 2](https://img.shields.io/badge/Tauri-2-24c8db) ![Svelte 5](https://img.shields.io/badge/Svelte-5-ff3e00)
 
+**[Try the Learn room in your browser →](https://alexandreprothin.github.io/lantern/)**<br>
+<sub>A free web demo with prepared answers: no sign-in, nothing leaves your browser.</sub>
+
 </div>
 
 You bring a subject (something to learn, a question to reason through, a decision to

@@ -2,6 +2,9 @@
 
 ## 2026-10-17
 
+* **Web demo built** on branch `worktree-web-demo`, not pushed: the Learn room as a static site for GitHub Pages, answered by prepared text after a 2 to 4 s wait (no inference). TCP congestion control is a recent project; Blender 3D is prefilled on Welcome to show a subject being created. Published by `.github/workflows/web-demo.yml` on `v*` tags and by hand, after an end-to-end test. Waits for the repository to go public ([plan](/plans/web-demo.md), [decision](/decisions/web-demo-prepared-answers.md), [web demo](/components/web-demo/index.md)).
+* **README images**: the root README centred on Learn, with screenshots and a GIF made from hand-written demo subjects (`app/demo/`, `capture.ts`).
+
 * **v0.4.0 released**: `app/ACCEPTANCE-AMBER.md` passed, the update launch included; `master` fast-forwarded to `claude/lantern-amber`, tagged `v0.4.0` and pushed; GitHub release v0.4.0 with the signed installer and `latest.json` (key id checked against the app's public key); the same files in the local update folder. [Roadmap](/plans/roadmap.md) and the root README at v0.4.0.
 * **v0.4.0 prepared**: version bumped to 0.4.0 on `claude/lantern-amber`. Next: the user builds and signs the installer, checks the update launch over v0.3.0, then merge and release ([plan](/plans/v0-4-0.md)).
 * **v0.4.0 acceptance passed** in a preview installer, except the update launch, which waits for the 0.4.0 build. Added at the user's request: with Amber hidden, the capsule's *Ask* has a right-click menu, *Bring Amber back* ([companion](/specs/companion.md) CO-4, [rooms-spaces](/specs/rooms-spaces.md) RS-12).

@@ -13,6 +13,7 @@
   import ModelPicker from './ModelPicker.svelte';
   import TonePicker from './TonePicker.svelte';
   import { WelcomeEmbers } from './embers';
+  import { demoPrefill } from '../demo/prefill';
   import type { WelcomeRoomView, WelcomeSnippets, WelcomeStarter } from './welcome-types';
   let { visible, settings, library, revision, navigate, room, visual, figure, card, extra }: Pick<SpaceProps, 'visible' | 'settings' | 'library' | 'revision' | 'navigate'> & WelcomeSnippets & { room: WelcomeRoomView } = $props();
   const labels = $derived({ lede: strings.firstWelcome, question: strings.subjectQuestion, example: strings.subjectExample, directionPlaceholder: strings.directionPlaceholder, carryIn: strings.carryIn, recent: strings.recentSubjects, continue: strings.continueSubject,
@@ -55,6 +56,9 @@
     if(visible&&!arrived){motion.arrival(field);arrived=true;}
     capsule=new Capsule({ask,cap,top,subj:field,dir:dirField,dock,lower,hair,btn:button,wrap,hint},()=>reduced);
     capsule.apply(untrack(()=>shape),untrack(()=>focused),true);
+    // The web demo offers its prepared new subject, ready to carry in.
+    const prefill=import.meta.env.VITE_DEMO?demoPrefill():null;
+    if(prefill){title=prefill.title;direction=prefill.direction;void openDirection().then(()=>requestAnimationFrame(()=>capsule?.reposition()));}
     const resize=()=>capsule?.reposition();addEventListener('resize',resize);
     return()=>{media.removeEventListener('change',update);removeEventListener('resize',resize);suggestions?.dispose();motion?.dispose();capsule?.dispose();};
   });
