@@ -1,0 +1,576 @@
+{
+  "format": "lantern/2",
+  "id": "quiet-mechanical-keyboard-demo",
+  "title": "A quiet mechanical keyboard for an open office",
+  "createdAt": "2026-10-14T08:30:45.000Z",
+  "rooms": {
+    "choose": {
+      "model": "opus",
+      "effort": "medium",
+      "data": {
+        "tone": "curious",
+        "locale": {
+          "country": "FR",
+          "currency": "EUR"
+        },
+        "status": "exploring",
+        "history": []
+      },
+      "focusId": "00000001",
+      "rootId": "00000001",
+      "log": [
+        {
+          "id": "g01",
+          "nodeId": "00000001",
+          "task": "intro",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "choose-1",
+          "startedAt": "2026-10-14T08:31:30.000Z",
+          "durationMs": 6000,
+          "usage": {
+            "input": 3100,
+            "output": 180,
+            "thinking": 0,
+            "cacheRead": 2200,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "curious",
+            "web": false
+          }
+        },
+        {
+          "id": "g02",
+          "nodeId": "00000006",
+          "task": "light",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "choose-1",
+          "startedAt": "2026-10-14T08:37:30.000Z",
+          "durationMs": 6000,
+          "usage": {
+            "input": 3100,
+            "output": 120,
+            "thinking": 0,
+            "cacheRead": 2200,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "curious",
+            "web": false
+          }
+        },
+        {
+          "id": "g03",
+          "nodeId": "00000001",
+          "task": "fill",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "choose-1",
+          "startedAt": "2026-10-14T08:48:00.000Z",
+          "durationMs": 38000,
+          "usage": {
+            "input": 3100,
+            "output": 900,
+            "thinking": 0,
+            "cacheRead": 2200,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "curious",
+            "web": true
+          }
+        }
+      ],
+      "nodes": {
+        "00000001": {
+          "id": "00000001",
+          "parents": [],
+          "title": "A quiet mechanical keyboard for an open office",
+          "hook": "",
+          "kind": "subject",
+          "state": "lit",
+          "content": "A mechanical keyboard can be quiet enough for an open office, but the switch matters far more than the brand. **Silent switches** dampen the bottom-out and the return, **foam** inside the case removes the hollow ring, and a **low-profile** design shortens the travel altogether. Let us pin down what you need first, then compare a few real candidates side by side.",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g01"
+          },
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:30:45.000Z",
+          "createdBy": "user"
+        },
+        "00000003": {
+          "id": "00000003",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Where will you type?",
+          "hook": "",
+          "kind": "need",
+          "state": "answered",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:32:15.000Z",
+          "createdBy": "model",
+          "data": {
+            "answer": {
+              "text": "Open-plan office, colleagues within two metres.",
+              "at": "2026-10-14T08:33:00.000Z",
+              "by": "Alex"
+            }
+          }
+        },
+        "00000004": {
+          "id": "00000004",
+          "parents": [
+            "00000001"
+          ],
+          "title": "What do you type most?",
+          "hook": "",
+          "kind": "need",
+          "state": "answered",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:33:45.000Z",
+          "createdBy": "model",
+          "data": {
+            "answer": {
+              "text": "Long documents and code, several hours a day.",
+              "at": "2026-10-14T08:34:30.000Z",
+              "by": "Alex"
+            }
+          }
+        },
+        "00000005": {
+          "id": "00000005",
+          "parents": [
+            "00000001"
+          ],
+          "title": "What budget feels right?",
+          "hook": "",
+          "kind": "need",
+          "state": "answered",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:35:15.000Z",
+          "createdBy": "model",
+          "data": {
+            "answer": {
+              "text": "Around 150 €, a bit more if it is clearly better.",
+              "at": "2026-10-14T08:36:00.000Z",
+              "by": "Alex"
+            }
+          }
+        },
+        "00000006": {
+          "id": "00000006",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Linear, tactile or clicky",
+          "hook": "Three switch families, three very different noises",
+          "kind": "concept",
+          "state": "lit",
+          "content": "**Clicky** switches add a click on purpose: avoid them here. **Tactile** ones have a bump you feel but barely hear. **Linear** ones are smooth, and their *silent* versions are the quietest of all.",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g02"
+          },
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:36:45.000Z",
+          "createdBy": "model"
+        },
+        "00000007": {
+          "id": "00000007",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Foam, gaskets and plate",
+          "hook": "What the case does to the sound",
+          "kind": "concept",
+          "state": "open",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:38:15.000Z",
+          "createdBy": "model"
+        },
+        "00000008": {
+          "id": "00000008",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Noise",
+          "hook": "Colleagues sit within two metres",
+          "kind": "criterion",
+          "state": "must",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:39:00.000Z",
+          "createdBy": "model"
+        },
+        "00000009": {
+          "id": "00000009",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Price",
+          "hook": "Around 150 €",
+          "kind": "criterion",
+          "state": "must",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:39:45.000Z",
+          "createdBy": "model",
+          "data": {
+            "measure": "price"
+          }
+        },
+        "0000000a": {
+          "id": "0000000a",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Typing feel",
+          "hook": "Hours of writing a day",
+          "kind": "criterion",
+          "state": "must",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:40:30.000Z",
+          "createdBy": "model"
+        },
+        "0000000b": {
+          "id": "0000000b",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Layout",
+          "hook": "Arrow keys and an F-row for code",
+          "kind": "criterion",
+          "state": "nice",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:41:15.000Z",
+          "createdBy": "model"
+        },
+        "0000000c": {
+          "id": "0000000c",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Wireless",
+          "hook": "One cable less on the desk",
+          "kind": "criterion",
+          "state": "nice",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:42:00.000Z",
+          "createdBy": "model"
+        },
+        "0000000d": {
+          "id": "0000000d",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Hot-swap sockets",
+          "hook": "You will not change switches",
+          "kind": "criterion",
+          "state": "irrelevant",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:42:45.000Z",
+          "createdBy": "model"
+        },
+        "0000000e": {
+          "id": "0000000e",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Silent 65% board",
+          "hook": "Compact, silent linear switches, dense foam",
+          "kind": "product",
+          "state": "shortlisted",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:43:30.000Z",
+          "createdBy": "model",
+          "data": {
+            "cells": {
+              "00000008": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "38 dB(A)",
+                "disagree": true,
+                "note": "The maker claims 35 dB(A); an independent test measured 38 dB(A).",
+                "sources": [
+                  {
+                    "kind": "manufacturer",
+                    "name": "Maker's spec sheet",
+                    "read": "2026-10-12",
+                    "value": "35 dB(A)"
+                  },
+                  {
+                    "kind": "measured",
+                    "name": "Independent sound test",
+                    "read": "2026-10-09",
+                    "value": "38 dB(A)"
+                  }
+                ]
+              },
+              "00000009": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "129 €",
+                "sources": [
+                  {
+                    "kind": "shop",
+                    "name": "Online shop",
+                    "read": "2026-10-13"
+                  }
+                ]
+              },
+              "0000000a": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "Silent linear, light 45 g",
+                "sources": [
+                  {
+                    "kind": "manufacturer",
+                    "name": "Maker's spec sheet",
+                    "read": "2026-10-12"
+                  }
+                ]
+              },
+              "0000000b": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "65%: arrows, no F-row",
+                "sources": [
+                  {
+                    "kind": "manufacturer",
+                    "name": "Maker's spec sheet",
+                    "read": "2026-10-12"
+                  }
+                ]
+              },
+              "0000000c": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "Bluetooth and 2.4 GHz",
+                "sources": [
+                  {
+                    "kind": "manufacturer",
+                    "name": "Maker's spec sheet",
+                    "read": "2026-10-12"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "0000000f": {
+          "id": "0000000f",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Low-profile TKL",
+          "hook": "Short travel, tactile, laptop-like height",
+          "kind": "product",
+          "state": "shortlisted",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:44:15.000Z",
+          "createdBy": "model",
+          "data": {
+            "cells": {
+              "00000008": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "41 dB(A)",
+                "sources": [
+                  {
+                    "kind": "measured",
+                    "name": "Independent sound test",
+                    "read": "2026-10-09"
+                  }
+                ]
+              },
+              "00000009": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "149 €",
+                "sources": [
+                  {
+                    "kind": "shop",
+                    "name": "Online shop",
+                    "read": "2026-10-13"
+                  }
+                ]
+              },
+              "0000000a": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "Tactile, short 3 mm travel",
+                "sources": [
+                  {
+                    "kind": "manufacturer",
+                    "name": "Maker's spec sheet",
+                    "read": "2026-10-11"
+                  },
+                  {
+                    "kind": "opinion",
+                    "name": "Typists forum thread",
+                    "read": "2026-10-06"
+                  }
+                ]
+              },
+              "0000000b": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "Tenkeyless: arrows and F-row",
+                "sources": [
+                  {
+                    "kind": "manufacturer",
+                    "name": "Maker's spec sheet",
+                    "read": "2026-10-11"
+                  }
+                ]
+              },
+              "0000000c": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "Bluetooth",
+                "sources": [
+                  {
+                    "kind": "manufacturer",
+                    "name": "Maker's spec sheet",
+                    "read": "2026-10-11"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "00000010": {
+          "id": "00000010",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Gasket 75% board",
+          "hook": "Soft gasket mount, silent tactile switches",
+          "kind": "product",
+          "state": "shortlisted",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:45:00.000Z",
+          "createdBy": "model",
+          "data": {
+            "cells": {
+              "00000008": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "40 dB(A)",
+                "sources": [
+                  {
+                    "kind": "sponsored",
+                    "name": "Sponsored review",
+                    "read": "2026-10-04"
+                  }
+                ]
+              },
+              "00000009": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "165 €",
+                "sources": [
+                  {
+                    "kind": "shop",
+                    "name": "Online shop",
+                    "read": "2026-10-13"
+                  }
+                ],
+                "user": {
+                  "value": "159 €",
+                  "at": "2026-10-14T18:20:00.000Z",
+                  "by": "Alex"
+                }
+              },
+              "0000000a": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "Silent tactile, soft and springy",
+                "sources": [
+                  {
+                    "kind": "opinion",
+                    "name": "Typists forum thread",
+                    "read": "2026-10-06"
+                  }
+                ]
+              },
+              "0000000b": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": "75%: arrows and F-row",
+                "sources": [
+                  {
+                    "kind": "manufacturer",
+                    "name": "Maker's spec sheet",
+                    "read": "2026-10-10"
+                  }
+                ]
+              },
+              "0000000c": {
+                "generationId": "g03",
+                "at": "2026-10-14T09:10:00.000Z",
+                "value": null,
+                "sources": []
+              }
+            }
+          }
+        },
+        "00000011": {
+          "id": "00000011",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Full-size office board",
+          "hook": "Number pad, plain design, membrane-quiet",
+          "kind": "product",
+          "state": "candidate",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:45:45.000Z",
+          "createdBy": "model"
+        },
+        "00000012": {
+          "id": "00000012",
+          "parents": [
+            "00000001"
+          ],
+          "title": "Clicky retro board",
+          "hook": "Classic blue switches, heavy metal case",
+          "kind": "product",
+          "state": "rejected",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-14T08:46:30.000Z",
+          "createdBy": "model",
+          "data": {
+            "rejected": {
+              "reason": "Clicky switches: far too loud for an open office.",
+              "at": "2026-10-14T08:47:15.000Z"
+            }
+          }
+        }
+      }
+    }
+  }
+}

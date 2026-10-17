@@ -1,0 +1,616 @@
+{
+  "format": "lantern/2",
+  "id": "how-tcp-congestion-control-works-demo",
+  "title": "How TCP congestion control works",
+  "createdAt": "2026-10-12T18:42:00.000Z",
+  "rooms": {
+    "learn": {
+      "model": "opus",
+      "effort": "medium",
+      "data": {
+        "tone": "engineer"
+      },
+      "rootId": "tcp",
+      "focusId": "aimd",
+      "nodes": {
+        "tcp": {
+          "id": "tcp",
+          "parents": [],
+          "title": "How TCP congestion control works",
+          "hook": "",
+          "kind": "subject",
+          "state": "lit",
+          "content": "**TCP congestion control** is how every TCP sender decides how fast to send without knowing anything about the network in between. It cannot see the routers or the other flows, so it probes: send a little more, watch for trouble, back off when trouble appears.\n\nEverything rests on one number the sender keeps per connection, the **congestion window** (how much data may be in flight), read against the round-trip time. Get the rules right and thousands of strangers share a bottleneck fairly. Get them wrong and the network collapses, as the early Internet did in 1986, when throughput between some sites fell by a factor of about a thousand.",
+          "dialogue": [],
+          "createdAt": "2026-10-12T18:42:00.000Z",
+          "createdBy": "user",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g01"
+          }
+        },
+        "cwnd": {
+          "id": "cwnd",
+          "parents": [
+            "tcp"
+          ],
+          "title": "The congestion window",
+          "hook": "The one number that sets how fast a sender goes",
+          "kind": "axis",
+          "state": "understood",
+          "content": "At any moment the sender may have at most $\\min(\\text{cwnd}, \\text{rwnd})$ bytes unacknowledged. `rwnd` is what the **receiver** says it can buffer; `cwnd` is the sender's own guess of what the **network** can absorb.\n\nRoughly one window is delivered per round trip, so\n\n$$\\text{throughput} \\approx \\frac{\\text{cwnd}}{\\text{RTT}}$$\n\nA 64 KB window over a 100 ms path caps you near **5 Mbit/s**, whatever the link speed. Congestion control is the set of rules for moving `cwnd` up and down.",
+          "dialogue": [],
+          "createdAt": "2026-10-12T18:45:00.000Z",
+          "createdBy": "model",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g02"
+          },
+          "data": {
+            "understoodBy": "self"
+          }
+        },
+        "loss": {
+          "id": "loss",
+          "parents": [
+            "tcp"
+          ],
+          "title": "Packet loss as the signal",
+          "hook": "How a sender learns that it went too fast",
+          "kind": "axis",
+          "state": "lit",
+          "content": "TCP has no direct view of congestion, so it reads it from **loss**. When a router's queue overflows it drops packets; the sender notices the gap and concludes it was going too fast.\n\nIt notices in one of two ways:\n\n1. **Duplicate ACKs**: the receiver keeps acknowledging the last in-order byte. Three duplicates mean one segment is missing while later ones still arrive.\n2. **A retransmission timeout**: nothing comes back at all, which is far more serious.\n\nLoss is an imperfect signal. On Wi-Fi a corrupted frame looks just like a full queue, and by the time a queue overflows it has already added delay. Both problems shaped the [modern algorithms](node:modern).",
+          "dialogue": [],
+          "createdAt": "2026-10-12T18:47:00.000Z",
+          "createdBy": "model",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g09"
+          }
+        },
+        "modern": {
+          "id": "modern",
+          "parents": [
+            "tcp"
+          ],
+          "title": "Modern algorithms",
+          "hook": "What replaced the classic sawtooth on fast, long paths",
+          "kind": "axis",
+          "state": "lit",
+          "content": "Reno's sawtooth was designed for paths of a few hundred kbit/s. On a 10 Gbit/s link with a 100 ms RTT the window is about 83,000 segments: after one halving, growing back by one segment per round trip would take **over an hour**.\n\nTwo answers dominate today:\n\n- **CUBIC**, the default in Linux since 2006 and in Windows since 2017, grows the window as a function of time since the last loss, so recovery no longer depends on the RTT.\n- **BBR**, from Google in 2016, stops treating loss as the signal: it measures the bottleneck bandwidth and the minimum RTT, then paces at that rate.",
+          "dialogue": [],
+          "createdAt": "2026-10-12T18:49:00.000Z",
+          "createdBy": "model",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g11"
+          }
+        },
+        "slow": {
+          "id": "slow",
+          "parents": [
+            "cwnd"
+          ],
+          "title": "Slow start",
+          "hook": "Exponential growth until the first sign of trouble",
+          "kind": "deeper",
+          "state": "understood",
+          "content": "Despite the name, slow start grows the window **exponentially**. `cwnd` starts small (10 segments on modern stacks) and grows by one segment for every ACK, which doubles it every round trip:\n\n| Round trip | cwnd (segments) |\n|---|---|\n| 0 | 10 |\n| 1 | 20 |\n| 2 | 40 |\n| 3 | 80 |\n\nIt stops at the **slow-start threshold** (`ssthresh`) or at the first sign of loss. From there, [AIMD](node:aimd) takes over.",
+          "dialogue": [
+            {
+              "role": "model",
+              "text": "A connection starts at 10 segments with `ssthresh` at 64. After how many round trips does it leave slow start, and at what window?",
+              "at": "2026-10-12T18:59:00.000Z",
+              "author": {
+                "kind": "model",
+                "model": "claude-opus-5-5",
+                "effort": "medium",
+                "generationId": "g04"
+              }
+            },
+            {
+              "role": "user",
+              "text": "During the third round trip: 10, 20, 40, and then it would reach 80, but it stops as soon as it hits 64.",
+              "at": "2026-10-12T19:03:00.000Z",
+              "author": {
+                "kind": "user",
+                "by": "Alex"
+              }
+            },
+            {
+              "role": "model",
+              "text": "Exactly. The switch happens mid-round, the moment `cwnd` reaches `ssthresh`, so the last doubling is cut short at 64.",
+              "at": "2026-10-12T19:05:00.000Z",
+              "author": {
+                "kind": "model",
+                "model": "claude-opus-5-5",
+                "effort": "medium",
+                "generationId": "g05"
+              }
+            }
+          ],
+          "createdAt": "2026-10-12T18:52:00.000Z",
+          "createdBy": "model",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g03"
+          },
+          "data": {
+            "understoodBy": "demonstrated"
+          }
+        },
+        "aimd": {
+          "id": "aimd",
+          "parents": [
+            "cwnd"
+          ],
+          "title": "AIMD: add a little, halve on loss",
+          "hook": "The rule behind the famous sawtooth",
+          "kind": "deeper",
+          "state": "lit",
+          "content": "Out of slow start, a classic (Reno) sender follows **additive increase, multiplicative decrease**:\n\n- each round trip without loss: $\\text{cwnd} \\leftarrow \\text{cwnd} + 1$ segment\n- on a loss: $\\text{cwnd} \\leftarrow \\text{cwnd} / 2$\n\nThe result is the **sawtooth**: a slow linear climb, a sharp drop, over and over. A flow at 40 segments that sees a loss drops to 20, then climbs back one segment per round trip.\n\nWhy so asymmetric? Probing gently costs little if you were wrong, but a loss means the bottleneck queue is **already full**, so backing off hard drains it fast. It is also what makes flows converge to a fair share: each cut is proportional to the window, so the larger flow gives up more while both climb at the same rate.\n\nWith a capacity of $W$ segments the window swings between $W/2$ and $W$, so the link averages about **75%** utilisation.",
+          "dialogue": [
+            {
+              "role": "model",
+              "text": "A flow is at 40 segments when a loss is detected. Predict `cwnd` for the next five round trips, and say what happens to the bottleneck queue meanwhile.",
+              "at": "2026-10-12T19:15:00.000Z",
+              "author": {
+                "kind": "model",
+                "model": "claude-opus-5-5",
+                "effort": "medium",
+                "generationId": "g07"
+              }
+            },
+            {
+              "role": "user",
+              "text": "20, 21, 22, 23, 24. The queue empties right after the cut, because we now send half as much as before.",
+              "at": "2026-10-12T19:19:00.000Z",
+              "author": {
+                "kind": "user",
+                "by": "Alex"
+              }
+            },
+            {
+              "role": "model",
+              "text": "The window is right. On the queue you are close: it drains because the sender now sends **less than the link can carry**, not just less than before. When would halving *not* be enough to drain it?",
+              "at": "2026-10-12T19:21:00.000Z",
+              "author": {
+                "kind": "model",
+                "model": "claude-opus-5-5",
+                "effort": "medium",
+                "generationId": "g08"
+              }
+            }
+          ],
+          "createdAt": "2026-10-12T18:54:00.000Z",
+          "createdBy": "model",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g06"
+          }
+        },
+        "probe": {
+          "id": "probe",
+          "parents": [
+            "cwnd"
+          ],
+          "title": "Size a window for your own link",
+          "hook": "Bandwidth × RTT for your home connection",
+          "kind": "exercise",
+          "state": "open",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-12T18:56:00.000Z",
+          "createdBy": "model"
+        },
+        "fair": {
+          "id": "fair",
+          "parents": [
+            "aimd"
+          ],
+          "title": "Why halving makes flows fair",
+          "hook": "Two flows, one link: watch them converge",
+          "kind": "deeper",
+          "state": "open",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-12T19:09:00.000Z",
+          "createdBy": "model"
+        },
+        "sketch": {
+          "id": "sketch",
+          "parents": [
+            "aimd"
+          ],
+          "title": "Sketch the sawtooth",
+          "hook": "Plot cwnd for 20 round trips with one loss at round 12",
+          "kind": "exercise",
+          "state": "open",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-12T19:11:00.000Z",
+          "createdBy": "model"
+        },
+        "tfrc": {
+          "id": "tfrc",
+          "parents": [
+            "aimd"
+          ],
+          "title": "TCP-friendly rate control",
+          "hook": "How video calls play fair without using TCP",
+          "kind": "application",
+          "state": "open",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-12T19:13:00.000Z",
+          "createdBy": "model"
+        },
+        "fastrx": {
+          "id": "fastrx",
+          "parents": [
+            "loss"
+          ],
+          "title": "Fast retransmit",
+          "hook": "Resend after three duplicate ACKs, without waiting",
+          "kind": "deeper",
+          "state": "open",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-12T19:25:00.000Z",
+          "createdBy": "model"
+        },
+        "rto": {
+          "id": "rto",
+          "parents": [
+            "loss"
+          ],
+          "title": "Timeouts and the RTO",
+          "hook": "The last resort when ACKs stop coming",
+          "kind": "deeper",
+          "state": "understood",
+          "content": "The **retransmission timeout** is the sender's last resort: if no ACK arrives in time, it assumes the worst. The timer comes from a smoothed RTT plus four times its variation,\n\n$$\\text{RTO} = \\text{SRTT} + 4 \\cdot \\text{RTTVAR}$$\n\nwith a floor of one second in RFC 6298, and it doubles after each expiry. A timeout is treated as severe: `cwnd` falls back to one segment and [slow start](node:slow) begins again.",
+          "dialogue": [],
+          "createdAt": "2026-10-12T19:27:00.000Z",
+          "createdBy": "model",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g10"
+          },
+          "data": {
+            "understoodBy": "self"
+          }
+        },
+        "ecn": {
+          "id": "ecn",
+          "parents": [
+            "loss"
+          ],
+          "title": "ECN: marking instead of dropping",
+          "hook": "Routers flag congestion before they have to drop",
+          "kind": "adjacent",
+          "state": "dismissed",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-12T19:29:00.000Z",
+          "createdBy": "model"
+        },
+        "cubic": {
+          "id": "cubic",
+          "parents": [
+            "modern"
+          ],
+          "title": "CUBIC",
+          "hook": "A cubic curve anchored on the last loss",
+          "kind": "deeper",
+          "state": "lit",
+          "content": "CUBIC replaces Reno's straight line with a cubic curve anchored on $W_{max}$, the window at the last loss:\n\n$$W(t) = C\\,(t - K)^3 + W_{max}$$\n\nRight after a loss it climbs fast, flattens as it nears $W_{max}$ (where trouble struck last time), then accelerates again to probe for more. Because $t$ is wall-clock time rather than round trips, flows with different RTTs grow at the same pace, which removes Reno's bias against long paths.",
+          "dialogue": [],
+          "createdAt": "2026-10-12T19:33:00.000Z",
+          "createdBy": "model",
+          "author": {
+            "kind": "model",
+            "model": "claude-opus-5-5",
+            "effort": "medium",
+            "generationId": "g12"
+          }
+        },
+        "bbr": {
+          "id": "bbr",
+          "parents": [
+            "modern"
+          ],
+          "title": "BBR: model the pipe",
+          "hook": "Pace at the measured bandwidth instead of waiting for loss",
+          "kind": "deeper",
+          "state": "open",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-12T19:35:00.000Z",
+          "createdBy": "model"
+        },
+        "bloat": {
+          "id": "bloat",
+          "parents": [
+            "modern"
+          ],
+          "title": "Bufferbloat",
+          "hook": "Why big router buffers made latency worse",
+          "kind": "adjacent",
+          "state": "open",
+          "content": "",
+          "dialogue": [],
+          "createdAt": "2026-10-12T19:37:00.000Z",
+          "createdBy": "model"
+        }
+      },
+      "log": [
+        {
+          "id": "g01",
+          "nodeId": "tcp",
+          "task": "intro",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T18:43:00.000Z",
+          "durationMs": 7120,
+          "usage": {
+            "input": 2400,
+            "output": 260,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g02",
+          "nodeId": "cwnd",
+          "task": "light",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T18:50:00.000Z",
+          "durationMs": 7720,
+          "usage": {
+            "input": 2750,
+            "output": 310,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g03",
+          "nodeId": "slow",
+          "task": "light",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T18:57:00.000Z",
+          "durationMs": 7360,
+          "usage": {
+            "input": 3100,
+            "output": 280,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g04",
+          "nodeId": "slow",
+          "task": "check",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T19:00:00.000Z",
+          "durationMs": 4720,
+          "usage": {
+            "input": 3450,
+            "output": 60,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g05",
+          "nodeId": "slow",
+          "task": "reply",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T19:06:00.000Z",
+          "durationMs": 4840,
+          "usage": {
+            "input": 3800,
+            "output": 70,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g06",
+          "nodeId": "aimd",
+          "task": "light",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T19:07:00.000Z",
+          "durationMs": 10240,
+          "usage": {
+            "input": 4150,
+            "output": 520,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g07",
+          "nodeId": "aimd",
+          "task": "check",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T19:16:00.000Z",
+          "durationMs": 4840,
+          "usage": {
+            "input": 4500,
+            "output": 70,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g08",
+          "nodeId": "aimd",
+          "task": "reply",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T19:22:00.000Z",
+          "durationMs": 5080,
+          "usage": {
+            "input": 4850,
+            "output": 90,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g09",
+          "nodeId": "loss",
+          "task": "light",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T19:23:00.000Z",
+          "durationMs": 8320,
+          "usage": {
+            "input": 5200,
+            "output": 360,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g10",
+          "nodeId": "rto",
+          "task": "light",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T19:30:00.000Z",
+          "durationMs": 7600,
+          "usage": {
+            "input": 5550,
+            "output": 300,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g11",
+          "nodeId": "modern",
+          "task": "light",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T19:31:00.000Z",
+          "durationMs": 8080,
+          "usage": {
+            "input": 5900,
+            "output": 340,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        },
+        {
+          "id": "g12",
+          "nodeId": "cubic",
+          "task": "light",
+          "model": "claude-opus-5-5",
+          "effort": "medium",
+          "promptVersion": "learn-2",
+          "startedAt": "2026-10-12T19:38:00.000Z",
+          "durationMs": 7960,
+          "usage": {
+            "input": 6250,
+            "output": 330,
+            "thinking": 0,
+            "cacheRead": 1800,
+            "cacheWrite": 0
+          },
+          "outcome": "ok",
+          "data": {
+            "tone": "engineer"
+          }
+        }
+      ]
+    }
+  }
+}
