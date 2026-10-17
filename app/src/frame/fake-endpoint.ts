@@ -2,7 +2,7 @@ import type { WireEndpoint } from './endpoints';
 import { type Completion, type EndpointTransport, type ErrorKind, type InferenceProvider, ProviderError, type Request } from './provider';
 
 /** How the fake endpoint behaves: a slow first byte (CE-41), an injected error, or a reply shaped as small models write it. */
-export interface FakeEndpointOptions { firstByteMs?: number; error?: ErrorKind; reply?: 'normal' | 'unclosed' | 'no-options' }
+export interface FakeEndpointOptions { firstByteMs?: number; error?: ErrorKind; reply?: 'normal' | 'unclosed' | 'no-options'; models?: number }
 /** IP-71: an endpoint in the browser build and the Playwright tests, answered by the room's own fake. */
 export class FakeEndpointTransport implements EndpointTransport {
   constructor(private inner: InferenceProvider, public options: FakeEndpointOptions = {}) {}
@@ -23,14 +23,14 @@ export class FakeEndpointTransport implements EndpointTransport {
     return { ...result, text, model, resolvedEffort: undefined, costUsd: undefined };
   }
 }
-/** Dev URL parameters: `?endpointDelay=1500&endpointError=unreachable&endpointReply=unclosed`. */
+/** Dev URL parameters: `?endpointDelay=1500&endpointError=unreachable&endpointReply=unclosed&endpointModels=120` (a long catalogue, as NVIDIA's). */
 export function fakeEndpointOptions(params: URLSearchParams, kinds: Record<string, unknown>): FakeEndpointOptions {
   const error = params.get('endpointError'), reply = params.get('endpointReply');
   return { firstByteMs: Number(params.get('endpointDelay') ?? 0) || 0, ...(error && Object.hasOwn(kinds, error) ? { error: error as ErrorKind } : {}),
-    ...(reply === 'unclosed' || reply === 'no-options' ? { reply } : {}) };
+    ...(reply === 'unclosed' || reply === 'no-options' ? { reply } : {}), ...(Number(params.get('endpointModels')) > 2 ? { models: Math.min(500, Number(params.get('endpointModels'))) } : {}) };
 }
 /** IP-71: the model list and model facts the browser build shows for any endpoint. */
 export const fakeEndpointAdmin = {
-  async models(options: FakeEndpointOptions): Promise<string[]> { if (options.error) throw new ProviderError(options.error, 'Injected fake-endpoint failure'); return ['gemma4:e2b', 'qwen3:8b']; },
+  async models(options: FakeEndpointOptions): Promise<string[]> { if (options.error) throw new ProviderError(options.error, 'Injected fake-endpoint failure'); return ['gemma4:e2b', 'qwen3:8b', ...Array.from({ length: Math.max(0, (options.models ?? 2) - 2) }, (_, i) => `vendor/model-${i + 1}`)]; },
   async info(): Promise<{ contextSize?: number; thinking?: boolean }> { return { contextSize: 131072, thinking: true }; },
 };

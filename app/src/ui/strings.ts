@@ -79,7 +79,7 @@ export const strings = {
   checkAgain: 'Check again', testProvider: 'Test', notTested: 'Not tested yet',
   // CE-20 to CE-26, CE-30, CE-52, CE-80 to CE-82: Settings → Provider → Endpoints.
   claudeCode: 'Claude Code', endpoints: 'Endpoints',
-  endpointsHint: 'Models on a server you run, such as Ollama or llama.cpp. Lantern never starts or installs a server; start it yourself.',
+  endpointsHint: 'Models on a server you run, such as Ollama or llama.cpp, or on a cloud service such as NVIDIA. Lantern never starts or installs a server; start it yourself.',
   presetNames: { ollama: 'Ollama', llamacpp: 'llama.cpp', lmstudio: 'LM Studio', nvidia: 'NVIDIA', custom: 'Custom URL' } as Record<string, string>,
   addEndpoint: 'Add endpoint', endpointName: 'Name', serverUrl: 'Server URL', removeEndpoint: 'Remove', confirmRemoveEndpoint: 'Remove this endpoint',
   lanConfirm: 'This address is a computer on my local network', lanHint: 'Lantern sends plain http:// only to this computer or to a local-network address you confirm; anything else needs https://.',
@@ -93,6 +93,16 @@ export const strings = {
   servedAs: (served: string) => `answered as ${served}`,
   thinkingHint: 'Off is fastest. A subject’s effort does not apply to these models.', contextHint: 'Read from the server when it says; larger sizes use more memory.',
   testModel: 'Model to test', testing: 'Testing…',
+  // CE-70 to CE-76, CE-81, cloud slice 3: keys and the consent step.
+  apiKey: 'API key', saveKey: 'Save key', keySet: (last4?: string | null) => last4 ? `Key set · …${last4}` : 'Key set',
+  replaceKey: 'Replace key', keySaved: 'Key saved. Test a model to check it.', removeKey: 'Remove key', confirmReplaceKey: 'Replace the saved key', confirmRemoveKey: 'Remove the saved key',
+  replaceKeyHint: 'The saved key cannot be shown again. Enter the new one; the old one is overwritten when you save.',
+  keyHint: (host: string) => `Kept in Windows Credential Manager for ${host}, sent only there over https://, and never shown again.`,
+  keyOptional: 'An API key is optional here.', keyNeedsHttps: 'A key is only sent over https://, and this address is not.',
+  cloudConsent: (name: string, host: string) => `Subject text you send to ${name} models goes to ${host}, outside this computer.`,
+  addCloud: 'Add', useAddress: 'Use this address',
+  keyDropped: (host: string) => `The saved key belongs to ${host}. Changing the address removes it; enter the key again for the new address.`,
+  filterModels: 'Filter models', modelsShown: (shown: number, total: number) => `${shown} of ${total} models`,
   // CE-40, CE-41, CE-55: what endpoint failures and waits say.
   endpointErrors: {
     unreachable: (name: string, host: string) => `${name} is not answering at ${host}. Start it, then try again.`,
@@ -104,7 +114,9 @@ export const strings = {
     network: (name: string) => `Could not reach ${name}. Check the connection.`,
     server: (name: string) => `${name} reported a server error.`,
     unreadable: (name: string) => `${name} gave an answer Lantern could not read.`,
-    key: (name: string) => `${name} rejected the API key.`,
+    key: (name: string) => `${name} rejected the API key. Replace it in Settings → Provider → Endpoints.`,
+    keyMissing: (name: string) => `${name} needs an API key. Add it in Settings → Provider → Endpoints.`,
+    keyElsewhere: (name: string) => `The API key for ${name} was saved for another address, so Lantern did not send it. Save it again in Settings → Provider → Endpoints.`,
   },
   researchNeedsClaude: 'Research uses the web through Claude Code, which is not installed. The other tasks can run on a local model.',
   amberLocalWait: (name: string) => `${name} may take a minute to load the model.`,

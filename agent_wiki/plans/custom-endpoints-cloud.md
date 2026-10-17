@@ -198,6 +198,33 @@ The local plan's rules hold. In particular:
 - `key-rejected` offers *Replace key* (CE-40).
 - **Exit:** Playwright with a fake key admin (the key never stored by the fake either), and unit tests
   that `settings.json` never holds a key, whatever the user types where.
+- **Done 2026-10-18** (same branch). Built and checked in the browser build only; the desktop build with the
+  real Credential Manager is slice 5's run.
+  - `frame/endpoint-keys.ts`: a `KeyAdmin` with the three Rust commands (`desktopKeyAdmin`) and a browser
+    stand-in (`fakeKeys`). Like Rust, the stand-in refuses http and odd keys, and it keeps only
+    `{ set, last4, host }`.
+  - Settings, for every preset whose key is not `no` (NVIDIA required, Custom URL optional):
+    - a password field inside a form, read once at *Save key* and cleared before Rust answers, so the key
+      is never held in component state;
+    - once saved, *Key set · …ab12* with the host, then *Replace key* and *Remove key*, each confirmed;
+    - over http, the field is replaced by *A key is only sent over https://*.
+    - A `key-rejected` failure shows *Replace key* beside the status. Rust's refusals before sending have
+      their own wording: no key saved, or a key saved for another address.
+  - CE-81: adding NVIDIA, or changing any endpoint's address to a new cloud host, shows where subject text
+    goes, with *Add* / *Use this address* and *Cancel*. Cancel restores the field. `isCloudEndpoint`
+    (NVIDIA, or a host that is neither this machine nor a LAN address, as Rust's `is_lan`) decides it, and
+    slice 4 uses it too.
+  - CE-72: an address change to another host first says the saved key will go, then removes it. CE-75:
+    removing the endpoint removes its key.
+  - The model list gains a filter once it holds more than 20 models (*10 of 121 models*); nothing is pinned
+    by default above 20 (CE-21 as before).
+  - Tests: TS 211, including `endpoint-keys.test.ts`. It checks that `settings.json` drops `apiKey`, `key`,
+    `authorization` and `headers` wherever they are typed, the stand-in's rules, the cloud table and the
+    three key wordings. The new Playwright spec `tests/endpoint-keys.spec.ts` (5 tests) covers consent,
+    save, replace and remove with confirmations, a host change dropping the key, the http refusal, removal
+    with the endpoint, *Replace key* after a rejection, and the 120-model filter. After each step it checks
+    that the planted key is nowhere in the DOM, in input values or in storage. `?endpointModels=120` was
+    added to the fake for the long list. The endpoints and settings specs still pass.
 
 # Slice 4. Cloud tokens count with Claude
 

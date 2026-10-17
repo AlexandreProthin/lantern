@@ -59,6 +59,22 @@ export function mergeModels(stored: readonly EndpointModel[], fetched: readonly 
   const pin = fetched.length <= 20;
   return [...stored.filter(m => fetched.includes(m.id) || m.pinned), ...fetched.filter(id => !stored.some(m => m.id === id)).map(id => ({ id, pinned: pin, thinking: defaultThinking(preset) }))];
 }
+const hostname = (baseUrl: string) => { try { return new URL(baseUrl).hostname.replace(/^\[|\]$/g, '').toLowerCase(); } catch { return null; } };
+const isThisMachine = (h: string) => h === 'localhost' || h.endsWith('.localhost') || /^127\./.test(h) || h === '::1';
+/** As Rust's `is_lan` (provider/endpoint.rs): private and link-local addresses, and local names. */
+const isLanHost = (h: string) => /^(10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h) || /^f[cd][0-9a-f]{0,2}:|^fe[89ab][0-9a-f]?:/.test(h)
+  || (!h.includes('.') && !h.includes(':')) || ['.local', '.lan', '.home.arpa', '.internal'].some(s => h.endsWith(s));
+/**
+ * CE-53, CE-81: whether subject text sent to this endpoint leaves this computer and the local network: NVIDIA always,
+ * any other preset when its address is neither this machine nor a LAN address. An empty or broken URL is not cloud yet.
+ */
+export function isCloudEndpoint(e: { preset: Preset; baseUrl: string }): boolean {
+  if (e.preset === 'nvidia') return true;
+  const h = hostname(e.baseUrl); return h !== null && !!h && !isThisMachine(h) && !isLanHost(h);
+}
+/** CE-72: the address a key is bound to, as Rust's `host_of` writes it (`host`, or `host:port` for a port that is not the default). */
+export const keyHost = (baseUrl: string) => { try { return new URL(baseUrl).host.toLowerCase(); } catch { return ''; } };
+export const isHttps = (baseUrl: string) => { try { return new URL(baseUrl).protocol === 'https:'; } catch { return false; } };
 /** CE-80: whether the URL is plain http to an address that is not this machine (so it needs the LAN confirmation). */
 export function needsLanConfirmation(baseUrl: string): boolean {
   try { const u = new URL(baseUrl); const h = u.hostname.replace(/^\[|\]$/g, '').toLowerCase();

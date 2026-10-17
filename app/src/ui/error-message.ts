@@ -23,7 +23,8 @@ export function errorMessage(error: { kind: ErrorKind; model?: string; details?:
     case 'network': return m.network(name);
     case 'process-crashed': return m.server(name);
     case 'protocol': return m.unreadable(name);
-    case 'key-rejected': return m.key(name);
+    // CE-72: Rust refused before sending, for want of a key or because the key belongs to another address.
+    case 'key-rejected': return error.details?.includes('needs an API key') ? m.keyMissing(name) : error.details?.includes('Lantern does not send it') || error.details?.includes('only sent over https') ? m.keyElsewhere(name) : m.key(name);
     default: return strings.errorKinds[error.kind];
   }
 }

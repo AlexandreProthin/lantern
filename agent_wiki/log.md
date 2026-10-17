@@ -2,6 +2,7 @@
 
 ## 2026-10-18
 
+* **Custom endpoints, cloud slice 3 done**: Settings saves a key from a password field straight to Rust and shows only *Key set · …ab12*, with confirmed *Replace* and *Remove*. Adding NVIDIA, or moving an endpoint to a new cloud host, first says where subject text goes (CE-81). A host change or removing the endpoint removes the key. Long model lists gain a filter. A Playwright spec checks the planted key is never in the DOM or storage. 211 TS ([plan](/plans/custom-endpoints-cloud.md)).
 * **Custom endpoints, cloud slice 2 done**: a preset table in Rust (`caps`) mirrored in `frame/endpoints.ts` (`PRESET_CAPS`). The NVIDIA preset never sends `reasoning_effort`, offers only *Model default* thinking, and needs a saved key; a bare 404 on its chat route means an unknown model. CE-27 is built: the asked model is kept, and `servedModel` is logged and shown as *answered as …*. The local presets' request bodies are pinned. 64 Rust, 207 TS ([plan](/plans/custom-endpoints-cloud.md)).
 * **Custom endpoints, cloud slice 1 done** (branch `claude/custom-endpoints-keys-71080d`): API keys in Windows Credential Manager (`provider/keys.rs`, `windows-sys`, `zeroize`), three key commands that never return the key, the `Authorization` header added in Rust only for the host the key was saved for and only over https, and redaction of every endpoint error. 58 Rust tests pass, 9 ignored; the real credential store test was run once with a fake key and removed it ([plan](/plans/custom-endpoints-cloud.md)).
 
