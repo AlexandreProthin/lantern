@@ -21,6 +21,8 @@ tempfile = "3"
 dunce = "1"
 sha2 = "0.10"
 tauri-plugin-updater = "=2.9.0"
+# CE-11: endpoint calls from Rust; the updater already builds this reqwest with rustls, so blocking adds no HTTP or TLS stack.
+reqwest = { version = "=0.12.28", default-features = false, features = ["blocking", "rustls-tls"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Com", "Win32_Security", "Win32_UI_Shell", "Win32_UI_Shell_Common", "Win32_UI_WindowsAndMessaging", "Win32_UI_Input_KeyboardAndMouse"] }

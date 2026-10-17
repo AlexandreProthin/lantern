@@ -96,8 +96,8 @@ user, CPU only on this machine. Fixtures are recorded against it first.
 # Slice 1. The endpoint provider in Rust
 
 - `app/src-tauri/src/provider/endpoint.rs` (new): `EndpointProvider` implementing `InferenceProvider`
-  (CE-10, CE-11, CE-13, CE-14). A blocking HTTP client fits IP-8's blocking call; proposed: `ureq` with
-  rustls, a new dependency, pinned like the others.
+  (CE-10, CE-11, CE-13, CE-14). A blocking HTTP client fits IP-8's blocking call: reqwest's blocking client,
+  already in the tree through the updater (slice 1, done).
   - Request: `system` as the first message, `prompt` as the user message, `stream: true`; on the
     compatible API `stream_options.include_usage`; on Ollama's native API `options.num_ctx` from the
     endpoint's context size (CE-32); thinking from the model's setting, as `think` (native) or
@@ -122,6 +122,24 @@ user, CPU only on this machine. Fixtures are recorded against it first.
 - **Exit:** Rust tests on every fixture (ok, usage missing, thinking both ways, each error, stall after
   first byte, cancel mid-stream, URL rule); the 34 existing Rust tests unchanged and green; one ignored
   test against the user's real Ollama.
+- **Done 2026-10-17**: `provider/endpoint.rs` and `endpoint_tests.rs`. Built as follows:
+  1. **HTTP client: reqwest 0.12.28, blocking**, not `ureq`. The updater already builds that reqwest
+     with rustls, so the lockfile gains three lines and no second HTTP or TLS stack.
+  2. `generate` takes an optional `endpoint` argument beside the unchanged `Request`, so the CLI tests
+     compile untouched. Without it, the CLI branch runs exactly as before.
+  3. The HTTP read runs on its own thread, like the CLI's stdout reader. Cancel returns at once; the
+     reader's next send then fails and dropping the response closes the connection, which stops Ollama.
+  4. The stall clock starts at the **first body line**, not at the headers, because headers can come
+     before the model has loaded (CE-41).
+  5. The resolved model is named in Rust as `<endpointId>:<server's model>` (CE-23, CE-25).
+  6. Ollama's input is reported like Claude's: the cached part goes to `cacheRead`.
+  7. A web call sent to an endpoint is refused in Rust too (CE-55).
+  8. The only CLI-side code changes are three new `ErrorKind`s and the optional `usageEstimated` flag,
+     which the CLI parser sets to `None`; its JSON is unchanged.
+  9. llama.cpp's `/props` is parsed from its documentation, and LM Studio uses the shared SSE reader;
+     neither has a recording yet.
+  Checks: 47 Rust tests (the 34 existing ones unchanged, 13 new) and the ignored real-Ollama test, in
+  17.6 s on `gemma4:e2b`.
 
 # Slice 2. Contract, routing and the fake endpoint
 
@@ -225,4 +243,3 @@ user, CPU only on this machine. Fixtures are recorded against it first.
 # Open
 
 - The context size sent to Ollama by default (slice 5), from the spec's *Open*.
-- The HTTP client crate (slice 1); `ureq` is the proposal.
