@@ -67,8 +67,19 @@ The local plan's rules hold. In particular:
   - **CE-55 checked**: NVIDIA's API documentation and a web search found no hosted web search, only
     OpenAI-style tool calling, where the caller runs the tool. Research on NVIDIA therefore stays with
     *Lantern's own web tools*, Later.
-  - Still to record, once the model answers: a stream with and without usage, thinking, `reasoning_effort`,
-    and the over-long prompt. Next: the user's `--only probe` run.
+  - **The probes, the same evening**: all three answered (200, `Nvcf-Status: fulfilled`, 19 to 41 s),
+    the system message included, so the 500s were transient. What they show, for slice 2:
+    1. Thinking is on by default and heavy: in `delta.reasoning_content` (already stripped), about 75 % of
+       output tokens (`reasoning_tokens` reported).
+    2. Usage comes in the stream even without `include_usage`.
+    3. The `<options>` block is closed.
+    4. **The response names another model**, `private/nvidia/nemotron-3.5-super-120b-a12b`. Lantern
+       stores the server's name today (`<endpointId>:<server's model>`), which would match no pinned model,
+       so lookups (context size, labels, pickers) would miss it. The NVIDIA preset must keep the id it asked
+       for.
+  - Still to record: the original stream cases (with and without `include_usage`, `reasoning_effort:
+    "none"`), thinking off through `chat_template_kwargs` (new probe), and the over-long prompt. Next: the
+    user's full run.
 
 # Slice 1. Keys in Rust
 

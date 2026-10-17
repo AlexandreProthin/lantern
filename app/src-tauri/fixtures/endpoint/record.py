@@ -87,6 +87,8 @@ def nvidia_cases(m):
         "nvidia-probe-user-only": ("POST", "/chat/completions", {**stream, "messages": [{"role": "user", "content": SYSTEM + "\n\n" + PROMPT}]}),
         "nvidia-probe-not-streamed": ("POST", "/chat/completions", {"model": m, "messages": messages, "stream": False}),
         "nvidia-probe-text-parts": ("POST", "/chat/completions", {**stream, "messages": [{"role": "system", "content": [{"type": "text", "text": SYSTEM}]}, {"role": "user", "content": [{"type": "text", "text": PROMPT}]}]}),
+        # CE-52: thinking off through the chat template, where `reasoning_effort` may not reach it.
+        "nvidia-probe-no-thinking": ("POST", "/chat/completions", {**stream, "chat_template_kwargs": {"enable_thinking": False}}),
         "nvidia-bad-key": ("POST", "/chat/completions", stream, FAKE_KEY),
         "nvidia-models-bad-key": ("GET", "/models", None, FAKE_KEY),
     }

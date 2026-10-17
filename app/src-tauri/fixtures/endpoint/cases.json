@@ -410,5 +410,95 @@
       "Nvcf-Status": "errored"
     },
     "note": "Every chat case on this model returned this, instantly (2026-10-17); kept as the server-error fixture."
+  },
+  "nvidia-probe-user-only": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "user",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise.\n\nSUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 26.1,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "1b35e879-29ef-493b-aa5e-9fd8ae070141",
+      "Nvcf-Status": "fulfilled"
+    }
+  },
+  "nvidia-probe-not-streamed": {
+    "status": 200,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": false
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 40.5,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json",
+      "Nvcf-Reqid": "eb196ecf-f346-4415-a690-5a46b2ab4b9c",
+      "Nvcf-Status": "fulfilled"
+    }
+  },
+  "nvidia-probe-text-parts": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": [
+            {
+              "type": "text",
+              "text": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+            }
+          ]
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 18.6,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "d57e1fb6-2da6-492f-9865-e5862cdd8c02",
+      "Nvcf-Status": "fulfilled"
+    }
   }
 }

@@ -60,6 +60,9 @@ headers are kept.
 | `nvidia-bad-key` | **403**, not 401: `application/problem+json`, `{"status":403,"title":"Forbidden","detail":"Authorization failed"}`. The made-up key is not echoed. |
 | `nvidia-compat-model-missing` | **404, plain text `404 page not found`**: nothing names a model, so the classification has to know that a 404 on NVIDIA's chat route means an unknown model, not an absent server. |
 | `nvidia-server-error` | The 500 above. |
+| `nvidia-probe-user-only`, `nvidia-probe-text-parts` | Later the same evening, **200** (`Nvcf-Status: fulfilled`) in 26 s and 19 s: the 500s were transient, since a system message, plain or as text parts, works. SSE; thinking in `delta.reasoning_content`; usage in the stream **without** `include_usage`, with `completion_tokens_details.reasoning_tokens` (866 of 1166, 1040 of 1322). The `<options>` block is closed. |
+| `nvidia-probe-not-streamed` | 200 in 41 s, `application/json`, `message.reasoning_content` beside `content`. |
+| all three | The response's `model` is **`private/nvidia/nemotron-3.5-super-120b-a12b`**, not the id asked for (`nvidia/nemotron-3.5-super-vl-120b-a12b`). |
 
 ## What the recordings show
 

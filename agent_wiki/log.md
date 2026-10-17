@@ -2,6 +2,7 @@
 
 ## 2026-10-17
 
+* **Custom endpoints, cloud slice 0, probes**: Nemotron answered all three probes, so the earlier 500s were transient. It thinks heavily by default, reports usage unasked, and closes its options; but it names a different model in its responses, which the NVIDIA preset must not store ([plan](/plans/custom-endpoints-cloud.md)).
 * **Custom endpoints, cloud slice 0 partial**: Gemma 4 31B never answered on NVIDIA (long queue), so the user moved to `nvidia/nemotron-3.5-super-vl-120b-a12b`, which answered with a 500. Recorded anyway: the model list is public, a bad key is a 403, and an unknown model is a bare 404 (a rule for slice 2). CE-55 confirmed: NVIDIA has no hosted web search. Probe cases added for the 500 ([plan](/plans/custom-endpoints-cloud.md)).
 * **Custom endpoints: cloud version planned**: by the user, the local version stays unreleased and ships with cloud in one bump (CE-5). [custom-endpoints-cloud](/plans/custom-endpoints-cloud.md) has seven slices: NVIDIA fixtures recorded by the user, keys in Credential Manager through `windows-sys`, the NVIDIA preset with per-preset capabilities, settings with consent, cloud tokens counted with Claude, real use, then acceptance and the joint release. Keys never reach the agent or the webview.
 * **Custom endpoints, local version accepted**: the user passed `app/ACCEPTANCE-ENDPOINTS.md` in the preview installer (27 of 27). Open: whether to release it now or with the cloud version (CE-5) ([plan](/plans/custom-endpoints-local.md)).
