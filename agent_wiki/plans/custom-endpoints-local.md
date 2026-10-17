@@ -346,6 +346,25 @@ user, CPU only on this machine. Fixtures are recorded against it first.
 - Acceptance checklist `app/ACCEPTANCE-ENDPOINTS.md`, passed by the user in an installed build.
 - **Exit:** the user passes the checklist; then the agent asks the user whether to release the local
   version or wait for cloud (CE-5).
+- **Checks done 2026-10-17**:
+  - `npm run check` clean; 205 TS tests; 48 Rust tests, plus the ignored real-Ollama test and both
+    ignored real-CLI tests (stream and cancel; a web call limited to WebSearch and WebFetch).
+  - Playwright: 96 passed and 2 skipped, with one failure, `GV-90/91/92`, an animation-sampling test that
+    passed 3 of 3 alone and in every earlier full run this session (load, as in v0.4.0's checks).
+  - Found while writing the checklist and fixed: an unconfirmed LAN URL fails in Rust as `protocol`,
+    which the UI showed as an unreadable answer; it now shows the LAN hint. Errors from *Fetch models*
+    are worded for their endpoint instead of for Claude Code.
+- **Claude Code regression pass 2026-10-17**, desktop build from the worktree with the user's settings
+  (Ollama endpoint set), backed up and found unchanged afterwards:
+  - *Test*: *Signed in · claude-opus-5-5 · 3 s*. The pickers show *Claude Code* then *Ollama*, the
+    agreed touch.
+  - A Learn intro on Opus in 14 s, three axes; the meta line reads *Opus 5.5 · medium · 2 in / 571 out
+    · 10 s*. *2 in* is how the CLI reports input, matching the user's earlier Claude subjects.
+  - Ask Amber on Haiku 5.5: an on-topic app answer in about 3 s, `tagOk: true`.
+  - A subject *Why is the sky blue? (Claude regression check)* is now in the user's library.
+  - Not driven here: a Choose research call through the UI. The checklist has it; the CLI web path is
+    covered by the real-CLI test above.
+- **Acceptance checklist:** `app/ACCEPTANCE-ENDPOINTS.md`, for the user to run in a preview installer.
 
 # Risks to retire early
 

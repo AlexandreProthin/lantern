@@ -89,5 +89,5 @@ test('CE-40: an unreachable server is said plainly', async ({ page }) => {
   await dialog.getByRole('button', { name: 'Provider', exact: true }).click();
   await dialog.getByRole('button', { name: 'Add endpoint', exact: true }).click();
   await dialog.getByTestId('endpoint').getByRole('button', { name: 'Fetch models' }).click();
-  await expect(dialog.getByTestId('endpoint-status')).toHaveText('Lantern could not reach the model server.');
+  await expect(dialog.getByTestId('endpoint-status')).toHaveText('Ollama is not answering at localhost:11434. Start it, then try again.');
 });

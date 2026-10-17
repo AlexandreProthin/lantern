@@ -18,7 +18,9 @@
   const update = (id: string, change: (e: EndpointConfig) => EndpointConfig) => save(list.map(e => e.id === id ? change(e) : e));
   const setModel = (id: string, model: string, change: Partial<EndpointModel>) => update(id, e => ({ ...e, models: e.models.map(m => m.id === model ? { ...m, ...change } : m) }));
   const note = (id: string, status: string, details = '') => { notes = { ...notes, [id]: { status, details } }; };
-  const failed = (id: string, e: unknown) => { const kind = (e as ProviderError)?.kind; note(id, kind && kind in strings.errorKinds ? errorMessage(e as ProviderError) : String(e), (e as ProviderError)?.details ?? ''); };
+  // The endpoint's id tags the error, so a listing or info failure is worded for that server, not for Claude Code.
+  const failed = (id: string, e: unknown) => { const kind = (e as ProviderError)?.kind; const err = e as ProviderError;
+    note(id, kind && kind in strings.errorKinds ? errorMessage({ kind, details: err.details, model: err.model?.includes(':') ? err.model : `${id}:${err.model ?? ''}` }) : String(e), (e as ProviderError)?.details ?? ''); };
   function add() { const e = newEndpoint(addPreset, list, strings.presetNames[addPreset]); save([...list, e]); }
   async function admin<T>(command: string, args: Record<string, unknown>, fake: () => Promise<T>): Promise<T> {
     if (!desktop) return fake();

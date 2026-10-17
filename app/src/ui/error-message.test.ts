@@ -24,6 +24,7 @@ test('CE-40: an endpoint failure names its server and says what to do', () => {
   for (const kind of ['network', 'process-crashed', 'protocol'] as const) { expect(at(kind)).toContain('Ollama'); expect(at(kind)).not.toContain('Claude'); }
   expect(at('model-unknown', 'gone:model')).toContain('No endpoint “gone” is set up');
   expect(at('cancelled')).toBe('');
+  expect(errorMessage({ kind: 'protocol', model: 'ollama:gemma4:e2b', details: 'Lantern sends http:// only to this machine or a confirmed LAN address, not to 192.168.1.20; use https://' })).toBe(strings.lanHint);
 });
 test('CE-55: a research call with no Claude Code says research needs it', () => {
   expect(errorMessage({ kind: 'not-installed', model: '' }, { web: true })).toBe(strings.researchNeedsClaude);
