@@ -371,3 +371,37 @@ test('CO-56: reduced motion: no gesture, a still flame, the eyes stay', async ({
   await expect(bubble(page)).toBeVisible(); await expect(amber(page)).toHaveAttribute('data-act', '');
   expect(await drawing(page)).toBe(a);
 });
+
+// The user's notes on slice 7 (2026-10-17): Amber can be caught mid-swing; after landing it folds its feet in.
+test('the user, 2026-10-17: Amber can be caught while it swings and moved at once', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 720 });
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  // A small swing (dropped almost under its tie, a little lower), so the press lands on the lantern.
+  const start = (await amber(page).boundingBox())!;
+  await dragAmber(page, { x: start.x + start.width / 2 + 14, y: 150 });
+  await expect(amber(page)).toHaveAttribute('data-motion', 'swing');
+  // Press on the lantern in the same moment the swing is checked (pointer 1 is Playwright's mouse).
+  const caught = await page.evaluate(() => {
+    const b = document.querySelector<HTMLElement>('button.amber')!, path = b.querySelector('.hit path')!, r = path.getBoundingClientRect();
+    if (b.dataset.motion !== 'swing') return 'not swinging';
+    path.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerId: 1, clientX: r.x + r.width / 2, clientY: r.y + r.height * .6 }));
+    return 'pressed';
+  });
+  expect(caught).toBe('pressed');
+  await expect(amber(page)).toHaveAttribute('data-motion', 'drag');
+  await page.mouse.move(150, 500, { steps: 10 }); await page.mouse.down(); await page.mouse.up();
+  await expect(amber(page)).toHaveAttribute('data-motion', 'still');
+  await expect(amber(page)).toHaveAttribute('data-spot', 'rest-graph-left');
+});
+test('the user, 2026-10-17: landed, Amber folds its feet in and sits on its base', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 720 });
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await dragAmber(page, { x: 120, y: 520 });
+  await expect(amber(page)).toHaveAttribute('data-act', '5');
+  await expect(amber(page)).toHaveAttribute('data-act', '100');
+  await expect(amber(page)).toHaveAttribute('data-act', '');
+  // No feet drawn once it sits.
+  expect(await amber(page).evaluate(b => b.querySelector('svg')!.innerHTML.includes('M35 96 V'))).toBe(false);
+});

@@ -21,10 +21,16 @@ export interface Mood {
 }
 /** CO-56: the 180 ms stabilisation of an interrupted gesture (IMPLEMENTATION.md). */
 export const INTERRUPT = 180;
+/**
+ * Settling down (the user, 2026-10-17): after landing or a few steps, the feet fold in and Amber sits on its base.
+ * Not one of the release's gestures; designed here from its feet and height (CO-54).
+ */
+export const RETRACT = 100, RETRACT_MS = 450;
+const duration = (gesture: number) => gesture === RETRACT ? RETRACT_MS : GESTURES[gesture].duration;
 const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
 
 /** A gesture is over when its time has run out. */
-export const actDone = (act: Act | null, now: number) => !act || now - act.start + (act.offset ?? 0) >= GESTURES[act.gesture].duration;
+export const actDone = (act: Act | null, now: number) => !act || now - act.start + (act.offset ?? 0) >= duration(act.gesture);
 
 /**
  * Starts a gesture. One already playing is interrupted: the new one blends from the pose it had reached over 180 ms.
@@ -42,8 +48,9 @@ export function compose(base: Pose, act: Act | null, mood: Mood, now: number, re
   if (reduced) return { ...base, flameTime: 0 };
   const z: Pose = { ...base };
   if (act && !actDone(act, now)) {
-    const t = now - act.start + (act.offset ?? 0), g = pose(act.gesture, t);
-    if (act.gesture === GESTURE.rest) z.lid = g.lid;
+    const t = now - act.start + (act.offset ?? 0), g = act.gesture === RETRACT ? still(GESTURE.landing) : pose(act.gesture, t);
+    if (act.gesture === RETRACT) { const e = t / RETRACT_MS, k = e * e * (3 - 2 * e); z.feet = 1 - k; z.y = g.y * (1 - k); }
+    else if (act.gesture === GESTURE.rest) z.lid = g.lid;
     else if (act.gesture === GESTURE.curiosity) { z.angle += g.angle * (z.line ? .7 : 1); z.gaze += g.gaze; }
     else if (act.gesture === GESTURE.suspension) z.angle += g.angle;
     // A few steps in: the release's walk, ending where the resting pose stands (its x ends at 12).
@@ -64,7 +71,10 @@ export function compose(base: Pose, act: Act | null, mood: Mood, now: number, re
 
 /** CO-50: the base pose for where Amber is. */
 export const hangingBase = (): Pose => still(GESTURE.suspension);
-export const restingBase = (): Pose => still(GESTURE.landing);
+/** Resting at the bottom: sitting on its base, feet folded in (the identity's still pose). */
+export const restingBase = (): Pose => still(GESTURE.rest);
+/** The gestures that end standing at a resting spot, after which Amber settles down. */
+export const endsStanding = (gesture: number) => gesture === GESTURE.landing || gesture === GESTURE.steps;
 /** CO-14: flying is the release's *heat and lift*, falling its *descent and landing*, both run along the move. */
 export function flightBase(mode: 'fly' | 'fall', progress: number): Pose {
   const u = clamp(progress, 0, 1);

@@ -11,7 +11,7 @@
   import { AMBER_H, AMBER_W, BAR, TIE_X, TIE_Y, bubbleBox, dropTarget, hangSpots, hintPoint, restSpots, spotById } from './place';
   import type { Spot } from './place';
   import { Rope, STEP, flightDuration, flightPoint } from './rope';
-  import { LANDING_SETTLE, actDone, compose, dangle, flightBase, grabbedBase, hangingBase, lookAt, restingBase, startAct } from './motion';
+  import { LANDING_SETTLE, RETRACT, actDone, compose, dangle, endsStanding, flightBase, grabbedBase, hangingBase, lookAt, restingBase, startAct } from './motion';
   import type { Act } from './motion';
   import AskChat from './AskChat.svelte';
   import Emphasis from './Emphasis.svelte';
@@ -133,7 +133,8 @@
     // CO-51: the eyes ease toward the pointer.
     const centre = { x: view.left + AMBER_W / 2, y: view.top + AMBER_H / 2 }, target = reduced ? 0 : lookAt(centre, pointer);
     look += (target - look) * (1 - Math.exp(-dt / 110)); if (Math.abs(look - target) < .01) look = target;
-    if (act && actDone(act, now)) act = null;
+    // Landed or stepped in at a resting spot: the feet fold in and Amber sits down.
+    if (act && actDone(act, now)) { const ended = act.gesture; act = endsStanding(ended) && motion.kind === 'still' && spot.kind === 'rest' && !reduced ? { gesture: RETRACT, start: now } : null; }
     const busy = motion.kind !== 'still' || !!act || Math.abs(tilt) > .05 || look !== target || (!reduced && (thinking || working || !!lean || flameLive));
     // Only motion needs every frame; a living flame, the eyes and the moods redraw about 30 times a second.
     if (motion.kind !== 'still' || now - lastFrame >= 32) { frame++; lastFrame = now; }
@@ -163,8 +164,15 @@
 
   // CO-12: grab and drag. A press becomes a drag after a few pixels; otherwise it is a click.
   function down(e: PointerEvent) {
-    if (e.button !== 0 || motion.kind !== 'still') return;
+    if (e.button !== 0) return;
     grab = { x: e.clientX, y: e.clientY, dx: e.clientX - view.left, dy: e.clientY - view.top, id: e.pointerId }; dragged = false;
+    // Swinging or in flight, Amber can be caught at once, where it is (the user, 2026-10-17); a swing keeps its rope.
+    const m = motion;
+    if (m.kind === 'swing' || m.kind === 'flight') {
+      const rope = m.kind === 'swing' ? m.rope : null;
+      rope?.hold({ x: view.left + TIE_X, y: view.top + TIE_Y }, rope.anchor);
+      act = null; dragged = true; motion = { kind: 'drag', left: view.left, top: view.top, vx: 0, vy: 0, at: performance.now(), rope }; run();
+    }
   }
   function move(e: PointerEvent) {
     pointer = { x: e.clientX, y: e.clientY };

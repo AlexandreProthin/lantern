@@ -69,6 +69,9 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
   while Amber moves. A hanging spot keeps the rope length it was dropped at; *Move to…* uses the default length. A
   throw is a gentle push at most, and a swing settles within 6 s. Esc while holding Amber puts it back. Flights
   arc and falls accelerate. The bubble and the menu open above a resting Amber and under a hanging one.
+- *Added 2026-10-17 by the user, after seeing the motions (v0.4.0 slice 7):* Amber can be grabbed while it swings or
+  flies, and is held where it is; a move need not finish first. After landing, or after its few steps in, Amber folds
+  its feet in and sits on its base: resting is sitting, not standing (amends CO-14's "landing on its feet").
 
 # The bubble
 

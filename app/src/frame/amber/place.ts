@@ -7,8 +7,8 @@ export const AMBER_W = 72, AMBER_H = Math.round(AMBER_W * 148 / 140);
 export const UNIT = AMBER_W / 140;
 /** The suspension line starts 8 units under the viewBox top (`M50 -16`); the rope ties on there, at the centre. */
 export const TIE_Y = 8 * UNIT, TIE_X = 70 * UNIT;
-/** Standing (the landing pose, feet out): the feet touch the ground 123 units under the viewBox top. */
-export const FEET_Y = 123 * UNIT;
+/** Resting, Amber sits on its base, 122 units under the viewBox top (standing on its feet, 123: the same ground). */
+export const FEET_Y = 122 * UNIT;
 export const HANG_COUNT = 10, DEFAULT_SPOT = 'hang-9';
 /** CO-11: the rope is 0 to 160 px; hanging Amber starts on a short one. */
 export const ROPE_MIN = 0, ROPE_MAX = 160, ROPE_DEFAULT = 14;

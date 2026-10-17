@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { GESTURE, GESTURES, pose, still } from '../../assets/identity/companion/lantern';
-import { actDone, compose, dangle, flightBase, grabbedBase, hangingBase, INTERRUPT, lookAt, restingBase, startAct } from './motion';
+import { actDone, compose, dangle, flightBase, grabbedBase, hangingBase, INTERRUPT, lookAt, restingBase, RETRACT, RETRACT_MS, startAct } from './motion';
 import type { Mood } from './motion';
 
 const calm: Mood = { thinking: false, working: false, look: 0, lean: 0, flame: false };
@@ -16,9 +16,13 @@ test('CO-50: hanging, a gesture moves the tilt, gaze or lids but keeps the rope 
   expect(compose(hangingBase(), startAct(GESTURE.curiosity, 0, null), calm, 600).gaze).toBeCloseTo(pose(GESTURE.curiosity, 600).gaze);
   expect(compose(hangingBase(), startAct(GESTURE.rest, 0, null), calm, 870).lid).toBeGreaterThan(.5);
 });
-test('CO-50: a few steps in end exactly at the resting pose; after the gesture the base is back', () => {
+test('CO-50: a few steps in end standing where Amber rests; then the feet fold in and it sits (the user, 2026-10-17)', () => {
   const end = compose(restingBase(), startAct(GESTURE.steps, 0, null), calm, GESTURES[GESTURE.steps].duration - 1);
-  expect(end.x).toBeCloseTo(0, 1); expect(end.feet).toBeCloseTo(1); expect(end.y).toBeCloseTo(restingBase().y, 0);
+  expect(end.x).toBeCloseTo(0, 1); expect(end.feet).toBeCloseTo(1); expect(end.y).toBeCloseTo(still(GESTURE.landing).y, 0);
+  const retract = startAct(RETRACT, 0, null);
+  expect(compose(restingBase(), retract, calm, 0)).toMatchObject({ feet: 1, y: -8 });
+  expect(compose(restingBase(), retract, calm, RETRACT_MS - 1).feet).toBeLessThan(.01); expect(actDone(retract, RETRACT_MS)).toBe(true);
+  expect(restingBase()).toMatchObject({ feet: 0, y: 0 });
   expect(compose(restingBase(), startAct(GESTURE.steps, 0, null), calm, 100).x).toBeLessThan(-10);
   expect(actDone(startAct(GESTURE.steps, 0, null), GESTURES[GESTURE.steps].duration)).toBe(true);
   expect(compose(restingBase(), startAct(GESTURE.steps, 0, null), calm, 99999)).toMatchObject({ ...restingBase(), flameTime: 0 });
