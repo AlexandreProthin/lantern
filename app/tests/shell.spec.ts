@@ -17,7 +17,7 @@ test('RS-53: header mark renders under the installed app CSP', async ({ page }) 
   await page.goto('/');
   const art = page.locator('header .mark svg');
   await expect(art).toBeVisible();
-  expect((await art.boundingBox())?.width).toBe(28);
+  expect((await art.boundingBox())?.width).toBe(26);
   await expect(page.locator('header .mark')).toHaveAttribute('title', 'Welcome');
   expect(refused).toEqual([]);
 });

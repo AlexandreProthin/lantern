@@ -25,9 +25,9 @@
   import { shouldCheckAtLaunch, shouldShowNotice } from './updates';
   import SettingsPanel from './SettingsPanel.svelte';
   import Backdrop from './Backdrop.svelte';
-  import WindowControls from './WindowControls.svelte';
+  import TopBar from './TopBar.svelte';
+  import FieldPanel from './FieldPanel.svelte';
   import { applyRoomChrome, windowTitle } from './window-chrome';
-  import ModelPicker from '../ui/ModelPicker.svelte';
   import { isValidModel } from '../core/models';
   const desktop = '__TAURI_INTERNALS__' in window;
   const fake = providerMode(desktop, import.meta.env.VITE_PROVIDER) === 'fake';
@@ -54,7 +54,7 @@
   let switchingLibrary = $state(false);
   let windowMemory: Awaited<ReturnType<typeof import('./window-memory').rememberWindow>>|undefined;
   let revision = $state(0), space = $state('welcome'), session = $state<RoomSession | null>(null);
-  let settingsOpen = $state(false), shortcutsOpen = $state(false), subjectMenu = $state(false), roomMenu = $state(false);
+  let settingsOpen = $state(false), shortcutsOpen = $state(false), panelOpen = $state(false), roomMenu = $state(false), fieldWidth = $state(0);
   let settingsSection=$state('general'),checkingReady=$state(false);
   let readyController:AbortController|undefined,readyPending:Promise<Completion>|undefined;
   let loading = $state(true), banner = $state(''), toast = $state(''), saveError = $state(''), conflictPath = $state('');
@@ -71,6 +71,8 @@
     if (desktop) await invoke('save_settings',{ document:value }); else localStorage.setItem('lantern.settings',JSON.stringify(value));
   }, error => saveError = String(error));
   const summary = $derived.by(() => { revision; return session ? room.statsSummary(session.subject) : null; });
+  /** RS-15: the palette's subjects follow the catalogue, which signals through `revision`. */
+  const paletteSubjects = $derived.by(() => { revision; return catalogue.opened; });
   const running = $derived.by(() => { revision; return session?.running ? {...session.running} : null; });
   const anyRunning = $derived.by(() => { revision; return [...owned.values()].some(entry => !!entry.session.running); });
   const unavailable=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
@@ -97,7 +99,7 @@
   async function navigate(next: string) {
     if (next === room.defaultSpace && !session && recentIds[0]) await open(recentIds[0]);
     if (next === room.defaultSpace && !session) return;
-    space = next; subjectMenu = false;
+    space = next; panelOpen = false;
     if (next !== room.defaultSpace) { readonlyFile=null; await refreshCatalogue(); }
   }
   async function open(id: string) {
@@ -230,22 +232,24 @@
     document.documentElement.dataset.roomFade='on';
     roomId=id; settings.ui.lastRoom=id; preferencesChanged();
     const keep=openByRoom[id]; session=(keep && owned.get(keep)?.session) || null;
-    space='welcome'; readonlyFile=null; subjectMenu=false; revision++;
+    space='welcome'; readonlyFile=null; panelOpen=false; revision++;
     await refreshCatalogue();
   }
-  // RS-15: a press anywhere outside the menu (graph, read view, header) closes it; capture
-  // phase, because d3-zoom stops propagation inside the graph.
+  // RS-15: a press anywhere outside the field's panel (graph, read view, header) closes it; the field's own
+  // click toggles it. Capture phase, because d3-zoom stops propagation inside the graph.
   function outside(e: PointerEvent) {
-    if(subjectMenu && e.target instanceof Element && !e.target.closest('.subject-menu, header .subject')) subjectMenu=false;
+    if(panelOpen && e.target instanceof Element && !e.target.closest('.field-panel, header .subject-field')) panelOpen=false;
     if(roomMenu && e.target instanceof Element && !e.target.closest('.room-chip')) roomMenu=false;
   }
   function key(e: KeyboardEvent) {
     if(e.ctrlKey && e.shiftKey && /^Digit[1-9]$/.test(e.code) && rooms.length>1) {const target=rooms[Number(e.code.slice(5))-1]; if(target){e.preventDefault(); void switchRoom(target.id);}}
     else if(e.ctrlKey && !e.shiftKey && /^[1-9]$/.test(e.key)) {const target=room.spaces.find(item=>item.shortcutIndex===Number(e.key)); if(target){e.preventDefault(); void navigate(target.id);}}
+    // GV-76: Ctrl+K opens or closes the field's panel from any focus, text fields included.
+    else if(e.ctrlKey && !e.shiftKey && !e.altKey && e.code==='KeyK') {e.preventDefault(); roomMenu=false; panelOpen=!panelOpen;}
     else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsSection='general';settingsOpen=true;}
     else if(e.key==='Escape') {
       if(document.querySelector('dialog[open]')) return;
-      if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(roomMenu) roomMenu=false; else if(subjectMenu) subjectMenu=false; else if(space===room.defaultSpace)session?.cancel();
+      if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(roomMenu) roomMenu=false; else if(panelOpen) panelOpen=false; else if(space===room.defaultSpace)session?.cancel();
     } else if(e.key==='?' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) shortcutsOpen=!shortcutsOpen;
   }
   onMount(()=> {
@@ -295,48 +299,27 @@
 </script>
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
 {#if !loading && settings.appearance.backdrop}<Backdrop {space} room={room.id} reduceSetting={settings.appearance.reduceMotion} />{/if}
-<header data-tauri-drag-region>
-  <button class="mark" onclick={()=>navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}><span class="mark-art" aria-hidden="true">{@html lanternMark}</span></button>{#if rooms.length>1}<span class="room-chip" data-tauri-drag-region><button class="room" aria-haspopup="menu" aria-expanded={roomMenu} title={strings.rooms} onclick={()=>roomMenu=!roomMenu}>{room.name}</button>{#if roomMenu}<div class="room-menu" role="menu" aria-label={strings.rooms}>{#each rooms as r, i (r.id)}<button role="menuitemradio" aria-checked={r.id===room.id} title={`Ctrl+Shift+${i+1}`} onclick={()=>switchRoom(r.id)}><span class="swatch" style:background={r.accent['--accent']}></span>{r.name}</button>{/each}</div>{/if}</span>{:else}<span class="room">{room.name}</span>{/if}
-  <nav data-tauri-drag-region>{#each room.spaces as item}<button aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space===item.id?'page':undefined} disabled={item.id!=='welcome' && !subjectCount} onclick={()=>navigate(item.id)}>{item.icon}</button>{/each}</nav>
-  {#if session && space!=='welcome'}<button class="subject" onclick={()=>subjectMenu=!subjectMenu} title={session.subject.title}>{session.subject.title}{#if running}<span class="busy-dot">·</span>{/if}</button>{/if}
-  {#if summary && space!=='welcome'}<small data-tauri-drag-region title={settings.appearance.showTokenStats?summary.tooltip:undefined}>{summary.text}</small>{/if}
-  <button class="gear" aria-label={strings.settings} title={strings.settings} onclick={()=>{settingsSection='general';settingsOpen=true;}}>⚙</button>
-  {#if desktop}<WindowControls />{/if}
-</header>
+<TopBar {rooms} {room} {space} {subjectCount} title={session?.subject.title ?? null} busy={!!running} {summary} showTokenStats={settings.appearance.showTokenStats} {desktop} mark={lanternMark}
+  {panelOpen} bind:roomMenu bind:fieldWidth {navigate} switchRoom={id=>void switchRoom(id)} openSettings={()=>{settingsSection='general';settingsOpen=true;}} togglePanel={()=>{roomMenu=false;panelOpen=!panelOpen;}} />
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
 {#if unavailable}<div class="banner provider-notice" role="alert"><div><strong>{strings.errorKinds[unavailable.kind]}</strong><p>{unavailable.kind==='not-installed'?strings.installInstructions:strings.signinInstructions}</p></div><button onclick={()=>{settingsSection='provider';settingsOpen=true;}}>{strings.settings}</button><button disabled={anyRunning||checkingReady} onclick={checkReady}>{strings.checkAgain}</button>{#if checkingReady}<button onclick={()=>readyController?.abort()}>{strings.cancel}</button>{/if}</div>{/if}
 {#if saveError}<div class="banner error" role="alert">{strings.saveFailed}<details><summary>{strings.details}</summary>{saveError}</details><button onclick={retrySaves}>{strings.retry}</button></div>{/if}
 {#if toast}<div class="toast" role="status">{toast}<button onclick={()=>toast=''}>{strings.close}</button></div>{/if}
 {#if showUpdateNotice}<div class="toast update-notice" role="status">{updater.phase==='downloading'?strings.updateDownloading(updater.percent):updater.phase==='installing'?strings.updateInstalling:strings.updateAvailable(updater.version)}
   {#if updater.phase==='available'}<button disabled={anyRunning} title={anyRunning?strings.finishGeneration:undefined} onclick={installUpdate}>{strings.installUpdate}</button><button onclick={dismissUpdate}>{strings.updateLater}</button>{/if}</div>{/if}
-{#if subjectMenu && session}<div class="subject-menu">
-  <input aria-label={strings.title} value={session.subject.title} maxlength="120" onkeydown={e=>{if(e.key==='Enter' && e.currentTarget.value.trim()){session!.subject.title=e.currentTarget.value.trim();session!.touch();subjectMenu=false;}}} />
-  <room.subjectMenu visit={session.subject.rooms[room.id]} {revision} changed={appliesNext=>{session!.touch();if(appliesNext)toast=strings.appliesNext;}} />
-  <div class="field"><label for="subject-model">{strings.defaultModel}</label><ModelPicker id="subject-model" value={session.subject.rooms[room.id].model} label={strings.defaultModel} commit={model=>{session!.subject.rooms[room.id].model=model;session!.touch();toast=strings.appliesNext;}} /></div>
-  <label>{strings.defaultEffort}<select value={session.subject.rooms[room.id].effort} onchange={e=>{session!.subject.rooms[room.id].effort=e.currentTarget.value as any;session!.touch();toast=strings.appliesNext;}}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label>
-</div>{/if}
+{#if panelOpen}<FieldPanel {session} {room} {rooms} {revision} subjects={paletteSubjects} {fieldWidth}
+  rename={title=>renameSubject(session!.subject.id,title)} changed={appliesNext=>{session!.touch();if(appliesNext)toast=strings.appliesNext;}}
+  openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts(rooms.map(r=>r.name)):''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>
-  :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; } header { height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid var(--glass-line); background:var(--glass); backdrop-filter:var(--glass-blur); }
-  :global(#app) {display:flex;flex-direction:column;} header {flex-shrink:0;} .banner {flex-shrink:0;}
-  /* RS-34: the frame's layers sit above the backdrop (z-index 0). */
-  header, .banner, .spaces { position:relative; z-index:1; }
-  /* The room menu opens from the header, so the header sits above the spaces. */
-  header { z-index:2; }
-  header button { background:none; padding:5px 9px; min-width:32px; }.mark { display:flex; align-items:center; padding:4px 6px; }.mark-art, .mark-art :global(svg) { display:block; width:28px; height:28px; }
-  /* The flame is the mark's only path with its own fill; it takes the room's accent. */
-  .mark-art :global(path[fill]) { fill:var(--accent); transition:fill .4s ease; }
-  .room { color:var(--accent); font-size:13px; } nav { display:flex; gap:4px; } [aria-current='page'] { border-color:var(--accent); color:var(--accent); }
-  .subject { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:35vw; border:0; } header small { color:var(--ink-mute); font-size:13px; margin-left:auto; }.gear { margin-left:auto; }
+  :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; }
+  :global(#app) {display:flex;flex-direction:column;} .banner {flex-shrink:0;}
+  /* RS-34: the frame's layers sit above the backdrop (z-index 0); the top bar (TopBar) sits above them. */
+  .banner, .spaces { position:relative; z-index:1; }
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast.update-notice { top:auto; bottom:18px; display:flex; align-items:center; gap:8px; }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
-  .subject-menu { position:fixed; left:230px; top:52px; z-index:12; display:grid; gap:12px; padding:20px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }.subject-menu label,.subject-menu .field { display:grid; gap:5px; }
-  .room-chip { position:relative; }.room-chip .room { border:0; padding:4px 6px; }.room-menu { position:absolute; left:0; top:36px; z-index:13; display:grid; gap:4px; min-width:160px; padding:8px; background:var(--surface); border:1px solid var(--line); border-radius:8px; }
-  .room-menu button { display:flex; align-items:center; gap:8px; text-align:left; }.room-menu [aria-checked='true'] { border-color:var(--accent); }.swatch { width:10px; height:10px; border-radius:50%; box-shadow:0 0 8px currentColor; }
-  .busy-dot { font-size:24px; color:var(--accent); animation:pulse 1.8s ease-in-out infinite; }.shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; }
-  @keyframes pulse { 50% {opacity:.4;} } @media(max-width:1100px) { header small {display:none;} }
-  @media(prefers-reduced-motion:reduce) { .busy-dot {animation:none;} }
+  .shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; }
 </style>

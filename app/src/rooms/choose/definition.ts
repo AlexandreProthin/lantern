@@ -15,13 +15,14 @@ import Gallery from './Gallery.svelte';
 import ChooseSettings from './ChooseSettings.svelte';
 import SubjectMenu from './SubjectMenu.svelte';
 import './choose.css';
+import { glyphs } from '../../ui/glyphs';
 
 const kind = (label: string, glyph: string) => ({ label, glyph });
 /** CR-11: Welcome, Survey, Compare, Gallery; Survey by default. Registered in development builds only until B5 (rooms/index.ts). */
 export const chooseRoom: RoomDefinition = {
   id: 'choose', name: 'Choose', accent: { '--accent': '#5cc6bd' },
-  spaces: [{ id: 'welcome', label: 'Welcome', icon: '⌂', shortcutIndex: 1, component: Welcome }, { id: 'survey', label: 'Survey', icon: '⌘', shortcutIndex: 2, component: Survey },
-    { id: 'compare', label: 'Compare', icon: '▥', shortcutIndex: 3, component: Compare }, { id: 'gallery', label: 'Gallery', icon: '▦', shortcutIndex: 4, component: Gallery }],
+  spaces: [{ id: 'welcome', label: 'Welcome', icon: glyphs.welcome, shortcutIndex: 1, component: Welcome }, { id: 'survey', label: 'Survey', icon: glyphs.survey, shortcutIndex: 2, component: Survey },
+    { id: 'compare', label: 'Compare', icon: glyphs.compare, shortcutIndex: 3, component: Compare }, { id: 'gallery', label: 'Gallery', icon: glyphs.gallery, shortcutIndex: 4, component: Gallery }],
   defaultSpace: 'survey', settingsMenu: ChooseSettings,
   settings: { defaults: chooseSettingsDefaults(), validate: validateChooseSettings },
   defaultTone: settings => chooseSettings(settings).defaultTone,

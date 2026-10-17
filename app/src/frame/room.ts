@@ -20,6 +20,7 @@ export interface RoomDefinition {
   id: string; name: string;
   /** RS-30/RS-12: the palette lives in CSS under data-room; the accent is repeated here for the room menu's swatch. */
   accent: Record<string, string>;
+  /** RS-20: `icon` is a glyph's inner SVG markup on a 16×16 viewBox (ui/glyphs.ts). */
   spaces: { id: string; label: string; icon: string; shortcutIndex: number; component: Component<SpaceProps> }[];
   defaultSpace: string; settingsMenu: Component<{ settings: Settings; changed: () => void }>;
   /** SE-12: the room's settings group, stored under the room id. */

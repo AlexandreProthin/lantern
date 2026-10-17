@@ -88,8 +88,10 @@ export const strings = {
   , chooseModel:'Choose a model',copyDetails:'Copy details'
   , understoodByYou:'understood by you',preparing:'preparing',jumpLatest:'Jump to latest'
   , nodeKinds:{subject:'subject',axis:'axis',deeper:'go deeper',application:'application',adjacent:'adjacent idea',exercise:'exercise',question:'from a question',own:'own'}
+  , spaces: 'Spaces', openASubject: 'Open a subject…', subjectField: 'Subject and palette', thisSubject: 'This subject', otherSubjects: 'Other subjects',
+  paletteFilter: 'Type a subject or a room…', paletteLabel: 'Subjects, rooms and Settings', generating: 'Generating', emptyTitle: 'A title cannot be empty.'
   , transferRecovered:'An interrupted library transfer was recovered. Your subjects are safe.'
   , installInstructions: 'Install Claude Code from the setup page, then return to Lantern and choose Check again.', installClaude: 'Install Claude Code',
   signinInstructions: 'Start Claude Code once outside Lantern and follow its browser sign-in with your Claude account. Then return here and choose Check again.',
-  shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\nCtrl+1 / Ctrl+2 / Ctrl+3 — Welcome / Study / Gallery\nAlt+A / Alt+N with selected text — Ask / Make it a node\n? — show or hide shortcuts\nCtrl+, — Settings\nCtrl+F in Study — search nodes; Enter / Shift+Enter next / previous, Esc close'
+  shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\nCtrl+1 / Ctrl+2 / Ctrl+3 — Welcome / Study / Gallery\nAlt+A / Alt+N with selected text — Ask / Make it a node\n? — show or hide shortcuts\nCtrl+K — open or close the subject field’s panel\nCtrl+, — Settings\nCtrl+F in Study — search nodes; Enter / Shift+Enter next / previous, Esc close'
 };

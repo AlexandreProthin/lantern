@@ -54,6 +54,10 @@ export class Catalogue {
   get recent(): SubjectSummary[] {
     return this.order('lastOpened', false).slice(0, 3);
   }
+  /** RS-15: the field's palette lists every subject, the most recently opened first. */
+  get opened(): SubjectSummary[] {
+    return this.order('lastOpened', false);
+  }
   get visible(): SubjectSummary[] {
     const filter = this.appliedFilter.toLocaleLowerCase();
     return this.order(this.sort, this.ascending).filter(s => s.title.toLocaleLowerCase().includes(filter));
