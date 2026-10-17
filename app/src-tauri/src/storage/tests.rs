@@ -100,6 +100,12 @@ fn companion_state_keeps_other_keys_and_refuses_bad_or_newer_state() {
     assert_eq!(state.extra["companion"]["spots"]["learn/study"],"hang-7");assert_eq!(state.recents,vec!["tides-k3f9".to_string()]);
     assert!(save_companion_state(config.path(),&json!({"spots":{"bad key!":"x"},"seenTips":[]})).is_err());
     assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[1]})).is_err());
+    // CO-30, CO-31: the version greeted, the last line and the notes kept for after an update.
+    save_companion_state(config.path(),&json!({"spots":{},"seenTips":[],"lastVersion":"0.4.0","lastGreeting":"greet.2","notes":{"version":"0.4.1","text":"Amber."}})).unwrap();
+    let state=read_state(config.path()).unwrap();
+    assert_eq!(state.extra["companion"]["notes"]["version"],"0.4.1");assert_eq!(state.extra["companion"]["lastVersion"],"0.4.0");
+    assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[],"lastVersion":"0.4.0 beta"})).is_err());
+    assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[],"notes":{"version":"1","text":"x".repeat(20001)}})).is_err());
     fs::write(config.path().join("state.json"),br#"{"format":"lantern-state/2"}"#).unwrap();
     assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[]})).is_err());
 }

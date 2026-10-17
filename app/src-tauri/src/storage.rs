@@ -186,10 +186,16 @@ pub fn save_companion_state(config: &Path, companion: &Value) -> Result<()> {
     let ok_id=|s:&str| (1..=80).contains(&s.len()) && s.chars().all(|c| c.is_ascii_alphanumeric() || "._:/-".contains(c));
     let spots_ok=companion["spots"].as_object().is_some_and(|m| m.iter().all(|(k,v)| ok_id(k) && v.as_str().is_some_and(ok_id)));
     let tips_ok=companion["seenTips"].as_array().is_some_and(|a| a.iter().all(|v| v.as_str().is_some_and(ok_id)));
-    if !spots_ok || !tips_ok { return Err("Invalid companion state".into()); }
+    let version_ok=|v:&Value| v.is_null() || v.as_str().is_some_and(|s| (1..=40).contains(&s.len()) && s.chars().all(|c| c.is_ascii_alphanumeric() || ".+-".contains(c)));
+    let greeting_ok=companion["lastGreeting"].is_null() || companion["lastGreeting"].as_str().is_some_and(ok_id);
+    let notes=&companion["notes"];
+    let notes_ok=notes.is_null() || (version_ok(&notes["version"]) && !notes["version"].is_null() && notes["text"].as_str().is_some_and(|t| t.chars().count() <= 20000));
+    if !spots_ok || !tips_ok || !version_ok(&companion["lastVersion"]) || !greeting_ok || !notes_ok { return Err("Invalid companion state".into()); }
     let mut state=read_state(config)?;
     if state.format!=state_format() { return Err("Newer app state is read-only".into()); }
-    state.extra.insert("companion".into(), serde_json::json!({"spots":companion["spots"],"seenTips":companion["seenTips"]}));
+    let mut kept=serde_json::json!({"spots":companion["spots"],"seenTips":companion["seenTips"]});
+    for key in ["lastVersion","lastGreeting","notes"] { if !companion[key].is_null() { kept[key]=companion[key].clone(); } }
+    state.extra.insert("companion".into(), kept);
     write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)
 }
 /// CO-47: Amber's app-level call log, one JSON record per line, beside `state.json`.

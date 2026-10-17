@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 
 // CO-40 to CO-49, GV-76: Ask Amber, with Amber's fake provider (IP-71). With Amber off the chat opens in its own box;
@@ -398,10 +399,72 @@ test('the user, 2026-10-17: landed, Amber folds its feet in and sits on its base
   await page.setViewportSize({ width: 1024, height: 720 });
   await page.goto('/?study=1&subject=Tides');
   await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  // Every gesture the button shows is recorded in the page, so short ones are not missed on a busy machine.
+  await amber(page).evaluate(b => { const seen: string[] = []; (window as any).__acts = seen; new MutationObserver(() => seen.push((b as HTMLElement).dataset.act ?? '')).observe(b, { attributes: true, attributeFilter: ['data-act'] }); });
   await dragAmber(page, { x: 120, y: 520 });
-  await expect(amber(page)).toHaveAttribute('data-act', '5');
-  await expect(amber(page)).toHaveAttribute('data-act', '100');
-  await expect(amber(page)).toHaveAttribute('data-act', '');
+  await expect(amber(page)).toHaveAttribute('data-spot', 'rest-graph-left');
+  await expect.poll(() => page.evaluate(() => (window as any).__acts.join(' '))).toMatch(/5 100 $/);
   // No feet drawn once it sits.
   expect(await amber(page).evaluate(b => b.querySelector('svg')!.innerHTML.includes('M35 96 V'))).toBe(false);
+});
+
+// v0.4.0 slice 8: greetings and company during a generation (CO-30 to CO-36).
+const says = (page: import('@playwright/test').Page) => page.getByTestId('amber-says');
+const appVersion = JSON.parse(readFileSync('package.json', 'utf8')).version as string;
+test('CO-30: the first launch has its own line; later launches greet from the pool, never the same line twice in a row', async ({ page }) => {
+  await page.goto('/');
+  await expect(says(page)).toHaveText('Hello, I’m Amber. Click me for tips, or press Ctrl+J to ask me anything.');
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion') ?? '{}').lastVersion)).toBe(appVersion);
+  const lines: string[] = [];
+  const saved = () => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion') ?? '{}').lastGreeting as string | undefined);
+  for (let i = 0; i < 3; i++) {
+    const before = await saved();
+    await page.reload(); await expect(says(page)).toBeVisible(); lines.push((await says(page).textContent())!);
+    await expect.poll(saved).not.toBe(before);
+  }
+  expect(lines[1]).not.toBe(lines[0]); expect(lines[2]).not.toBe(lines[1]);
+  expect(lines.every(l => !l.includes('I’m Amber'))).toBe(true);
+});
+test('CO-30: the greeting fades after about 6 s; hovering it pauses the fade', async ({ page }) => {
+  await page.addInitScript(v => localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v })), appVersion);
+  await page.goto('/');
+  await expect(says(page)).toBeVisible();
+  await page.waitForTimeout(4500);
+  await says(page).hover();
+  await page.waitForTimeout(3000);
+  await expect(says(page)).toBeVisible();
+  await page.mouse.move(10, 700);
+  await expect(says(page)).toHaveCount(0, { timeout: 4000 });
+});
+test('CO-31: after an update, the version, the notes kept at install (cut, then in full) and the release page link', async ({ page }) => {
+  const notes = 'Amber arrives. ' + 'She hangs from the bar and keeps you company while the tutor thinks. '.repeat(8);
+  await page.addInitScript(([v, n]) => localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: '0.0.1', notes: { version: v, text: n } })), [appVersion, notes]);
+  await page.goto('/');
+  await expect(says(page)).toContainText(`Lantern ${appVersion} is here. What’s new:`);
+  await expect(says(page).locator('.notes')).toHaveText(/…$/);
+  await says(page).getByRole('button', { name: 'Show all' }).click();
+  await expect(says(page).locator('.notes')).toHaveText(notes.trim());
+  await expect(says(page).getByRole('button', { name: 'Full release notes ›' })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion') ?? '{}'))).toMatchObject({ lastVersion: appVersion });
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion')!).notes)).toBeUndefined();
+});
+test('CO-35/36: while a generation waits for its first words Amber works and says so; it stops when the text streams', async ({ page }) => {
+  await page.addInitScript(v => localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v, lastGreeting: 'greet.1' })), appVersion);
+  await page.goto('/?study=1&subject=Tides&delay=150');
+  await expect(says(page)).toHaveText('Lighting up Tides…');
+  const lid = () => amber(page).evaluate(b => Number(b.querySelector('mask ellipse')!.getAttribute('ry')));
+  await expect.poll(lid).toBeLessThan(2.2);
+  await expect(page.locator('.panel .md')).toContainText('This subject connects');
+  await expect(says(page).filter({ hasText: 'Lighting up Tides…' })).toHaveCount(0);
+});
+test('CO-35: the Choose room says its own waiting line', async ({ page }) => {
+  await page.addInitScript(v => { localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v })); const s = JSON.parse(localStorage.getItem('lantern.settings') ?? '{}'); s.ui = { ...(s.ui ?? {}), lastRoom: 'choose' }; localStorage.setItem('lantern.settings', JSON.stringify(s)); }, appVersion);
+  await page.goto('/?study=1&subject=3D%20printer&delay=150');
+  await expect(says(page)).toHaveText('Sizing up 3D printer…');
+});
+test('CO-1, CO-30: with Amber off there is no greeting and no waiting line; the busy state stays', async ({ page }) => {
+  await amberOff(page);
+  await page.goto('/?study=1&subject=Tides&delay=150');
+  await expect(page.locator('header .busy-dot')).toBeVisible();
+  await expect(says(page)).toHaveCount(0);
 });

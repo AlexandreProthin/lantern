@@ -29,6 +29,8 @@ export interface RoomCompanion {
   rests?: Record<string, readonly RestSpec[]>;
   /** CO-53: spaces where Amber stays still (no living flame) unless hovered, clicked, grabbed, asked or working. */
   calm?: readonly string[];
+  /** CO-35: what Amber says per task while a generation waits for its first words; `title` is the node's, clipped. */
+  waiting?: Record<string, (title: string) => string>;
 }
 /** RS-1..3, RS-30, SE-12, DM-66, ST-7. The frame calls only these members (RS-2). */
 export interface RoomDefinition {

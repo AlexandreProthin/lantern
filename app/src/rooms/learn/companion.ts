@@ -14,6 +14,12 @@ export const learnCompanion: RoomCompanion = {
   ],
   // CO-53, C10: calm while the user reads.
   calm: ['study'],
+  // CO-35: while a generation waits for its first words. (*Suggest 3 subjects* runs outside a subject and shows its
+  // own line on Welcome; an answer to *Test me* is a reply, so *Reading your answer…* has no task of its own.)
+  waiting: {
+    intro: title => `Lighting up ${title}…`, light: title => `Lighting up ${title}…`, more: () => 'Looking for more directions…',
+    reply: () => 'The tutor is thinking…', check: () => 'Preparing a question…'
+  },
   // CO-13: Study's three resting positions, just above the controls in each corner (legend, zoom, composer).
   rests: {
     study: [

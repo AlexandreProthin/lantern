@@ -12,6 +12,11 @@ export const chooseCompanion: RoomCompanion = {
     { id: 'choose.board', text: 'The board beside the graph counts your needs, criteria and shortlist at a glance.' },
     { id: 'choose.web', text: 'Turn off *Use the web* in Settings → Choose room for answers from the model’s knowledge only.' }
   ],
+  // CO-35: while a generation waits for its first words (*more* was not in the drafted table; it takes Learn's line).
+  waiting: {
+    intro: title => `Sizing up ${title}…`, light: title => `Lighting up ${title}…`, more: () => 'Looking for more directions…', reply: () => 'Thinking it over…',
+    find: () => 'Looking for products…', fill: () => 'Filling in Compare…', check: title => `Checking ${title}…`, recommend: () => 'Weighing your options…'
+  },
   // CO-13: Study's three resting positions, just above the controls in each corner (legend, zoom, composer).
   rests: {
     survey: [

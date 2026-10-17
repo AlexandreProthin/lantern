@@ -32,6 +32,8 @@
   import AskBox from './amber/AskBox.svelte';
   import Amber from './amber/Amber.svelte';
   import { browserAmberStore, desktopAmberStore, emptyAmberState } from './amber/state';
+  import { greeting, keepNotes, releasePage } from './amber/greeting';
+  import type { Greeting } from './amber/greeting';
   import type { AmberState } from './amber/state';
   import SelectionCard from './amber/SelectionCard.svelte';
   import GuideLines from './amber/GuideLines.svelte';
@@ -90,7 +92,27 @@
   const amberLean = $derived(selectionAsk ? { x: selectionAsk.detail.rect.left, y: selectionAsk.detail.rect.bottom } : null);
   // CO-35 (v0.4.0 slice 8 wires the generation's wait); `?amberMood=working` shows the motion in development builds (CO-54).
   const amberMoodParam = import.meta.env.DEV ? new URLSearchParams(location.search).get('amberMood') : null;
-  const amberWorking = $derived(amberMoodParam === 'working');
+  // CO-35, CO-36: while a generation of the open subject waits for its first words, Amber works and says what is happening.
+  const amberWaiting = $derived.by(() => {
+    void revision; const r = session?.running as { nodeId: string; task: string; text?: string } | null | undefined;
+    if (!session || !r || r.text) return null;
+    const line = room.companion?.waiting?.[r.task]; if (!line) return null;
+    const title = session.subject.rooms[room.id]?.nodes[r.nodeId]?.title ?? session.subject.title;
+    return line(title.length > 32 ? title.slice(0, 31) + '…' : title);
+  });
+  const amberWorking = $derived(!!amberWaiting || amberMoodParam === 'working');
+  // CO-30 to CO-32: one greeting per launch, once Amber's state is read and no frame banner is up.
+  let amberLoaded = $state(false), amberGreeted = false, amberGreeting = $state<Greeting | null>(null);
+  $effect(() => {
+    if (loading || !amberLoaded || amberGreeted) return;
+    if (!settings.companion.show) { amberGreeted = true; return; }
+    if (banner || unavailable) return;
+    amberGreeted = true;
+    const said = untrack(() => greeting(amberState, __APP_VERSION__, subjectCount > 0, { first: strings.amberFirstLaunch, updated: strings.amberUpdated, pool: strings.amberGreetings }));
+    amberGreeting = said.greeting; saveAmberState(said.next);
+  });
+  /** UP-13: the release page, in the browser. */
+  function openRelease(version: string) { const url = releasePage(version); if (desktop) void invoke('open_external', { url }).catch(e => toast = String(e)); else window.open(url, '_blank', 'noopener'); }
   $effect(() => { window.addEventListener(ASK_AMBER_EVENT, openSelectionAsk); return () => window.removeEventListener(ASK_AMBER_EVENT, openSelectionAsk); });
   const storage = desktop ? desktopStorage : browserStorage;
   let settings = $state(defaultSettings('', '', baseRooms));
@@ -128,7 +150,10 @@
   /** UP-1, UP-21: a check the server answered counts, however it was started. */
   async function checkUpdates(launch:boolean){if(await updater.check(launch,settings.developer.updateFolder)){settings.ui.lastUpdateCheck=Date.now();preferencesChanged();}}
   /** UP-31: every pending save lands before the installer closes the app. */
-  async function installUpdate(){if(anyRunning)return;await updater.install(async()=>{for(const entry of owned.values())await entry.persistence.flush();await writer.flush();await windowMemory?.flush();});}
+  async function installUpdate(){if(anyRunning)return;
+    // CO-31: the release's notes are kept for Amber's first greeting after the update.
+    saveAmberState(keepNotes(amberState,updater.version,updater.notes));
+    await updater.install(async()=>{for(const entry of owned.values())await entry.persistence.flush();await writer.flush();await amberWriter.flush();await windowMemory?.flush();});}
   function dismissUpdate(){settings.ui.dismissedUpdate=updater.version;void updater.release();preferencesChanged();}
   async function checkReady(){if(anyRunning||checkingReady)return;checkingReady=true;readyController=new AbortController();
     try{if(desktop)await invoke('provider_status');readyPending=provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'opus',effort:'low',cancel:readyController.signal},()=>{});await readyPending;}
@@ -306,7 +331,7 @@
     void (async()=> {
       try {
         rooms=await roomsWithDevSample();
-        void amberStore.load().then(value => amberState = value).catch(e => console.warn('Amber state', e));
+        void amberStore.load().then(value => amberState = value).catch(e => console.warn('Amber state', e)).finally(() => amberLoaded = true);
         if(desktop) {
           const loaded=await invoke<{document:unknown;readOnly:boolean;recovered:boolean;transferRecovered?:boolean;defaultLibrary:string;defaultName:string}>('load_settings');
           defaults=defaultSettings(loaded.defaultLibrary,loaded.defaultName,rooms);
@@ -356,12 +381,12 @@
 {#if saveError}<div class="banner error" role="alert">{strings.saveFailed}<details><summary>{strings.details}</summary>{saveError}</details><button onclick={retrySaves}>{strings.retry}</button></div>{/if}
 {#if toast}<div class="toast" role="status">{toast}<button onclick={()=>toast=''}>{strings.close}</button></div>{/if}
 {#if showUpdateNotice}<div class="toast update-notice" role="status">{updater.phase==='downloading'?strings.updateDownloading(updater.percent):updater.phase==='installing'?strings.updateInstalling:strings.updateAvailable(updater.version)}
-  {#if updater.phase==='available'}<button disabled={anyRunning} title={anyRunning?strings.finishGeneration:undefined} onclick={installUpdate}>{strings.installUpdate}</button><button onclick={dismissUpdate}>{strings.updateLater}</button>{/if}</div>{/if}
+  {#if updater.phase==='available'}<button onclick={()=>openRelease(updater.version)}>{strings.releaseNotes}</button><button disabled={anyRunning} title={anyRunning?strings.finishGeneration:undefined} onclick={installUpdate}>{strings.installUpdate}</button><button onclick={dismissUpdate}>{strings.updateLater}</button>{/if}</div>{/if}
 {#if panelOpen}{#key panelGeneration}<FieldPanel {session} {room} {rooms} {revision} subjects={paletteSubjects} {fieldWidth}
   rename={title=>renameSubject(session!.subject.id,title)} changed={appliesNext=>{session!.touch();if(appliesNext)toast=strings.appliesNext;}}
   openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/key}{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
-{#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} {desktop} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} thinking={amberThinking} working={amberWorking} lean={amberLean} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
+{#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} {desktop} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} thinking={amberThinking} working={amberWorking} lean={amberLean} greeting={amberGreeting} waiting={amberWaiting} greeted={()=>amberGreeting=null} {openRelease} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}
 {#if askOpen}<AskBox bind:this={askBox} chat={amberChat} revision={amberRevision} close={closeAsk} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}

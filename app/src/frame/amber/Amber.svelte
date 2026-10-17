@@ -13,6 +13,8 @@
   import { Rope, STEP, flightDuration, flightPoint } from './rope';
   import { LANDING_SETTLE, RETRACT, actDone, compose, dangle, endsStanding, flightBase, grabbedBase, hangingBase, lookAt, restingBase, startAct } from './motion';
   import type { Act } from './motion';
+  import { cutNotes, greetingMs } from './greeting';
+  import type { Greeting } from './greeting';
   import AskChat from './AskChat.svelte';
   import Emphasis from './Emphasis.svelte';
   import GuideLines from './GuideLines.svelte';
@@ -26,14 +28,29 @@
    * and the new motions (CO-54): dangling from the hand, thinking, working, leaning toward a selection card. Calm in
    * the room's calm spaces (CO-53). Reduced motion: still poses, every move straight to its spot (CO-56).
    */
-  let { room, space, desktop, amberState, saveState, chat, revision, hide, openSettings, thinking = false, working = false, lean = null }: {
+  let { room, space, desktop, amberState, saveState, chat, revision, hide, openSettings, thinking = false, working = false, lean = null, greeting = null, waiting = null, greeted = () => {}, openRelease = () => {} }: {
     room: RoomDefinition; space: string; desktop: boolean; amberState: AmberState; saveState: (s: AmberState) => void;
     chat: AmberChat; revision: number; hide: () => void; openSettings: () => void;
     /** Ask Amber or a selection card is waiting for its answer (CO-42). */ thinking?: boolean;
     /** A generation the user started waits for its first words (CO-35). */ working?: boolean;
     /** The selection card's centre, to lean toward (CO-45). */ lean?: { x: number; y: number } | null;
+    /** CO-30, CO-31: the launch greeting, said once; `greeted` when it has faded. */ greeting?: Greeting | null; greeted?: () => void;
+    /** CO-35: what is happening while a generation waits for its first words. */ waiting?: string | null;
+    openRelease?: (version: string) => void;
   } = $props();
-  const BUBBLE_W = 340, CONTROLS = 138, GRAB = 5, SWING_MAX = 6000, THROW = 6;
+  // CO-30, CO-31: the greeting fades after about 6 s; hovering it pauses the fade; long notes are cut, a click shows them all.
+  let expanded = $state(false), sayHover = $state(false), fading = $state(false), remaining = 0, sayTimer: ReturnType<typeof setTimeout> | undefined, sayStarted = 0;
+  const notes = $derived(greeting?.kind === 'update' && greeting.notes ? cutNotes(greeting.notes) : null);
+  function startFade(ms: number) { clearTimeout(sayTimer); remaining = ms; sayStarted = performance.now(); sayTimer = setTimeout(endGreeting, ms); }
+  function endGreeting() { fading = true; sayTimer = setTimeout(() => { fading = false; expanded = false; greeted(); }, reduced ? 0 : 400); }
+  function pauseFade() { sayHover = true; if (fading) { fading = false; startFade(1500); } clearTimeout(sayTimer); remaining = Math.max(1500, remaining - (performance.now() - sayStarted)); }
+  function resumeFade() { sayHover = false; startFade(remaining); }
+  let shownGreeting = $state.raw<Greeting | null>(null);
+  $effect(() => { if (greeting && greeting !== shownGreeting && ready && !waiting) { shownGreeting = greeting; expanded = false; startFade(greetingMs(greeting, notes?.short ?? greeting.text)); } });
+  $effect(() => () => clearTimeout(sayTimer));
+  /** What Amber says now: the waiting line first (CO-35), else the greeting; nothing while its bubble or menu is open. */
+  const saying = $derived(waiting ? 'waiting' : greeting && shownGreeting === greeting ? 'greeting' : null);
+  const BUBBLE_W = 340, SAY_W = 300, CONTROLS = 138, GRAB = 5, SWING_MAX = 6000, THROW = 6;
   /** CO-17: the lantern's silhouette (loop, frame and the flame inside it, in the actor's units) takes the pointer; the halo around it does not. */
   const HIT = 'M42 3 H58 V22 C70 34 86 47 86 65 C86 79 81 89 77 99 H23 C19 89 14 79 14 65 C14 47 30 34 42 22 Z';
   let width = $state(innerWidth), height = $state(innerHeight), bubble = $state(false), mode = $state<'tip' | 'guide'>('tip'), tipId = $state<string>(), menu = $state<null | 'main' | 'move'>(null);
@@ -261,6 +278,18 @@
   onpointerover={() => { if (!hovered) { hovered = true; if (!act) play(GESTURE.rest); } }} onpointerout={e => { if (!button?.contains(e.relatedTarget as Node)) hovered = false; }}
   onfocus={() => { if (!act) play(GESTURE.rest); }} onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}>{@html svg}<svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
 {/if}
+{#if saying && ready && !bubble && !menu && motion.kind === 'still'}{@const at = bubbleBox(spot, width, SAY_W, height)}
+  <div class="say" class:fading role="status" aria-live="polite" data-testid="amber-says" style:left={`${at.left}px`} style:top={at.top !== undefined ? `${at.top}px` : undefined} style:bottom={at.bottom !== undefined ? `${at.bottom}px` : undefined} style:width={`${SAY_W}px`}
+    onpointerenter={() => { if (saying === 'greeting') pauseFade(); }} onpointerleave={() => { if (saying === 'greeting' && sayHover) resumeFade(); }}>
+    {#if saying === 'waiting'}<p>{waiting}</p>
+    {:else if greeting}<p>{greeting.text}</p>
+      {#if greeting.kind === 'update'}
+        {#if notes}<p class="notes">{expanded ? greeting.notes : notes.short}</p>{#if notes.cut && !expanded}<button class="quiet" onclick={() => { expanded = true; remaining = Math.max(remaining, 15000); }}>{strings.showAllNotes}</button>{/if}{/if}
+        <button class="quiet link" onclick={() => openRelease(greeting.version)}>{strings.fullReleaseNotes}</button>
+      {/if}
+    {/if}
+  </div>
+{/if}
 {#if bubble}
   <div class="bubble" role="dialog" aria-label={strings.amberName} tabindex="-1" bind:this={bubbleEl} style:left={`${box.left}px`} style:top={box.top !== undefined ? `${box.top}px` : undefined} style:bottom={box.bottom !== undefined ? `${box.bottom}px` : undefined} style:width={`${BUBBLE_W}px`}
     onkeydown={e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeBubble(true); } }}>
@@ -298,6 +327,11 @@
   .amber:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
   .bubble { position:fixed; z-index:9; display:grid; gap:10px; padding:14px 16px; box-sizing:border-box; max-height:min(70vh,560px); overflow:auto;
     background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.35); font-size:14px; line-height:1.5; }
+  .say { position:fixed; z-index:9; display:grid; gap:6px; padding:10px 14px; box-sizing:border-box; max-height:min(60vh,480px); overflow:auto;
+    background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:0 10px 28px rgba(0,0,0,.3); font-size:14px; line-height:1.5; transition:opacity .4s; }
+  .say.fading { opacity:0; } .say p { margin:0; } .say .notes { white-space:pre-wrap; color:var(--ink-mute); font-size:13px; }
+  .say .quiet { justify-self:start; background:none; border:0; padding:0; font-size:13px; color:var(--accent); }
+  @media (prefers-reduced-motion: reduce) { .say { transition:none; } }
   .bubble:focus { outline:none; } .tip { margin:0; } h3 { margin:0; font-size:14px; font-weight:600; }
   .row { display:flex; gap:8px; flex-wrap:wrap; } .row button { font-size:13px; } .row [aria-pressed='true'] { border-color:var(--accent); }
   .menu { position:fixed; z-index:9; display:grid; gap:2px; min-width:220px; max-height:60vh; overflow:auto; padding:6px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.35); }

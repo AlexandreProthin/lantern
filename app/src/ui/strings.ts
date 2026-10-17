@@ -92,6 +92,13 @@ export const strings = {
   askAmber:'Ask Amber', askTutor:'Ask the tutor', amberDefine:'What does this mean here?', askAmberPlaceholder:'Ask me anything… (Enter to ask)', amberThinking:'Amber is thinking…', amberYou:'You', amberName:'Amber', amberFailed:'Amber could not answer.',
   amberAbout:(rooms:string[])=>`Lantern is a desktop app with rooms, each a different way of working on a subject, and each with its own spaces. ${rooms.join(' ')} Amber is the small lantern companion; it can be hidden in Settings → Companion, and every feature stays reachable without it.`,
   amberRoomLine:(name:string, about:string, spaces:string[])=>`The ${name} room (spaces: ${spaces.join(', ')}): ${about}`,
+  // CO-30, CO-31: Amber's greetings, as agreed 2026-10-17 (agent_wiki/plans/v0-4-0-amber-lines.md).
+  amberGreetings:[
+    { id:'greet.1', text:'Hello again.' }, { id:'greet.2', text:'Welcome back. Where were we?' }, { id:'greet.3', text:'Good to see you.' },
+    { id:'greet.4', text:'The light’s still on.' }, { id:'greet.5', text:'Ready when you are.' }, { id:'greet.6', text:'Back at it.' }
+  ] as readonly { id:string; text:string }[],
+  amberFirstLaunch:'Hello, I’m Amber. Click me for tips, or press Ctrl+J to ask me anything.',
+  amberUpdated:(version:string)=>`Lantern ${version} is here. What’s new:`, showAllNotes:'Show all', fullReleaseNotes:'Full release notes ›', releaseNotes:'Release notes',
   // CO-21: the frame's tips, shown in every room, as agreed 2026-10-17 (agent_wiki/plans/v0-4-0-amber-lines.md).
   amberTips:[
     { id:'frame.ask', text:'Press Ctrl+J anywhere to ask me something. I know the app, your subject, and a bit of everything else.' },

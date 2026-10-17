@@ -6,6 +6,8 @@ type Checked = { status: 'up-to-date' | 'unconfigured' } | { status: 'available'
 export class UpdateController {
   phase = $state<UpdatePhase>('idle');
   version = $state('');
+  /** CO-31: the found release's notes, kept at install for Amber's first greeting after it. */
+  notes = $state<string | null>(null);
   percent = $state<number | null>(null);
   message = $state('');
   /** True when the check came from the launch rule, so only that one raises the notice (UP-10, UP-11). */
@@ -17,7 +19,7 @@ export class UpdateController {
     this.phase = 'checking'; this.message = '';
     try {
       const result = await invoke<Checked>('check_update', { folder: folder || null });
-      if (result.status === 'available') { this.version = result.version; this.fromLaunch = launch; this.phase = 'available'; }
+      if (result.status === 'available') { this.version = result.version; this.notes = result.notes; this.fromLaunch = launch; this.phase = 'available'; }
       else this.phase = result.status === 'unconfigured' ? 'unconfigured' : 'up-to-date';
       return result.status !== 'unconfigured';
     } catch (e) {
