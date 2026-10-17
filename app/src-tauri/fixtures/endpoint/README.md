@@ -16,6 +16,35 @@ python app/src-tauri/fixtures/endpoint/record.py --model gemma4:e2b
 python app/src-tauri/fixtures/endpoint/record.py --model gemma4:e2b --only compat
 ```
 
+## NVIDIA (cloud plan, slice 0)
+
+Run by the user, in their own PowerShell terminal, from the repository root (the worktree). The key goes
+into an environment variable of that terminal only. The prompt below hides it as it is typed, and it is
+never written to a file, a fixture or the chat.
+
+1. Set the key (masked input, works in Windows PowerShell 5.1):
+   ```powershell
+   $env:NVIDIA_API_KEY = [System.Net.NetworkCredential]::new('', (Read-Host 'NVIDIA API key' -AsSecureString)).Password
+   ```
+2. Find the Gemma 4 model id:
+   ```powershell
+   python app/src-tauri/fixtures/endpoint/record.py --preset nvidia --key-env NVIDIA_API_KEY --list gemma
+   ```
+3. Record, with the id from step 2:
+   ```powershell
+   python app/src-tauri/fixtures/endpoint/record.py --preset nvidia --key-env NVIDIA_API_KEY --model <id>
+   ```
+4. Clear the key from the terminal:
+   ```powershell
+   Remove-Item Env:NVIDIA_API_KEY
+   ```
+
+The key is sent only as the `Authorization` header, only over https, and only to `--base`
+(`https://integrate.api.nvidia.com/v1` by default). A response that contains it is **not saved**, and
+the run prints *NOT SAVED*. The two bad-key cases send a made-up key instead; `cases.json` marks them
+`fakeKey` and notes whether the server echoed that key. Only rate-limit, request-id and content-type
+headers are kept.
+
 ## What the recordings show
 
 | Case | Format | What it shows |

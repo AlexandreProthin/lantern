@@ -47,6 +47,11 @@ The local plan's rules hold. In particular:
   variable's value and refuses to save a match.
 - Read NVIDIA's API documentation for a hosted web search, to settle CE-55's *to be confirmed*.
 - **Exit:** the fixtures, the README table extended, CE-55's note settled in the spec.
+- **Script ready 2026-10-17**: `record.py` gains `--preset nvidia`, `--key-env`, `--list` and the leak
+  check: a body or header containing the key is not saved. It refuses to send a key over http. The two
+  bad-key cases use a made-up key, and only safe headers are kept. Checked offline against a simulated
+  server that echoes the key; Ollama mode is unchanged. The user's commands are in
+  `app/src-tauri/fixtures/endpoint/README.md`. Waiting for the user's run.
 
 # Slice 1. Keys in Rust
 
