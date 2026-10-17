@@ -96,6 +96,8 @@ def main():
     ap.add_argument("--key-env", help="name of the environment variable that holds the API key (cloud presets)")
     ap.add_argument("--list", metavar="FILTER", help="print the server's model ids containing FILTER, record nothing")
     ap.add_argument("--only", help="record only the cases whose name contains this text")
+    ap.add_argument("--skip", action="append", default=[], help="skip the cases whose name contains this text (repeatable)")
+    ap.add_argument("--timeout", type=int, default=120, help="seconds before one call gives up (default 120)")
     a = ap.parse_args()
     base = (a.base or {"ollama": "http://localhost:11434", "nvidia": "https://integrate.api.nvidia.com/v1"}[a.preset]).rstrip("/")
     key = None
@@ -120,15 +122,18 @@ def main():
     server = "ollama " + json.loads(call("GET", base + "/api/version")[2]).get("version", "?") if a.preset == "ollama" else urlparse(base).hostname
     secret = key.encode() if key else None
     for name, case in cases.items():
-        if a.only and a.only not in name:
+        if (a.only and a.only not in name) or any(s in name for s in a.skip):
             continue
         method, path, body = case[:3]
         use = case[3] if len(case) > 3 else key
-        status, headers, raw, secs = call(method, base + path, body, key=use)
+        print(f"{name}: ...", end="", flush=True)
+        try: status, headers, raw, secs = call(method, base + path, body, key=use, timeout=a.timeout)
+        except (TimeoutError, OSError) as err:
+            print(f" gave up after {a.timeout} s ({type(err).__name__}); nothing saved"); continue
         kept = safe_headers(headers)
         # The leak check: the real key must never be written, in a body or a header.
         if secret and (secret in raw or any(secret.decode() in str(v) for v in headers.values())):
-            print(f"{name}: NOT SAVED, the response contains your key ({status}, {len(raw)} bytes)")
+            print(f" NOT SAVED, the response contains your key ({status}, {len(raw)} bytes)")
             continue
         (HERE / f"{name}.body").write_bytes(raw)
         entry = {"status": status, "contentType": headers.get("Content-Type", headers.get("content-type", "")), "method": method, "path": path,
@@ -137,8 +142,9 @@ def main():
         if a.preset != "ollama": entry["headers"] = kept
         if use == FAKE_KEY: entry["fakeKey"] = True; entry["echoesFakeKey"] = FAKE_KEY.encode() in raw
         index[name] = entry
-        print(f"{name}: {status} {len(raw)} bytes {secs:.1f}s")
-    index_path.write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f" {status} {len(raw)} bytes {secs:.1f}s")
+        # Saved after each case, so stopping with Ctrl+C keeps what was recorded.
+        index_path.write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
