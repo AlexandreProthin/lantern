@@ -2,6 +2,8 @@
 
 ## 2026-10-17
 
+* **Pre-public check passed**: no secret in the whole history, no personal e-mail, nothing risky in releases or on GitHub; the repository can go public whenever the user chooses. One open choice: there is no LICENSE file. Details in the [web demo plan](/plans/web-demo.md). Branch `worktree-web-demo` pushed, not merged.
+
 * **Web demo built** on branch `worktree-web-demo`, not pushed: the Learn room as a static site for GitHub Pages, answered by prepared text after a 2 to 4 s wait (no inference). TCP congestion control is a recent project; Blender 3D is prefilled on Welcome to show a subject being created. Published by `.github/workflows/web-demo.yml` on `v*` tags and by hand, after an end-to-end test. Waits for the repository to go public ([plan](/plans/web-demo.md), [decision](/decisions/web-demo-prepared-answers.md), [web demo](/components/web-demo/index.md)).
 * **README images**: the root README centred on Learn, with screenshots and a GIF made from hand-written demo subjects (`app/demo/`, `capture.ts`).
 

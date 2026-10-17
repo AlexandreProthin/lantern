@@ -17,8 +17,8 @@ Written 2026-10-17. The why is in [the decision](/decisions/web-demo-prepared-an
    scripted tutor, the TCP and Blender scripts, the banner, the workflow, unit and end-to-end tests,
    the README link. Committed locally, **not pushed**.
 2. **The user tries it** locally (`npm run build:demo`, then `npx vite preview --mode demo`) and asks for changes.
-3. **Before going public**: scan the whole history for secrets, and list what becomes public
-   (`agent_wiki/`, `agent_identity/`, `agent_design/`, commit e-mail addresses). The user signs off.
+3. **Before going public**: scan the whole history for secrets, and list what becomes public. **Done
+   2026-10-17, clear to go public** (see *Pre-public check* below); the user has not switched yet.
 4. **The user** makes the repository public and sets *Settings → Pages → Source: GitHub Actions*.
 5. **On the user's word**: merge the branch into `master`, push, then run *Actions → Web demo → Run
    workflow* once (or wait for the next `v*` tag). Check the site and the README link.
@@ -28,6 +28,30 @@ Written 2026-10-17. The why is in [the decision](/decisions/web-demo-prepared-an
 - `npm test`, `npm run check`, `npx playwright test` and `npm run test:demo` pass.
 - The deployed site: Welcome prefilled with Blender 3D, TCP among recent subjects, a light, a check and
   its answer, Reset, Ask Amber's demo answer, no console errors.
+
+# Pre-public check (2026-10-17)
+
+Run on all 108 commits, every branch and tag, before any switch. Result: **nothing blocks going public.**
+
+| Checked | Result |
+|---|---|
+| Secrets in every added line of history: private keys, the Tauri/minisign updater secret key and its password, Anthropic, OpenAI, GitHub, AWS, Google and Slack tokens, bearer tokens, assigned passwords and API keys | none |
+| Risky files ever committed (`.env`, `.pem`, `.key`, `id_rsa`, credentials, databases) | only `app/.env.demo` (`VITE_DEMO=true`, not a secret) |
+| The identity release archive (`lantern-identity-v0.2.zip`) | no secret patterns |
+| Commit identities | name `AlexandreProthin`, e-mail `=`: no personal address in history (commits are not linked to the GitHub profile) |
+| E-mail addresses in content | none (only `@pytest` decorators and `@2x` file names) |
+| GitHub side: issues, pull requests, Actions secrets | none |
+| Release assets | installers and `latest.json` only; the updater public key is public by design |
+| History size | 48.6 MB, largest file 3 MB (the README GIF) |
+
+Becomes public with the repository, all judged fine:
+
+- Everything in the tree and its history: `app/`, `agent_wiki/`, `agent_design/` (spec workshop, the user's answers and sketch), `agent_identity/` (identity rounds, the user's requests quoted in French).
+- The Windows user name `alexp`, in about 15 local paths inside `agent_identity/` round sources and notes. Harmless; removing it would mean rewriting history, not worth it.
+- `.claude/launch.json` (dev server definitions).
+- The tags `poc-final` and `v0.1.0` to `v0.4.0`, the releases, and branch `worktree-web-demo` once pushed.
+
+Open choice for the user: **there is no LICENSE file.** Public without one means *all rights reserved*: anyone may read the code, nobody may reuse it. Add one (MIT, Apache-2.0, GPL…) before or after the switch if reuse should be allowed.
 
 # Side effects of going public
 
