@@ -156,6 +156,26 @@ user, CPU only on this machine. Fixtures are recorded against it first.
   before changing it too.
 - **Exit:** unit tests for id parsing, routing (Claude model → unchanged request, endpoint model →
   endpoint field, web call on an endpoint subject → Claude fallback chain), and the fakes.
+- **Done 2026-10-17**:
+  - `core/models.ts` gains `parseModelId`, `isEndpointModel` and `displayModel` (*Ollama · gemma4:e2b*).
+    `modelName` is unchanged, because an existing test pins it. `/` is now allowed in model ids, in
+    `isValidModel` and in the settings validation.
+  - `frame/endpoints.ts`: the `provider.endpoints` types and a lenient reader. Slice 3 adds the
+    validation and the UI.
+  - `frame/routing.ts`: `route` and `RoutingProvider`, wired in the Shell for the rooms and Amber, in
+    the desktop and fake builds.
+  - `DesktopProvider` gains `streamEndpoint`. A Claude Code call sends the same `generate` arguments as
+    before, which a test pins. Endpoint results go to their own `endpointHealth`, never to the Claude
+    Code health (SE-42).
+  - `frame/fake-endpoint.ts`: the fake endpoint, set in dev builds by
+    `?endpointDelay=`, `?endpointError=` and `?endpointReply=unclosed|no-options`.
+  - Three new error kinds with placeholder strings; slice 7 writes their fix-it messages.
+  - TP-31's tolerance is in Learn's parser, tested on the three recorded Gemma replies and on two cut or
+    trailing cases.
+  - Checks: `npm run check` clean; 191 TS tests (the 184 existing ones unchanged, 7 new); Playwright 93
+    passed and 2 skipped, as at v0.4.0. The worktree needed its own `npm ci`.
+  - **Not done, for the user:** Choose's parser (`rooms/choose/protocol.ts`) also needs closing tags for
+    every block. It is left as it is until the user decides.
 
 # Slice 3. Settings → Endpoints
 

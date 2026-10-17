@@ -35,6 +35,14 @@ export function parseReply(raw: string, task: Task, pendingCheck = false) {
         options.push(...values.map(v => option(v, task === 'suggest' ? undefined : task === 'intro' ? 'axis' : 'deeper')).filter((v): v is Option => !!v)); break;
       } catch { /* First block that parses wins (TP-31). */ }
     }
+    // TP-31 (amended 2026-10-17): a block never closed still counts when a complete array is the last thing in the reply.
+    const open = raw.lastIndexOf('<options>');
+    if (!optionsValid && open >= 0 && !raw.includes('</options>', open)) {
+      try {
+        const values = decode(raw.slice(open + '<options>'.length));
+        if (Array.isArray(values)) { optionsValid = true; options.push(...values.map(v => option(v, task === 'suggest' ? undefined : task === 'intro' ? 'axis' : 'deeper')).filter((v): v is Option => !!v)); }
+      } catch { /* Cut short: still invalid (TP-34). */ }
+    }
   }
   if (task === 'reply') {
     const match = raw.match(/<branch>([\s\S]*?)<\/branch>/);

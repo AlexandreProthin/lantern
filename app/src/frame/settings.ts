@@ -33,10 +33,10 @@ export function validateSettings(input: unknown, defaults = defaultSettings(), r
   if (typeof out.library.path !== 'string') out.library.path = defaults.library.path;
   if (typeof out.user.displayName !== 'string' || out.user.displayName.trim().length > 40 || !out.user.displayName.trim()) out.user.displayName = defaults.user.displayName;
   else out.user.displayName = out.user.displayName.trim();
-  if (typeof p.defaultModel !== 'string' || !/^[A-Za-z0-9._:-]{1,100}$/.test(p.defaultModel)) p.defaultModel = defaults.provider.defaultModel;
+  if (typeof p.defaultModel !== 'string' || !/^[A-Za-z0-9._:/-]{1,100}$/.test(p.defaultModel)) p.defaultModel = defaults.provider.defaultModel;
   const c = out.companion;
   if (typeof c.show !== 'boolean') c.show = defaults.companion.show;
-  if (typeof c.model !== 'string' || !/^[A-Za-z0-9._:-]{1,100}$/.test(c.model)) c.model = defaults.companion.model;
+  if (typeof c.model !== 'string' || !/^[A-Za-z0-9._:/-]{1,100}$/.test(c.model)) c.model = defaults.companion.model;
   if (!['low','medium','high','xhigh','max'].includes(p.defaultEffort)) p.defaultEffort = defaults.provider.defaultEffort;
   // GV-100 forbids overriding an OS reduced-motion preference with "never reduce".
   if (!['system','on'].includes(a.reduceMotion)) a.reduceMotion = 'system';

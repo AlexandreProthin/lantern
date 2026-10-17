@@ -58,7 +58,9 @@ export const strings = {
     'not-installed': 'Claude Code is not installed.', 'not-logged-in': 'Claude Code is installed but not signed in.',
     'usage-limit': 'Your Claude usage limit was reached.', 'model-unknown': 'The selected model is not available.',
     network: 'Could not reach Claude. Check your connection.', 'process-crashed': 'Claude Code stopped unexpectedly.',
-    protocol: 'Claude Code gave an answer Lantern could not read.', cancelled: ''
+    protocol: 'Claude Code gave an answer Lantern could not read.', cancelled: '',
+    unreachable: 'Lantern could not reach the model server.', 'key-rejected': 'The server rejected the API key.',
+    'context-too-long': 'This prompt is too long for the model’s context size.'
   },
   editedBy: (name: string) => `edited by ${name}`, writtenBy: (name: string) => `written by ${name}`,
   dismissedCount: (n: number) => `Dismissed (${n})`, directionsCount: (n: number) => `Only ${n} directions came back`,
