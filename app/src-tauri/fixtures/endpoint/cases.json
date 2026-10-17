@@ -1,0 +1,300 @@
+{
+  "ollama-native-ok": {
+    "status": 200,
+    "contentType": "application/x-ndjson",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "think": false,
+      "options": {
+        "num_ctx": 8192
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 48.1,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-thinking": {
+    "status": 200,
+    "contentType": "application/x-ndjson",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "think": true,
+      "options": {
+        "num_ctx": 8192
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 74.2,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-think-default": {
+    "status": 200,
+    "contentType": "application/x-ndjson",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "options": {
+        "num_ctx": 8192
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 60.6,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-truncated": {
+    "status": 200,
+    "contentType": "application/x-ndjson",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day.\nMAP: node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. "
+        }
+      ],
+      "stream": true,
+      "think": false,
+      "options": {
+        "num_ctx": 2048
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 113.5,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-model-missing": {
+    "status": 404,
+    "contentType": "application/json; charset=utf-8",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "no-such-model:1b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-bad-request": {
+    "status": 400,
+    "contentType": "application/json; charset=utf-8",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": "not a list",
+      "stream": true
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-ok": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "reasoning_effort": "none"
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 56.7,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-think-default": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 84.4,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-no-usage": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "reasoning_effort": "none"
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 43.9,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-model-missing": {
+    "status": 404,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "request": {
+      "model": "no-such-model:1b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-models": {
+    "status": 200,
+    "contentType": "application/json",
+    "method": "GET",
+    "path": "/v1/models",
+    "request": null,
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-tags": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "method": "GET",
+    "path": "/api/tags",
+    "request": null,
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-show": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "method": "POST",
+    "path": "/api/show",
+    "request": {
+      "model": "gemma4:e2b"
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-show-missing": {
+    "status": 404,
+    "contentType": "application/json; charset=utf-8",
+    "method": "POST",
+    "path": "/api/show",
+    "request": {
+      "model": "no-such-model:1b"
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-version": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "method": "GET",
+    "path": "/api/version",
+    "request": null,
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  }
+}

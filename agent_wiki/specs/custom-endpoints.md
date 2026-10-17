@@ -32,8 +32,9 @@ planned.
   the Codex CLI provider (CE-58), Lantern's own web tools (CE-55), *Check this model* (CE-60), other
   cloud presets (OpenRouter, Groq, Mistral, DeepSeek, Together), the Anthropic API with a key, hand-run
   eval scores, the protocol repair call (CE-57, if ever needed), and models per task.
-- **CE-4** The user's first model is **Gemma 4 E4B, Q4, served by Ollama**; the user sets up Ollama and
-  the model, and may try other models. Fixtures are first recorded against it.
+- **CE-4** The user's first model is **Gemma 4 E2B** (`gemma4:e2b`, Q4_K_M), served by Ollama; the user
+  sets up Ollama and the model, and may try other models. Fixtures are first recorded against it.
+  *(2026-10-17: E2B, not E4B as first said in round 11.)*
 - **CE-5** **Versions** (the user, round 11): one version for the local phase, then one for the cloud
   phase, for now. The numbers are not fixed and need not be consecutive minor versions. When the local
   version is ready, the agent **asks the user** whether to release it or to wait and release local and
@@ -230,8 +231,13 @@ Implementation-time only:
 
 - The context size Lantern sends to Ollama when the model's maximum is far above what the machine can
   hold: a proposed default of 32k tokens, capped at the model's maximum and editable per model, to
-  confirm with the user's first runs on Gemma 4 E4B.
-- Each server's exact error wording and events, captured as fixtures (CE-42, CE-90).
+  confirm with the user's first runs on Gemma 4 E2B. Ollama 0.40.6 ran compatible-API calls at the
+  model's full 131072 when no size was sent, so the size Lantern sends also bounds memory use.
+- Each server's exact error wording and events, captured as fixtures (CE-42, CE-90); Ollama's are in
+  `app/src-tauri/fixtures/endpoint/` (slice 0).
+- Raised by slice 0, for the user: whether TP-31 accepts an `<options>` array left unclosed at the end
+  of a reply (Gemma 4 E2B did this in 3 of 6 replies), which would change the parser for Claude Code
+  too (CE-2); and how `effort` maps to Ollama's `think` (CE-52), since the model thinks by default.
 
 Related: [inference-provider](/specs/inference-provider.md), [settings](/specs/settings.md),
 [context-assembly](/specs/context-assembly.md), [choose-room](/specs/choose-room.md),

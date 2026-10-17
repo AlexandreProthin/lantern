@@ -40,8 +40,8 @@ endpoint can be tested in the app, after slice 4), it moves to a dedicated featu
 **Version (CE-5).** No version number is chosen here. When slice 8 passes, the agent asks the user
 whether to release the local version now or wait and release local and cloud in one bump.
 
-**The user's setup (CE-4).** Gemma 4 E4B, Q4, served by Ollama, set up by the user. Fixtures are
-recorded against it first.
+**The user's setup (CE-4).** Gemma 4 E2B (`gemma4:e2b`, Q4_K_M), served by Ollama 0.40.6, set up by the
+user, CPU only on this machine. Fixtures are recorded against it first.
 
 # How it fits together
 
@@ -70,6 +70,26 @@ recorded against it first.
 - Also record a stream with thinking, if the model or another local model emits it
   (`reasoning_content` or inline `<think>`), for CE-51.
 - **Exit:** the fixture files and a README line naming the server version each came from.
+- **Done 2026-10-17**: 15 cases in `app/src-tauri/fixtures/endpoint/` (`record.py`, `cases.json`,
+  `README.md`), from Ollama 0.40.6 and `gemma4:e2b`. llama.cpp and LM Studio were not running; their
+  fixtures come from documentation in slice 1. What the recordings showed:
+  1. Native thinking is in `message.thinking`; compatible thinking is in `delta.reasoning` (not
+     `reasoning_content`). The model **thinks by default** (`/api/show`: `thinking.default: true`);
+     `think: false` (native) or `reasoning_effort: "none"` (compatible) turns it off. Thinking roughly
+     doubles the reply time here.
+  2. A prompt over `num_ctx` is **cut with no error** (`done_reason: stop`, `prompt_eval_count` 1027
+     for a prompt of about 3k tokens at 2048): CE-32 and CE-33 confirmed. Without a size, the
+     compatible calls ran at the full 131072.
+  3. **3 of 6 replies left `<options>` unclosed** after a complete JSON array. Learn's parser
+     (`protocol.ts`, TP-31) needs the closing tag, so those light-ups would keep their text and get no
+     options (TP-34).
+  4. CPU only: about 8–9 output tokens per second, about 15 s to load the model, so a light-up takes
+     around 90 s.
+  5. Usage: native `prompt_eval_count`, `prompt_eval_cached_count` (cache read), `eval_count` (thinking
+     included); compatible `usage` only with `include_usage`. Missing model: 404 with `error` text in
+     both shapes.
+  **For the user before slice 1:** (a) accept an unclosed final `<options>` array in TP-31, a parser
+  change that also applies to Claude Code (CE-2); (b) how `effort` maps to `think` on Ollama (CE-52).
 
 # Slice 1. The endpoint provider in Rust
 
@@ -199,3 +219,4 @@ recorded against it first.
 
 - The context size sent to Ollama by default (slice 5), from the spec's *Open*.
 - The HTTP client crate (slice 1); `ureq` is the proposal.
+- Slice 0's two questions: the unclosed `<options>` tolerance and `effort` → `think`.
