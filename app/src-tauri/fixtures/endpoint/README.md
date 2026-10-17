@@ -45,6 +45,22 @@ the run prints *NOT SAVED*. The two bad-key cases send a made-up key instead; `c
 `fakeKey` and notes whether the server echoed that key. Only rate-limit, request-id and content-type
 headers are kept.
 
+### What NVIDIA showed (2026-10-17, partial)
+
+- `google/gemma-4-31b-it` never answered a chat call within 300 s, headers included: NVIDIA's queue for it
+  was very long (the user). The user chose **`nvidia/nemotron-3.5-super-vl-120b-a12b`** instead.
+- On that model, every chat case came back at once as **HTTP 500** `{"message":"Failed to generate
+  completions","type":"Internal Server Error","code":500}`, with `Nvcf-Status: errored`. It is kept as
+  `nvidia-server-error`. The `--only probe` cases look for the part of the request it refuses: no system
+  message, not streamed, or content as text parts.
+
+| Case | What it shows |
+|---|---|
+| `nvidia-models` | 81 models. **The list is public**: it also answers with a made-up key (`nvidia-models-bad-key`, 200), so listing models cannot tell a good key from a bad one. |
+| `nvidia-bad-key` | **403**, not 401: `application/problem+json`, `{"status":403,"title":"Forbidden","detail":"Authorization failed"}`. The made-up key is not echoed. |
+| `nvidia-compat-model-missing` | **404, plain text `404 page not found`**: nothing names a model, so the classification has to know that a 404 on NVIDIA's chat route means an unknown model, not an absent server. |
+| `nvidia-server-error` | The 500 above. |
+
 ## What the recordings show
 
 | Case | Format | What it shows |

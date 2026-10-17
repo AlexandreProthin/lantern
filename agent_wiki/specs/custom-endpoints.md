@@ -34,7 +34,8 @@ planned.
   eval scores, the protocol repair call (CE-57, if ever needed), and models per task.
 - **CE-4** The user's first model is **Gemma 4 E2B** (`gemma4:e2b`, Q4_K_M), served by Ollama; the user
   sets up Ollama and the model, and may try other models. Fixtures are first recorded against it.
-  *(2026-10-17: E2B, not E4B as first said in round 11.)*
+  *(2026-10-17: E2B, not E4B as first said in round 11.)* On NVIDIA the user's model is
+  `nvidia/nemotron-3.5-super-vl-120b-a12b` *(2026-10-17, cloud slice 0)*: Gemma 4 31B's queue there was too long.
 - **CE-5** **Versions** (the user, round 11): one version for the local phase, then one for the cloud
   phase, for now. The numbers are not fixed and need not be consecutive minor versions. When the local
   version is ready, the agent **asks the user** whether to release it or to wait and release local and
@@ -144,7 +145,7 @@ planned.
 - **CE-55** **Choose's web research** (CR-40) runs on a **CLI provider with web tools**: Claude Code
   now, Codex once it exists (CE-58). Choose's other tasks follow the subject's model, and the log shows
   both. With no such CLI installed, Choose says research needs one. NVIDIA's API has no hosted search
-  (to be confirmed against its docs in the cloud phase), so research on NVIDIA or a local model needs
+  (confirmed 2026-10-17: its documentation offers only OpenAI-style tool calling, run by the caller), so research on NVIDIA or a local model needs
   **Lantern's own web tools**: a search API, page fetching in Rust and a tool-calling loop. The user
   wants them eventually; they are Later and get their own spec round.
 - **CE-56** **Any model** can be picked; an endpoint model is marked *not evaluated* in the picker

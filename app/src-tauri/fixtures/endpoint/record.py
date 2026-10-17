@@ -83,6 +83,10 @@ def nvidia_cases(m):
         "nvidia-compat-reasoning-none": ("POST", "/chat/completions", {**stream, "stream_options": {"include_usage": True}, "reasoning_effort": "none"}),
         "nvidia-compat-model-missing": ("POST", "/chat/completions", {**stream, "model": "no-such-org/no-such-model"}),
         "nvidia-compat-too-long": ("POST", "/chat/completions", {**stream, "messages": [messages[0], {"role": "user", "content": huge}]}),
+        # Probes for a model that answers 500: which part of the request does it refuse? (`--only probe`)
+        "nvidia-probe-user-only": ("POST", "/chat/completions", {**stream, "messages": [{"role": "user", "content": SYSTEM + "\n\n" + PROMPT}]}),
+        "nvidia-probe-not-streamed": ("POST", "/chat/completions", {"model": m, "messages": messages, "stream": False}),
+        "nvidia-probe-text-parts": ("POST", "/chat/completions", {**stream, "messages": [{"role": "system", "content": [{"type": "text", "text": SYSTEM}]}, {"role": "user", "content": [{"type": "text", "text": PROMPT}]}]}),
         "nvidia-bad-key": ("POST", "/chat/completions", stream, FAKE_KEY),
         "nvidia-models-bad-key": ("GET", "/models", None, FAKE_KEY),
     }

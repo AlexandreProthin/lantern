@@ -52,6 +52,23 @@ The local plan's rules hold. In particular:
   bad-key cases use a made-up key, and only safe headers are kept. Checked offline against a simulated
   server that echoes the key; Ollama mode is unchanged. The user's commands are in
   `app/src-tauri/fixtures/endpoint/README.md`. Waiting for the user's run.
+- **First runs 2026-10-17 (partial)**:
+  - The user's key works for the model list. `google/gemma-4-31b-it` never answered: NVIDIA's queue for
+    it was very long. The user switched to `nvidia/nemotron-3.5-super-vl-120b-a12b` and keeps it from now
+    on.
+  - That model answered every chat case at once with **HTTP 500** *Failed to generate completions*.
+  - Recorded anyway, and they change slice 2:
+    1. The model list is public (a made-up key gets 200), so *Test* must make a chat call to check a key.
+    2. A bad key is a **403** problem+json, not a 401. The classification already treats 403 as
+       `key-rejected`.
+    3. An unknown model is a plain-text **404** `404 page not found`. Today's rule calls a 404 that names
+       no model `unreachable`, so NVIDIA needs its own rule: 404 on the chat route means `model-unknown`.
+    4. The 500 maps to `process-crashed`, *NVIDIA reported a server error*.
+  - **CE-55 checked**: NVIDIA's API documentation and a web search found no hosted web search, only
+    OpenAI-style tool calling, where the caller runs the tool. Research on NVIDIA therefore stays with
+    *Lantern's own web tools*, Later.
+  - Still to record, once the model answers: a stream with and without usage, thinking, `reasoning_effort`,
+    and the over-long prompt. Next: the user's `--only probe` run.
 
 # Slice 1. Keys in Rust
 

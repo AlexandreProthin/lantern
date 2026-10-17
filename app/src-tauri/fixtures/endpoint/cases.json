@@ -296,5 +296,119 @@
     "server": "ollama 0.40.6",
     "seconds": 0.0,
     "recorded": "2026-10-17"
+  },
+  "nvidia-models": {
+    "status": 200,
+    "contentType": "application/json",
+    "method": "GET",
+    "path": "/models",
+    "request": null,
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.2,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  },
+  "nvidia-compat-model-missing": {
+    "status": 404,
+    "contentType": "text/plain; charset=utf-8",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "no-such-org/no-such-model",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.1,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/plain; charset=utf-8"
+    }
+  },
+  "nvidia-bad-key": {
+    "status": 403,
+    "contentType": "application/problem+json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.2,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/problem+json"
+    },
+    "fakeKey": true,
+    "echoesFakeKey": false
+  },
+  "nvidia-models-bad-key": {
+    "status": 200,
+    "contentType": "application/json",
+    "method": "GET",
+    "path": "/models",
+    "request": null,
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.1,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "fakeKey": true,
+    "echoesFakeKey": false
+  },
+  "nvidia-server-error": {
+    "status": 500,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      }
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.4,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json",
+      "Nvcf-Reqid": "d65d873d-515a-4359-a7a4-55d1765a7659",
+      "Nvcf-Status": "errored"
+    },
+    "note": "Every chat case on this model returned this, instantly (2026-10-17); kept as the server-error fixture."
   }
 }
