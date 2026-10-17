@@ -30,3 +30,10 @@ test('CE-55: a research call with no Claude Code says research needs it', () => 
   expect(errorMessage({ kind: 'not-installed', model: '' }, { web: true })).toBe(strings.researchNeedsClaude);
   expect(errorMessage({ kind: 'not-installed', model: '' })).toBe(strings.errorKinds['not-installed']);
 });
+test('CE-40, cloud slice 4: a rate limit names NVIDIA and the wait when Retry-After gives one', () => {
+  modelChoices.endpoints = [{ id: 'nvidia', name: 'NVIDIA', preset: 'nvidia', baseUrl: 'https://integrate.api.nvidia.com/v1', lanConfirmed: false, models: [] }];
+  const at = (details: string) => errorMessage({ kind: 'usage-limit', model: 'nvidia:m', details });
+  expect(at('HTTP 429: Too Many Requests (retry after 20)')).toBe('NVIDIA is limiting requests. Try again in 20 seconds.');
+  expect(at('HTTP 429: slow down (retry after 600)')).toBe('NVIDIA is limiting requests. Try again in about 10 minutes.');
+  for (const d of ['HTTP 429: Too Many Requests', 'HTTP 429: x (retry after Wed, 21 Oct 2026 07:28:00 GMT)', 'HTTP 429: (retry after 0)']) expect(at(d)).toBe('NVIDIA is limiting requests. Wait a moment, then try again.');
+});

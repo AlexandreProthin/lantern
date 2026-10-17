@@ -233,6 +233,20 @@ The local plan's rules hold. In particular:
   figures are unchanged.
 - The rate-limit message names NVIDIA and the wait when `Retry-After` gives one (CE-40).
 - **Exit:** token-split tests with all three kinds of record.
+- **Done 2026-10-18** (same branch).
+  - `isLocalModel` (`frame/token-split.ts`) reads the endpoint from `modelChoices`. NVIDIA, and any endpoint
+    whose address is neither this machine nor a LAN address (`isCloudEndpoint`, slice 3), count with Claude.
+    Local endpoints count as local. Claude-only figures still read as before, and so do figures with only
+    cloud tokens beside Claude's.
+  - Decision to review: a record whose endpoint is no longer set up counts as local, as before, unless
+    its id is the NVIDIA preset's own (`nvidia`, `nvidia-2`). The split's label stays *Claude … · local
+    …*, so NVIDIA's tokens show under *Claude*. A label such as *Claude and cloud* is the user's call.
+  - The rate-limit message reads the `Retry-After` that Rust appends to the details: *NVIDIA is limiting
+    requests. Try again in 20 seconds.*, or *about N minutes* from 90 s up. An HTTP date or a missing value
+    keeps the old wording.
+  - Tests: TS 213. The token split covers Claude, local Ollama, a confirmed LAN box, NVIDIA and a cloud
+    Custom URL, plus a cloud-only split and a removed endpoint. The rate-limit test covers seconds,
+    minutes, a date and none. Full Playwright: 100 passed, 2 skipped, and 2 failed under load (`study` GV-90/91/92, the known animation flake, and `amber` CO-35/36); both pass when run alone.
 
 # Slice 5. Real use on NVIDIA
 
@@ -244,6 +258,12 @@ The local plan's rules hold. In particular:
   `state.json`, the app's logs and the webview's storage folder. It prints only *found* or *not found*
   per file, so no part of the key ever reaches the chat.
 - **Exit:** the runs and the search recorded here, like the local plan's slice 4.
+- **Prepared 2026-10-18, waiting for the user.** The key search is `app/scripts/key_search.py --key-env NAME`.
+  It searches the config folder (`%APPDATA%\Lantern`), the library (settings' `library`), and the webview's
+  folder (`%LOCALAPPDATA%\io.github.alexandreprothin.lantern`). The key is matched as UTF-8, UTF-16 and
+  percent-encoded text. The script prints only paths and counts, never the key, a part of it or its length, and
+  says when files could not be read because Lantern is still open. Checked with a planted fake key in a
+  scratch folder (found in UTF-8 and UTF-16, exit 1). The runs need the user's key in the desktop build.
 
 # Slice 6. Verification, acceptance, the release
 
@@ -251,6 +271,10 @@ The local plan's rules hold. In particular:
   (`app/ACCEPTANCE-ENDPOINTS.md` stays valid).
 - An acceptance checklist `app/ACCEPTANCE-CLOUD.md`: keys, consent, NVIDIA in Learn, Choose and Amber,
   tokens, errors (bad key, rate limit), the key search, and removal.
+- **Prepared 2026-10-18:** `app/ACCEPTANCE-CLOUD.md` is written. It covers adding NVIDIA with consent; the key
+  (Credential Manager, reopen, replace, remove); models, the filter and *Test* with *answered as*; Learn,
+  Choose and Amber; tokens; errors (a made-up key, a host change, the rate limit); the key search; removal;
+  and the regression pass for Ollama and Claude Code.
 - Then, on the user's word: the version number for local and cloud together, the version bump, the signed
   installer, the update launch over v0.4.0, `master`, the tag and the release, as for v0.4.0.
 

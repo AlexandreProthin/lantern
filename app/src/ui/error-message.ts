@@ -4,6 +4,11 @@ import { modelChoices } from './model-choices.svelte';
 import { strings } from './strings';
 
 const host = (url: string) => { try { return new URL(url).host; } catch { return url; } };
+/** CE-40: Rust appends the server's `Retry-After` to the details as *(retry after N)*; only a number of seconds is read. */
+function retryAfter(details = ''): string {
+  const s = Number(/\(retry after (\d{1,6})\)/.exec(details)?.[1]); if (!s) return '';
+  return s < 90 ? `${s} seconds` : `about ${Math.round(s / 60)} minutes`;
+}
 /**
  * CE-40, SE-45: one vocabulary for every failure. A Claude Code call reads exactly as before (`strings.errorKinds`);
  * an endpoint call names its server and says what to do; a web call without Claude Code says research needs it (CE-55).
@@ -18,7 +23,7 @@ export function errorMessage(error: { kind: ErrorKind; model?: string; details?:
   switch (error.kind) {
     case 'unreachable': return m.unreachable(name, host(e.baseUrl));
     case 'model-unknown': return e.preset === 'ollama' ? m.pull(model, name) : m.noModel(model, name);
-    case 'usage-limit': return m.limited(name);
+    case 'usage-limit': { const wait = retryAfter(error.details); return wait ? m.limitedFor(name, wait) : m.limited(name); }
     case 'context-too-long': return m.tooLong(model);
     case 'network': return m.network(name);
     case 'process-crashed': return m.server(name);

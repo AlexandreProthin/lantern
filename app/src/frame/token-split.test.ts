@@ -4,6 +4,8 @@ import { totalsOf } from './amber/log';
 import { visitSummary } from '../core/model';
 import { newLearnSubject } from '../rooms/learn/rules';
 import { learnRoom } from '../rooms/learn/definition';
+import { modelChoices } from '../ui/model-choices.svelte';
+import type { EndpointConfig } from './endpoints';
 
 const g = (model: string, input: number, output: number) => ({ model, usage: { input, output, thinking: 0, cacheRead: 0, cacheWrite: 0 } });
 
@@ -30,4 +32,18 @@ test('CE-53, CO-47: Amber’s totals keep a per-model split when records name th
   expect(t).toMatchObject({ input: 2406, output: 65, calls: 3 });
   expect(splitModels(t.models)).toEqual({ claude: { input: 100, output: 20 }, local: { input: 2305, output: 44 } });
   expect(splitModels(undefined)).toBeNull();
+});
+test('CE-53, cloud slice 4: cloud endpoint tokens count with Claude; local endpoints and Claude-only figures are unchanged', () => {
+  const ep = (id: string, preset: EndpointConfig['preset'], baseUrl: string): EndpointConfig => ({ id, name: id, preset, baseUrl, lanConfirmed: false, models: [] });
+  modelChoices.endpoints = [ep('ollama', 'ollama', 'http://localhost:11434/v1'), ep('nvidia', 'nvidia', 'https://integrate.api.nvidia.com/v1'),
+    ep('box', 'custom', 'http://192.168.1.20:8080/v1'), ep('api', 'custom', 'https://api.example.com/v1')];
+  const log = [g('claude-opus-5-5', 40_100, 20_200), g('ollama:gemma4:e2b', 911, 188), g('nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b', 95, 1006),
+    g('box:qwen3:8b', 100, 10), g('api:some/model', 5, 5)];
+  expect(splitLog(log)).toEqual({ claude: { input: 40_200, output: 21_211 }, local: { input: 1011, output: 198 } });
+  // Cloud only: no local token, so the figures read as with Claude alone.
+  expect(splitLog([g('claude-opus-5-5', 900, 300), g('nvidia:m', 95, 1006)])).toBeNull();
+  expect(splitLog([g('claude-opus-5-5', 900, 300)])).toBeNull();
+  // An endpoint no longer set up: local, unless its id is NVIDIA's own.
+  modelChoices.endpoints = [];
+  expect(splitLog([g('ollama:gemma4:e2b', 10, 1), g('nvidia-2:m', 20, 2)])).toEqual({ claude: { input: 20, output: 2 }, local: { input: 10, output: 1 } });
 });

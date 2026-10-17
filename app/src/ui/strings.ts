@@ -110,6 +110,7 @@ export const strings = {
     noModel: (model: string, name: string) => `${name} has no model “${model}”. Fetch its models in Settings → Provider.`,
     missing: (id: string) => `No endpoint “${id}” is set up. Add it in Settings → Provider, or pick another model.`,
     limited: (name: string) => `${name} is limiting requests. Wait a moment, then try again.`,
+    limitedFor: (name: string, wait: string) => `${name} is limiting requests. Try again in ${wait}.`,
     tooLong: (model: string) => `This prompt is too long for ${model} at its context size. Raise the size in Settings → Provider → Endpoints.`,
     network: (name: string) => `Could not reach ${name}. Check the connection.`,
     server: (name: string) => `${name} reported a server error.`,

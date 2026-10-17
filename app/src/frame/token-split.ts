@@ -1,11 +1,21 @@
-import { isEndpointModel } from '../core/models';
+import { parseModelId } from '../core/models';
+import { isCloudEndpoint } from './endpoints';
+import { modelChoices } from '../ui/model-choices.svelte';
 import { strings } from '../ui/strings';
 import { tokens } from './library-format';
 
 export interface TokenPair { input: number; output: number }
 export interface TokenSplit { claude: TokenPair; local: TokenPair }
-/** CE-53: every endpoint is local in this version; cloud endpoints (the cloud version) will count with Claude. */
-export const isLocalModel = (id: string) => isEndpointModel(id);
+/**
+ * CE-53, cloud slice 4: a model is local when it runs on an endpoint on this machine or the local network. NVIDIA and
+ * other cloud endpoints count with Claude. A record from an endpoint that is no longer set up counts as local, unless
+ * its id is a preset's own (`nvidia`, `nvidia-2`).
+ */
+export function isLocalModel(id: string): boolean {
+  const { endpointId } = parseModelId(id); if (endpointId === null) return false;
+  const e = modelChoices.endpoints.find(x => x.id === endpointId);
+  return e ? !isCloudEndpoint(e) : !/^nvidia(-\d+)?$/.test(endpointId);
+}
 /** CE-53: Claude and local tokens apart, or null while no local token has been spent (the figures then look as before). */
 export function splitTokens(entries: Iterable<readonly [model: string, input: number, output: number]>): TokenSplit | null {
   const claude = { input: 0, output: 0 }, local = { input: 0, output: 0 };
