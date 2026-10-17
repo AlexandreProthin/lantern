@@ -1,3 +1,5 @@
 # Hashed identity packages: store exact bytes so MANIFEST/RELEASE-MANIFEST SHA-256 stay valid.
 agent_identity/projects/*/final/** -text
 agent_identity/projects/*/rounds/*/package/** -text
+# Endpoint fixtures are replayed byte for byte by the provider tests.
+app/src-tauri/fixtures/endpoint/*.body -text
