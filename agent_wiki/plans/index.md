@@ -15,4 +15,5 @@ it `deprecated` and link to what it produced rather than deleting it.
 * [v0.2.0 plan](v0-2-0.md) - The second room: room-generic frame and lantern/2 first (Learn unchanged), then the Choose room.
 * [v0.4.0 plan](v0-4-0.md) - Amber, the companion: settings and log, Ask Amber and its eval gate, the selection card, room content, then the character on the new top bar, its movement, motions and greetings.
 * [v0.4.0 Amber lines](v0-4-0-amber-lines.md) - Draft tips, guide lines, greetings and waiting lines for the user to review.
+* [Custom endpoints plan, local version](custom-endpoints-local.md) - The endpoint provider in Rust with Ollama's native chat, routing by model id, Settings → Endpoints, grouped pickers, context windows, the local token line, new errors; the Claude Code path unchanged.
 * [Backlog](backlog.md) - Agreed future work with no version yet; first entry: the companion behaviour spec.

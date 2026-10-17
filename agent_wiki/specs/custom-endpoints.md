@@ -3,13 +3,14 @@ type: Spec
 title: Custom endpoints
 description: Models beyond Claude Code through one OpenAI-compatible provider - local servers first (Ollama, llama.cpp, LM Studio, any URL), then cloud APIs with keys (NVIDIA first) - endpoints in Settings, pinned models in every picker, context windows, Choose's web research, errors, usage and thinking, API key safety, and what must not change for the Claude Code path.
 tags: [llm, provider, endpoints, ollama, llama-cpp, nvidia, api-keys, security]
-status: draft
+status: stable
 generated: { by: claude-code/opus-5.5, at: 2026-10-17T15:30:00Z }
+verified: { by: "human:alex", at: 2026-10-17T16:00:00Z }
 ---
 
-Source: spec workshop rounds 10–11 (2026-10-17, answers revisions 36 and 37). **Awaiting the user's
-agreement**: every question is answered; the other specs are amended (*Touches to other specs*) once
-the user agrees this one. Builds on the
+Source: spec workshop rounds 10–11 (2026-10-17, answers revisions 36 and 37). **Agreed by the user
+2026-10-17**; the touched specs are amended (*Touches to other specs*). The implementation plan for
+the local version is [custom-endpoints-local](/plans/custom-endpoints-local.md). Builds on the
 [inference-provider](/specs/inference-provider.md) contract (IP-1 to IP-13), which stays as it is:
 an endpoint is a second implementation of it, as [pluggable-inference-provider](/decisions/pluggable-inference-provider.md)
 planned.
@@ -142,8 +143,10 @@ planned.
   and the meta line, since no endpoint model is eval-gated in the local or cloud version.
 - **CE-57** **When an endpoint model breaks the tagged-block protocol** (a light-up or *More options*
   with no, or a malformed, `<options>` block), the explanation is **kept**, the node is lit with no new
-  children, and a note says the model gave no options, with *More options* to try again. Claude Code
-  calls keep today's behaviour. A repair call is Later, if ever needed.
+  children, and a note says the model gave no options, with *More options* to try again. This is
+  already every provider's behaviour ([tutor-protocol](/specs/tutor-protocol.md) TP-34,
+  [learn-room](/specs/learn-room.md) LR-66), so nothing changes for Claude Code and nothing new is
+  built; endpoint models will meet it more often. A repair call is Later, if ever needed.
 - **CE-58** **Codex** (the user's round 10 note): a second CLI provider beside Claude Code, using a
   ChatGPT plan (`codex exec --json`), with its own detection, flags, event stream, errors and fixtures.
   It has its own version, scheduled once the user has a Codex plan to test with ([backlog](/plans/backlog.md)).
@@ -204,19 +207,20 @@ errors, its timeouts and Choose's research stay as they are.
 
 # Touches to other specs
 
-Applied once the user agrees this spec:
+Applied 2026-10-17, each marked *Amended 2026-10-17* in place:
 
 - [inference-provider](/specs/inference-provider.md): IP-10's taxonomy gains `unreachable`,
   `key-rejected` and `context-too-long` for endpoints (CE-40); IP-31's stall clock starts at the first
   byte on endpoints (CE-41); IP-63 points to CE-70 to CE-76 as its security spec.
 - [settings](/specs/settings.md): *Settings → Provider* gains the Endpoints list (CE-20, CE-21, CE-24);
   SE-7 points to CE-70; SE-46 and SE-48's pickers group models by endpoint and accept
-  `<endpointId>:<modelId>` (CE-22, CE-23); SE-40 to SE-47 apply only to Claude Code models (CE-26).
+  `<endpointId>:<modelId>` (CE-22, CE-23), with `/` allowed in ids; SE-40 is the Claude Code entry and
+  the *not installed* banner follows CE-26; a new `provider.endpoints` key, with no key ever (CE-70).
 - [context-assembly](/specs/context-assembly.md): CA-10's budget is also capped by the model's context
   size (CE-31).
 - [choose-room](/specs/choose-room.md): CR-40's research runs on a CLI provider with web tools (CE-55).
-- [learn-room](/specs/learn-room.md) and [tutor-protocol](/specs/tutor-protocol.md): an endpoint reply
-  with no options keeps its text (CE-57).
+- [learn-room](/specs/learn-room.md) and [tutor-protocol](/specs/tutor-protocol.md): no change; TP-34
+  and LR-66 already give CE-57's behaviour.
 - [companion](/specs/companion.md): CO-46's model picker offers endpoint models.
 - [welcome-gallery](/specs/welcome-gallery.md): WG-31's *tokens spent* gains the local line (CE-53).
 

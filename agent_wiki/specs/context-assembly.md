@@ -4,7 +4,7 @@ title: Context assembly
 description: What each Learn-room call sends - the 12k-token map budget, the full and reduced outline formats, clips, dialogue window, the per-task context matrix and the determinism rules that make it unit-testable.
 tags: [context, budget, prompts, learn-room, v0.1.0]
 status: stable
-generated: { by: claude-code/opus-5.5, at: 2026-10-04T19:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:00:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -24,9 +24,9 @@ actions that trigger each task are in [learn-room](/specs/learn-room.md).
 
 # Budget and estimation
 
-- **CA-10** The map budget is **12,000 tokens**. It is configurable in Learn settings (advanced) within **2,000 to 100,000**, default 12,000. It is a per-app setting, not per subject.
+- **CA-10** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) On an endpoint model the budget is also capped by the model's context size, less the system prompt, dialogue and room for the reply; the map shrinks through the reduced form, never by cutting the prompt, and a prompt that still does not fit fails as `context-too-long`, CE-31, CE-33.)* The map budget is **12,000 tokens**. It is configurable in Learn settings (advanced) within **2,000 to 100,000**, default 12,000. It is a per-app setting, not per subject.
 - **CA-11** Tokens MUST be estimated as `ceil(chars / 3)` where `chars` is the JavaScript string length. No tokenizer is used. The estimate only has to be conservative: it over-counts English prose by roughly 30 % (real text is about 4 chars per token), so the real map stays under the budget; for code and non-Latin scripts it is close to real. The real counts are the provider's, recorded in the log.
-- **CA-12** The budget concerns only Lantern's prompt. Every CLI call also carries about 13k tokens of the CLI's own baseline (cache creation, measured with `--tools ""` and a one-line prompt), which is outside the budget and not estimated. An order of magnitude for one call: baseline 13k + system prompt about 1.2k + map at most 12k + clips at most about 3k + dialogue. Dialogue is not budgeted (CA-33).
+- **CA-12** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) The CLI baseline applies to Claude Code calls only; endpoint calls carry none.)* The budget concerns only Lantern's prompt. Every CLI call also carries about 13k tokens of the CLI's own baseline (cache creation, measured with `--tools ""` and a one-line prompt), which is outside the budget and not estimated. An order of magnitude for one call: baseline 13k + system prompt about 1.2k + map at most 12k + clips at most about 3k + dialogue. Dialogue is not budgeted (CA-33).
 
 # Outline format
 

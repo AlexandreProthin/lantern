@@ -333,7 +333,7 @@
       "id": "custom-endpoints",
       "title": "Custom endpoints",
       "area": "endpoints",
-      "status": "review",
+      "status": "agreed",
       "file": "specs/custom-endpoints.md",
       "summary": "An OpenAI-compatible provider for local servers (Ollama, llama.cpp) then cloud APIs (NVIDIA first): endpoints, models, context, errors, keys, privacy.",
       "questions": [

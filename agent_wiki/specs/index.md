@@ -26,4 +26,4 @@ Stable specs from the spec workshop, rounds 1–3 (2026-10-01/02), agreed with t
 * [Choose room](choose-room.md) - The second room: from knowing nothing to a reasoned choice; needs, criteria, shortlist, sources.
 * [Choose protocol](choose-protocol.md) - Choose's data under lantern/2, the choose-1 prompts and blocks, context with needs and board, evals (B2).
 * [Companion](companion.md) - Amber, the identity's little lantern in the app: placement and moving, tips, guide, Ask Amber, gestures, calm; optional (workshop rounds 8–9, agreed 2026-10-16).
-* [Custom endpoints](custom-endpoints.md) - Rounds 10–11, awaiting agreement: one OpenAI-compatible provider for local servers, then cloud APIs with keys; the Claude Code path unchanged.
+* [Custom endpoints](custom-endpoints.md) - One OpenAI-compatible provider for local servers, then cloud APIs with keys; the Claude Code path unchanged (rounds 10–11, agreed 2026-10-17).

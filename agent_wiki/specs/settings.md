@@ -4,7 +4,7 @@ title: Settings
 description: Every v0.1.0 setting with type, default, validation and effect; the app-side settings file; the panel structure; the library folder change flow; the provider status UI.
 tags: [settings, config, provider, library]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:00:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -20,7 +20,8 @@ the settings below only supply their **defaults**.
 |---|---|---|---|---|---|
 | General | `library.path` | absolute path | `Documents/Lantern` | must exist or be creatable, writable; not inside the app install dir | via the change flow (SE-30 to SE-36) |
 | General | `user.displayName` | string | Windows user name | trimmed, 1–40 chars; empty resets to the default | new edits and turns only; stored names on existing content are not rewritten |
-| Provider | `provider.defaultModel` | string | `opus` | an entry of the model list (SE-48) or free-text id, 1–100 chars, `[A-Za-z0-9._:-]` | new subjects; existing subjects keep their own model |
+| Provider | `provider.defaultModel` | string | `opus` | an entry of the model list (SE-48) or free-text id, 1–100 chars, `[A-Za-z0-9._:/-]` (`/` added 2026-10-17 for endpoint ids such as `nvidia:google/gemma-…`) | new subjects; existing subjects keep their own model |
+| Provider | `provider.endpoints` | array | `[]` | each `{id, name, preset, baseUrl, lanConfirmed, models: [{id, pinned, contextSize}]}`; no key, ever (SE-7) | immediate; the Endpoints list ([custom-endpoints](/specs/custom-endpoints.md) CE-20 to CE-24). *Added 2026-10-17.* |
 | Provider | `provider.defaultEffort` | enum | `medium` | `low`/`medium`/`high`/`xhigh`/`max` | new subjects; existing subjects keep their own effort |
 | Learn room | `learn.defaultTone` | enum or text | `curious` | preset (`eli5`, `curious`, `student`, `engineer`, `expert`) or custom text up to 300 chars | new subjects; a subject's tone is changed in its subject menu (opened from the title in the header; [rooms-spaces](/specs/rooms-spaces.md) RS-15) |
 | Learn room | `learn.contextBudget` | integer (advanced) | 12000 | 2000–100000 tokens | next generation (the map part only; the CLI's own ~13k baseline is extra) |
@@ -57,7 +58,7 @@ The last-opened times and the recents list are **not** in this file: they live i
 - **SE-4** Unknown keys MUST be preserved on read and write, so a newer or other-room settings section is never lost.
 - **SE-5** A missing, empty or corrupt file MUST yield defaults, keep the corrupt file as `settings.json.corrupt-<timestamp>`, and show a toast; the app MUST always start.
 - **SE-6** Each value MUST be validated on read and on change; an invalid stored value falls back to its default without discarding the others.
-- **SE-7** The file MUST NOT contain secrets (API keys are Later and get their own spec: [inference-provider](/specs/inference-provider.md), IP-63).
+- **SE-7** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) Endpoint API keys live in Windows Credential Manager, CE-70; `provider.endpoints` holds no key.)* The file MUST NOT contain secrets (API keys are Later and get their own spec: [inference-provider](/specs/inference-provider.md), IP-63).
 
 # Panel
 
@@ -92,7 +93,7 @@ Moving is offered, never forced.
 
 The status area in **Provider** shows what the Claude Code CLI provider ([inference-provider](/specs/inference-provider.md)) can do now.
 
-- **SE-40** The section MUST show: *Found / Not found* with the located path, the version, and *Signed in / Not signed in / Not tested yet*.
+- **SE-40** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) This status is the *Claude Code* entry. The Endpoints list follows it with one row per endpoint and its own *Test* on one model at a time, CE-20, CE-24. With an endpoint set and no Claude Code installed, the *not installed* banner shows only when a Claude Code model is picked or used, CE-26.)* The section MUST show: *Found / Not found* with the located path, the version, and *Signed in / Not signed in / Not tested yet*.
 - **SE-41** The *Test* button MUST run the tiny Opus 5.5 call of IP-41 (no Haiku, 2026-10-15) and show the result: resolved model, duration, or the typed error with its fix-it message. There MUST be no automatic call at startup.
 - **SE-42** Until a test or a real generation has run in the session, the login status MUST read *Not tested yet*; a successful or failed generation updates it.
 - **SE-43** A failure MUST show a fix-it message and a single action; the user MUST never need a terminal to understand it. Signing in is never done by Lantern in v0.1.0: the user follows step-by-step instructions (SE-47).
@@ -110,8 +111,8 @@ The status area in **Provider** shows what the Claude Code CLI provider ([infere
 - **SE-44** *Details* MUST show the raw output locally and a *Copy* button; nothing is sent anywhere.
 - **SE-45** The same fix-it messages MUST be used when a generation fails in the Learn room (a banner on the node), so the user sees one vocabulary.
 - **SE-47** v0.1.0 does **not** open the sign-in for the user ([decision](/decisions/cli-signin-instructions-only.md)). When the CLI is not installed or not signed in, Settings → Provider and the frame banner ([inference-provider](/specs/inference-provider.md) IP-44) MUST show clear **step-by-step instructions** with a *Check again* button: for *not installed*, a link to the Claude Code install page and the install steps; for *not signed in*, how to sign in to Claude Code (start Claude Code once, follow its browser sign-in, come back). *Check again* runs the *Test* call. There MUST be no *Sign in to Claude Code* button in v0.1.0 (Later: Lantern opens the sign-in for you). The one-time sign-in is the only step that leaves the UI (AC-6).
-- **SE-46** The default model field MUST offer the model list (SE-48) as choices and accept free text; changing it never triggers a call.
-- **SE-48** The **model list** is static, kept in one place in the code and shared by every model picker (Settings → Provider, Welcome WG-2, the subject menu RS-15). It holds, in this order: the aliases `opus`, `sonnet`, `haiku` (shown as *Opus (latest)*, *Sonnet (latest)*, *Haiku (latest)*), then `claude-fable-5-1`, `claude-opus-5-5`, `claude-opus-5`, `claude-opus-4-8`, `claude-sonnet-5-5`, `claude-sonnet-5`, `claude-haiku-5-5`, `claude-haiku-4-5` (shown as *Fable 5.1*, *Opus 5.5*, …). The value stored and sent to the CLI is the alias or id itself. A model that is not in the list stays reachable as free text, so a new model needs no release. *Added 2026-10-05 (v0.1.1 B3), list validated by the user.*
+- **SE-46** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) The choices include every pinned endpoint model, CE-22.)* The default model field MUST offer the model list (SE-48) as choices and accept free text; changing it never triggers a call.
+- **SE-48** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) Every picker groups models by endpoint: this static list under *Claude Code*, first and in this order, then each endpoint's pinned models. An endpoint model is stored as `<endpointId>:<modelId>`; a value with no prefix is a Claude Code model, so nothing stored changes meaning. With no endpoint set, the pickers look as before. CE-21 to CE-23.)* The **model list** is static, kept in one place in the code and shared by every model picker (Settings → Provider, Welcome WG-2, the subject menu RS-15). It holds, in this order: the aliases `opus`, `sonnet`, `haiku` (shown as *Opus (latest)*, *Sonnet (latest)*, *Haiku (latest)*), then `claude-fable-5-1`, `claude-opus-5-5`, `claude-opus-5`, `claude-opus-4-8`, `claude-sonnet-5-5`, `claude-sonnet-5`, `claude-haiku-5-5`, `claude-haiku-4-5` (shown as *Fable 5.1*, *Opus 5.5*, …). The value stored and sent to the CLI is the alias or id itself. A model that is not in the list stays reachable as free text, so a new model needs no release. *Added 2026-10-05 (v0.1.1 B3), list validated by the user.*
 
 # App state
 

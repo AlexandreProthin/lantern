@@ -4,7 +4,7 @@ title: Inference provider contract
 description: The technology-neutral provider contract, the Claude Code CLI implementation, its error taxonomy, detection, concurrency, timeouts, security and testability.
 tags: [llm, provider, claude-cli, errors, testing]
 status: stable
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-02T11:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:00:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -47,7 +47,7 @@ API, local or other provider MUST fit without changing callers.
 
 ## Error taxonomy
 
-- **IP-10** Every failure MUST map to exactly one of the types below. Messages shown to the user come from the app, not from raw CLI output; the raw output MUST be available under *Details* for diagnosis.
+- **IP-10** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) Endpoints add `unreachable`, `key-rejected` and `context-too-long` and map HTTP failures to this vocabulary, CE-40. The CLI types are unchanged.)* Every failure MUST map to exactly one of the types below. Messages shown to the user come from the app, not from raw CLI output; the raw output MUST be available under *Details* for diagnosis.
 
 | Type | Detected from the CLI | What the user sees |
 |---|---|---|
@@ -65,7 +65,7 @@ API, local or other provider MUST fit without changing callers.
 
 # The ClaudeCliProvider
 
-Implementation of the contract for v0.1.0. It is the only provider.
+Implementation of the contract for v0.1.0. *(Amended 2026-10-17.)* It is no longer the only provider: endpoints (local servers, then cloud APIs) implement the same contract over HTTP, as [custom-endpoints](/specs/custom-endpoints.md) specifies. Everything in this section stays specific to the CLI.
 
 ## Process
 
@@ -108,14 +108,14 @@ Used by the Settings status and by the first-call error path.
 # Timeouts
 
 - **IP-30** There MUST be no limit on total time: latency is accepted ([latency-masked-not-reduced](/decisions/latency-masked-not-reduced.md)).
-- **IP-31** A stall timeout MUST apply: if no stream event of any kind arrives for 120 s, the app kills the process tree and fails with `protocol` (stalled). Extended thinking emits events while it works, so a quiet stream really is a stall.
+- **IP-31** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) On endpoints the stall clock starts at the first byte, since loading a local model can take a minute, CE-41.)* A stall timeout MUST apply: if no stream event of any kind arrives for 120 s, the app kills the process tree and fails with `protocol` (stalled). Extended thinking emits events while it works, so a quiet stream really is a stall.
 
 # Security
 
 - **IP-60** The CLI MUST run with no tools, in safe mode, with strict MCP config and from a temp directory, so it can read nothing of the user's files and runs no user configuration. *(Amended 2026-10-13, v0.2.0 A4, [decision](/decisions/choose-web-tools.md).)* The one exception is IP-20's web tools for the Choose room's research tasks: WebSearch and WebFetch only, never a file, shell or MCP tool.
 - **IP-61** Prompts MUST NOT contain secrets: they hold only the subject content and the app's own prompt text. The app MUST NOT put the display name or paths into prompts beyond what the room specs define.
 - **IP-62** Raw stderr and results MUST NOT be sent anywhere; they are shown locally under *Details* only.
-- **IP-63** API keys are Later. They get their own security spec (storage in the OS credential store, never in settings.json or subject files) before any API provider ships.
+- **IP-63** API keys get their own security rules before any API provider ships. *(Amended 2026-10-17.)* Those rules are [custom-endpoints](/specs/custom-endpoints.md) CE-70 to CE-76 (Windows Credential Manager, never in settings.json or subject files, never sent back to the webview), built in the cloud version.
 
 # Testability
 

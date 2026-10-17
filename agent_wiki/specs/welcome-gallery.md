@@ -4,7 +4,7 @@ title: Welcome and Gallery
 description: The Learn room's two library spaces - Welcome (start or continue a subject) and Gallery (browse all subjects with stats) - and the progress definitions both share.
 tags: [welcome, gallery, library, progress, learn-room]
 status: stable
-generated: { by: claude-code/opus-5.5, at: 2026-10-04T19:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:00:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -180,7 +180,7 @@ are computed from the room visit of the room (`learn`) and never stored
   `understood`** state; **understood** = nodes in `understood`, split by `understoodBy` into
   *demonstrated* and *self*; **dark** = the `open` nodes, which equals total − lit. Progress is
   understood / total, 0 when total is 0.
-- **WG-31** **Tokens spent** = the sum over every record of the generation log, whatever its
+- **WG-31** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) Once a local token has been spent, the stats hover and the Gallery show Claude and local tokens on separate lines; cloud endpoints count with Claude. Until then the figures look as before, CE-53.)* **Tokens spent** = the sum over every record of the generation log, whatever its
   outcome (ok, cancelled, error), of `usage.input + usage.output`. `usage.output` already
   includes thinking tokens, and `cacheRead` / `cacheWrite` are not counted, since they are
   provider overhead (this includes the CLI's own ~13k baseline). Shown as *input in / output out* (*48.3k in / 21.0k out*) with a compact
