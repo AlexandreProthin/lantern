@@ -2,6 +2,7 @@
 
 ## 2026-10-17
 
+* **Custom endpoints, local version accepted**: the user passed `app/ACCEPTANCE-ENDPOINTS.md` in the preview installer (27 of 27). Open: whether to release it now or with the cloud version (CE-5) ([plan](/plans/custom-endpoints-local.md)).
 * **Custom endpoints on its feature branch**: by the user, the work moved to `claude/lantern-custom-endpoints` (the worktree branch renamed, nothing pushed), and a preview installer was built for `app/ACCEPTANCE-ENDPOINTS.md` ([plan](/plans/custom-endpoints-local.md)).
 * **Custom endpoints, slice 8 checks done**: every suite passes, apart from the known animation flake; the real Ollama and Claude CLI tests pass too. The Claude Code regression pass in the desktop build (*Test*, an Opus intro, Ask Amber on Haiku) matches v0.4.0. Two error wordings were fixed on the way (the LAN refusal, *Fetch models* errors). `app/ACCEPTANCE-ENDPOINTS.md` waits for the user ([plan](/plans/custom-endpoints-local.md)).
 * **Custom endpoints, slice 7 done**: one error vocabulary (`errorMessage`). Claude Code failures read as before; endpoint failures name the server and say what to do (start it, `ollama pull`, raise the size). The panel and Amber say a local model is loading while there are no words yet, and Choose says research needs Claude Code when it is missing. 205 TS tests and Playwright 97/2 pass. The real desktop errors are left for acceptance ([plan](/plans/custom-endpoints-local.md)).

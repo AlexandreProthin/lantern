@@ -369,6 +369,9 @@ user, CPU only on this machine. Fixtures are recorded against it first.
   `claude/lantern-custom-endpoints`, with its 14 commits, in the same worktree; nothing pushed. Preview
   installer built from it, version 0.4.0: `app/src-tauri/target/release/bundle/preview/Lantern_0.4.0-preview-202610172010_x64-setup.exe (5,330,556 bytes, about 91 KB more than v0.4.0's 5,239,744)`. Next: the user runs the checklist, then the
   release question (CE-5); only the user merges into `master`.
+- **Accepted by the user 2026-10-17** in that preview installer: `app/ACCEPTANCE-ENDPOINTS.md` fully
+  ticked (27 of 27, the optional run without Claude Code included), no notes. Slices 0 to 8 are done.
+  Next: the user's answer to CE-5 (release the local version now, or wait and release it with cloud).
 
 # Risks to retire early
 
