@@ -101,7 +101,14 @@ fn stream_errors_and_served_model_names_echoing_the_key_leak_nothing() {
         format!("HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nConnection: close\r\n\r\ndata: {}\n\n", serde_json::json!({"model": format!("served-{k}"), "error": {"message": format!("bad header {h}")}})) });
     let key = fake(8); plant("keys-stream", &base["http://".len()..], &key);
     let err = loopback(|| call(endpoint("keys-stream", "custom", &format!("{base}/v1")))).unwrap_err();
-    no_key(&err.details, &key); no_key(&err.model, &key); assert!(err.model.contains("[key]"), "{}", err.model);
+    no_key(&err.details, &key); no_key(&err.model, &key);
+    // CE-27: a reply whose served model name holds the key.
+    let (base, _rx) = serve(|raw| { let k = header_line(raw)["authorization: bearer ".len()..].to_string(); let ev = |d: serde_json::Value| format!("data: {d}\n\n");
+        format!("HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nConnection: close\r\n\r\n{}{}data: [DONE]\n\n",
+            ev(serde_json::json!({"model": format!("served-{k}"), "choices": [{"delta": {"content": "ok"}}]})), ev(serde_json::json!({"model": "x", "choices": [{"delta": {}, "finish_reason": "stop"}]}))) });
+    plant("keys-served", &base["http://".len()..], &key);
+    let c = loopback(|| call(endpoint("keys-served", "custom", &format!("{base}/v1")))).unwrap();
+    let served = c.served_model.unwrap(); no_key(&served, &key); assert_eq!(served, "served-[key]"); assert_eq!(c.model, "keys-served:nvidia/nemotron");
 }
 #[test]
 fn transport_errors_leak_nothing() {

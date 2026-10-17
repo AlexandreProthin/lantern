@@ -172,3 +172,70 @@ fn real_ollama_stream_models_and_info() {
     let mut seen = String::new(); let c = EndpointProvider::new(e).stream(&req, Arc::new(AtomicBool::new(false)), &mut |ev| if let Streamed::Text(t) = ev { seen.push_str(t) }).unwrap();
     assert_eq!(c.text, seen); assert!(c.text.contains("Lantern")); assert_eq!(c.model, "ollama:gemma4:e2b"); assert!(c.usage.output > 0);
 }
+
+// Cloud slice 2: the preset table and NVIDIA's recordings.
+fn nvidia() -> Endpoint { Endpoint { id: "nvidia".into(), preset: "nvidia".into(), base_url: "https://integrate.api.nvidia.com/v1".into(), context_size: None, thinking: Some("off".into()), lan_confirmed: false } }
+const NEMOTRON: &str = "nvidia/nemotron-3.5-super-vl-120b-a12b";
+#[test]
+fn the_preset_table_says_what_each_preset_does() {
+    let c = |p: &str| caps(p);
+    assert_eq!((c("ollama").format, c("ollama").info, c("ollama").key), (Format::Ndjson, Info::OllamaShow, KeyNeed::No));
+    assert_eq!((c("llamacpp").format, c("llamacpp").info), (Format::Sse, Info::LlamaProps));
+    assert_eq!((c("lmstudio").info, c("lmstudio").key), (Info::None, KeyNeed::No));
+    assert_eq!(c("custom").key, KeyNeed::Optional);
+    assert_eq!(c("nvidia"), Caps { format: Format::Sse, key: KeyNeed::Required, info: Info::None, reasoning_effort: false, chat_404_is_model: true });
+    for p in ["ollama", "llamacpp", "lmstudio", "custom"] { assert!(c(p).reasoning_effort && !c(p).chat_404_is_model, "{p}"); }
+}
+#[test]
+fn local_preset_request_bodies_are_pinned_byte_for_byte() {
+    let mut req = request(); req.system = "S".into(); req.prompt = "P".into(); req.model = Some("m".into());
+    let at = |preset: &str, thinking: Option<&str>, size: Option<u64>| body(&Endpoint { id: "x".into(), preset: preset.into(), base_url: "http://localhost:1/v1".into(), context_size: size, thinking: thinking.map(String::from), lan_confirmed: false }, &req).to_string();
+    let sse = r#"{"messages":[{"content":"S","role":"system"},{"content":"P","role":"user"}],"model":"m","reasoning_effort":"none","stream":true,"stream_options":{"include_usage":true}}"#;
+    for p in ["llamacpp", "lmstudio", "custom"] { assert_eq!(at(p, None, Some(4096)), sse, "{p}"); }
+    assert_eq!(at("custom", Some("on"), None), sse.replace(r#""reasoning_effort":"none","#, ""));
+    assert_eq!(at("ollama", None, Some(8192)), r#"{"messages":[{"content":"S","role":"system"},{"content":"P","role":"user"}],"model":"m","options":{"num_ctx":8192},"stream":true,"think":false}"#);
+    // NVIDIA refuses `reasoning_effort: "none"` (slice 0), so thinking Off sends nothing for it.
+    assert_eq!(at("nvidia", Some("off"), None), sse.replace(r#""reasoning_effort":"none","#, ""));
+}
+#[test]
+fn nvidia_streams_drop_reasoning_and_read_its_usage() {
+    let (p, seen) = replay(Format::Sse, "nvidia-compat-ok");
+    assert!(p.done); assert_eq!(p.text, seen); assert!(seen.trim_end().ends_with("</options>"), "{seen}"); assert!(!seen.contains("The user wants"));
+    assert_eq!(p.model, "private/nvidia/nemotron-3.5-super-120b-a12b");
+    let (u, estimated) = p.usage(&request()); assert!(!estimated); assert_eq!((u.input, u.output, u.thinking), (95, 1006, 744));
+    // Usage comes in the stream even without `include_usage`.
+    let (p, _) = replay(Format::Sse, "nvidia-compat-no-usage"); let (u, estimated) = p.usage(&request()); assert!(!estimated && u.thinking > 0 && u.thinking < u.output, "{u:?}");
+}
+#[test]
+fn nvidia_errors_map_to_the_vocabulary() {
+    let kind = |e: &Endpoint, s, b: &str| format!("{:?}", classify_chat(e, s, b));
+    assert_eq!(kind(&nvidia(), 404, &fixture("nvidia-compat-model-missing")), "ModelUnknown");
+    assert_eq!(kind(&compat("https://example.com/v1"), 404, &fixture("nvidia-compat-model-missing")), "Unreachable");
+    assert_eq!(kind(&nvidia(), 403, &fixture("nvidia-bad-key")), "KeyRejected");
+    assert_eq!(kind(&nvidia(), 500, &fixture("nvidia-server-error")), "ProcessCrashed");
+    assert_eq!(kind(&nvidia(), 429, "Too Many Requests (retry after 20)"), "UsageLimit");
+    let v: Value = serde_json::from_str(&fixture("nvidia-models")).unwrap(); let ids: Vec<&str> = v["data"].as_array().unwrap().iter().filter_map(|m| m["id"].as_str()).collect();
+    assert_eq!(ids.len(), 81); assert!(ids.contains(&NEMOTRON));
+    assert_eq!(model_info(&nvidia(), NEMOTRON).unwrap(), ModelInfo::default());
+}
+#[test]
+fn nvidia_without_a_key_fails_before_sending() {
+    let mut e = nvidia(); e.id = "nvidia-nokey".into();
+    let mut req = request(); req.model = Some(NEMOTRON.into());
+    let err = EndpointProvider::new(e).stream(&req, Arc::new(AtomicBool::new(false)), &mut |_| {}).unwrap_err();
+    assert!(matches!(err.kind, ErrorKind::KeyRejected) && err.details.contains("needs an API key"), "{err:?}");
+}
+#[test]
+fn the_model_asked_for_is_kept_and_a_different_served_name_is_noted() {
+    // CE-27: NVIDIA's recorded reply names another model; served here over loopback as a Custom URL.
+    let body = fixture("nvidia-compat-ok"); let head = "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nConnection: close\r\n\r\n";
+    let base = serve(head, vec![(0, body)]);
+    let mut req = request(); req.model = Some(NEMOTRON.into());
+    let c = EndpointProvider::new(compat(&format!("{base}/v1"))).stream(&req, Arc::new(AtomicBool::new(false)), &mut |_| {}).unwrap();
+    assert_eq!(c.model, format!("local:{NEMOTRON}")); assert_eq!(c.served_model.as_deref(), Some("private/nvidia/nemotron-3.5-super-120b-a12b"));
+    let json = serde_json::to_value(&c).unwrap(); assert_eq!(json["servedModel"], "private/nvidia/nemotron-3.5-super-120b-a12b");
+    // The same name served: nothing noted.
+    let base = serve(NDJSON, vec![(0, line("ok")), (0, done())]);
+    let c = run(native_at(base), Duration::from_secs(5), Arc::new(AtomicBool::new(false))).0.unwrap();
+    assert!(c.served_model.is_none() && serde_json::to_value(&c).unwrap().get("servedModel").is_none());
+}

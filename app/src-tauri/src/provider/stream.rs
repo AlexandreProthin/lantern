@@ -56,6 +56,6 @@ impl StreamParser {
         }
         if self.model.is_empty() { return Err(self.error(ErrorKind::Protocol, "Missing resolved model in system/init".into(), elapsed)); }
         if self.text.is_empty() { if let Some(text) = result["result"].as_str() { self.text = text.into(); on_text(text); } }
-        Ok(Completion { text: self.text.clone(), model: self.model.clone(), usage: self.usage(), duration_ms: result["duration_ms"].as_u64().unwrap_or(elapsed.as_millis() as u64), cost_usd: result["total_cost_usd"].as_f64(), tool_calls: self.tool_calls(), outcome: "ok".into(), resolved_effort: effort, usage_estimated: None })
+        Ok(Completion { text: self.text.clone(), model: self.model.clone(), usage: self.usage(), duration_ms: result["duration_ms"].as_u64().unwrap_or(elapsed.as_millis() as u64), cost_usd: result["total_cost_usd"].as_f64(), tool_calls: self.tool_calls(), outcome: "ok".into(), resolved_effort: effort, usage_estimated: None, served_model: None })
     }
 }

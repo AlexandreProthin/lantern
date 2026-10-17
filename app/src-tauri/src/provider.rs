@@ -24,7 +24,9 @@ pub enum ErrorKind { NotInstalled, NotLoggedIn, UsageLimit, ModelUnknown, Networ
 pub struct Completion { pub text: String, pub model: String, pub usage: Usage, pub duration_ms: u64,
     pub cost_usd: Option<f64>, #[serde(skip_serializing_if = "Option::is_none")] pub tool_calls: ToolCalls, pub outcome: String, pub resolved_effort: Option<String>,
     /// CE-50: the usage is Lantern's estimate, the server reported none (endpoints only).
-    #[serde(default, skip_serializing_if = "Option::is_none")] pub usage_estimated: Option<bool> }
+    #[serde(default, skip_serializing_if = "Option::is_none")] pub usage_estimated: Option<bool>,
+    /// CE-27: the name the server answered with, when it is not the model asked for (endpoints only).
+    #[serde(default, skip_serializing_if = "Option::is_none")] pub served_model: Option<String> }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProviderError { pub kind: ErrorKind, pub details: String, pub model: String, pub usage: Usage, pub duration_ms: u64,

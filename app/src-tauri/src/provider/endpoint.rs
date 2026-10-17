@@ -14,8 +14,32 @@ pub struct Endpoint { pub id: String, pub preset: String, pub base_url: String, 
 /// CE-32: the Ollama preset streams its chat through the native API (NDJSON); every other preset uses SSE.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Format { Sse, Ndjson }
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum KeyNeed { No, Optional, Required }
+/// CE-30: where a model's context size and thinking come from.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Info { OllamaShow, LlamaProps, None }
+/// CE-12, CE-52, cloud slice 2: what each preset does differently, in one place; `frame/endpoints.ts` mirrors it (`PRESET_CAPS`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Caps { pub format: Format, pub key: KeyNeed, pub info: Info,
+    /// Whether thinking *Off* may be sent as `reasoning_effort: "none"`: NVIDIA's Nemotron answers it with a 500 (slice 0).
+    pub reasoning_effort: bool,
+    /// NVIDIA answers an unknown model with a bare `404 page not found` on the chat route.
+    pub chat_404_is_model: bool }
+pub fn caps(preset: &str) -> Caps {
+    let compat = Caps { format: Format::Sse, key: KeyNeed::No, info: Info::None, reasoning_effort: true, chat_404_is_model: false };
+    match preset {
+        "ollama" => Caps { format: Format::Ndjson, info: Info::OllamaShow, ..compat },
+        "llamacpp" => Caps { info: Info::LlamaProps, ..compat },
+        "lmstudio" => compat,
+        "nvidia" => Caps { key: KeyNeed::Required, reasoning_effort: false, chat_404_is_model: true, ..compat },
+        // A Custom URL may carry a key, over https only (CE-72).
+        _ => Caps { key: KeyNeed::Optional, ..compat },
+    }
+}
 impl Endpoint {
-    pub fn format(&self) -> Format { if self.preset == "ollama" { Format::Ndjson } else { Format::Sse } }
+    pub fn caps(&self) -> Caps { caps(&self.preset) }
+    pub fn format(&self) -> Format { self.caps().format }
     fn base(&self) -> &str { self.base_url.trim_end_matches('/') }
     /// The server root for native routes: the base URL without its `/v1`.
     fn root(&self) -> &str { let b = self.base(); b.strip_suffix("/v1").unwrap_or(b) }
@@ -57,7 +81,7 @@ pub fn body(e: &Endpoint, req: &Request) -> Value {
         }
         Format::Sse => {
             let mut b = json!({"model": model, "messages": messages, "stream": true, "stream_options": {"include_usage": true}});
-            if e.thinking() == "off" { b["reasoning_effort"] = json!("none"); }
+            if e.thinking() == "off" && e.caps().reasoning_effort { b["reasoning_effort"] = json!("none"); }
             b
         }
     }
@@ -153,6 +177,10 @@ pub fn classify_http(status: u16, body: &str) -> ErrorKind {
         _ => ErrorKind::Protocol,
     }
 }
+/// The chat route's HTTP failures, with the preset's own rules first.
+pub fn classify_chat(e: &Endpoint, status: u16, body: &str) -> ErrorKind {
+    if status == 404 && e.caps().chat_404_is_model { ErrorKind::ModelUnknown } else { classify_http(status, body) }
+}
 /// An error reported inside a stream that has already started.
 pub fn classify_stream_error(text: &str) -> ErrorKind {
     let t = text.to_lowercase();
@@ -186,7 +214,7 @@ impl InferenceProvider for EndpointProvider {
     fn stream(&self, req: &Request, cancel: Cancel, on_event: &mut dyn FnMut(Streamed)) -> Result<Completion, ProviderError> {
         let mut key = None;
         let result = self.call(req, cancel, on_event, &mut key); let k = key.as_deref().map(String::as_str);
-        result.map(|mut c| { c.model = keys::redact(&c.model, k); c })
+        result.map(|mut c| { c.model = keys::redact(&c.model, k); c.served_model = c.served_model.map(|m| keys::redact(&m, k)); c })
             .map_err(|mut err| { err.details = keys::redact(&err.details, k); err.model = keys::redact(&err.model, k); err })
     }
 }
@@ -203,6 +231,7 @@ impl EndpointProvider {
         check_url(e).map_err(|d| fail(ErrorKind::Protocol, d, &named(""), Usage::default()))?;
         let chat = e.chat_url(); let payload = body(e, req).to_string();
         let authorization = auth(e, &chat, key).map_err(|(k, d)| fail(k, d, &named(""), Usage::default()))?;
+        if authorization.is_none() && e.caps().key == KeyNeed::Required { return Err(fail(ErrorKind::KeyRejected, "This endpoint needs an API key, and none is saved".into(), &named(""), Usage::default())); }
         let (tx, rx) = mpsc::sync_channel::<Msg>(256);
         // The reader owns the connection; once this call returns, its next send fails and dropping the response closes it (CE-11).
         let reader = std::thread::spawn(move || {
@@ -231,14 +260,15 @@ impl EndpointProvider {
                 Ok(Msg::Started) => continue,
                 Ok(Msg::Line(l)) => { last_event = Some(Instant::now()); parser.consume(&l, on_event);
                     if let Some(text) = parser.error.clone() { failure = Some((classify_stream_error(&text), text)); break; } }
-                Ok(Msg::Status(code, text)) => { failure = Some((classify_http(code, &text), format!("HTTP {code}: {text}"))); break; }
+                Ok(Msg::Status(code, text)) => { failure = Some((classify_chat(e, code, &text), format!("HTTP {code}: {text}"))); break; }
                 Ok(Msg::Transport(kind, text)) => { failure = Some((kind, text)); break; }
                 Ok(Msg::End(err)) => { if let Some(err) = err { failure = Some((ErrorKind::Protocol, err)); } break; }
                 Err(mpsc::RecvTimeoutError::Timeout) => continue,
                 Err(mpsc::RecvTimeoutError::Disconnected) => { failure = Some((ErrorKind::Protocol, "The connection ended without a reply".into())); break; }
             }
         }
-        drop(rx); let model = named(&parser.model);
+        // CE-27: the model is the one asked for, so pins, sizes and labels keep matching; a different served name is kept beside it.
+        drop(rx); let model = named(""); let served = (!parser.model.is_empty() && parser.model != asked).then(|| parser.model.clone());
         if let Some((kind, details)) = failure {
             // A cancelled or stalled reader may still be blocked on the socket: it is left to end on its own, never joined.
             drop(reader);
@@ -249,7 +279,7 @@ impl EndpointProvider {
         let (usage, estimated) = parser.usage(req);
         if !parser.done { return Err(fail(ErrorKind::Protocol, format!("The stream ended before the reply was complete; {} events, {} unreadable lines", parser.events, parser.invalid_lines), &model, usage)); }
         Ok(Completion { text: parser.text.clone(), model, usage, duration_ms: parser.server_ms.unwrap_or(start.elapsed().as_millis() as u64), cost_usd: None, tool_calls: None,
-            outcome: "ok".into(), resolved_effort: None, usage_estimated: estimated.then_some(true) })
+            outcome: "ok".into(), resolved_effort: None, usage_estimated: estimated.then_some(true), served_model: served })
     }
 }
 
@@ -263,10 +293,10 @@ pub fn models(e: &Endpoint) -> Result<Vec<String>, (ErrorKind, String)> {
 #[serde(rename_all = "camelCase")]
 pub struct ModelInfo { pub context_size: Option<u64>, pub thinking: Option<bool> }
 pub fn model_info(e: &Endpoint, model: &str) -> Result<ModelInfo, (ErrorKind, String)> {
-    match e.preset.as_str() {
-        "ollama" => Ok(parse_show(&get_json(e, &format!("{}/api/show", e.root()), Some(json!({"model": model})))?)),
-        "llamacpp" => Ok(parse_props(&get_json(e, &format!("{}/props", e.root()), None)?)),
-        _ => Ok(ModelInfo::default()),
+    match e.caps().info {
+        Info::OllamaShow => Ok(parse_show(&get_json(e, &format!("{}/api/show", e.root()), Some(json!({"model": model})))?)),
+        Info::LlamaProps => Ok(parse_props(&get_json(e, &format!("{}/props", e.root()), None)?)),
+        Info::None => Ok(ModelInfo::default()),
     }
 }
 pub fn parse_show(v: &Value) -> ModelInfo {

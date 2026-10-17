@@ -68,8 +68,9 @@ pub fn authorize(id: &str, url: &Url) -> Result<Option<Zeroizing<String>>, (Erro
     Ok(Some(s.key))
 }
 #[cfg(not(test))] fn secure(url: &Url) -> bool { url.scheme() == "https" }
-/// Tests only: lets a thread send a key to its own loopback test server over http, which has no TLS.
-#[cfg(test)] thread_local! { pub static LOOPBACK_HTTP: std::cell::Cell<bool> = const { std::cell::Cell::new(false) }; }
+#[cfg(test)] thread_local! {
+    /// Tests only: lets a thread send a key to its own loopback test server over http, which has no TLS.
+    pub static LOOPBACK_HTTP: std::cell::Cell<bool> = const { std::cell::Cell::new(false) }; }
 #[cfg(test)] fn secure(url: &Url) -> bool { url.scheme() == "https" || (LOOPBACK_HTTP.with(|f| f.get()) && url.host_str() == Some("127.0.0.1")) }
 /// CE-74: the header value is marked sensitive, so reqwest keeps it out of its debug output; the formatted copy is wiped.
 pub fn bearer(key: &str) -> Result<HeaderValue, String> {
