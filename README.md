@@ -128,3 +128,12 @@ Built with **Tauri 2** (Rust) and **Svelte 5 + TypeScript**, the same stack as
   and the planned Think room.
 - **OKF wiki**: the Open Knowledge Format, used for Lantern's own wiki and a candidate
   format for exporting a subject.
+
+## Licence
+
+Lantern is free software, licensed under the
+[GNU General Public License v3.0 or later](LICENSE) (`GPL-3.0-or-later`).
+Copyright (C) 2026 Alexandre Prothin.
+
+The Lantern name and logo, including Amber and the app icons, are not covered by this
+licence: a modified version must not be presented as Lantern.

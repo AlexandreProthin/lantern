@@ -1,6 +1,7 @@
 {
   "name": "lantern",
   "private": true,
+  "license": "GPL-3.0-or-later",
   "version": "0.4.0",
   "type": "module",
   "scripts": {

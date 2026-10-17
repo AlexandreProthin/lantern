@@ -21,7 +21,7 @@ Written 2026-10-17. The why is in [the decision](/decisions/web-demo-prepared-an
    2026-10-17, clear to go public** (see *Pre-public check* below).
 4. **Merged into `master` and pushed** on the user's word, 2026-10-17, before going public (the
    workflow only runs on tags and by hand, so nothing deployed).
-5. **The user** chooses a licence, makes the repository public and sets *Settings → Pages → Source:
+5. Licence chosen: [GPL-3.0-or-later](/decisions/gpl-3-licence.md), 2026-10-17. **The user** makes the repository public and sets *Settings → Pages → Source:
    GitHub Actions*.
 6. Run *Actions → Web demo → Run workflow* once (or wait for the next `v*` tag). Check the site and the
    README link.
@@ -54,7 +54,7 @@ Becomes public with the repository, all judged fine:
 - `.claude/launch.json` (dev server definitions).
 - The tags `poc-final` and `v0.1.0` to `v0.4.0`, the releases, and branch `worktree-web-demo` once pushed.
 
-Open choice for the user: **there is no LICENSE file.** Public without one means *all rights reserved*: anyone may read the code, nobody may reuse it. Add one (MIT, Apache-2.0, GPL…) before or after the switch if reuse should be allowed.
+Licence: the open choice is closed. The root `LICENSE` is GPL-3.0-or-later ([decision](/decisions/gpl-3-licence.md)).
 
 # Side effects of going public
 

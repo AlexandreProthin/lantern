@@ -26,3 +26,4 @@ mark it `status: deprecated` and have the replacement link back to it.
 * [Choose research calls may search the web](choose-web-tools.md) - WebSearch and WebFetch only, for Choose research tasks; no cheaper web model.
 * [lantern/2 makes the format room-neutral](format-lantern-2.md) - Neutral roles, a data container for room fields; Learn files converted.
 * [The web demo replays prepared answers](web-demo-prepared-answers.md) - Free Learn demo on GitHub Pages: scripted tutor, two subjects, release tags.
+* [Lantern is licensed GPL-3.0-or-later](gpl-3-licence.md) - Copyleft keeps forks open and credit stays; name and logo excluded.
