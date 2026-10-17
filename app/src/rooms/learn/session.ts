@@ -8,6 +8,8 @@ import { pendingCheck } from './context';
 import { parseReply, visibleText } from './protocol';
 import type { Task } from './protocol';
 import { taskPrompt } from './prompts';
+import { fitPrompt } from '../../frame/context-fit';
+import { contextSizeOf } from '../../ui/model-choices.svelte';
 export interface Running { nodeId: string; task: Task; text: string; controller: AbortController }
 export interface SessionNotice { nodeId: string; kind: 'directions' | 'error'; count?: number; error?: ProviderError; retry: () => Promise<void> }
 /** LR-1..67: Learn policy. Core operations know nothing of generation or prompts. */
@@ -36,7 +38,8 @@ export class LearnSession {
     }
     const check = checkOverride ?? pendingCheck(v, id);
     const config = cloneJson({ tone: toneOf(v), model: v.model, effort: v.effort });
-    const prompts = taskPrompt(v, task, id, { budgetTokens: this.budgetTokens });
+    // CE-31: on an endpoint model the map also fits the model's context size.
+    const prompts = fitPrompt(budgetTokens => taskPrompt(v, task, id, { budgetTokens }), this.budgetTokens, contextSizeOf(config.model));
     const generationId = newId(), startedAt = now(), started = performance.now();
     const controller = new AbortController(); this.running = { nodeId: id, task, text: '', controller }; this.notice = null; this.render();
     const retryCall = () => this.run(task, id, undefined, task === 'reply', check);

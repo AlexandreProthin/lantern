@@ -11,6 +11,8 @@ import type { CellEntry, Recommendation } from './protocol';
 import { fillTarget } from './context';
 import type { Slot } from './context';
 import { taskPrompt } from './prompts';
+import { fitPrompt } from '../../frame/context-fit';
+import { contextSizeOf } from '../../ui/model-choices.svelte';
 
 /** One call in flight: the main lane (LR-40) or the research lane (CP-41). `progress` is the last tool use (IP-13). */
 export interface Running { nodeId: string; task: Task; text: string; web: boolean; progress: ToolUse | null; controller: AbortController }
@@ -119,7 +121,8 @@ export class ChooseSession {
   /** The shared call: stream, log every outcome (LR-3, DM-32), apply on a copy and swap it in (LR-1). */
   private async call(lane: Running, current: () => boolean, apply: (result: Completion, next: RoomVisit, generationId: string) => void, retry: () => Promise<void>, extra: { turn?: number; target?: Slot[] } = {}): Promise<void> {
     const v = this.visit, id = lane.nodeId, generationId = newId(), startedAt = now(), started = performance.now(), tone = toneOf(v);
-    const prompts = taskPrompt(v, lane.task, id, { budgetTokens: this.budgetTokens, today: this.today(), web: lane.web, ...extra });
+    // CE-31: on an endpoint model the map also fits the model's context size (research runs on Claude Code, CE-55).
+    const prompts = fitPrompt(budgetTokens => taskPrompt(v, lane.task, id, { budgetTokens, today: this.today(), web: lane.web, ...extra }), this.budgetTokens, lane.web ? undefined : contextSizeOf(v.model));
     let raw = '';
     const record = (r: { model: string; usage: Generation['usage']; durationMs: number; costUsd?: number; toolCalls?: Record<string, number> }, outcome: Generation['outcome']): Generation => ({
       id: generationId, nodeId: id, task: lane.task, effort: v.effort, model: r.model || 'unknown', promptVersion: prompts.promptVersion, startedAt,

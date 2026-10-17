@@ -233,10 +233,11 @@ Applied 2026-10-17, each marked *Amended 2026-10-17* in place:
 
 Implementation-time only:
 
-- The context size Lantern sends to Ollama when the model's maximum is far above what the machine can
-  hold: a proposed default of 32k tokens, capped at the model's maximum and editable per model, to
-  confirm with the user's first runs on Gemma 4 E2B. Ollama 0.40.6 ran compatible-API calls at the
-  model's full 131072 when no size was sent, so the size Lantern sends also bounds memory use.
+- *(Settled 2026-10-17, slice 5.)* A size read from Ollama starts at **32k tokens**, capped at the
+  model's maximum and editable per model. Ollama reports the maximum (131072 for Gemma 4 E2B), not what
+  the machine can hold, and ran compatible-API calls at that full size when none was sent. A size read
+  from llama.cpp is its launch size, kept as is. The first real runs on Gemma 4 E2B at 32k worked
+  (slice 4).
 - Each server's exact error wording and events, captured as fixtures (CE-42, CE-90); Ollama's are in
   `app/src-tauri/fixtures/endpoint/` (slice 0).
 - Slice 0's two questions are settled: TP-31 accepts an unclosed final `<options>` array for every

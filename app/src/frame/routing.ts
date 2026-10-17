@@ -1,5 +1,6 @@
 import { isEndpointModel, parseModelId } from '../core/models';
 import { type EndpointConfig, type WireEndpoint, wireEndpoint } from './endpoints';
+import { contextTooLong, promptFits } from './context-fit';
 import { type Completion, type EndpointTransport, type InferenceProvider, ProviderError, type Request, type ToolUse } from './provider';
 
 export type Route = { kind: 'claude'; request: Request } | { kind: 'endpoint'; request: Request; endpoint: WireEndpoint } | { kind: 'missing'; endpointId: string };
@@ -24,6 +25,8 @@ export class RoutingProvider implements InferenceProvider {
     const { endpoints, defaultModel } = this.config(); const r = route(request, endpoints, defaultModel);
     if (r.kind === 'claude') return this.claude.stream(r.request, onText, onTool);
     if (r.kind === 'missing') throw new ProviderError('model-unknown', `No endpoint named “${r.endpointId}” is set up in Settings.`, request.model ?? '');
+    // CE-33: a prompt that cannot fit the model's set context size is refused before it is sent, never cut by the server.
+    if (r.endpoint.contextSize) { const fit = promptFits(r.request.system, r.request.prompt, r.endpoint.contextSize); if (!fit.fits) throw contextTooLong(request.model ?? '', fit.needed, r.endpoint.contextSize); }
     try { const result = await this.transport.streamEndpoint(r.request, r.endpoint, onText); this.reportEndpoint(r.endpoint.id, result); return result; }
     catch (error) { if (error instanceof ProviderError && error.kind !== 'cancelled') this.reportEndpoint(r.endpoint.id, error); throw error; }
   }

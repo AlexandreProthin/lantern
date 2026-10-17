@@ -28,6 +28,13 @@ export function wireEndpoint(e: EndpointConfig, model: string): WireEndpoint {
   const m = e.models.find(x => x.id === model);
   return { id: e.id, preset: e.preset, baseUrl: e.baseUrl, thinking: m?.thinking ?? 'off', lanConfirmed: e.lanConfirmed, ...(m?.contextSize ? { contextSize: m.contextSize } : {}) };
 }
+/**
+ * CE-30, CE-32: Ollama reports a model's maximum (131072 for Gemma 4 E2B), not what the machine can hold, and Lantern
+ * sends the size on every call; so a size read from Ollama starts at 32k, editable. llama.cpp reports the size it was
+ * launched with, which is kept as is.
+ */
+export const OLLAMA_DEFAULT_CONTEXT = 32768;
+export const initialContextSize = (preset: Preset, reported: number) => preset === 'ollama' ? Math.min(reported, OLLAMA_DEFAULT_CONTEXT) : reported;
 /** CE-12: what a preset fills in. */
 export const PRESET_URLS: Record<Preset, string> = { ollama: 'http://localhost:11434/v1', llamacpp: 'http://localhost:8080/v1', lmstudio: 'http://localhost:1234/v1', custom: '' };
 /** A new endpoint from a preset, with an id not yet taken (`ollama`, `ollama-2`, …). */

@@ -1,4 +1,4 @@
-import { displayModel, isEndpointModel } from '../core/models';
+import { displayModel, isEndpointModel, parseModelId } from '../core/models';
 import { endpointNames, type EndpointConfig } from '../frame/endpoints';
 import { strings } from './strings';
 
@@ -12,4 +12,9 @@ export function endpointGroups(endpoints: readonly EndpointConfig[] = modelChoic
 /** CE-25, CE-56: *Ollama · gemma4:e2b · not evaluated* for an endpoint model; a Claude Code model keeps its name. */
 export function endpointAwareName(id: string): string {
   return isEndpointModel(id) ? `${displayModel(id, endpointNames(modelChoices.endpoints))} · ${strings.notEvaluated}` : displayModel(id);
+}
+/** CE-30, CE-31: the context size set for an endpoint model; undefined for a Claude Code model or an unknown size. */
+export function contextSizeOf(id: string): number | undefined {
+  const { endpointId, model } = parseModelId(id);
+  return endpointId === null ? undefined : modelChoices.endpoints.find(e => e.id === endpointId)?.models.find(m => m.id === model)?.contextSize;
 }

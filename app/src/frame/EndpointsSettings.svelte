@@ -1,7 +1,7 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
   import type { Settings } from './settings';
-  import { type EndpointConfig, type EndpointModel, type Preset, PRESETS, endpointsOf, mergeModels, needsLanConfirmation, newEndpoint, wireEndpoint } from './endpoints';
+  import { type EndpointConfig, type EndpointModel, type Preset, PRESETS, endpointsOf, initialContextSize, mergeModels, needsLanConfirmation, newEndpoint, wireEndpoint } from './endpoints';
   import { type FakeEndpointOptions, fakeEndpointAdmin } from './fake-endpoint';
   import { type Completion, type InferenceProvider, ProviderError } from './provider';
   import { strings } from '../ui/strings';
@@ -31,7 +31,7 @@
       // CE-30: each pinned model's context size, from the server where it says.
       for (const m of models.filter(m => m.pinned && !m.contextSize)) {
         try { const info = await admin<{ contextSize?: number }>('endpoint_model_info', { endpoint: wireEndpoint(e, m.id), model: m.id }, () => fakeEndpointAdmin.info());
-          if (info.contextSize) models = models.map(x => x.id === m.id ? { ...x, contextSize: info.contextSize } : x); } catch { /* The size stays editable. */ }
+          if (info.contextSize) { const contextSize = initialContextSize(e.preset, info.contextSize); models = models.map(x => x.id === m.id ? { ...x, contextSize } : x); } } catch { /* The size stays editable. */ }
       }
       update(e.id, x => ({ ...x, models })); note(e.id, strings.modelsFetched(fetched.length));
     } catch (err) { failed(e.id, err); } finally { busy = ''; }

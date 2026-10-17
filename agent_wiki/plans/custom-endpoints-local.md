@@ -259,6 +259,21 @@ user, CPU only on this machine. Fixtures are recorded against it first.
   editable). Confirmed with the user on their first runs, then written into the spec.
 - **Exit:** tests for the cap, the over-long refusal, and a Learn subject large enough to need the
   reduced form on a small context size.
+- **Done 2026-10-17**:
+  - `frame/context-fit.ts`: `fitPrompt` rebuilds a room's prompt with a lower map budget until the
+    whole prompt fits the model's context size, less room for the reply (a quarter of a small window, at
+    most 4096). The map shrinks through the room's own reduced form, and every node stays.
+    `promptFits` uses CA-11's estimate.
+  - Learn's and Choose's sessions build their prompts through it, using the model's size from
+    `contextSizeOf` (`ui/model-choices.svelte.ts`). Choose's web tasks run on Claude Code, so they skip
+    it. A Claude Code model has no size, so its prompt is built exactly as before, which a test pins.
+  - The routing provider refuses an endpoint prompt that still does not fit, before sending, as
+    `context-too-long` with how to raise the size (CE-33). The rooms show it through their usual error
+    notice and log.
+  - The default: a size read from Ollama starts at 32k (`OLLAMA_DEFAULT_CONTEXT`, capped at the model's
+    maximum); llama.cpp's is kept. The spec's open point is settled.
+  - Checks: `npm run check` clean; 199 TS tests (3 new, built on a 300-node Learn subject); Playwright
+    96 passed and 2 skipped.
 
 # Slice 6. The local token line
 

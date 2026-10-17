@@ -42,14 +42,14 @@ test('CE-20/21/24/30/52: add an endpoint, fetch and pin its models, set thinking
   await endpoint.getByRole('button', { name: 'Fetch models' }).click();
   await expect(endpoint.getByTestId('endpoint-status')).toHaveText('2 models on the server.');
   await expect(endpoint.getByRole('checkbox', { name: 'Pinned gemma4:e2b' })).toBeChecked();
-  await expect(endpoint.getByRole('spinbutton', { name: 'Context size gemma4:e2b' })).toHaveValue('131072');
+  await expect(endpoint.getByRole('spinbutton', { name: 'Context size gemma4:e2b' })).toHaveValue('32768');
   await endpoint.getByRole('combobox', { name: 'Thinking qwen3:8b' }).selectOption('on');
   await endpoint.getByRole('checkbox', { name: 'Pinned qwen3:8b' }).uncheck();
   await endpoint.getByRole('button', { name: 'Test', exact: true }).click();
   await expect(endpoint.getByTestId('endpoint-status')).toHaveText(/^Ready · Ollama · gemma4:e2b · \d+ s$/);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('lantern.settings') ?? '{}').provider.endpoints);
   expect(stored).toEqual([{ id: 'ollama', name: 'Ollama', preset: 'ollama', baseUrl: 'http://localhost:11434/v1', lanConfirmed: false, models: [
-    { id: 'gemma4:e2b', pinned: true, thinking: 'off', contextSize: 131072 }, { id: 'qwen3:8b', pinned: false, thinking: 'on', contextSize: 131072 }] }]);
+    { id: 'gemma4:e2b', pinned: true, thinking: 'off', contextSize: 32768 }, { id: 'qwen3:8b', pinned: false, thinking: 'on', contextSize: 32768 }] }]);
   // CE-80: a LAN address asks for the confirmation; changing the URL asks again.
   const url = endpoint.getByRole('textbox', { name: 'Server URL' });
   await url.fill('http://192.168.1.20:11434/v1'); await url.press('Tab');
