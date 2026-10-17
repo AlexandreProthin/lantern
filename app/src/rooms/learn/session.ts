@@ -68,7 +68,7 @@ export class LearnSession {
       }
       if (parsed.branch && !Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(parsed.branch!.title))) addLearnChild(next, id, { ...parsed.branch, kind: 'question', createdBy: 'model' });
       record = { id: generationId, nodeId: id, task, effort: config.effort, data: { tone: config.tone }, model: result.model, promptVersion: prompts.promptVersion, startedAt,
-        durationMs: result.durationMs, usage: result.usage, ...(result.costUsd !== undefined ? { costUsd: result.costUsd } : {}), outcome: 'ok' };
+        durationMs: result.durationMs, usage: result.usage, ...(result.costUsd !== undefined ? { costUsd: result.costUsd } : {}), ...(result.servedModel ? { servedModel: result.servedModel } : {}), outcome: 'ok' };
       next.log.push(record); this.subject.rooms.learn = next;
       if (['intro', 'light', 'more'].includes(task) && count < 3) this.notice = { nodeId: id, kind: 'directions', count, retry: () => this.run('more', id) };
     } catch (e) {

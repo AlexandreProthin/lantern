@@ -21,6 +21,8 @@ export interface Generation {
   id: string; nodeId: string; task: string; model: string; effort: Effort; promptVersion: string; startedAt: string;
   durationMs: number; usage: Usage; costUsd?: number; outcome: 'ok' | 'cancelled' | 'error';
   toolCalls?: Record<string, number>; data?: Data;
+  /** CE-27: the endpoint answered with another model name than `model`, the one asked for. */
+  servedModel?: string;
 }
 export interface RoomVisit {
   model: string; effort: Effort; focusId: string; rootId: string;

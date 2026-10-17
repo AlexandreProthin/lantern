@@ -31,16 +31,16 @@ export class AmberChat {
       if (!text || this.pending !== pending) return;
       pending.answer += text; if (this.phase === 'thinking') this.phase = 'streaming'; this.changed();
     };
-    const record = (outcome: 'ok' | 'cancelled' | 'error', extra: { usage?: ReturnType<typeof zeroUsage>; durationMs?: number; costUsd?: number; model?: string; errorKind?: string }) => {
+    const record = (outcome: 'ok' | 'cancelled' | 'error', extra: { usage?: ReturnType<typeof zeroUsage>; durationMs?: number; costUsd?: number; model?: string; errorKind?: string; servedModel?: string }) => {
       if (gate.open && !gate.tagOk) console.warn('Amber: missing or broken category tag, read as general', requestId);
       void this.log.append({ at, requestId, kind: selection ? 'selection' : 'ask', model: extra.model || model, effort: 'low', promptVersion,
         category: gate.category, tagOk: gate.tagOk, usage: extra.usage ?? zeroUsage(), durationMs: extra.durationMs ?? Math.round(performance.now() - start),
-        ...(extra.costUsd !== undefined ? { costUsd: extra.costUsd } : {}), outcome, ...(extra.errorKind ? { errorKind: extra.errorKind } : {}) }).catch(e => console.warn('Amber log', e));
+        ...(extra.costUsd !== undefined ? { costUsd: extra.costUsd } : {}), outcome, ...(extra.errorKind ? { errorKind: extra.errorKind } : {}), ...(extra.servedModel ? { servedModel: extra.servedModel } : {}) }).catch(e => console.warn('Amber log', e));
     };
     try {
       const result = await this.provider.stream({ requestId, system, prompt, model, effort: 'low', cancel: abort.signal }, chunk => show(gate.push(chunk)));
       show(gate.finish());
-      record('ok', { usage: result.usage, durationMs: result.durationMs, costUsd: result.costUsd, model: result.model });
+      record('ok', { usage: result.usage, durationMs: result.durationMs, costUsd: result.costUsd, model: result.model, servedModel: result.servedModel });
       if (this.pending !== pending) return;
       this.turns = [...this.turns, { question, selection, answer: pending.answer.trim(), category: gate.category as AmberCategory }];
       this.pending = null; this.phase = 'idle';

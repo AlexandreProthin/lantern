@@ -38,7 +38,8 @@
     if (target.author?.kind !== 'model') return '';
     const author = target.author, generation = visit.log.find(g => g.id === author.generationId);
     // IP-3, CE-52: an endpoint model ignores effort, so the line does not show one.
-    return [modelLabel(author.model), isEndpointModel(author.model) ? '' : generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
+    // CE-27: a different name the server answered with is shown beside the model asked for.
+    return [modelLabel(author.model), generation?.servedModel ? strings.servedAs(generation.servedModel) : '', isEndpointModel(author.model) ? '' : generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
   }
   function perform(fn: () => void) { try { fn(); localError = ''; session.touch(); } catch (e) { localError = String(e); } }
   function beginEdit(field: string, target: GraphNode | Turn = node) {

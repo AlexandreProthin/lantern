@@ -80,13 +80,17 @@ export const strings = {
   // CE-20 to CE-26, CE-30, CE-52, CE-80 to CE-82: Settings → Provider → Endpoints.
   claudeCode: 'Claude Code', endpoints: 'Endpoints',
   endpointsHint: 'Models on a server you run, such as Ollama or llama.cpp. Lantern never starts or installs a server; start it yourself.',
-  presetNames: { ollama: 'Ollama', llamacpp: 'llama.cpp', lmstudio: 'LM Studio', custom: 'Custom URL' } as Record<string, string>,
+  presetNames: { ollama: 'Ollama', llamacpp: 'llama.cpp', lmstudio: 'LM Studio', nvidia: 'NVIDIA', custom: 'Custom URL' } as Record<string, string>,
   addEndpoint: 'Add endpoint', endpointName: 'Name', serverUrl: 'Server URL', removeEndpoint: 'Remove', confirmRemoveEndpoint: 'Remove this endpoint',
   lanConfirm: 'This address is a computer on my local network', lanHint: 'Lantern sends plain http:// only to this computer or to a local-network address you confirm; anything else needs https://.',
   fetchModels: 'Fetch models', fetchingModels: 'Fetching models…', noModels: 'No models yet. Start the server, then fetch its models.',
   modelsFetched: (n: number) => `${n} model${n === 1 ? '' : 's'} on the server.`,
   pinned: 'Pinned', model: 'Model', contextSize: 'Context size', thinking: 'Thinking',
   thinkingNames: { off: 'Off', on: 'On', default: 'Model default' } as Record<string, string>,
+  // Cloud slice 0, 2: NVIDIA's Nemotron refuses every way of turning thinking off.
+  thinkingFixed: (name: string) => `${name} does not let Lantern turn thinking off, so its models use their default.`,
+  // CE-27: the server named another model than the one picked.
+  servedAs: (served: string) => `answered as ${served}`,
   thinkingHint: 'Off is fastest. A subject’s effort does not apply to these models.', contextHint: 'Read from the server when it says; larger sizes use more memory.',
   testModel: 'Model to test', testing: 'Testing…',
   // CE-40, CE-41, CE-55: what endpoint failures and waits say.

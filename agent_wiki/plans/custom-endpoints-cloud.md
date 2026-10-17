@@ -161,6 +161,29 @@ The local plan's rules hold. In particular:
   `Retry-After`, and the over-long prompt.
 - **Exit:** fixture tests for NVIDIA's stream, usage and errors; the local presets' request bodies
   unchanged.
+- **Done 2026-10-18**, on the same branch as slice 1, after the user said in the session to go on with the
+  slices that need nothing from them.
+  - Rust `caps(preset)` (`provider/endpoint.rs`) holds each preset's format, key need (`No`, `Optional`,
+    `Required`), the source of model facts, whether thinking *Off* may be sent as
+    `reasoning_effort: "none"`, and NVIDIA's rule that a 404 on the chat route is `model-unknown`
+    (`classify_chat`). `frame/endpoints.ts` mirrors what the frontend needs as `PRESET_CAPS`: the key need
+    and the thinking choices.
+  - NVIDIA: `https://integrate.api.nvidia.com/v1`, models from `/v1/models`, the context size entered by
+    the user (the list reports none). `reasoning_effort` is never sent. Thinking offers *Model default*
+    only, and Settings says NVIDIA cannot turn it off. A stored *Off* reads as *Model default*. A chat call
+    without a saved key fails before sending (`key-rejected`). `Retry-After` was already kept in *Details*.
+  - CE-27: `Completion.model` is now always `<endpointId>:<the id asked for>`, and `servedModel` holds a
+    different name the server answered with. Learn, Choose and Amber's log store it. The node meta line,
+    *Test* and the endpoint's row say *answered as …*. This applies to every endpoint, since a local
+    server answering with the asked name changes nothing. The CLI path only gains `served_model: None`,
+    which never serializes.
+  - The local presets' request bodies are pinned byte for byte, `reasoning_effort` included, so Ollama,
+    llama.cpp, LM Studio and Custom URL send exactly what they did.
+  - Tests: Rust 64 passed, 9 ignored. There are 6 new endpoint tests: the preset table, the pinned bodies,
+    NVIDIA's stream and usage (95 in, 1006 out, 744 thinking), its errors (403, the bare 404, 500, 429, the
+    81 models), the missing key, and the served name. Keys tests now cover a served name holding the key.
+    TS 207 passed. Playwright's endpoints and settings specs pass; one endpoints test timed out on its
+    first, cold run, then passed twice alone.
 
 # Slice 3. Settings: keys, consent, the long catalogue
 

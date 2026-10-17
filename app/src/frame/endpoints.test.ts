@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { defaultSettings, validateSettings } from './settings';
-import { endpointsOf, mergeModels, needsLanConfirmation, newEndpoint, type EndpointConfig } from './endpoints';
+import { PRESET_CAPS, endpointsOf, mergeModels, needsLanConfirmation, newEndpoint, wireEndpoint, type EndpointConfig } from './endpoints';
 
 const ollama: EndpointConfig = { id: 'ollama', name: 'Ollama', preset: 'ollama', baseUrl: 'http://localhost:11434/v1', lanConfirmed: false,
   models: [{ id: 'gemma4:e2b', pinned: true, contextSize: 32768, thinking: 'on' }] };
@@ -31,4 +31,16 @@ test('CE-21: fetching keeps each model’s settings, adds new ones pinned when t
 test('CE-80: plain http to another machine asks for the LAN confirmation', () => {
   for (const url of ['http://localhost:11434/v1', 'http://127.0.0.1:8080/v1', 'http://[::1]:1234/v1', 'https://gpu.example.com/v1', 'not a url']) expect(needsLanConfirmation(url), url).toBe(false);
   for (const url of ['http://192.168.1.20:11434/v1', 'http://gpu-box:11434']) expect(needsLanConfirmation(url), url).toBe(true);
+});
+test('cloud slice 2: NVIDIA fills in its https URL, needs a key, and offers only Model default for thinking', () => {
+  const nv = newEndpoint('nvidia', [], 'NVIDIA');
+  expect(nv).toEqual({ id: 'nvidia', name: 'NVIDIA', preset: 'nvidia', baseUrl: 'https://integrate.api.nvidia.com/v1', lanConfirmed: false, models: [] });
+  expect(PRESET_CAPS.nvidia).toEqual({ key: 'required', thinking: ['default'] });
+  for (const p of ['ollama', 'llamacpp', 'lmstudio'] as const) expect(PRESET_CAPS[p]).toEqual({ key: 'no', thinking: ['off', 'on', 'default'] });
+  expect(PRESET_CAPS.custom.key).toBe('optional');
+  expect(mergeModels([], ['nvidia/nemotron-3.5-super-vl-120b-a12b'], 'nvidia')).toEqual([{ id: 'nvidia/nemotron-3.5-super-vl-120b-a12b', pinned: true, thinking: 'default' }]);
+  // A stored Off (by hand, or from an older build) reads as the only choice NVIDIA allows; local presets keep theirs.
+  const [read] = endpointsOf({ endpoints: [{ ...nv, models: [{ id: 'm', pinned: true, thinking: 'off' }] }] });
+  expect(read.models[0].thinking).toBe('default'); expect(wireEndpoint(read, 'm').thinking).toBe('default'); expect(wireEndpoint(read, 'other').thinking).toBe('default');
+  expect(endpointsOf({ endpoints: [ollama] })[0].models[0].thinking).toBe('on'); expect(wireEndpoint(ollama, 'other').thinking).toBe('off');
 });

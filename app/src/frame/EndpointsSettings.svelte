@@ -1,7 +1,7 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
   import type { Settings } from './settings';
-  import { type EndpointConfig, type EndpointModel, type Preset, PRESETS, endpointsOf, initialContextSize, mergeModels, needsLanConfirmation, newEndpoint, wireEndpoint } from './endpoints';
+  import { type EndpointConfig, type EndpointModel, type Preset, PRESETS, PRESET_CAPS, endpointsOf, initialContextSize, mergeModels, needsLanConfirmation, newEndpoint, wireEndpoint } from './endpoints';
   import { type FakeEndpointOptions, fakeEndpointAdmin } from './fake-endpoint';
   import { type Completion, type InferenceProvider, ProviderError } from './provider';
   import { strings } from '../ui/strings';
@@ -30,7 +30,7 @@
     busy = e.id; note(e.id, strings.fetchingModels);
     try {
       const fetched = await admin<string[]>('endpoint_models', { endpoint: wireEndpoint(e, '') }, () => fakeEndpointAdmin.models(fakeOptions));
-      let models = mergeModels(e.models, fetched);
+      let models = mergeModels(e.models, fetched, e.preset);
       // CE-30: each pinned model's context size, from the server where it says.
       for (const m of models.filter(m => m.pinned && !m.contextSize)) {
         try { const info = await admin<{ contextSize?: number }>('endpoint_model_info', { endpoint: wireEndpoint(e, m.id), model: m.id }, () => fakeEndpointAdmin.info());
@@ -44,15 +44,17 @@
     const model = chosen[e.id] ?? e.models.find(m => m.pinned)?.id; if (!model) return;
     busy = e.id; note(e.id, strings.testing);
     try { const r = await provider.stream({ requestId: crypto.randomUUID(), system: 'Be terse.', prompt: 'Say only: ready.', model: `${e.id}:${model}`, effort: 'low', cancel: new AbortController().signal }, () => {});
-      note(e.id, strings.endpointReady(`${e.name} · ${model}`, Math.round(r.durationMs / 1000)));
+      note(e.id, served(strings.endpointReady(`${e.name} · ${model}`, Math.round(r.durationMs / 1000)), r));
     } catch (err) { failed(e.id, err); } finally { busy = ''; }
   }
   function size(e: EndpointConfig, model: string, value: string) {
     const n = Number(value); setModel(e.id, model, Number.isInteger(n) && n >= 512 && n <= 1_048_576 ? { contextSize: n } : { contextSize: undefined });
   }
+  /** CE-27: *Test* and the row warn when the server answered with another model name. */
+  const served = (status: string, r: Completion) => r.servedModel ? `${status} · ${strings.servedAs(r.servedModel)}` : status;
   const shown = (e: EndpointConfig) => notes[e.id] ?? (health[e.id] ? health[e.id] instanceof ProviderError
     ? { status: errorMessage(health[e.id] as ProviderError), details: (health[e.id] as ProviderError).details }
-    : { status: strings.endpointReady(`${e.name} · ${(health[e.id] as Completion).model.slice(e.id.length + 1)}`, Math.round((health[e.id] as Completion).durationMs / 1000)), details: '' } : null);
+    : { status: served(strings.endpointReady(`${e.name} · ${(health[e.id] as Completion).model.slice(e.id.length + 1)}`, Math.round((health[e.id] as Completion).durationMs / 1000)), health[e.id] as Completion), details: '' } : null);
 </script>
 <h3>{strings.endpoints}</h3>
 <p>{strings.endpointsHint}</p>
@@ -76,10 +78,10 @@
           <td><input type="checkbox" aria-label={`${strings.pinned} ${m.id}`} checked={m.pinned} {disabled} onchange={ev => setModel(e.id, m.id, { pinned: ev.currentTarget.checked })} /></td>
           <td><code>{m.id}</code></td>
           <td><input type="number" min="512" step="1024" aria-label={`${strings.contextSize} ${m.id}`} value={m.contextSize ?? ''} {disabled} onchange={ev => size(e, m.id, ev.currentTarget.value)} /></td>
-          <td><select aria-label={`${strings.thinking} ${m.id}`} value={m.thinking} {disabled} onchange={ev => setModel(e.id, m.id, { thinking: ev.currentTarget.value as EndpointModel['thinking'] })}>{#each ['off', 'on', 'default'] as t}<option value={t}>{strings.thinkingNames[t]}</option>{/each}</select></td>
+          <td><select aria-label={`${strings.thinking} ${m.id}`} value={m.thinking} {disabled} onchange={ev => setModel(e.id, m.id, { thinking: ev.currentTarget.value as EndpointModel['thinking'] })}>{#each PRESET_CAPS[e.preset].thinking as t}<option value={t}>{strings.thinkingNames[t]}</option>{/each}</select></td>
         </tr>{/each}
       </tbody></table>
-      <p>{strings.contextHint} {strings.thinkingHint}</p>
+      <p>{strings.contextHint} {PRESET_CAPS[e.preset].thinking.length > 1 ? strings.thinkingHint : strings.thinkingFixed(e.name)}</p>
       {#if e.models.some(m => m.pinned)}
         <div class="actions"><label class="inline">{strings.testModel}<select value={chosen[e.id] ?? e.models.find(m => m.pinned)?.id} onchange={ev => chosen = { ...chosen, [e.id]: ev.currentTarget.value }}>{#each e.models.filter(m => m.pinned) as m}<option>{m.id}</option>{/each}</select></label>
           <button disabled={disabled || !!busy} onclick={() => test(e)}>{strings.testProvider}</button></div>

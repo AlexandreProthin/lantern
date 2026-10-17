@@ -8,6 +8,8 @@ export interface AmberLogRecord {
   /** The category the reply named; a missing or broken tag reads `general` and sets `tagOk` false (CO-42). */
   category: AmberCategory | null; tagOk: boolean;
   usage: Usage; durationMs: number; costUsd?: number; outcome: 'ok' | 'cancelled' | 'error'; errorKind?: string;
+  /** CE-27: the endpoint answered with another model name than `model`. */
+  servedModel?: string;
 }
 /** `models` (CE-53): per resolved model, so the panel can tell local tokens from Claude's. */
 export interface AmberTotals { input: number; output: number; calls: number; models?: Record<string, { input: number; output: number }> }

@@ -8,7 +8,9 @@ export type ErrorKind = 'not-installed' | 'not-logged-in' | 'usage-limit' | 'mod
 export type ToolCalls = Record<string, number>;
 export interface Completion { text: string; model: string; usage: Usage; durationMs: number; costUsd?: number; toolCalls?: ToolCalls; outcome: 'ok' | 'cancelled' | 'error'; resolvedEffort?: Effort;
   /** CE-50: the server reported no usage; the figures are Lantern's estimate. */
-  usageEstimated?: boolean }
+  usageEstimated?: boolean;
+  /** CE-27: the name the server answered with, when it differs from the model asked for (endpoints only). */
+  servedModel?: string }
 /** IP-1: `web` allows WebSearch and WebFetch only; absent means no tool at all. */
 export interface Request { requestId: string; system: string; prompt: string; model?: string; effort?: Effort; web?: boolean; cancel: AbortSignal }
 /** IP-13: the search query for WebSearch, the page's host for WebFetch. */

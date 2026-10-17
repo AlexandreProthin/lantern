@@ -125,10 +125,10 @@ export class ChooseSession {
     // CE-31: on an endpoint model the map also fits the model's context size (research runs on Claude Code, CE-55).
     const prompts = fitPrompt(budgetTokens => taskPrompt(v, lane.task, id, { budgetTokens, today: this.today(), web: lane.web, ...extra }), this.budgetTokens, lane.web ? undefined : contextSizeOf(v.model));
     let raw = '';
-    const record = (r: { model: string; usage: Generation['usage']; durationMs: number; costUsd?: number; toolCalls?: Record<string, number> }, outcome: Generation['outcome']): Generation => ({
+    const record = (r: { model: string; usage: Generation['usage']; durationMs: number; costUsd?: number; toolCalls?: Record<string, number>; servedModel?: string }, outcome: Generation['outcome']): Generation => ({
       id: generationId, nodeId: id, task: lane.task, effort: v.effort, model: r.model || 'unknown', promptVersion: prompts.promptVersion, startedAt,
       durationMs: r.durationMs || Math.round(performance.now() - started), usage: r.usage ?? zeroUsage(), ...(r.costUsd !== undefined ? { costUsd: r.costUsd } : {}),
-      ...(r.toolCalls && Object.keys(r.toolCalls).length ? { toolCalls: r.toolCalls } : {}), outcome, data: { tone, web: lane.web } });
+      ...(r.toolCalls && Object.keys(r.toolCalls).length ? { toolCalls: r.toolCalls } : {}), ...(r.servedModel ? { servedModel: r.servedModel } : {}), outcome, data: { tone, web: lane.web } });
     try {
       const result = await this.provider.stream({ requestId: generationId, system: prompts.system, prompt: prompts.prompt, model: v.model, effort: v.effort, web: lane.web, cancel: lane.controller.signal },
         chunk => { raw += chunk; if (current() && !lane.controller.signal.aborted) { lane.text = visibleText(raw); this.render(); } },
