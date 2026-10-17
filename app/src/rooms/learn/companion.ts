@@ -12,6 +12,8 @@ export const learnCompanion: RoomCompanion = {
     { id: 'learn.search', text: 'Ctrl+F in Study searches every node of the subject.' },
     { id: 'learn.divider', text: 'Drag the divider to give the graph or the panel more room; double-click it to reset.' }
   ],
+  // CO-53, C10: calm while the user reads.
+  calm: ['study'],
   // CO-13: Study's three resting positions, just above the controls in each corner (legend, zoom, composer).
   rests: {
     study: [

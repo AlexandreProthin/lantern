@@ -63,6 +63,12 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
   space, with the same result as dragging. *(r9)*
 - **CO-17** Clicks outside Amber's drawn shape and rope pass through to what is underneath; it never
   blocks a control, and popovers and dialogs draw above it. *(r9)*
+- *Agreed 2026-10-17 (v0.4.0 slice 6), on CO-11 to CO-16:* Choose's Survey has Study's three resting positions
+  (the same graph and panel frame). Each resting position sits just above the controls in its corner (the graph's
+  legend and *Open*, its zoom buttons, the panel's composer). Settled, the rope hangs straight; it bows and moves
+  while Amber moves. A hanging spot keeps the rope length it was dropped at; *Move to…* uses the default length. A
+  throw is a gentle push at most, and a swing settles within 6 s. Esc while holding Amber puts it back. Flights
+  arc and falls accelerate. The bubble and the menu open above a resting Amber and under a hanging one.
 
 # The bubble
 

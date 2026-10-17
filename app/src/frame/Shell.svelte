@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { invoke } from '@tauri-apps/api/core';
   import { strings } from '../ui/strings';
   // RS-53: header mark is the ember favicon of the accepted identity release; only its flame takes the room accent (see style).
@@ -85,6 +85,12 @@
     selectionAsk = { detail, chat: new AmberChat(amberProvider, amberLog, () => settings.companion.model, () => amberHelp(rooms), () => amberContext(room, space, session), () => selectionRevision++) };
   }
   function closeSelectionAsk() { selectionAsk?.chat.close(); selectionAsk = null; }
+  // CO-42, CO-45: Amber thinks while its answer is on the way, and leans toward a selection card.
+  const amberThinking = $derived.by(() => { void amberRevision; void selectionRevision; return amberChat.phase === 'thinking' || selectionAsk?.chat.phase === 'thinking'; });
+  const amberLean = $derived(selectionAsk ? { x: selectionAsk.detail.rect.left, y: selectionAsk.detail.rect.bottom } : null);
+  // CO-35 (v0.4.0 slice 8 wires the generation's wait); `?amberMood=working` shows the motion in development builds (CO-54).
+  const amberMoodParam = import.meta.env.DEV ? new URLSearchParams(location.search).get('amberMood') : null;
+  const amberWorking = $derived(amberMoodParam === 'working');
   $effect(() => { window.addEventListener(ASK_AMBER_EVENT, openSelectionAsk); return () => window.removeEventListener(ASK_AMBER_EVENT, openSelectionAsk); });
   const storage = desktop ? desktopStorage : browserStorage;
   let settings = $state(defaultSettings('', '', baseRooms));
@@ -93,6 +99,9 @@
   let windowMemory: Awaited<ReturnType<typeof import('./window-memory').rememberWindow>>|undefined;
   let revision = $state(0), space = $state('welcome'), session = $state<RoomSession | null>(null);
   let settingsOpen = $state(false), shortcutsOpen = $state(false), panelOpen = $state(false), roomMenu = $state(false), fieldWidth = $state(0);
+  // RS-15: a panel reopened while it still folds away starts fresh (empty filter), not as the closing one.
+  let panelGeneration = $state(0);
+  $effect.pre(() => { if (panelOpen) untrack(() => panelGeneration++); });
   let settingsSection=$state('general'),checkingReady=$state(false);
   let readyController:AbortController|undefined,readyPending:Promise<Completion>|undefined;
   let loading = $state(true), banner = $state(''), toast = $state(''), saveError = $state(''), conflictPath = $state('');
@@ -348,11 +357,11 @@
 {#if toast}<div class="toast" role="status">{toast}<button onclick={()=>toast=''}>{strings.close}</button></div>{/if}
 {#if showUpdateNotice}<div class="toast update-notice" role="status">{updater.phase==='downloading'?strings.updateDownloading(updater.percent):updater.phase==='installing'?strings.updateInstalling:strings.updateAvailable(updater.version)}
   {#if updater.phase==='available'}<button disabled={anyRunning} title={anyRunning?strings.finishGeneration:undefined} onclick={installUpdate}>{strings.installUpdate}</button><button onclick={dismissUpdate}>{strings.updateLater}</button>{/if}</div>{/if}
-{#if panelOpen}<FieldPanel {session} {room} {rooms} {revision} subjects={paletteSubjects} {fieldWidth}
+{#if panelOpen}{#key panelGeneration}<FieldPanel {session} {room} {rooms} {revision} subjects={paletteSubjects} {fieldWidth}
   rename={title=>renameSubject(session!.subject.id,title)} changed={appliesNext=>{session!.touch();if(appliesNext)toast=strings.appliesNext;}}
-  openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/if}
+  openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/key}{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
-{#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} {desktop} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
+{#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} {desktop} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} thinking={amberThinking} working={amberWorking} lean={amberLean} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}
 {#if askOpen}<AskBox bind:this={askBox} chat={amberChat} revision={amberRevision} close={closeAsk} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}

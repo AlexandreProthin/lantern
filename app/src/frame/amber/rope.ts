@@ -49,7 +49,7 @@ export class Rope {
       a.x += dx * diff * wa; a.y += dy * diff * wa; b.x -= dx * diff * wb; b.y -= dy * diff * wb;
     }
   }
-  /** Amber's tilt in degrees: the direction of the last segment against the vertical (positive leans right). */
+  /** Amber's tilt in degrees, as a CSS rotation about the tie: negative when it hangs right of the tie, as the rope does. */
   angle(): number { const a = this.points[this.points.length - 2], b = this.end; return Math.atan2(a.x - b.x, b.y - a.y) * 180 / Math.PI; }
   /** Settled: the end barely moves and hangs under the tie. */
   settled(): boolean { const e = this.end; return Math.hypot(e.x - e.px, e.y - e.py) < .02 && Math.abs(e.x - this.anchor.x) < .8; }

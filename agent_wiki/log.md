@@ -2,6 +2,7 @@
 
 ## 2026-10-17
 
+* **v0.4.0 slice 7 built**: Amber's gestures, living flame, eyes following, and the new motions (dangling, thinking, working, leaning), calm in Study, still with reduced motion; they await the user's judgement in the app (CO-54). Slice 6's eight points agreed and recorded under [companion](/specs/companion.md) CO-17. A top-bar panel bug found and fixed on the way. Details in the [plan](/plans/v0-4-0.md).
 * **v0.4.0 slice 6 done**: Amber can be grabbed and moved: a simulated rope in the top quarter, a swing when let go, flights and falls to the resting spots of each space (Study's three), kept per space; reduced motion goes straight. Eight points decided in code wait for the user in the [plan](/plans/v0-4-0.md).
 * **v0.4.0 slice 5 done**: Amber is drawn, hanging from the top bar with the identity's renderer (ported, byte-identical to the release), its bubble (tips, guide, Ask), its menu (*Move to…*, *Hide*) and room-tinted halo and frame light. Choose's teal Amber tokens are for the user to judge. Next: slice 6, moving Amber.
 * **v0.4.0 slice 4 done**: the `?` overlay shows *What can I do here?* for the current space (GV-73, CO-22). Every Amber feature is now reachable without the character (CO-2): Ctrl+J, the capsule's *Ask*, Alt+D, the overlay. Next: slice 5, Amber drawn on the top bar.

@@ -305,3 +305,69 @@ test('CO-16: Move to… lists the bar and this space\'s rests; Esc while holding
   await page.keyboard.press('Escape'); await page.mouse.up();
   await expect(amber(page)).toHaveAttribute('data-motion', 'still'); await expect(amber(page)).toHaveAttribute('data-spot', before!);
 });
+
+// v0.4.0 slice 7: gestures and the new motions (CO-50 to CO-57).
+const drawing = (page: import('@playwright/test').Page) => amber(page).evaluate(b => b.querySelector('svg')!.innerHTML);
+test('CO-50: it appears hanging with suspension; hover plays attention, a click curiosity as the bubble opens', async ({ page }) => {
+  await page.goto('/');
+  await expect(amber(page)).toHaveAttribute('data-act', '3');
+  await expect(amber(page)).toHaveAttribute('data-act', '', { timeout: 6000 });
+  const box = (await amber(page).boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height * .6);
+  await expect(amber(page)).toHaveAttribute('data-act', '0');
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * .6);
+  await expect(amber(page)).toHaveAttribute('data-act', '1'); await expect(bubble(page)).toBeVisible();
+});
+test('CO-50: at a bottom spot it appears with a few steps in', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('lantern.companion', JSON.stringify({ spots: { 'learn/welcome': 'rest-right' }, seenTips: [] })));
+  await page.goto('/');
+  await expect(amber(page)).toHaveAttribute('data-spot', 'rest-right');
+  await expect(amber(page)).toHaveAttribute('data-act', '2');
+});
+test('CO-52/53: the flame lives on Welcome; in Study Amber is still until hovered', async ({ page }) => {
+  await page.goto('/');
+  await expect(amber(page)).toHaveAttribute('data-act', '', { timeout: 6000 });
+  const a = await drawing(page); await page.waitForTimeout(300); expect(await drawing(page)).not.toBe(a);
+  await page.goto('/?study=1&subject=Tides');
+  await expect(amber(page)).toHaveAttribute('data-act', '', { timeout: 6000 });
+  await page.mouse.move(10, 700);
+  await page.waitForTimeout(400);
+  const b = await drawing(page); await page.waitForTimeout(400); expect(await drawing(page)).toBe(b);
+  const box = (await amber(page).boundingBox())!; await page.mouse.move(box.x + box.width / 2, box.y + box.height * .6);
+  await page.waitForTimeout(200); const c = await drawing(page); await page.waitForTimeout(300); expect(await drawing(page)).not.toBe(c);
+});
+test('CO-51: the eyes turn toward a pointer that comes close, and back when it leaves', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides');
+  await expect(amber(page)).toHaveAttribute('data-act', '', { timeout: 6000 });
+  const eyes = () => amber(page).evaluate(b => Number(b.querySelector('mask ellipse')!.getAttribute('cx')));
+  await page.mouse.move(10, 700); await page.waitForTimeout(300);
+  expect(await eyes()).toBeCloseTo(44, 1);
+  const box = (await amber(page).boundingBox())!;
+  await page.mouse.move(box.x - 60, box.y + box.height / 2, { steps: 5 });
+  await expect.poll(eyes).toBeLessThan(42);
+  await page.mouse.move(10, 700, { steps: 5 });
+  await expect.poll(eyes).toBeCloseTo(44, 1);
+});
+test('CO-42, CO-54: Amber thinks while its answer is on the way', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides&delay=120');
+  await expect(amber(page)).toHaveAttribute('data-act', '', { timeout: 6000 });
+  await page.keyboard.press('Control+j');
+  const field = bubble(page).getByRole('textbox', { name: 'Ask Amber' });
+  await field.fill('What does this node explain?'); await field.press('Enter');
+  await expect(bubble(page).getByRole('status')).toHaveText('Amber is thinking…');
+  // Half-lidded while thinking (the identity's lid: eye height 3.2 × (1 − .85 × lid)).
+  const lid = () => amber(page).evaluate(b => Number(b.querySelector('mask ellipse')!.getAttribute('ry')));
+  await expect.poll(lid).toBeLessThan(2.5);
+  await expect(bubble(page).getByText('The focused node explains')).toBeVisible();
+  await expect.poll(lid).toBeCloseTo(3.2, 1);
+});
+test('CO-56: reduced motion: no gesture, a still flame, the eyes stay', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await expect(amber(page)).toHaveAttribute('data-act', '');
+  const a = await drawing(page); await page.waitForTimeout(300); expect(await drawing(page)).toBe(a);
+  const box = (await amber(page).boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * .6);
+  await expect(bubble(page)).toBeVisible(); await expect(amber(page)).toHaveAttribute('data-act', '');
+  expect(await drawing(page)).toBe(a);
+});

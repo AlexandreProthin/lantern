@@ -11,6 +11,8 @@
   import { AMBER_H, AMBER_W, BAR, TIE_X, TIE_Y, bubbleBox, dropTarget, hangSpots, hintPoint, restSpots, spotById } from './place';
   import type { Spot } from './place';
   import { Rope, STEP, flightDuration, flightPoint } from './rope';
+  import { LANDING_SETTLE, actDone, compose, dangle, flightBase, grabbedBase, hangingBase, lookAt, restingBase, startAct } from './motion';
+  import type { Act } from './motion';
   import AskChat from './AskChat.svelte';
   import Emphasis from './Emphasis.svelte';
   import GuideLines from './GuideLines.svelte';
@@ -19,11 +21,17 @@
    * follows the hand, on its rope within the top quarter of the window (CO-12), and when let go it swings, flies or falls
    * to the nearest spot (CO-14), kept per space (CO-15). A click or Enter opens its bubble (CO-20); right-click, the
    * context-menu key or Shift+F10 its menu (CO-16, CO-58). Clicks beside its drawn shape pass through (CO-17).
-   * Reduced motion: every move goes straight to the spot (CO-56). Gestures and the living flame: v0.4.0 slice 7.
+   * Gestures (CO-50): attention on hover or focus, curiosity on a click, suspension or a few steps when it appears,
+   * lift and landing for its flights; the flame lives between them (CO-52), the eyes follow a near pointer (CO-51),
+   * and the new motions (CO-54): dangling from the hand, thinking, working, leaning toward a selection card. Calm in
+   * the room's calm spaces (CO-53). Reduced motion: still poses, every move straight to its spot (CO-56).
    */
-  let { room, space, desktop, amberState, saveState, chat, revision, hide, openSettings }: {
+  let { room, space, desktop, amberState, saveState, chat, revision, hide, openSettings, thinking = false, working = false, lean = null }: {
     room: RoomDefinition; space: string; desktop: boolean; amberState: AmberState; saveState: (s: AmberState) => void;
     chat: AmberChat; revision: number; hide: () => void; openSettings: () => void;
+    /** Ask Amber or a selection card is waiting for its answer (CO-42). */ thinking?: boolean;
+    /** A generation the user started waits for its first words (CO-35). */ working?: boolean;
+    /** The selection card's centre, to lean toward (CO-45). */ lean?: { x: number; y: number } | null;
   } = $props();
   const BUBBLE_W = 340, CONTROLS = 138, GRAB = 5, SWING_MAX = 6000, THROW = 6;
   /** CO-17: the lantern's silhouette (loop, frame and the flame inside it, in the actor's units) takes the pointer; the halo around it does not. */
@@ -66,38 +74,80 @@
     | { kind: 'swing'; rope: Rope; to: Spot; start: number; acc: number }
     | { kind: 'flight'; from: { x: number; y: number }; to: Spot; start: number; duration: number; mode: 'fly' | 'fall' };
   let motion = $state.raw<Motion>({ kind: 'still' }), frame = $state(0), raf = 0, grab: { x: number; y: number; dx: number; dy: number; id: number } | null = null, dragged = false;
+  // Gestures and moods (CO-50 to CO-54).
+  let act = $state.raw<Act | null>(null), hovered = $state(false), pointer: { x: number; y: number } | null = null, look = 0, tilt = 0, lastFrame = 0;
+  const calmSpace = $derived(room.companion?.calm?.includes(space) ?? false);
+  /** CO-53: in a calm space Amber is still unless it is hovered, clicked, grabbed, asked or working. */
+  const flameLive = $derived(!calmSpace || hovered || bubble || motion.kind !== 'still' || thinking || working || !!act);
+  const leanSign = $derived(lean ? Math.sign(lean.x - (spot.left + AMBER_W / 2)) || 1 : 0);
   const view = $derived.by(() => {
     void frame;
-    const m = motion;
-    if (m.kind === 'drag') return { left: m.left, top: m.top, angle: 0, pose: still(GESTURE.suspension), rope: m.rope?.path() ?? null };
-    if (m.kind === 'swing') return { left: m.rope.end.x - TIE_X, top: m.rope.end.y - TIE_Y, angle: m.rope.angle(), pose: still(GESTURE.suspension), rope: m.rope.path() };
-    if (m.kind === 'flight') {
-      const p = flightPoint(m.from, { x: m.to.left, y: m.to.top }, (performance.now() - m.start) / m.duration, m.mode);
-      return { left: p.x, top: p.y, angle: 0, pose: still(m.mode === 'fly' ? GESTURE.lift : GESTURE.rest), rope: null };
+    const m = motion, now = performance.now();
+    let base: Pose, left: number, top: number, angle = 0, rope: string | null = null, hanging = true;
+    if (m.kind === 'drag') { base = grabbedBase(); left = m.left; top = m.top; rope = m.rope?.path() ?? null; }
+    else if (m.kind === 'swing') { base = hangingBase(); left = m.rope.end.x - TIE_X; top = m.rope.end.y - TIE_Y; angle = m.rope.angle(); rope = m.rope.path(); }
+    else if (m.kind === 'flight') {
+      const u = (now - m.start) / m.duration, p = flightPoint(m.from, { x: m.to.left, y: m.to.top }, u, m.mode);
+      base = flightBase(m.mode, u); left = p.x; top = p.y; hanging = false;
+    } else {
+      hanging = spot.kind === 'hang'; base = hanging ? hangingBase() : restingBase(); left = spot.left; top = spot.top;
+      rope = hanging ? `M${spot.anchorX} ${BAR} L${spot.anchorX} ${spot.top + TIE_Y}` : null;
     }
-    return { left: spot.left, top: spot.top, angle: 0, pose: still(spot.kind === 'rest' ? GESTURE.landing : GESTURE.suspension),
-      rope: spot.kind === 'hang' ? `M${spot.anchorX} ${BAR} L${spot.anchorX} ${spot.top + TIE_Y}` : null };
+    // CO-45: lean toward the selection card (hanging from the loop, the body swings toward it; standing, it tips).
+    const leanDeg = leanSign * 6 * (hanging ? -1 : 1);
+    const z = compose(base, act, { thinking, working, look: leanSign || look, lean: tilt + leanDeg, flame: flameLive }, now, reduced);
+    return { left, top, angle, pose: z, rope };
   });
   // CO-55: the identity's warm flame and body; the halo and the light on the frame follow the room's --amber-* tokens.
-  const poseKey = (z: Pose) => `${z.x},${z.y},${z.feet},${z.line}`;
-  let lastKey = '', lastSvg = '';
-  const svg = $derived.by(() => { const key = poseKey(view.pose); if (key !== lastKey) { lastKey = key; lastSvg = companionSvg(GESTURE.suspension, view.pose, uid, 'learn', true); } return lastSvg; });
+  // The flame's clock is bucketed to about 30 frames a second, so a living flame redraws at most that often.
+  const poseKey = (z: Pose) => [z.x, z.y, z.angle, z.feet, z.step, z.gaze, z.lid, z.line, z.pivot].map(v => v.toFixed(2)).join() + ':' + Math.floor((z.flameTime ?? 0) / 33);
+  // The drawing (an SVG with a blur filter) is rebuilt at most about 30 times a second; only the position runs every frame.
+  let lastKey = '', lastSvg = '', drawnAt = -Infinity;
+  const svg = $derived.by(() => {
+    const key = poseKey(view.pose), now = performance.now();
+    if (key !== lastKey && (now - drawnAt >= 32 || motion.kind === 'still' && !act)) { lastKey = key; drawnAt = now; lastSvg = companionSvg(GESTURE.suspension, view.pose, uid, 'learn', true); }
+    return lastSvg;
+  });
+  let reduced = $state(reducedMotion());
+  $effect(() => { const media = matchMedia('(prefers-reduced-motion: reduce)'), update = () => reduced = reducedMotion();
+    const observer = new MutationObserver(update); observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-reduce-motion'] });
+    media.addEventListener('change', update); return () => { media.removeEventListener('change', update); observer.disconnect(); }; });
+  /** Plays a gesture (CO-50), interrupting one in progress over 180 ms (CO-56); nothing with reduced motion. */
+  function play(gesture: number, offset = 0) { if (reduced || document.hidden) return; const now = performance.now(); act = startAct(gesture, now, act && !actDone(act, now) ? view.pose : null, offset); run(); }
+  // CO-50: when it appears it hangs (suspension) or, at the bottom, takes a few steps in; on each space it opens on.
+  let appeared = '';
+  $effect(() => { if (!ready) return; const key = `${room.id}/${space}`; if (key === appeared) return; appeared = key; play(spot.kind === 'hang' ? GESTURE.suspension : GESTURE.steps); });
+  // Moods that animate keep the loop running.
+  $effect(() => { if (thinking || working || lean || flameLive) run(); });
   const target = $derived(motion.kind === 'drag' ? dropTarget(hangs, rests, motion.left, motion.top, height) : null);
 
   function loop(now: number) {
-    const m = motion;
+    const m = motion, dt = lastNow ? Math.min(64, now - lastNow) : 16; lastNow = now;
     if (m.kind === 'swing') {
-      m.acc += (lastNow ? Math.min(64, now - lastNow) : 16) / 1000; lastNow = now;
+      m.acc += dt / 1000;
       let steps = 0; while (m.acc >= STEP && steps < 16) { m.rope.step(); m.acc -= STEP; steps++; }
-      if (m.rope.settled() || now - m.start > SWING_MAX) { commit(m.to); return; }
-    } else if (m.kind === 'flight') { if (now - m.start >= m.duration) { commit(m.to); return; } }
-    else if (m.kind === 'drag' && m.rope) { for (let i = 0; i < 2; i++) m.rope.step(); }
-    else if (m.kind === 'still') { raf = 0; return; }
-    frame++; raf = requestAnimationFrame(loop);
+      if (m.rope.settled() || now - m.start > SWING_MAX) { commit(m.to); }
+    } else if (m.kind === 'flight') { if (now - m.start >= m.duration) arrive(m); }
+    else if (m.kind === 'drag') { if (m.rope) for (let i = 0; i < 2; i++) m.rope.step(); tilt = dangle(tilt, hand, dt); hand *= Math.exp(-dt / 120); }
+    if (m.kind !== 'drag') tilt = dangle(tilt, 0, dt);
+    // CO-51: the eyes ease toward the pointer.
+    const centre = { x: view.left + AMBER_W / 2, y: view.top + AMBER_H / 2 }, target = reduced ? 0 : lookAt(centre, pointer);
+    look += (target - look) * (1 - Math.exp(-dt / 110)); if (Math.abs(look - target) < .01) look = target;
+    if (act && actDone(act, now)) act = null;
+    const busy = motion.kind !== 'still' || !!act || Math.abs(tilt) > .05 || look !== target || (!reduced && (thinking || working || !!lean || flameLive));
+    // Only motion needs every frame; a living flame, the eyes and the moods redraw about 30 times a second.
+    if (motion.kind !== 'still' || now - lastFrame >= 32) { frame++; lastFrame = now; }
+    raf = busy && !document.hidden ? requestAnimationFrame(loop) : 0;
+  }
+  let hand = 0;
+  /** CO-14: at the end of a flight, a fall finishes its landing at the spot; a flight up to the bar settles on the rope. */
+  function arrive(m: Extract<Motion, { kind: 'flight' }>) {
+    commit(m.to);
+    if (m.to.kind === 'hang') play(GESTURE.suspension); else play(GESTURE.landing, m.mode === 'fall' ? LANDING_SETTLE : 0);
   }
   let lastNow = 0;
-  function run() { if (!raf) { lastNow = 0; raf = requestAnimationFrame(loop); } }
-  function commit(to: Spot) { cancelAnimationFrame(raf); raf = 0; motion = { kind: 'still' }; saveState(setSpot(amberState, room.id, space, to.id)); }
+  function run() { if (!raf && !document.hidden) { lastNow = 0; raf = requestAnimationFrame(loop); } }
+  function commit(to: Spot) { motion = { kind: 'still' }; saveState(setSpot(amberState, room.id, space, to.id)); run(); }
   /** CO-14, CO-16: go to a spot: straight with reduced motion (CO-56), else a swing onto a rope or a flight or fall. */
   function goTo(to: Spot, from = { x: view.left, y: view.top }, rope: Rope | null = null, velocity = { x: 0, y: 0 }) {
     if (reducedMotion()) { commit(to); return; }
@@ -117,6 +167,8 @@
     grab = { x: e.clientX, y: e.clientY, dx: e.clientX - view.left, dy: e.clientY - view.top, id: e.pointerId }; dragged = false;
   }
   function move(e: PointerEvent) {
+    pointer = { x: e.clientX, y: e.clientY };
+    if (!reduced && !raf && lookAt({ x: view.left + AMBER_W / 2, y: view.top + AMBER_H / 2 }, pointer) !== look) run();
     if (!grab || e.pointerId !== grab.id) return;
     if (motion.kind !== 'drag') {
       if (Math.hypot(e.clientX - grab.x, e.clientY - grab.y) < GRAB) return;
@@ -131,6 +183,7 @@
     if (tie.y < height / 4) { if (!rope) rope = new Rope({ x: near.anchorX, y: BAR }, tie); rope.hold(tie, { x: near.anchorX, y: BAR }); } else rope = null;
     // The hand's speed in px per ms, smoothed, for the throw on release.
     const now = performance.now(), dt = Math.max(8, now - m.at), k = .4;
+    hand = hand * (1 - k) + (left - m.left) / dt * k;
     motion = { kind: 'drag', left, top, vx: m.vx * (1 - k) + (left - m.left) / dt * k, vy: m.vy * (1 - k) + (top - m.top) / dt * k, at: now, rope }; run(); frame++;
   }
   function up(e: PointerEvent) {
@@ -142,7 +195,10 @@
   }
   function cancelDrag() { if (motion.kind === 'drag') { grab = null; goTo(spot); } }
   // CO-57: nothing runs while the window is hidden; a move in progress ends at its spot and is not replayed.
-  function visibility() { if (document.hidden) { const m = motion; grab = null; if (m.kind === 'swing' || m.kind === 'flight') commit(m.to); else if (m.kind === 'drag') commit(spot); } }
+  function visibility() {
+    if (document.hidden) { const m = motion; grab = null; act = null; if (m.kind === 'swing' || m.kind === 'flight') commit(m.to); else if (m.kind === 'drag') commit(spot); }
+    else run();
+  }
 
   const pool = $derived([...strings.amberTips, ...(room.companion?.tips ?? [])]);
   const tip = $derived(pool.find(t => t.id === tipId));
@@ -159,7 +215,7 @@
     if (!bubble) { bubble = true; showNextTip(); }
     await tick(); if (focusAsk) askChat?.focus(); else bubbleEl?.focus();
   }
-  function click() { if (dragged) { dragged = false; return; } if (motion.kind !== 'still') return; if (bubble) closeBubble(); else void open(); }
+  function click() { if (dragged) { dragged = false; return; } if (motion.kind !== 'still') return; if (bubble) closeBubble(); else { play(GESTURE.curiosity); void open(); } }
   function closeBubble(refocus = false) { bubble = false; chat.close(); if (refocus) button?.focus(); }
   async function openMenu() { closeBubble(); remeasure(); menu = 'main'; await tick(); menuEl?.querySelector<HTMLElement>('[role^=menuitem]')?.focus(); }
   function closeMenu() { menu = null; button?.focus(); }
@@ -191,10 +247,11 @@
 {/if}
 {#if ready}
 {#if view.rope}<svg class="rope" aria-hidden="true" width={width} height={height}><path d={view.rope} /></svg>{/if}
-<button bind:this={button} class="amber" class:held={motion.kind === 'drag'} data-spot={spot.id} data-motion={motion.kind} aria-label={strings.amberName} title={strings.amberTitle} aria-haspopup="dialog" aria-expanded={bubble}
+<button bind:this={button} class="amber" class:held={motion.kind === 'drag'} data-spot={spot.id} data-motion={motion.kind} data-act={act ? act.gesture : ''} aria-label={strings.amberName} title={strings.amberTitle} aria-haspopup="dialog" aria-expanded={bubble}
   style:left={`${view.left}px`} style:top={`${view.top}px`} style:width={`${AMBER_W}px`} style:height={`${AMBER_H}px`}
-  style:transform={view.angle ? `rotate(${-view.angle}deg)` : undefined} style:transform-origin={`${TIE_X}px ${TIE_Y}px`}
-  onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}>{@html svg}<svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
+  style:transform={view.angle ? `rotate(${view.angle}deg)` : undefined} style:transform-origin={`${TIE_X}px ${TIE_Y}px`}
+  onpointerover={() => { if (!hovered) { hovered = true; if (!act) play(GESTURE.rest); } }} onpointerout={e => { if (!button?.contains(e.relatedTarget as Node)) hovered = false; }}
+  onfocus={() => { if (!act) play(GESTURE.rest); }} onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}>{@html svg}<svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
 {/if}
 {#if bubble}
   <div class="bubble" role="dialog" aria-label={strings.amberName} tabindex="-1" bind:this={bubbleEl} style:left={`${box.left}px`} style:top={box.top !== undefined ? `${box.top}px` : undefined} style:bottom={box.bottom !== undefined ? `${box.bottom}px` : undefined} style:width={`${BUBBLE_W}px`}

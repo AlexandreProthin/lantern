@@ -99,3 +99,9 @@ test('RS-25: the field shows a pulsing dot while a generation runs', async ({ pa
   await expect(field(page).locator('.busy-dot')).toBeVisible();
   await expect(field(page).locator('.busy-dot')).toHaveCount(0, { timeout: 15000 });
 });
+test('RS-15: a panel reopened while it still folds away starts with an empty filter', async ({ page }) => {
+  await page.goto('/');
+  await page.keyboard.press('Control+k'); await page.keyboard.type('bread');
+  await page.keyboard.press('Control+k'); await page.keyboard.press('Control+k');
+  await expect(panel(page).getByRole('combobox')).toHaveValue('');
+});

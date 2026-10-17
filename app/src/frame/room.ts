@@ -27,6 +27,8 @@ export interface RoomCompanion {
   guide: Record<string, readonly string[]>;
   /** CO-13: bottom resting positions per space id; a space without any gets the space's two bottom corners. */
   rests?: Record<string, readonly RestSpec[]>;
+  /** CO-53: spaces where Amber stays still (no living flame) unless hovered, clicked, grabbed, asked or working. */
+  calm?: readonly string[];
 }
 /** RS-1..3, RS-30, SE-12, DM-66, ST-7. The frame calls only these members (RS-2). */
 export interface RoomDefinition {
