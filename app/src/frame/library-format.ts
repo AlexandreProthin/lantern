@@ -1,5 +1,5 @@
 import { strings } from '../ui/strings';
-import { modelName as baseModelName } from '../core/models';
+import { endpointAwareName as baseModelName } from '../ui/model-choices.svelte';
 export const tokens = (n = 0) => n >= 1e6 ? `${(n/1e6).toFixed(1)}M` : n >= 1e3 ? `${(n/1e3).toFixed(1)}k` : String(n);
 export const exactDate = (at?: string) => at ? new Date(at).toLocaleString() : strings.neverOpened;
 export function relativeDate(at?: string, now = new Date()): string {

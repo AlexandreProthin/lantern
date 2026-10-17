@@ -218,8 +218,35 @@ user, CPU only on this machine. Fixtures are recorded against it first.
 - Endpoint models are marked *not evaluated* in the picker and the meta line (CE-56); the meta line
   names the endpoint (CE-25).
 - Amber can run on an endpoint model (CO-46); its eval bar (CO-48) stays on Haiku 5.5.
-- **Exit:** the first real use: a Learn subject lit on Gemma 4 E4B in the desktop build, and an Ask
+- **Exit:** the first real use: a Learn subject lit on Gemma 4 E2B in the desktop build, and an Ask
   Amber question on it. **The point where the user may move the work to the feature branch (CE-6).**
+- **Done 2026-10-17**:
+  - `ui/model-choices.svelte.ts` holds the endpoints the Shell reads from settings. `ModelPicker` adds
+    a *Claude Code* group and one group per endpoint, with pinned models only, each marked *not
+    evaluated*. With no endpoint the picker renders as before; the existing test that counts 12 options
+    is unchanged. The four pickers (Settings, Welcome, subject menu, Amber) all get it.
+  - Model labels in the node meta line and the Gallery name the endpoint and say *not evaluated*
+    (CE-25, CE-56). The meta line shows no effort for an endpoint model (IP-3). Amber needed no change:
+    it sends its model through the routing provider and logs the resolved id.
+  - In the browser build, one fake per room now serves both paths, so its scenario runs on across
+    models.
+  - Checks: `npm run check` clean, 196 TS tests, Playwright 96 passed and 2 skipped (1 new).
+  - **First real use, desktop build (`tauri dev` from the worktree, driven over WebView2's debugging
+    port), Ollama 0.40.6 and `gemma4:e2b` on the CPU.** The user's settings were backed up first. They
+    end as before, plus the Ollama endpoint (gemma4:e2b pinned at 32768, thinking off); Amber's model
+    was set back to Haiku 5.5. A subject *Why are there two high tides a day? (Gemma test)* is now in
+    the user's library.
+    1. *Test*: ready in 32 s, model loading included.
+    2. Intro: 69 s, 911 in / 188 out. A clear explanation and three axes; the meta line reads
+       *Ollama · gemma4:e2b · not evaluated · 911 in / 188 out · 1 min 6 s*.
+    3. Light-up of *Lunar Gravitational Force*: 106 s, 471 in / 401 out. Three children, a working
+       `node:` link to a sibling, and bold key terms. **The physics is loose** (a swing analogy that does
+       not hold), which is the quality question CE-56's *not evaluated* is for.
+    4. **Ask Amber: protocol not kept.** In 64 s, the log has `tagOk: false` (fallback *general*), the
+       bubble shows the model's malformed `<app>` tag as text, and the answer did not address the
+       question. For the user: whether Amber's gate should hide a malformed leading tag (this would touch
+       the Claude path, CE-2), and whether Amber on a small model is worth offering before its evals run
+       on one.
 
 # Slice 5. Context windows
 

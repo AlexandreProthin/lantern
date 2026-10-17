@@ -6,6 +6,7 @@
   import { askAmber } from './ask-amber';
   import { strings } from './strings';
   import { modelLabel,durationLabel } from './format';
+  import { isEndpointModel } from '../core/models';
   import { childrenOf, pathTo, deleteSubtree, editLabel, revertText, subtreeIds } from '../core/graph';
   import type { GraphNode, Turn } from '../core/model';
   import type { PanelRequest, PanelRoomView, PanelSession, PanelSnippets } from './panel-types';
@@ -35,7 +36,8 @@
     if (target.author?.kind === 'user') return strings.writtenBy(target.author.by);
     if (target.author?.kind !== 'model') return '';
     const author = target.author, generation = visit.log.find(g => g.id === author.generationId);
-    return [modelLabel(author.model), generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
+    // IP-3, CE-52: an endpoint model ignores effort, so the line does not show one.
+    return [modelLabel(author.model), isEndpointModel(author.model) ? '' : generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
   }
   function perform(fn: () => void) { try { fn(); localError = ''; session.touch(); } catch (e) { localError = String(e); } }
   function beginEdit(field: string, target: GraphNode | Turn = node) {

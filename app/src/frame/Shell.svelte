@@ -9,6 +9,7 @@
   import { DesktopProvider, ObservedProvider, ProviderError, type InferenceProvider } from './provider';
   import { RoutingProvider } from './routing';
   import { endpointsOf } from './endpoints';
+  import { modelChoices } from '../ui/model-choices.svelte';
   import { FakeEndpointTransport, fakeEndpointOptions } from './fake-endpoint';
   import type { Completion, ErrorKind } from './provider';
   import { rooms as baseRooms, roomsWithDevSample } from '../rooms';
@@ -59,6 +60,8 @@
   /** CE-20 to CE-24: each endpoint's last call result, apart from Claude Code's `health` (SE-42). */
   let endpointHealth = $state<Record<string, Completion | ProviderError>>({});
   const routing = () => ({ endpoints: endpointsOf(settings.provider), defaultModel: settings.provider.defaultModel });
+  // CE-22: every picker and model label follows the stored endpoints.
+  $effect(() => { modelChoices.endpoints = endpointsOf(settings.provider); });
   const reportEndpoint = (id: string, value: Completion | ProviderError) => { endpointHealth = { ...endpointHealth, [id]: value }; };
   const routed = (claude: InferenceProvider, transport: ConstructorParameters<typeof RoutingProvider>[1]) => new RoutingProvider(claude, transport, routing, reportEndpoint);
   const desktopBridge = fake ? null : new DesktopProvider();
@@ -68,13 +71,15 @@
   /** One provider for every room, routing Claude Code and endpoint models (CE-23); in the browser build each room brings its own fake (IP-71). */
   function providerFor(r: RoomDefinition): InferenceProvider {
     if (desktopProvider) return desktopProvider;
-    let p = fakeProviders.get(r.id); if (!p) { p = routed(new ObservedProvider(r.fakeProvider(fakeDelay, fakeKind), value => health=value), new FakeEndpointTransport(r.fakeProvider(fakeDelay), fakeEndpoint)); fakeProviders.set(r.id, p); }
+    // One fake per room serves both paths, so its scenario (titles, counters) runs on across models.
+    let p = fakeProviders.get(r.id); if (!p) { const inner = r.fakeProvider(fakeDelay, fakeKind); p = routed(new ObservedProvider(inner, value => health=value), new FakeEndpointTransport(inner, fakeEndpoint)); fakeProviders.set(r.id, p); }
     return p;
   }
   const provider = $derived(providerFor(room));
   // CO-40 to CO-49: Ask Amber, one temporary chat for the app. The browser build answers from Amber's own fake (IP-71).
   const amberErrorParam = new URLSearchParams(location.search).get('amberError');
-  const amberProvider = desktopProvider ?? routed(new ObservedProvider(new AmberFakeProvider(fakeDelay, import.meta.env.DEV && amberErrorParam && Object.hasOwn(strings.errorKinds, amberErrorParam) ? amberErrorParam as ErrorKind : undefined), value => health=value), new FakeEndpointTransport(new AmberFakeProvider(fakeDelay), fakeEndpoint));
+  const amberFake = new AmberFakeProvider(fakeDelay, import.meta.env.DEV && amberErrorParam && Object.hasOwn(strings.errorKinds, amberErrorParam) ? amberErrorParam as ErrorKind : undefined);
+  const amberProvider = desktopProvider ?? routed(new ObservedProvider(amberFake, value => health=value), new FakeEndpointTransport(amberFake, fakeEndpoint));
   let askOpen = $state(false), amberRevision = $state(0), askBox = $state<ReturnType<typeof AskBox>>();
   const amberChat = new AmberChat(amberProvider, desktop ? desktopAmberLog : browserAmberLog, () => settings.companion.model,
     () => amberHelp(rooms), () => amberContext(room, space, session), () => amberRevision++);
