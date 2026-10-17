@@ -1,9 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-// CO-40 to CO-49, GV-76: Ask Amber's box, before Amber is drawn (v0.4.0 slice 2), with Amber's fake provider (IP-71).
+// CO-40 to CO-49, GV-76: Ask Amber, with Amber's fake provider (IP-71). With Amber off the chat opens in its own box;
+// with Amber on it lives in Amber's bubble (the tests further down).
 const box = (page: import('@playwright/test').Page) => page.getByRole('dialog', { name: 'Ask Amber' });
+const amberOff = (page: import('@playwright/test').Page) => page.addInitScript(() => localStorage.setItem('lantern.settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('lantern.settings') ?? '{"format":"lantern-settings/1"}'), companion: { show: false } })));
 
 test('CO-41/42/44/47: Ctrl+J opens the box with its field focused; an answer streams after thinking; a follow-up; Esc forgets', async ({ page }) => {
+  await amberOff(page);
   await page.goto('/?study=1&subject=Tides&delay=40');
   await page.locator('.panel').click();
   await page.keyboard.press('Control+j');
@@ -29,6 +32,7 @@ test('CO-41/42/44/47: Ctrl+J opens the box with its field focused; an answer str
 });
 
 test('CO-49: a failure shows the fix-it message with Retry; Retry answers', async ({ page }) => {
+  await amberOff(page);
   await page.goto('/?amberError=usage-limit');
   await page.keyboard.press('Control+j');
   const field = box(page).getByRole('textbox', { name: 'Ask Amber' });
@@ -124,4 +128,96 @@ test('GV-73: the ? overlay leads with the current space\'s guide lines', async (
   await page.keyboard.press('Control+Shift+2'); await expect(page.locator('html')).toHaveAttribute('data-room', 'choose');
   await check('Control+1', 'Say what you want to buy: type it and press Enter.');
   await check('Control+4', 'Move through your decisions: arrow keys; Enter opens one.');
+});
+
+// v0.4.0 slice 5: Amber drawn, hanging from the top bar (CO-10, CO-11, CO-16, CO-17, CO-20, CO-21, CO-41, CO-58, RS-12).
+const amber = (page: import('@playwright/test').Page) => page.getByRole('button', { name: 'Amber', exact: true });
+const bubble = (page: import('@playwright/test').Page) => page.getByRole('dialog', { name: 'Amber', exact: true });
+
+test('CO-10/11/20/21: Amber hangs under the bar on the right; a click opens a tip, Next tip, the guide; Esc closes; seen tips are kept', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides');
+  await expect(amber(page)).toBeVisible();
+  const box = (await amber(page).boundingBox())!, width = page.viewportSize()!.width;
+  expect(box.y).toBeGreaterThanOrEqual(56); expect(box.width).toBeGreaterThanOrEqual(64);
+  expect(box.x + box.width).toBeLessThanOrEqual(width - 16); expect(box.x).toBeGreaterThan(width / 2);
+  await expect(amber(page)).toHaveAttribute('data-spot', 'hang-9');
+  await amber(page).click();
+  await expect(bubble(page)).toContainText('Press Ctrl+J anywhere to ask me something.');
+  await bubble(page).getByRole('button', { name: 'Next tip' }).click();
+  await expect(bubble(page)).toContainText('Select a few words in the panel and press Alt+D');
+  await bubble(page).getByRole('button', { name: 'What can I do here?' }).click();
+  await expect(bubble(page).locator('.guide li').first()).toHaveText('Walk the graph: arrow keys; Home goes back to the root.');
+  await page.keyboard.press('Escape'); await expect(bubble(page)).toHaveCount(0); await expect(amber(page)).toBeFocused();
+  // CO-21: the two tips shown are remembered as seen (SE-50), so the next opening starts with the third.
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion') ?? '{}').seenTips)).toEqual(['frame.ask', 'frame.define']);
+  await page.reload(); await amber(page).click();
+  await expect(bubble(page)).toContainText('Press ? to see every shortcut');
+  // A press outside closes it too.
+  await page.locator('.graph').click({ position: { x: 30, y: 30 } }); await expect(bubble(page)).toHaveCount(0);
+});
+
+test('CO-41: with Amber on, Ctrl+J opens the bubble with the Ask field focused, and the answer comes in the bubble', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides');
+  await page.keyboard.press('Control+j');
+  const field = bubble(page).getByRole('textbox', { name: 'Ask Amber' });
+  await expect(field).toBeFocused();
+  await field.fill('Which key opens the settings?'); await field.press('Enter');
+  await expect(bubble(page).getByText('Press Ctrl+J anywhere to ask me, and ? for every shortcut.')).toBeVisible();
+  await expect(box(page)).toHaveCount(0);
+  await expect(page.locator('header').getByRole('button', { name: 'Ask Amber' })).toHaveCount(0);
+});
+
+test('CO-16/58/15: the menu opens on right-click and Shift+F10; Move to… moves Amber in this space only, and it stays after a restart', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides');
+  await amber(page).click({ button: 'right' });
+  const menu = page.getByRole('menu', { name: 'Amber' });
+  await expect(menu.getByRole('menuitem')).toHaveText(['Move to…', 'Hide']);
+  await expect(menu.getByRole('menuitem', { name: 'Move to…' })).toBeFocused();
+  await menu.getByRole('menuitem', { name: 'Move to…' }).click();
+  await expect(menu.getByRole('menuitemradio')).toHaveCount(10);
+  await expect(menu.getByRole('menuitemradio', { name: 'Hanging, position 10 of 10' })).toHaveAttribute('aria-checked', 'true');
+  await menu.getByRole('menuitemradio', { name: 'Hanging, position 1 of 10' }).click();
+  await expect(amber(page)).toHaveAttribute('data-spot', 'hang-0');
+  expect((await amber(page).boundingBox())!.x).toBeLessThan(40);
+  // Another space keeps its own spot.
+  await page.keyboard.press('Control+3'); await expect(amber(page)).toHaveAttribute('data-spot', 'hang-9');
+  await page.keyboard.press('Control+2'); await expect(amber(page)).toHaveAttribute('data-spot', 'hang-0');
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion') ?? '{}').spots)).toEqual({ 'learn/study': 'hang-0' });
+  await page.reload(); await expect(amber(page)).toHaveAttribute('data-spot', 'hang-0');
+  // Shift+F10 from the keyboard; arrows move in the menu; Esc closes it and gives focus back.
+  await amber(page).focus(); await page.keyboard.press('Shift+F10');
+  await expect(menu.getByRole('menuitem', { name: 'Move to…' })).toBeFocused();
+  await page.keyboard.press('ArrowDown'); await expect(menu.getByRole('menuitem', { name: 'Hide' })).toBeFocused();
+  await page.keyboard.press('Escape'); await expect(menu).toHaveCount(0); await expect(amber(page)).toBeFocused();
+});
+
+test('CO-4, RS-12: Hide turns Amber off with a toast; the capsule gains Ask; Amber comes back only from Settings', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides');
+  await amber(page).click({ button: 'right' });
+  await page.getByRole('menu', { name: 'Amber' }).getByRole('menuitem', { name: 'Hide' }).click();
+  await expect(amber(page)).toHaveCount(0);
+  await expect(page.getByRole('status').filter({ hasText: 'Amber is hidden. Bring it back in Settings → Companion.' })).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Ask Amber' })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.settings')!).companion.show)).toBe(false);
+  await page.reload(); await expect(page.locator('header').getByRole('button', { name: 'Ask Amber' })).toBeVisible(); await expect(amber(page)).toHaveCount(0);
+  await page.locator('header').getByRole('button', { name: 'Settings' }).click();
+  const dialog = page.getByRole('dialog', { name: undefined }).filter({ hasText: 'Companion' });
+  await dialog.getByRole('button', { name: 'Companion', exact: true }).click();
+  await dialog.getByRole('checkbox', { name: 'Show Amber' }).check();
+  await page.keyboard.press('Escape');
+  await expect(amber(page)).toBeVisible(); await expect(page.locator('header').getByRole('button', { name: 'Ask Amber' })).toHaveCount(0);
+});
+
+test('CO-17: clicks beside Amber\'s drawn shape reach what is underneath; popovers draw above it', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides');
+  const box = (await amber(page).boundingBox())!;
+  // The box's top-left corner is outside the lantern: what is there is not Amber.
+  const corner = await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('button.amber'), [box.x + 2, box.y + box.height - 3]);
+  expect(corner).toBe(false);
+  const body = await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('button.amber'), [box.x + box.width / 2, box.y + box.height * .6]);
+  expect(body).toBe(true);
+  // The subject field's panel (Ctrl+K) opens over Amber.
+  await page.keyboard.press('Control+k');
+  const z = await page.evaluate(() => { const p = document.querySelector('.field-panel, [role=dialog]'); return p ? Number(getComputedStyle(p).zIndex) || 0 : -1; });
+  expect(z).toBeGreaterThan(1);
 });

@@ -7,6 +7,10 @@
   --ink-mute: #aeb3bf;
   --line: #3b4558;
   --accent: #5cc6bd;
+  /* CO-55: Amber's halo and frame light in teal (designed in code, for the user to judge, CO-54). */
+  --amber-halo: #5cc6bd;
+  --amber-lit-near: #b6efe6;
+  --amber-lit-far: #5d7a76;
   --accent-ink: #0d211f;
   --focus: #b6efe6;
   --node-open: #969ca7;

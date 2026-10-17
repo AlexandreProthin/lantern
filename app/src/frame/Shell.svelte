@@ -30,6 +30,9 @@
   import { applyRoomChrome, windowTitle } from './window-chrome';
   import { isValidModel } from '../core/models';
   import AskBox from './amber/AskBox.svelte';
+  import Amber from './amber/Amber.svelte';
+  import { browserAmberStore, desktopAmberStore, emptyAmberState } from './amber/state';
+  import type { AmberState } from './amber/state';
   import SelectionCard from './amber/SelectionCard.svelte';
   import GuideLines from './amber/GuideLines.svelte';
   import { ASK_AMBER_EVENT } from '../ui/ask-amber';
@@ -64,6 +67,15 @@
   const amberChat = new AmberChat(amberProvider, desktop ? desktopAmberLog : browserAmberLog, () => settings.companion.model,
     () => amberHelp(rooms), () => amberContext(room, space, session), () => amberRevision++);
   function closeAsk() { amberChat.close(); askOpen = false; }
+  // SE-50, CO-15, CO-21: Amber's spots and seen tips, in the app state file.
+  const amberStore = desktop ? desktopAmberStore : browserAmberStore;
+  let amberState = $state<AmberState>(emptyAmberState()), amber = $state<ReturnType<typeof Amber>>();
+  const amberWriter = new DebouncedWriter<AmberState>(value => amberStore.save(value), e => console.warn('Amber state', e));
+  function saveAmberState(next: AmberState) { amberState = next; amberWriter.schedule(next); }
+  /** CO-41: Ctrl+J and the capsule's Ask open the bubble with Amber on, the box with Amber off. */
+  function openAsk() { if (settings.companion.show && amber) void amber.open(true); else if (askOpen) askBox?.focus(); else askOpen = true; }
+  /** CO-4: Hide turns the setting off and says where to turn it back on. */
+  function hideAmber() { amberChat.close(); settings.companion.show = false; preferencesChanged(); toast = strings.amberHidden; }
   // CO-45, NP-54: each selection gets its own one-question chat, forgotten when the card closes.
   let selectionAsk = $state<{ detail: AskAmberDetail; chat: AmberChat } | null>(null), selectionRevision = $state(0);
   const amberLog = desktop ? desktopAmberLog : browserAmberLog;
@@ -273,8 +285,8 @@
     // GV-76: Ctrl+K opens or closes the field's panel from any focus, text fields included.
     else if(e.ctrlKey && !e.shiftKey && !e.altKey && e.code==='KeyK') {e.preventDefault(); roomMenu=false; panelOpen=!panelOpen;}
     else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsSection='general';settingsOpen=true;}
-    // CO-41, GV-76: Ctrl+J anywhere, any focus. Until Amber is drawn (v0.4.0 slice 5) it opens the box on its own.
-    else if(e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase()==='j') {e.preventDefault(); if(askOpen) askBox?.focus(); else askOpen=true;}
+    // CO-41, GV-76: Ctrl+J anywhere, any focus: Amber's bubble with its field focused, or the box with Amber off.
+    else if(e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase()==='j') {e.preventDefault(); openAsk();}
     else if(e.key==='Escape') {
       if(document.querySelector('dialog[open]')) return;
       if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(roomMenu) roomMenu=false; else if(panelOpen) panelOpen=false; else if(space===room.defaultSpace)session?.cancel();
@@ -285,6 +297,7 @@
     void (async()=> {
       try {
         rooms=await roomsWithDevSample();
+        void amberStore.load().then(value => amberState = value).catch(e => console.warn('Amber state', e));
         if(desktop) {
           const loaded=await invoke<{document:unknown;readOnly:boolean;recovered:boolean;transferRecovered?:boolean;defaultLibrary:string;defaultName:string}>('load_settings');
           defaults=defaultSettings(loaded.defaultLibrary,loaded.defaultName,rooms);
@@ -328,7 +341,7 @@
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
 {#if !loading && settings.appearance.backdrop}<Backdrop {space} room={room.id} reduceSetting={settings.appearance.reduceMotion} />{/if}
 <TopBar {rooms} {room} {space} {subjectCount} title={session?.subject.title ?? null} busy={!!running} {summary} showTokenStats={settings.appearance.showTokenStats} {desktop} mark={lanternMark}
-  {panelOpen} bind:roomMenu bind:fieldWidth {navigate} switchRoom={id=>void switchRoom(id)} openSettings={()=>{settingsSection='general';settingsOpen=true;}} togglePanel={()=>{roomMenu=false;panelOpen=!panelOpen;}} ask={settings.companion.show?undefined:()=>{if(askOpen)askBox?.focus();else askOpen=true;}} />
+  {panelOpen} bind:roomMenu bind:fieldWidth {navigate} switchRoom={id=>void switchRoom(id)} openSettings={()=>{settingsSection='general';settingsOpen=true;}} togglePanel={()=>{roomMenu=false;panelOpen=!panelOpen;}} ask={settings.companion.show?undefined:openAsk} />
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
 {#if unavailable}<div class="banner provider-notice" role="alert"><div><strong>{strings.errorKinds[unavailable.kind]}</strong><p>{unavailable.kind==='not-installed'?strings.installInstructions:strings.signinInstructions}</p></div><button onclick={()=>{settingsSection='provider';settingsOpen=true;}}>{strings.settings}</button><button disabled={anyRunning||checkingReady} onclick={checkReady}>{strings.checkAgain}</button>{#if checkingReady}<button onclick={()=>readyController?.abort()}>{strings.cancel}</button>{/if}</div>{/if}
 {#if saveError}<div class="banner error" role="alert">{strings.saveFailed}<details><summary>{strings.details}</summary>{saveError}</details><button onclick={retrySaves}>{strings.retry}</button></div>{/if}
@@ -339,6 +352,7 @@
   rename={title=>renameSubject(session!.subject.id,title)} changed={appliesNext=>{session!.touch();if(appliesNext)toast=strings.appliesNext;}}
   openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
+{#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} {desktop} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}
 {#if askOpen}<AskBox bind:this={askBox} chat={amberChat} revision={amberRevision} close={closeAsk} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}

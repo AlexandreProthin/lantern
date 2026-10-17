@@ -17,6 +17,10 @@
   --glow-far: rgba(255, 182, 88, 0.15);
   --path-muted: #6f5c42;
   --code: #0c1320;
+  /* CO-55: Amber's halo and the light on its frame (the identity's on-Learn tokens); flame and body never change. */
+  --amber-halo: #ffac38;
+  --amber-lit-near: #efc08c;
+  --amber-lit-far: #86624a;
   color-scheme: dark;
 }
 
@@ -31,7 +35,10 @@
 @property --glow-near { syntax:'<color>'; inherits:true; initial-value:rgba(255, 199, 118, 0.34); }
 @property --glow-far { syntax:'<color>'; inherits:true; initial-value:rgba(255, 182, 88, 0.15); }
 @property --path-muted { syntax:'<color>'; inherits:true; initial-value:#6f5c42; }
-:root[data-room-fade] { transition:--surface-2 .45s ease, --accent .45s ease, --accent-ink .45s ease, --focus .45s ease, --node-lit .45s ease, --node-understood .45s ease, --glow-near .45s ease, --glow-far .45s ease, --path-muted .45s ease; }
+@property --amber-halo { syntax:'<color>'; inherits:true; initial-value:#ffac38; }
+@property --amber-lit-near { syntax:'<color>'; inherits:true; initial-value:#efc08c; }
+@property --amber-lit-far { syntax:'<color>'; inherits:true; initial-value:#86624a; }
+:root[data-room-fade] { transition:--surface-2 .45s ease, --accent .45s ease, --accent-ink .45s ease, --focus .45s ease, --node-lit .45s ease, --node-understood .45s ease, --glow-near .45s ease, --glow-far .45s ease, --path-muted .45s ease, --amber-halo .45s ease, --amber-lit-near .45s ease, --amber-lit-far .45s ease; }
 @media (prefers-reduced-motion: reduce) { :root[data-room-fade] { transition:none; } }
 :root[data-room-fade][data-reduce-motion='on'] { transition:none; }
 
