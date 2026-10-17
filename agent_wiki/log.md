@@ -2,6 +2,7 @@
 
 ## 2026-10-17
 
+* **v0.4.0 slice 6 done**: Amber can be grabbed and moved: a simulated rope in the top quarter, a swing when let go, flights and falls to the resting spots of each space (Study's three), kept per space; reduced motion goes straight. Eight points decided in code wait for the user in the [plan](/plans/v0-4-0.md).
 * **v0.4.0 slice 5 done**: Amber is drawn, hanging from the top bar with the identity's renderer (ported, byte-identical to the release), its bubble (tips, guide, Ask), its menu (*Move to…*, *Hide*) and room-tinted halo and frame light. Choose's teal Amber tokens are for the user to judge. Next: slice 6, moving Amber.
 * **v0.4.0 slice 4 done**: the `?` overlay shows *What can I do here?* for the current space (GV-73, CO-22). Every Amber feature is now reachable without the character (CO-2): Ctrl+J, the capsule's *Ask*, Alt+D, the overlay. Next: slice 5, Amber drawn on the top bar.
 * **v0.4.0 slices 2 and 3 done**: `amber-1` passed its eval gate on Haiku 5.5 (24/24 three times, categories all right) after one amendment for the tag and for key and room names in French; Ask Amber on a selection (Alt+D, a card by the selection, *Ask the tutor*) in both rooms. Details in the [plan](/plans/v0-4-0.md).

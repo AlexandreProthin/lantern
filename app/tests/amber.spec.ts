@@ -174,7 +174,7 @@ test('CO-16/58/15: the menu opens on right-click and Shift+F10; Move to… moves
   await expect(menu.getByRole('menuitem')).toHaveText(['Move to…', 'Hide']);
   await expect(menu.getByRole('menuitem', { name: 'Move to…' })).toBeFocused();
   await menu.getByRole('menuitem', { name: 'Move to…' }).click();
-  await expect(menu.getByRole('menuitemradio')).toHaveCount(10);
+  await expect(menu.getByRole('menuitemradio')).toHaveCount(13);
   await expect(menu.getByRole('menuitemradio', { name: 'Hanging, position 10 of 10' })).toHaveAttribute('aria-checked', 'true');
   await menu.getByRole('menuitemradio', { name: 'Hanging, position 1 of 10' }).click();
   await expect(amber(page)).toHaveAttribute('data-spot', 'hang-0');
@@ -220,4 +220,88 @@ test('CO-17: clicks beside Amber\'s drawn shape reach what is underneath; popove
   await page.keyboard.press('Control+k');
   const z = await page.evaluate(() => { const p = document.querySelector('.field-panel, [role=dialog]'); return p ? Number(getComputedStyle(p).zIndex) || 0 : -1; });
   expect(z).toBeGreaterThan(1);
+});
+
+// v0.4.0 slice 6: moving Amber (CO-12 to CO-16, CO-56).
+async function dragAmber(page: import('@playwright/test').Page, to: { x: number; y: number }, during?: () => Promise<void>) {
+  const box = (await amber(page).boundingBox())!, from = { x: box.x + box.width / 2, y: box.y + box.height * .6 };
+  await page.mouse.move(from.x, from.y); await page.mouse.down();
+  await page.mouse.move(from.x + (to.x - from.x) / 2, from.y + (to.y - from.y) / 2, { steps: 12 });
+  await page.mouse.move(to.x, to.y, { steps: 12 });
+  await during?.();
+  await page.mouse.up();
+}
+test('CO-13/14/15: dropped low, Amber falls to the nearest resting spot of Study, stands there, and is there after a restart', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 720 });
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await dragAmber(page, { x: 120, y: 520 }, async () => {
+    // CO-14: while held, every spot is hinted: ten along the bar and Study's three rests; lower down there is no rope.
+    await expect(page.locator('svg.hints circle')).toHaveCount(10);
+    await expect(page.locator('svg.hints ellipse')).toHaveCount(3);
+    await expect(page.locator('svg.hints .lit')).toHaveCount(1);
+    await expect(page.locator('svg.rope')).toHaveCount(0);
+  });
+  await expect(amber(page)).toHaveAttribute('data-motion', 'flight');
+  await expect(amber(page)).toHaveAttribute('data-motion', 'still');
+  await expect(amber(page)).toHaveAttribute('data-spot', 'rest-graph-left');
+  const box = (await amber(page).boundingBox())!, graph = (await page.locator('.graph-side').boundingBox())!;
+  expect(box.x).toBeCloseTo(graph.x + 16, 0); expect(box.y + box.height).toBeLessThan(graph.y + graph.height - 100);
+  await expect(page.locator('svg.hints')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion') ?? '{}').spots?.['learn/study'])).toBe('rest-graph-left');
+  await page.reload(); await expect(amber(page)).toHaveAttribute('data-spot', 'rest-graph-left');
+  // The bubble opens above a resting Amber.
+  await amber(page).click();
+  const b = (await bubble(page).boundingBox())!; expect(b.y + b.height).toBeLessThanOrEqual((await amber(page).boundingBox())!.y);
+});
+test('CO-12: held in the top quarter, Amber is on a bowed rope that follows; let go, it swings and settles hanging there', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 720 });
+  await page.goto('/?study=1&subject=Tides');
+  await dragAmber(page, { x: 520, y: 150 }, async () => {
+    const d = await page.locator('svg.rope path').getAttribute('d');
+    expect(d).toContain('Q');
+  });
+  await expect(amber(page)).toHaveAttribute('data-motion', 'swing');
+  const tilts: number[] = [];
+  for (let i = 0; i < 6; i++) { tilts.push(Number((await amber(page).evaluate(b => (b as HTMLElement).style.transform)).replace(/[^-0-9.]/g, '') || 0)); await page.waitForTimeout(120); }
+  expect(tilts.some(t => Math.abs(t) > .5)).toBe(true);
+  await expect(amber(page)).toHaveAttribute('data-motion', 'still', { timeout: 8000 });
+  const spot = await amber(page).getAttribute('data-spot');
+  expect(spot).toMatch(/^hang-[3-5](:\d+)?$/);
+  // Hanging under the tie, upright, on a straight rope from the bar.
+  const box = (await amber(page).boundingBox())!, rope = await page.locator('svg.rope path').getAttribute('d');
+  expect(rope).toMatch(/^M[\d.]+ 56 L[\d.]+ [\d.]+$/); expect(box.y).toBeGreaterThan(56);
+});
+test('CO-56: with reduced motion a drop goes straight to the spot: no swing, flight or fall', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 1024, height: 720 });
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await dragAmber(page, { x: 900, y: 540 });
+  await expect(amber(page)).toHaveAttribute('data-motion', 'still');
+  await expect(amber(page)).toHaveAttribute('data-spot', 'rest-panel-right');
+  await dragAmber(page, { x: 300, y: 140 });
+  await expect(amber(page)).toHaveAttribute('data-motion', 'still'); await expect(amber(page)).toHaveAttribute('data-spot', /^hang-/);
+});
+test('CO-16: Move to… lists the bar and this space\'s rests; Esc while holding Amber puts it back', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 720 });
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await amber(page).click({ button: 'right' });
+  await page.getByRole('menuitem', { name: 'Move to…' }).click();
+  const items = page.getByRole('menu', { name: 'Amber' }).getByRole('menuitemradio');
+  await expect(items).toHaveCount(13);
+  await expect(items.nth(12)).toHaveText('Bottom right of the reading panel');
+  await items.nth(12).click();
+  await expect(amber(page)).toHaveAttribute('data-spot', 'rest-panel-right');
+  // Welcome has no rests of its own: the space's two bottom corners.
+  await page.keyboard.press('Control+1'); await amber(page).click({ button: 'right' }); await page.getByRole('menuitem', { name: 'Move to…' }).click();
+  await expect(items.nth(10)).toHaveText('Bottom left'); await expect(items).toHaveCount(12);
+  await page.keyboard.press('Escape'); await page.keyboard.press('Escape');
+  const before = await amber(page).getAttribute('data-spot');
+  const box = (await amber(page).boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height * .6); await page.mouse.down(); await page.mouse.move(400, 400, { steps: 8 });
+  await expect(amber(page)).toHaveAttribute('data-motion', 'drag');
+  await page.keyboard.press('Escape'); await page.mouse.up();
+  await expect(amber(page)).toHaveAttribute('data-motion', 'still'); await expect(amber(page)).toHaveAttribute('data-spot', before!);
 });

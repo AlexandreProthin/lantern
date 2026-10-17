@@ -88,7 +88,7 @@ export const strings = {
   amberSpent:(total:string, input:string, output:string, calls:number)=>`Amber has spent ${total} tokens (${input} in / ${output} out) over ${calls} question${calls===1?'':'s'}.`,
   amberSpentNone:'Amber has not answered any questions yet.', amberHiddenHint:'Off: Amber shows up nowhere. Ctrl+J, Alt+D and ? still work.',
   whatCanIDo:'What can I do here?', nextTip:'Next tip', amberTitle:'Amber · click for tips and questions, right-click to move or hide', moveTo:'Move to…', hideAmber:'Hide',
-  amberHidden:'Amber is hidden. Bring it back in Settings → Companion.', amberSpotHang:(n:number)=>`Hanging, position ${n} of 10`,
+  amberHidden:'Amber is hidden. Bring it back in Settings → Companion.', amberSpotHang:(n:number)=>`Hanging, position ${n} of 10`, amberRestLeft:'Bottom left', amberRestRight:'Bottom right',
   askAmber:'Ask Amber', askTutor:'Ask the tutor', amberDefine:'What does this mean here?', askAmberPlaceholder:'Ask me anything… (Enter to ask)', amberThinking:'Amber is thinking…', amberYou:'You', amberName:'Amber', amberFailed:'Amber could not answer.',
   amberAbout:(rooms:string[])=>`Lantern is a desktop app with rooms, each a different way of working on a subject, and each with its own spaces. ${rooms.join(' ')} Amber is the small lantern companion; it can be hidden in Settings → Companion, and every feature stays reachable without it.`,
   amberRoomLine:(name:string, about:string, spaces:string[])=>`The ${name} room (spaces: ${spaces.join(', ')}): ${about}`,

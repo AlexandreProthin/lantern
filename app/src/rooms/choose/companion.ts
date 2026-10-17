@@ -12,6 +12,14 @@ export const chooseCompanion: RoomCompanion = {
     { id: 'choose.board', text: 'The board beside the graph counts your needs, criteria and shortlist at a glance.' },
     { id: 'choose.web', text: 'Turn off *Use the web* in Settings → Choose room for answers from the model’s knowledge only.' }
   ],
+  // CO-13: Study's three resting positions, just above the controls in each corner (legend, zoom, composer).
+  rests: {
+    survey: [
+      { id: 'graph-left', label: 'Bottom left of the graph', anchor: '.study:not(.hidden) .graph-side', side: 'left', inset: { x: 16, y: 132 } },
+      { id: 'graph-right', label: 'Bottom right of the graph', anchor: '.study:not(.hidden) .graph-side', side: 'right', inset: { x: 16, y: 72 } },
+      { id: 'panel-right', label: 'Bottom right of the reading panel', anchor: '.study:not(.hidden) aside.panel', side: 'right', inset: { x: 24, y: 140 } }
+    ]
+  },
   guide: {
     welcome: [
       'Say what you want to buy: type it and press Enter.',

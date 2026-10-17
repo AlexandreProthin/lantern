@@ -12,6 +12,14 @@ export const learnCompanion: RoomCompanion = {
     { id: 'learn.search', text: 'Ctrl+F in Study searches every node of the subject.' },
     { id: 'learn.divider', text: 'Drag the divider to give the graph or the panel more room; double-click it to reset.' }
   ],
+  // CO-13: Study's three resting positions, just above the controls in each corner (legend, zoom, composer).
+  rests: {
+    study: [
+      { id: 'graph-left', label: 'Bottom left of the graph', anchor: '.study:not(.hidden) .graph-side', side: 'left', inset: { x: 16, y: 132 } },
+      { id: 'graph-right', label: 'Bottom right of the graph', anchor: '.study:not(.hidden) .graph-side', side: 'right', inset: { x: 16, y: 72 } },
+      { id: 'panel-right', label: 'Bottom right of the reading panel', anchor: '.study:not(.hidden) aside.panel', side: 'right', inset: { x: 24, y: 140 } }
+    ]
+  },
   guide: {
     welcome: [
       'Bring a subject: type it and press Enter.',

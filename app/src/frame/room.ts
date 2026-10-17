@@ -15,7 +15,9 @@ export interface SpaceProps {
 }
 /** RS-15/RS-19: the room's own fields in the subject menu. `changed(true)` also says "applies to the next generation". */
 export interface SubjectMenuProps { visit: RoomVisit; revision: number; changed: (appliesNext: boolean) => void }
-/** RS-3, CO-22, CO-23: what Amber says about a room. Bottom resting positions join in v0.4.0 slice 6. */
+/** CO-13: a bottom resting position, in a bottom corner of an element of the space, a little inside it. */
+export interface RestSpec { id: string; label: string; anchor: string; side: 'left' | 'right'; inset?: { x: number; y: number } }
+/** RS-3, CO-13, CO-22, CO-23: what Amber says about a room, and where it can rest in each space. */
 export interface RoomCompanion {
   /** One line for Amber's app help: what the room is for. */
   about: string;
@@ -23,6 +25,8 @@ export interface RoomCompanion {
   tips: readonly { id: string; text: string }[];
   /** CO-22, GV-73: *What can I do here?* per space id, each line an action and its key. */
   guide: Record<string, readonly string[]>;
+  /** CO-13: bottom resting positions per space id; a space without any gets the space's two bottom corners. */
+  rests?: Record<string, readonly RestSpec[]>;
 }
 /** RS-1..3, RS-30, SE-12, DM-66, ST-7. The frame calls only these members (RS-2). */
 export interface RoomDefinition {
