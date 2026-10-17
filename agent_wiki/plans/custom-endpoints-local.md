@@ -174,8 +174,8 @@ user, CPU only on this machine. Fixtures are recorded against it first.
     trailing cases.
   - Checks: `npm run check` clean; 191 TS tests (the 184 existing ones unchanged, 7 new); Playwright 93
     passed and 2 skipped, as at v0.4.0. The worktree needed its own `npm ci`.
-  - **Not done, for the user:** Choose's parser (`rooms/choose/protocol.ts`) also needs closing tags for
-    every block. It is left as it is until the user decides.
+  - Choose's parser (`rooms/choose/protocol.ts`) got the same tolerance for the last block of every tag,
+    on the user's word (TP-31 amended), with its own test.
 
 # Slice 3. Settings → Endpoints
 

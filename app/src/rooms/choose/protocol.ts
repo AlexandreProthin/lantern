@@ -43,6 +43,9 @@ const decode = (raw: string): unknown => JSON.parse(raw.split('\n').filter(line 
 function blocks(raw: string, tag: Tag): unknown[] {
   const found: unknown[] = [];
   for (const match of raw.matchAll(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'g'))) try { found.push(decode(match[1])); } catch { /* Next block. */ }
+  // TP-31 (amended 2026-10-17): a last block never closed still counts when its complete JSON ends the reply.
+  const open = raw.lastIndexOf(`<${tag}>`);
+  if (open >= 0 && !raw.includes(`</${tag}>`, open)) try { found.push(decode(raw.slice(open + tag.length + 2))); } catch { /* Cut short: ignored. */ }
   return found;
 }
 

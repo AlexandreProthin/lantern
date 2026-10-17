@@ -33,6 +33,19 @@ test('TP-31/34, CP-30.1: options tolerate fences, unknown kinds and bad entries;
   expect(parseReply('T', 'intro', off).options).toEqual([]);
 });
 
+test('TP-31 (amended): a last block left unclosed still parses when its JSON is complete; cut short it does not', () => {
+  const light = parseReply(`Prose.\n<options>${options()}`, 'light', { ...off, focusKind: 'concept' });
+  expect(light.optionsValid).toBe(true); expect(light.options).toHaveLength(3); expect(light.text).toBe('Prose.');
+  const reply = parseReply('Noted.\n<need>{"question":"Budget?","answer":"Under 300 €"}</need>\n<branch>{"title":"Enclosed printers","hook":"Quieter","kind":"family"}', 'reply', off);
+  expect(reply.need).toEqual({ question: 'Budget?', answer: 'Under 300 €' }); expect(reply.branch?.title).toBe('Enclosed printers');
+  const recommend = parseReply('Pick.\n<recommend>{"product":null,"confidence":"low","missing":["budget"]}', 'recommend', off); expect(recommend.recommend).toBeTruthy();
+  const cut = options(); expect(parseReply(`Prose.\n<options>${cut.slice(0, cut.length - 20)}`, 'light', { ...off, focusKind: 'concept' }).optionsValid).toBe(false);
+  expect(parseReply(`Prose.\n<options>${options()}\nThen more prose.`, 'light', { ...off, focusKind: 'concept' }).optionsValid).toBe(false);
+  // A closed block still wins over a later open one.
+  const both = parseReply(`T <options>${options(3)}</options> <options>${json([{ title: 'Late' }])}`, 'intro', off);
+  expect(both.options.map(o => o.title)).toEqual(['Option 0', 'Option 1', 'Option 2']);
+});
+
 test('TP-30, CP-10: a block the task does not allow is ignored and stripped', () => {
   const all = `Prose <options>${options()}</options><products>[{"title":"P"}]</products><cells>[]</cells><facts>[]</facts><need>{"question":"q","answer":"a"}</need><branch>{"title":"B"}</branch><recommend>{"product":null}</recommend>`;
   const got = (task: Parameters<typeof parseReply>[1]) => { const r = parseReply(all, task, off); return { text: r.text, options: r.options.length, products: r.products.length, need: !!r.need, branch: !!r.branch, recommend: !!r.recommend, cellsValid: r.cellsValid, factsValid: r.factsValid }; };
