@@ -56,7 +56,7 @@ Upload the installer and `latest.json` to the GitHub release. A release without
 `latest.json` can never update itself. While the repository is private the GitHub
 channel answers 404 (UP-45); `--out` fills a **local update folder** instead, which
 an installed build uses once it is set in the hidden Settings → Developer section
-(five clicks on the version line, UP-60..66). No signing key is generated or committed. Follow `ACCEPTANCE.md` (and, from v0.3.0, `ACCEPTANCE-CHOOSE.md`) before releasing.
+(five clicks on the version line, UP-60..66). No signing key is generated or committed. Follow `ACCEPTANCE.md` (and, from v0.3.0, `ACCEPTANCE-CHOOSE.md`; from v0.4.0, `ACCEPTANCE-AMBER.md`) before releasing.
 
 Storage tests use isolated temporary libraries and never modify real subjects.
 They cover round-trip, path safety, conflicts, cache invalidation, read-only newer
