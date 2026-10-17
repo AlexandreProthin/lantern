@@ -74,7 +74,19 @@ export const strings = {
   libraryFolder: 'Library folder', reduceMotion: 'Reduce motion', followSystem: 'Follow system', alwaysReduce: 'Always reduce',
   shortcuts: 'Keyboard shortcuts', close: 'Close', settingsRecovered: 'Unreadable settings were backed up and reset to defaults.',
   libraryUnavailable: 'Your library folder is unavailable.', openConflict: 'Open conflict copy',
-  checkAgain: 'Check again', testProvider: 'Test', notTested: 'Not tested yet'
+  checkAgain: 'Check again', testProvider: 'Test', notTested: 'Not tested yet',
+  // CE-20 to CE-26, CE-30, CE-52, CE-80 to CE-82: Settings → Provider → Endpoints.
+  claudeCode: 'Claude Code', endpoints: 'Endpoints',
+  endpointsHint: 'Models on a server you run, such as Ollama or llama.cpp. Lantern never starts or installs a server; start it yourself.',
+  presetNames: { ollama: 'Ollama', llamacpp: 'llama.cpp', lmstudio: 'LM Studio', custom: 'Custom URL' } as Record<string, string>,
+  addEndpoint: 'Add endpoint', endpointName: 'Name', serverUrl: 'Server URL', removeEndpoint: 'Remove', confirmRemoveEndpoint: 'Remove this endpoint',
+  lanConfirm: 'This address is a computer on my local network', lanHint: 'Lantern sends plain http:// only to this computer or to a local-network address you confirm; anything else needs https://.',
+  fetchModels: 'Fetch models', fetchingModels: 'Fetching models…', noModels: 'No models yet. Start the server, then fetch its models.',
+  modelsFetched: (n: number) => `${n} model${n === 1 ? '' : 's'} on the server.`,
+  pinned: 'Pinned', model: 'Model', contextSize: 'Context size', thinking: 'Thinking',
+  thinkingNames: { off: 'Off', on: 'On', default: 'Model default' } as Record<string, string>,
+  thinkingHint: 'Off is fastest. A subject’s effort does not apply to these models.', contextHint: 'Read from the server when it says; larger sizes use more memory.',
+  testModel: 'Model to test', testing: 'Testing…', endpointReady: (model: string, seconds: number) => `Ready · ${model} · ${seconds} s`, notEvaluated: 'not evaluated'
   , changeLibrary:'Browse…', applyLibrary:'Apply path', revealLibrary:'Reveal library in Explorer', appVersion:(version:string)=>`Lantern ${version}`,
   checkForUpdates:'Check for updates', checkingUpdates:'Checking…', upToDate:'Lantern is up to date', updateAvailable:(version:string)=>`Lantern ${version} is available`, installUpdate:'Install', updateLater:'Later',
   updateUnreachable:'Could not reach the update server', updateUnconfigured:'Updates are not set up in this build', updateInstallFailed:(reason:string)=>`The update could not be installed. ${reason}`,

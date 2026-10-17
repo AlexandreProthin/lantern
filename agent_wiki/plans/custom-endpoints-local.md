@@ -190,6 +190,25 @@ user, CPU only on this machine. Fixtures are recorded against it first.
   only when a Claude Code model is picked or used. With no endpoint, nothing changes.
 - **Exit:** settings tests (round trip, validation, no key field); a Playwright pass on the list with
   the fake endpoint; the Claude Code section's existing tests unchanged.
+- **Done 2026-10-17**:
+  - `provider.endpoints` is validated in `settings.ts`: malformed entries and repeated ids drop, unknown
+    fields (an `apiKey`, say) are never kept. The key stays out of the defaults, so *Reset to defaults*
+    in Provider never removes an endpoint.
+  - `frame/EndpointsSettings.svelte` sits under a new *Claude Code* heading in Provider. It adds an
+    endpoint from a preset (`ollama`, `ollama-2`, …), renames and removes it (two steps), and asks for
+    the LAN confirmation for plain http to another machine, again whenever the URL changes. *Fetch
+    models* merges the list: settings are kept, new models are pinned when there are 20 or fewer, and
+    pinned models get their context size from the server. Each model has its size and thinking
+    controls, and *Test* runs on one chosen model through the normal provider path. Results show per
+    endpoint; nothing calls a server unasked.
+  - CE-26 in the Shell: with an endpoint set, Claude Code's *not installed* or *not signed in* banner
+    shows only while the open subject's model, or the default model on Welcome, is a Claude Code one.
+    Creating a subject on an endpoint model is not blocked by the CLI. With no endpoint, nothing changes.
+    **No automatic test covers this rule yet**; slice 8's acceptance includes it. Welcome's
+    *not ready* line follows the default model, not a model picked in Welcome's own picker.
+  - Checks: `npm run check` clean; 196 TS tests (4 new); Playwright 95 passed and 2 skipped (2 new, in
+    `tests/endpoints.spec.ts`). The panel was looked at in a Playwright screenshot, since the preview
+    tool serves the main checkout, not this worktree.
 
 # Slice 4. Pickers, meta line, Amber
 

@@ -31,7 +31,7 @@
   import TopBar from './TopBar.svelte';
   import FieldPanel from './FieldPanel.svelte';
   import { applyRoomChrome, windowTitle } from './window-chrome';
-  import { isValidModel } from '../core/models';
+  import { isEndpointModel, isValidModel } from '../core/models';
   import AskBox from './amber/AskBox.svelte';
   import Amber from './amber/Amber.svelte';
   import { browserAmberStore, desktopAmberStore, emptyAmberState } from './amber/state';
@@ -156,7 +156,10 @@
   const paletteSubjects = $derived.by(() => { revision; return catalogue.opened; });
   const running = $derived.by(() => { revision; return session?.running ? {...session.running} : null; });
   const anyRunning = $derived.by(() => { revision; return [...owned.values()].some(entry => !!entry.session.running); });
-  const unavailable=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
+  const cliProblem=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
+  /** CE-26: with an endpoint set, Claude Code's banner shows only while a Claude Code model is in use (the open subject's, else the default). With no endpoint, nothing changes. */
+  const claudeInUse=$derived.by(()=>{revision;if(!endpointsOf(settings.provider).length)return true;const model=session?.subject.rooms[room.id]?.model??settings.provider.defaultModel;return !isEndpointModel(String(model??''));});
+  const unavailable=$derived(cliProblem&&claudeInUse?cliProblem:null);
   const updater=new UpdateController();
   const showUpdateNotice=$derived(updater.fromLaunch&&['available','downloading','installing'].includes(updater.phase)&&shouldShowNotice(settings,updater.version,anyRunning&&updater.phase==='available'));
   /** UP-1, UP-21: a check the server answered counts, however it was started. */
@@ -222,7 +225,7 @@
     return {session:controller,persistence,room:owner.id};
   }
   async function createSubject(title: string, tone: Tone, model: string, direction = '') {
-    if (!libraryAvailable || unavailable) throw new Error(strings.cliNotReady);
+    if (!libraryAvailable || (cliProblem && !isEndpointModel(model))) throw new Error(strings.cliNotReady);
     if (!isValidModel(model)) throw new Error(strings.invalidModel);
     const subject=room.newSubject(checkedTitle(title),tone,settings,checkedDirection(direction));
     subject.rooms[room.id].model=model;
@@ -399,7 +402,7 @@
   openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/key}{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
 {#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} {desktop} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} thinking={amberThinking} working={amberWorking} lean={amberLean} greeting={amberGreeting} waiting={amberWaiting} greeted={()=>amberGreeting=null} {openRelease} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
-{#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
+{#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {endpointHealth} {fakeEndpoint} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}
 {#if askOpen}<AskBox bind:this={askBox} chat={amberChat} revision={amberRevision} close={closeAsk} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}>{#if room.companion?.guide[space]?.length}<h2>{strings.whatCanIDo}</h2><GuideLines lines={room.companion.guide[space]} />{/if}<h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts(rooms.map(r=>r.name)):''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}

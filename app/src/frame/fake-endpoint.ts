@@ -29,3 +29,8 @@ export function fakeEndpointOptions(params: URLSearchParams, kinds: Record<strin
   return { firstByteMs: Number(params.get('endpointDelay') ?? 0) || 0, ...(error && Object.hasOwn(kinds, error) ? { error: error as ErrorKind } : {}),
     ...(reply === 'unclosed' || reply === 'no-options' ? { reply } : {}) };
 }
+/** IP-71: the model list and model facts the browser build shows for any endpoint. */
+export const fakeEndpointAdmin = {
+  async models(options: FakeEndpointOptions): Promise<string[]> { if (options.error) throw new ProviderError(options.error, 'Injected fake-endpoint failure'); return ['gemma4:e2b', 'qwen3:8b']; },
+  async info(): Promise<{ contextSize?: number; thinking?: boolean }> { return { contextSize: 131072, thinking: true }; },
+};
