@@ -1,13 +1,15 @@
 ---
 type: Plan
-title: v0.4.0 Amber lines, draft for review
-description: Draft of Amber's predefined words for the user to review - the tip pool, What can I do here? for every space of Learn and Choose, the greeting lines and the waiting lines - before they move into strings.ts and the room definitions.
+title: v0.4.0 Amber lines
+description: Amber's predefined words, agreed by the user 2026-10-17 - the tip pool, What can I do here? for every space of Learn and Choose, the greeting lines and the waiting lines - before they move into strings.ts and the room definitions.
 tags: [plan, v0.4.0, companion, amber, strings]
-status: draft
+status: stable
 generated: { by: claude-code/opus-5.5, at: 2026-10-17T12:30:00Z }
 ---
 
-Slice 0 of the [v0.4.0 plan](/plans/v0-4-0.md). Everything here is predefined text (CO-40); none of it
+Slice 0 of the [v0.4.0 plan](/plans/v0-4-0.md). **Agreed by the user 2026-10-17** ("all good for me"), with the
+drafted answers to the three questions at the end: tip 10 (Ctrl+K) goes in now that the top bar is on master, Learn keeps
+*The tutor is thinking…*, and Amber speaks in the first person. Everything here is predefined text (CO-40); none of it
 comes from a model. Once agreed it moves, word for word, into `app/src/ui/strings.ts` (frame lines) and
 each room's `companion` member (RS-3, CO-23). Edit anything in place, cross out what you don't want.
 

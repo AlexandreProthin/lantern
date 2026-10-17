@@ -197,12 +197,13 @@ Active when the graph has focus (Tab reaches the focused node; the graph is one 
 | Home | graph | Focus the root (GV-74) |
 | Enter | graph, on the focused node | *open* node: light it up, then focus moves to the panel; *lit* or *understood* node: focus the composer; *dismissed* node: focus the panel (GV-71) |
 | Ctrl+Enter | composer; an edit field | Send the message; in an edit field, save the edit |
-| Esc | anywhere | Close the overlay, popover or dialog; else cancel the edit in progress; else cancel the running generation (GV-72) |
+| Esc | anywhere | Close the overlay, popover, dialog or the field's panel; else cancel the edit in progress; else cancel the running generation (GV-72) |
 | Ctrl+1 / Ctrl+2 / Ctrl+3 | anywhere, any focus | Welcome / Study / Gallery; Ctrl+2 with no subject open opens the most recent one |
 | Alt+A / Alt+N / Alt+D | with a text selection | *Ask about this* / *Make it a node* / *Ask Amber* (the selection popover; Alt+D from 2026-10-16, NP-54) |
 | Ctrl+J | anywhere, any focus | Ask Amber: opens Amber's bubble with its field focused, or the Ask box when Amber is off ([companion](/specs/companion.md) CO-41) |
 | ? | anywhere outside a text field | Show or hide the shortcuts |
 | Ctrl+Shift+1 / Ctrl+Shift+2 | anywhere, any focus | Learn / Choose room, on its Welcome (RS-23, from v0.2.0) |
+| Ctrl+K | anywhere, any focus | Open or close the field's panel: this subject's settings and the palette ([rooms-spaces](/specs/rooms-spaces.md) RS-15, from 2026-10-17) |
 | Ctrl+, | anywhere | Open Settings |
 | Ctrl+F | Study | Search the subject's nodes; in the field, Enter / Shift+Enter: next / previous match, Esc: close (GV-57) |
 

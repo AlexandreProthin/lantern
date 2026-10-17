@@ -158,7 +158,7 @@ test('CR-12: the three most recent Choose subjects are Gallery’s resting card 
   await page.keyboard.press('Control+1');
   await cards.nth(1).click();
   await expect(space(page)).toHaveAttribute('aria-label', 'Survey');
-  await expect(page.locator('header .subject')).toContainText('Sofa bed');
+  await expect(page.locator('header .subject-field .title')).toContainText('Sofa bed');
   expect(errs).toEqual([]);
 });
 
@@ -261,7 +261,7 @@ test('WG-70: an empty library says so and leads to Welcome', async ({ page }) =>
 test('CR-13/CR-90/RS-19: the subject menu edits tone, the needs note and the locale', async ({ page }) => {
   await seed(page, [library[0]]);
   await page.goto('/?chooseRoom&study=1&resume=1');
-  await page.locator('header .subject').click();
+  await page.locator('header .subject-field .title').click();
   const menu = page.locator('.subject-menu');
   await expect(menu.getByLabel('Your needs, in your words')).toHaveValue('budget about 500 €');
   await menu.getByLabel('Your needs, in your words').fill('budget about 600 €, for my kids'); await menu.getByLabel('Your needs, in your words').press('Tab'); await menu.getByLabel('Tone').selectOption('expert');

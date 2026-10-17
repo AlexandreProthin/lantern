@@ -45,7 +45,7 @@ test('CO-43, CO-23: the help lists every room, every space with guide lines, the
   expect(h.about).toContain('The Learn room (spaces: Welcome, Study, Gallery)'); expect(h.about).toContain('The Choose room (spaces: Welcome, Survey, Compare, Gallery)');
   expect(h.guide.map(g => `${g.room}/${g.space}`)).toEqual(['Learn/Welcome', 'Learn/Study', 'Learn/Gallery', 'Choose/Welcome', 'Choose/Survey', 'Choose/Compare', 'Choose/Gallery']);
   expect(h.shortcuts).toContain('Ctrl+J — Ask Amber'); expect(h.shortcuts).toContain('Ctrl+Shift+2 — Choose');
-  expect(h.tips.length).toBe(9 + 8 + 8);
+  expect(h.tips.length).toBe(10 + 8 + 8);
 });
 
 const memoryLog = () => { const records: AmberLogRecord[] = []; const log: AmberLog = { append: async r => { records.push(r); }, totals: async () => ({ input: 0, output: 0, calls: 0 }) }; return { records, log }; };

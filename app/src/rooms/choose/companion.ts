@@ -1,5 +1,5 @@
 import type { RoomCompanion } from '../../frame/room';
-/** RS-3, CO-21 to CO-23: Choose's lines for Amber. Draft under review (agent_wiki/plans/v0-4-0-amber-lines.md). */
+/** RS-3, CO-21 to CO-23: Choose's lines for Amber. As agreed 2026-10-17 (agent_wiki/plans/v0-4-0-amber-lines.md). */
 export const chooseCompanion: RoomCompanion = {
   about: 'say what you want to buy; the room maps your needs, the criteria and candidate products as a graph, researches products on the web with sources, compares a shortlist side by side, and recommends one.',
   tips: [

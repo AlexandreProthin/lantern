@@ -12,9 +12,10 @@ import Study from './Study.svelte';
 import LearnSettings from './LearnSettings.svelte';
 import SubjectMenu from './SubjectMenu.svelte';
 import { learnCompanion } from './companion';
+import { glyphs } from '../../ui/glyphs';
 export const learnRoom: RoomDefinition = {
   id:'learn', name:strings.learn, accent:{ '--accent':'#e8b66e' },
-  spaces:[{ id:'welcome',label:strings.welcome,icon:'⌂',shortcutIndex:1,component:Welcome },{id:'study',label:strings.study,icon:'⌘',shortcutIndex:2,component:Study},{id:'gallery',label:strings.gallery,icon:'▦',shortcutIndex:3,component:Gallery}],
+  spaces:[{ id:'welcome',label:strings.welcome,icon:glyphs.welcome,shortcutIndex:1,component:Welcome },{id:'study',label:strings.study,icon:glyphs.study,shortcutIndex:2,component:Study},{id:'gallery',label:strings.gallery,icon:glyphs.gallery,shortcutIndex:3,component:Gallery}],
   defaultSpace:'study', settingsMenu:LearnSettings,
   settings:{ defaults:learnSettingsDefaults, validate:validateLearnSettings },
   defaultTone:settings => learnSettings(settings).defaultTone,

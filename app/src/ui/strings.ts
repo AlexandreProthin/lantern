@@ -90,7 +90,7 @@ export const strings = {
   askAmber:'Ask Amber', askAmberPlaceholder:'Ask me anything… (Enter to ask)', amberThinking:'Amber is thinking…', amberYou:'You', amberName:'Amber', amberFailed:'Amber could not answer.',
   amberAbout:(rooms:string[])=>`Lantern is a desktop app with rooms, each a different way of working on a subject, and each with its own spaces. ${rooms.join(' ')} Amber is the small lantern companion; it can be hidden in Settings → Companion, and every feature stays reachable without it.`,
   amberRoomLine:(name:string, about:string, spaces:string[])=>`The ${name} room (spaces: ${spaces.join(', ')}): ${about}`,
-  // CO-21: the frame's tips, shown in every room. Draft lines under review (agent_wiki/plans/v0-4-0-amber-lines.md).
+  // CO-21: the frame's tips, shown in every room, as agreed 2026-10-17 (agent_wiki/plans/v0-4-0-amber-lines.md).
   amberTips:[
     { id:'frame.ask', text:'Press Ctrl+J anywhere to ask me something. I know the app, your subject, and a bit of everything else.' },
     { id:'frame.define', text:'Select a few words in the panel and press Alt+D: I’ll tell you what they mean.' },
@@ -100,14 +100,17 @@ export const strings = {
     { id:'frame.spaces', text:'Ctrl+1, Ctrl+2, Ctrl+3 jump between the spaces of a room.' },
     { id:'frame.rooms', text:'Ctrl+Shift+1 and Ctrl+Shift+2 switch rooms; each room keeps its own open subject.' },
     { id:'frame.esc', text:'Esc closes what’s open first, then cancels an edit, then a running generation.' },
-    { id:'frame.settings', text:'Settings are one press away: Ctrl+,' }
+    { id:'frame.settings', text:'Settings are one press away: Ctrl+,' },
+    { id:'frame.palette', text:'Ctrl+K opens the subject’s settings and lets you jump to another subject.' }
   ] as readonly { id:string; text:string }[],
   found:'Found', notFound:'Not found', signedIn:'Signed in', notSignedIn:'Not signed in'
   , chooseModel:'Choose a model',copyDetails:'Copy details'
   , understoodByYou:'understood by you',preparing:'preparing',jumpLatest:'Jump to latest'
   , nodeKinds:{subject:'subject',axis:'axis',deeper:'go deeper',application:'application',adjacent:'adjacent idea',exercise:'exercise',question:'from a question',own:'own'}
+  , spaces: 'Spaces', openASubject: 'Open a subject…', subjectField: 'Subject and palette', thisSubject: 'This subject', otherSubjects: 'Other subjects',
+  paletteFilter: 'Type a subject or a room…', paletteLabel: 'Subjects, rooms and Settings', generating: 'Generating', emptyTitle: 'A title cannot be empty.'
   , transferRecovered:'An interrupted library transfer was recovered. Your subjects are safe.'
   , installInstructions: 'Install Claude Code from the setup page, then return to Lantern and choose Check again.', installClaude: 'Install Claude Code',
   signinInstructions: 'Start Claude Code once outside Lantern and follow its browser sign-in with your Claude account. Then return here and choose Check again.',
-  shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\nCtrl+1 / Ctrl+2 / Ctrl+3 — Welcome / Study / Gallery\nAlt+A / Alt+N with selected text — Ask / Make it a node\n? — show or hide shortcuts\nCtrl+J — Ask Amber\nCtrl+, — Settings\nCtrl+F in Study — search nodes; Enter / Shift+Enter next / previous, Esc close'
+  shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\nCtrl+1 / Ctrl+2 / Ctrl+3 — Welcome / Study / Gallery\nAlt+A / Alt+N with selected text — Ask / Make it a node\n? — show or hide shortcuts\nCtrl+K — open or close the subject field’s panel\nCtrl+J — Ask Amber\nCtrl+, — Settings\nCtrl+F in Study — search nodes; Enter / Shift+Enter next / previous, Esc close'
 };

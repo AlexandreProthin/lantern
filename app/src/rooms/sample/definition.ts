@@ -5,11 +5,12 @@ import SampleSpace from './SampleSpace.svelte';
 import SampleSettings from './SampleSettings.svelte';
 import SampleMenu from './SampleMenu.svelte';
 import './sample.css';
+import { glyphs } from '../../ui/glyphs';
 
 /** A development-only second room for the frame's tests (see rooms/index.ts). No prompts, no generation. */
 export const sampleRoom: RoomDefinition = {
   id:'sample', name:'Sample', accent:{ '--accent':'#4fc1c0' },
-  spaces:[{ id:'welcome',label:'Welcome',icon:'⌂',shortcutIndex:1,component:SampleSpace },{ id:'gallery',label:'Gallery',icon:'▦',shortcutIndex:2,component:SampleSpace }],
+  spaces:[{ id:'welcome',label:'Welcome',icon:glyphs.welcome,shortcutIndex:1,component:SampleSpace },{ id:'gallery',label:'Gallery',icon:glyphs.gallery,shortcutIndex:2,component:SampleSpace }],
   defaultSpace:'welcome', settingsMenu:SampleSettings,
   settings:{ defaults:{ note:'' }, validate:stored => ({ note:'', ...stored, ...(typeof stored.note === 'string' ? {} : { note:'' }) }) },
   defaultTone:() => 'curious',

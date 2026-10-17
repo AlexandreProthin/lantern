@@ -48,4 +48,17 @@ test('CO-2, CO-41: Ctrl+J works in the Choose room and with Amber turned off', a
   const field = box(page).getByRole('textbox', { name: 'Ask Amber' });
   await field.fill('What is this room for?'); await field.press('Enter');
   await expect(box(page).getByText('Press Ctrl+J anywhere to ask me, and ? for every shortcut.')).toBeVisible();
+  await page.keyboard.press('Escape'); await expect(box(page)).toHaveCount(0);
+  // RS-12: with Amber off, Ask is the capsule's last segment, right after settings, and opens the same box.
+  const segments = page.locator('header .capsule > button, header .capsule > span > button');
+  await expect(segments.last()).toHaveAccessibleName('Ask Amber');
+  await expect(segments.nth(await segments.count() - 2)).toHaveAccessibleName('Settings');
+  await segments.last().click();
+  await expect(box(page).getByRole('textbox', { name: 'Ask Amber' })).toBeFocused();
+});
+
+test('RS-12: with Amber on, the capsule has no Ask button', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('header').getByRole('button', { name: 'Settings' })).toBeVisible();
+  await expect(page.locator('header').getByRole('button', { name: 'Ask Amber' })).toHaveCount(0);
 });
