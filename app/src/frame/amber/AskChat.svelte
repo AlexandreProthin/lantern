@@ -3,6 +3,7 @@
   import type { RoomVisit } from '../../core/model';
   import { renderMarkdown } from '../../ui/markdown';
   import { strings } from '../../ui/strings';
+  import { errorMessage } from '../../ui/error-message';
   import type { AmberChat } from './chat';
   /** CO-41 to CO-49: the chat itself, shared by the Ask box (Amber off) and Amber's bubble (Amber on). */
   let { chat, revision, close, openSettings, autofocus = true }: { chat: AmberChat; revision: number; close: () => void; openSettings: () => void; autofocus?: boolean } = $props();
@@ -31,7 +32,7 @@
     {#if chat.phase === 'thinking'}<p class="thinking" role="status">{strings.amberThinking}</p>
     {:else if chat.pending.answer}<div class="amber" data-testid="amber-streaming">{@html renderMarkdown(chat.pending.answer, noVisit)}</div>{/if}
     {#if chat.pending.error}
-      <div class="error" role="alert"><strong>{strings.amberFailed}</strong><p>{strings.errorKinds[chat.pending.error.kind]}</p>
+      <div class="error" role="alert"><strong>{strings.amberFailed}</strong><p>{errorMessage(chat.pending.error)}</p>
         <details><summary>{strings.details}</summary><pre>{chat.pending.error.details}</pre></details>
         <div class="actions"><button onclick={() => void chat.retry()}>{strings.retry}</button>{#if fixable(chat.pending.error.kind)}<button onclick={openSettings}>{strings.settings}</button>{/if}</div></div>
     {/if}

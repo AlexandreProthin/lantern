@@ -88,7 +88,23 @@ export const strings = {
   pinned: 'Pinned', model: 'Model', contextSize: 'Context size', thinking: 'Thinking',
   thinkingNames: { off: 'Off', on: 'On', default: 'Model default' } as Record<string, string>,
   thinkingHint: 'Off is fastest. A subject’s effort does not apply to these models.', contextHint: 'Read from the server when it says; larger sizes use more memory.',
-  testModel: 'Model to test', testing: 'Testing…', endpointReady: (model: string, seconds: number) => `Ready · ${model} · ${seconds} s`, notEvaluated: 'not evaluated'
+  testModel: 'Model to test', testing: 'Testing…',
+  // CE-40, CE-41, CE-55: what endpoint failures and waits say.
+  endpointErrors: {
+    unreachable: (name: string, host: string) => `${name} is not answering at ${host}. Start it, then try again.`,
+    pull: (model: string, name: string) => `${model} is not on ${name}. Run “ollama pull ${model}”, then try again.`,
+    noModel: (model: string, name: string) => `${name} has no model “${model}”. Fetch its models in Settings → Provider.`,
+    missing: (id: string) => `No endpoint “${id}” is set up. Add it in Settings → Provider, or pick another model.`,
+    limited: (name: string) => `${name} is limiting requests. Wait a moment, then try again.`,
+    tooLong: (model: string) => `This prompt is too long for ${model} at its context size. Raise the size in Settings → Provider → Endpoints.`,
+    network: (name: string) => `Could not reach ${name}. Check the connection.`,
+    server: (name: string) => `${name} reported a server error.`,
+    unreadable: (name: string) => `${name} gave an answer Lantern could not read.`,
+    key: (name: string) => `${name} rejected the API key.`,
+  },
+  researchNeedsClaude: 'Research uses the web through Claude Code, which is not installed. The other tasks can run on a local model.',
+  amberLocalWait: (name: string) => `${name} may take a minute to load the model.`,
+  loadingModel: (name: string) => `${name} is loading the model and reading the prompt. A local model can take a minute.`, endpointReady: (model: string, seconds: number) => `Ready · ${model} · ${seconds} s`, notEvaluated: 'not evaluated'
   , changeLibrary:'Browse…', applyLibrary:'Apply path', revealLibrary:'Reveal library in Explorer', appVersion:(version:string)=>`Lantern ${version}`,
   checkForUpdates:'Check for updates', checkingUpdates:'Checking…', upToDate:'Lantern is up to date', updateAvailable:(version:string)=>`Lantern ${version} is available`, installUpdate:'Install', updateLater:'Later',
   updateUnreachable:'Could not reach the update server', updateUnconfigured:'Updates are not set up in this build', updateInstallFailed:(reason:string)=>`The update could not be installed. ${reason}`,

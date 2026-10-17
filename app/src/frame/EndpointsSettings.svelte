@@ -5,6 +5,7 @@
   import { type FakeEndpointOptions, fakeEndpointAdmin } from './fake-endpoint';
   import { type Completion, type InferenceProvider, ProviderError } from './provider';
   import { strings } from '../ui/strings';
+  import { errorMessage } from '../ui/error-message';
   /** CE-20 to CE-24, CE-30, CE-52, CE-80: the Endpoints list under Claude Code's section. Nothing calls a server until a button is pressed (IP-41). */
   let { settings, changed, provider, health = {}, fakeOptions = {}, disabled = false }: {
     settings: Settings; changed: () => void; provider: InferenceProvider; health?: Record<string, Completion | ProviderError>; fakeOptions?: FakeEndpointOptions; disabled?: boolean
@@ -17,7 +18,7 @@
   const update = (id: string, change: (e: EndpointConfig) => EndpointConfig) => save(list.map(e => e.id === id ? change(e) : e));
   const setModel = (id: string, model: string, change: Partial<EndpointModel>) => update(id, e => ({ ...e, models: e.models.map(m => m.id === model ? { ...m, ...change } : m) }));
   const note = (id: string, status: string, details = '') => { notes = { ...notes, [id]: { status, details } }; };
-  const failed = (id: string, e: unknown) => { const kind = (e as ProviderError)?.kind; note(id, kind && kind in strings.errorKinds ? strings.errorKinds[kind] : String(e), (e as ProviderError)?.details ?? ''); };
+  const failed = (id: string, e: unknown) => { const kind = (e as ProviderError)?.kind; note(id, kind && kind in strings.errorKinds ? errorMessage(e as ProviderError) : String(e), (e as ProviderError)?.details ?? ''); };
   function add() { const e = newEndpoint(addPreset, list, strings.presetNames[addPreset]); save([...list, e]); }
   async function admin<T>(command: string, args: Record<string, unknown>, fake: () => Promise<T>): Promise<T> {
     if (!desktop) return fake();
@@ -48,7 +49,7 @@
     const n = Number(value); setModel(e.id, model, Number.isInteger(n) && n >= 512 && n <= 1_048_576 ? { contextSize: n } : { contextSize: undefined });
   }
   const shown = (e: EndpointConfig) => notes[e.id] ?? (health[e.id] ? health[e.id] instanceof ProviderError
-    ? { status: strings.errorKinds[(health[e.id] as ProviderError).kind], details: (health[e.id] as ProviderError).details }
+    ? { status: errorMessage(health[e.id] as ProviderError), details: (health[e.id] as ProviderError).details }
     : { status: strings.endpointReady(`${e.name} · ${(health[e.id] as Completion).model.slice(e.id.length + 1)}`, Math.round((health[e.id] as Completion).durationMs / 1000)), details: '' } : null);
 </script>
 <h3>{strings.endpoints}</h3>

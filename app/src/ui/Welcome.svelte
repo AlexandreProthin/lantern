@@ -11,6 +11,7 @@
   import { exactDate, relativeDate } from '../frame/library-format';
   import { isValidModel } from '../core/models';
   import ModelPicker from './ModelPicker.svelte';
+  import { errorMessage } from './error-message';
   import TonePicker from './TonePicker.svelte';
   import { WelcomeEmbers } from './embers';
   import type { WelcomeRoomView, WelcomeSnippets, WelcomeStarter } from './welcome-types';
@@ -128,7 +129,7 @@
     </div>
     {#if extra}{@render extra()}{/if}
     {#if options.length}<div class="chips">{#each options as option,i}<button class="chipbtn" style={`--delay:${i*50}ms`} onclick={()=>{title=option.title;field.focus();}}><b>{option.title}</b><span>{option.hook}</span></button>{/each}</div>{/if}
-    {#if suggestError}<div class="inline-msg" role="alert">{strings.errorKinds[suggestError.kind]}<button onclick={suggest}>{strings.retry}</button></div>{/if}
+    {#if suggestError}<div class="inline-msg" role="alert">{errorMessage(suggestError)}<button onclick={suggest}>{strings.retry}</button></div>{/if}
     {#if error}<p class="inline-msg" role="alert">{error}</p>{/if}
     {#if !ready}<div class="inline-msg">{labels.cliNotReady} <button onclick={() => library.settings()}>{strings.settings}</button></div>{/if}
     {#if !available}<p class="libmsg">{labels.libraryUnavailable}</p>

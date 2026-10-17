@@ -313,6 +313,27 @@ user, CPU only on this machine. Fixtures are recorded against it first.
   the subject's model.
 - **Exit:** each error shown with the fake endpoint in the browser preview; one real `unreachable`
   (Ollama stopped) and one real `model-unknown` in the desktop build.
+- **Done 2026-10-17**:
+  - `ui/error-message.ts`: `errorMessage(error, { web })` is the one vocabulary (SE-45). A Claude Code
+    failure reads exactly `strings.errorKinds`, for every kind, which a test pins. An endpoint failure
+    names its server and says what to do: *Ollama is not answering at localhost:11434. Start it, then
+    try again.*, *gemma4:e2b is not on Ollama. Run “ollama pull gemma4:e2b”, then try again.*, *too long
+    for … Raise the size in Settings → Provider → Endpoints*, and the same for rate limits, server
+    errors, unreadable answers, a rejected key and a removed endpoint.
+  - It is used on the Learn and Choose node notices, Ask Amber and its selection card, Welcome's
+    suggestion error, and the Endpoints list. Claude Code's own status and banner keep their texts.
+  - CE-41: while an endpoint call has no words yet, the panel says *Ollama is loading the model and
+    reading the prompt. A local model can take a minute.* in place of `…`, and Amber's company line adds
+    *Ollama may take a minute to load the model.*
+  - CE-55: Choose's notice remembers when the failed call was research. Research on an endpoint subject
+    runs on Claude Code; with no Claude Code installed, the notice says research needs it and the other
+    tasks can run on a local model. The *not installed* banner stays down for endpoint subjects
+    (slice 3).
+  - Checks: `npm run check` clean; 205 TS tests (3 new); Playwright 97 passed and 2 skipped (1 new: the
+    loading line, then a down server named on the node).
+  - **Not done here:** the two real errors in the desktop build. Stopping the user's Ollama is the
+    user's call. The Rust tests already cover both kinds against a real closed port and the recorded
+    404, and the acceptance checklist (slice 8) includes them.
 
 # Slice 8. Verification and acceptance
 

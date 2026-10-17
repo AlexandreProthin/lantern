@@ -3,6 +3,7 @@
   import Panel from '../../ui/Panel.svelte';
   import type { PanelNotice, PanelRoomView } from '../../ui/panel-types';
   import { strings } from '../../ui/strings';
+  import { errorMessage } from '../../ui/error-message';
   import { addLearnChild, editLearnText, setState, understoodBy } from './rules';
   import type { LearnSession, SessionNotice } from './session';
   import { nodeActions, runNodeAction, type NodeActionId, type PanelRequest } from './actions';
@@ -38,7 +39,7 @@
 {#snippet notice(n: PanelNotice, ctx: { running: unknown })}
   {@const note = n as SessionNotice}
   {#if note.kind === 'directions'}{strings.directionsCount(note.count!)}<button disabled={!!ctx.running} onclick={() => note.retry()}>{strings.moreOptions}</button>
-  {:else}<strong>{strings.tutorFailed}</strong><p>{strings.errorKinds[note.error!.kind]}</p><details><summary>{strings.details}</summary><pre>{note.error!.details}</pre></details><button disabled={!!ctx.running} onclick={() => note.retry()}>{strings.retry}</button>{/if}
+  {:else}<strong>{strings.tutorFailed}</strong><p>{errorMessage(note.error!)}</p><details><summary>{strings.details}</summary><pre>{note.error!.details}</pre></details><button disabled={!!ctx.running} onclick={() => note.retry()}>{strings.retry}</button>{/if}
 {/snippet}
 {#snippet footer(node: { id: string; state: string }, ctx: { running: unknown; busy: boolean; perform: (fn: () => void) => void })}
   <button disabled={!!ctx.running} onclick={() => session.run('check', node.id)}>{strings.check}</button><button disabled={ctx.busy} onclick={() => ctx.perform(() => setState(session.visit, node.id, node.state === 'understood' ? 'lit' : 'understood', node.state === 'understood' ? null : 'self'))}>{node.state === 'understood' ? strings.notSure : strings.understood}</button>

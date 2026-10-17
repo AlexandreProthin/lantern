@@ -9,7 +9,7 @@
   import { DesktopProvider, ObservedProvider, ProviderError, type InferenceProvider } from './provider';
   import { RoutingProvider } from './routing';
   import { endpointsOf } from './endpoints';
-  import { modelChoices } from '../ui/model-choices.svelte';
+  import { endpointNameOf, modelChoices } from '../ui/model-choices.svelte';
   import { FakeEndpointTransport, fakeEndpointOptions } from './fake-endpoint';
   import type { Completion, ErrorKind } from './provider';
   import { rooms as baseRooms, roomsWithDevSample } from '../rooms';
@@ -115,7 +115,9 @@
     if (!session || !r || r.text) return null;
     const line = room.companion?.waiting?.[r.task]; if (!line) return null;
     const title = session.subject.rooms[room.id]?.nodes[r.nodeId]?.title ?? session.subject.title;
-    return line(title.length > 32 ? title.slice(0, 31) + '…' : title);
+    const said = line(title.length > 32 ? title.slice(0, 31) + '…' : title), local = endpointNameOf(String(session.subject.rooms[room.id]?.model ?? ''));
+    // CE-41: a local model's first words can take a minute.
+    return local ? `${said} ${strings.amberLocalWait(local)}` : said;
   });
   const amberWorking = $derived(!!amberWaiting || amberMoodParam === 'working');
   // CO-30 to CO-32: one greeting per launch, once Amber's state is read and no frame banner is up.

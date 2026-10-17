@@ -61,6 +61,27 @@ test('CE-20/21/24/30/52: add an endpoint, fetch and pin its models, set thinking
   await endpoint.getByRole('button', { name: 'Remove', exact: true }).click(); await endpoint.getByRole('button', { name: 'Remove this endpoint' }).click();
   await expect(dialog.getByTestId('endpoint')).toHaveCount(0);
 });
+test('CE-41, CE-40: a slow first byte says the model is loading; a server that is down is named on the node', async ({ page }) => {
+  await withEndpoint(page);
+  await page.goto('/?study=1&subject=Waits&endpointDelay=1500');
+  const panel = page.locator('.panel');
+  await expect(panel.getByRole('button', { name: 'Test me', exact: true })).toBeEnabled();
+  await page.locator('header .subject-field .title').click();
+  await page.locator('.subject-menu #subject-model').selectOption('ollama:gemma4:e2b'); await page.keyboard.press('Escape');
+  await panel.getByRole('button', { name: 'Mechanism 1', exact: false }).click();
+  await panel.getByRole('button', { name: 'Light it up', exact: true }).click();
+  await expect(panel.getByText('Ollama is loading the model and reading the prompt.', { exact: false })).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Test me', exact: true })).toBeEnabled();
+  await expect(panel.locator('.loading-model')).toHaveCount(0);
+  // The same subject with the server down: the node's notice names Ollama and where it was looked for.
+  await page.goto('/?study=1&subject=Down%20server&endpointError=unreachable');
+  await expect(panel.getByRole('button', { name: 'Test me', exact: true })).toBeEnabled();
+  await page.locator('header .subject-field .title').click();
+  await page.locator('.subject-menu #subject-model').selectOption('ollama:gemma4:e2b'); await page.keyboard.press('Escape');
+  await page.locator('.panel').getByRole('button', { name: 'Application 1', exact: false }).click();
+  await page.locator('.panel').getByRole('button', { name: 'Light it up', exact: true }).click();
+  await expect(page.locator('.panel').getByText('Ollama is not answering at localhost:11434. Start it, then try again.')).toBeVisible();
+});
 test('CE-40: an unreachable server is said plainly', async ({ page }) => {
   await page.goto('/?study=1&subject=Down&endpointError=unreachable');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();

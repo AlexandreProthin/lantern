@@ -17,7 +17,8 @@ import { contextSizeOf } from '../../ui/model-choices.svelte';
 /** One call in flight: the main lane (LR-40) or the research lane (CP-41). `progress` is the last tool use (IP-13). */
 export interface Running { nodeId: string; task: Task; text: string; web: boolean; progress: ToolUse | null; controller: AbortController }
 export interface Research extends Running { slots: Slot[] }
-export interface SessionNotice { nodeId: string; kind: 'directions' | 'error'; count?: number; error?: ProviderError; retry: () => Promise<void> }
+/** `web`: the failed call was a research call, which runs on Claude Code (CE-55). */
+export interface SessionNotice { nodeId: string; kind: 'directions' | 'error'; count?: number; error?: ProviderError; web?: boolean; retry: () => Promise<void> }
 /** CP-30.4: a need the model offered to record; the user adds or ignores it. */
 export interface NeedOffer { nodeId: string; question: string; answer: string }
 export interface RunOptions { message?: string; turn?: number; cell?: Slot; retry?: boolean }
@@ -141,7 +142,7 @@ export class ChooseSession {
     } catch (e) {
       const error = e instanceof ProviderError ? e : new ProviderError('protocol', String(e));
       this.visit.log.push(record(error, error.kind === 'cancelled' ? 'cancelled' : 'error'));
-      if (error.kind !== 'cancelled') this.notice = { nodeId: id, kind: 'error', error, retry };
+      if (error.kind !== 'cancelled') this.notice = { nodeId: id, kind: 'error', error, retry, ...(lane.web ? { web: true } : {}) };
     }
   }
 

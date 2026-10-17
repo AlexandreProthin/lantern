@@ -13,6 +13,11 @@ export function endpointGroups(endpoints: readonly EndpointConfig[] = modelChoic
 export function endpointAwareName(id: string): string {
   return isEndpointModel(id) ? `${displayModel(id, endpointNames(modelChoices.endpoints))} · ${strings.notEvaluated}` : displayModel(id);
 }
+/** CE-41: the endpoint's name for an endpoint model; null for a Claude Code model. */
+export function endpointNameOf(id: string): string | null {
+  const { endpointId } = parseModelId(id);
+  return endpointId === null ? null : modelChoices.endpoints.find(e => e.id === endpointId)?.name ?? endpointId;
+}
 /** CE-30, CE-31: the context size set for an endpoint model; undefined for a Claude Code model or an unknown size. */
 export function contextSizeOf(id: string): number | undefined {
   const { endpointId, model } = parseModelId(id);
