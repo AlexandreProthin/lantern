@@ -29,6 +29,11 @@
   import { applyRoomChrome, windowTitle } from './window-chrome';
   import ModelPicker from '../ui/ModelPicker.svelte';
   import { isValidModel } from '../core/models';
+  import AskBox from './amber/AskBox.svelte';
+  import { AmberChat } from './amber/chat';
+  import { AmberFakeProvider } from './amber/fake-provider';
+  import { amberContext, amberHelp } from './amber/help';
+  import { browserAmberLog, desktopAmberLog } from './amber/log';
   const desktop = '__TAURI_INTERNALS__' in window;
   const fake = providerMode(desktop, import.meta.env.VITE_PROVIDER) === 'fake';
   let health = $state<Completion | ProviderError | null>(null);
@@ -48,6 +53,13 @@
     return p;
   }
   const provider = $derived(providerFor(room));
+  // CO-40 to CO-49: Ask Amber, one temporary chat for the app. The browser build answers from Amber's own fake (IP-71).
+  const amberErrorParam = new URLSearchParams(location.search).get('amberError');
+  const amberProvider = desktopProvider ?? new ObservedProvider(new AmberFakeProvider(fakeDelay, import.meta.env.DEV && amberErrorParam && Object.hasOwn(strings.errorKinds, amberErrorParam) ? amberErrorParam as ErrorKind : undefined), value => health=value);
+  let askOpen = $state(false), amberRevision = $state(0), askBox = $state<ReturnType<typeof AskBox>>();
+  const amberChat = new AmberChat(amberProvider, desktop ? desktopAmberLog : browserAmberLog, () => settings.companion.model,
+    () => amberHelp(rooms), () => amberContext(room, space, session), () => amberRevision++);
+  function closeAsk() { amberChat.close(); askOpen = false; }
   const storage = desktop ? desktopStorage : browserStorage;
   let settings = $state(defaultSettings('', '', baseRooms));
   let defaults = $state(defaultSettings('', '', baseRooms));
@@ -243,6 +255,8 @@
     if(e.ctrlKey && e.shiftKey && /^Digit[1-9]$/.test(e.code) && rooms.length>1) {const target=rooms[Number(e.code.slice(5))-1]; if(target){e.preventDefault(); void switchRoom(target.id);}}
     else if(e.ctrlKey && !e.shiftKey && /^[1-9]$/.test(e.key)) {const target=room.spaces.find(item=>item.shortcutIndex===Number(e.key)); if(target){e.preventDefault(); void navigate(target.id);}}
     else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsSection='general';settingsOpen=true;}
+    // CO-41, GV-76: Ctrl+J anywhere, any focus. Until Amber is drawn (v0.4.0 slice 5) it opens the box on its own.
+    else if(e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase()==='j') {e.preventDefault(); if(askOpen) askBox?.focus(); else askOpen=true;}
     else if(e.key==='Escape') {
       if(document.querySelector('dialog[open]')) return;
       if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(roomMenu) roomMenu=false; else if(subjectMenu) subjectMenu=false; else if(space===room.defaultSpace)session?.cancel();
@@ -317,6 +331,7 @@
 </div>{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
+{#if askOpen}<AskBox bind:this={askBox} chat={amberChat} revision={amberRevision} close={closeAsk} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts(rooms.map(r=>r.name)):''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>
   :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; } header { height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid var(--glass-line); background:var(--glass); backdrop-filter:var(--glass-blur); }

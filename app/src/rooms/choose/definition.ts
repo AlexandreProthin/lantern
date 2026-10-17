@@ -13,6 +13,7 @@ import Survey from './Survey.svelte';
 import Compare from './Compare.svelte';
 import Gallery from './Gallery.svelte';
 import ChooseSettings from './ChooseSettings.svelte';
+import { chooseCompanion } from './companion';
 import SubjectMenu from './SubjectMenu.svelte';
 import './choose.css';
 
@@ -45,5 +46,5 @@ export const chooseRoom: RoomDefinition = {
     return { text: `${n(s.needs, 'need', 'needs')} · ${n(s.criteria, 'criterion', 'criteria')} · ${s.shortlisted} shortlisted`, tooltip: '' }; },
   newSubject: (title, tone, settings, direction) => newChooseSubject(title, { tone, model: settings.provider.defaultModel, effort: settings.provider.defaultEffort,
     locale: localeOf(chooseSettings(settings)), needsNote: direction }, settings.user.displayName),
-  validate: validateChoose, summarize: chooseSummary, subjectMenu: SubjectMenu,
+  validate: validateChoose, summarize: chooseSummary, subjectMenu: SubjectMenu, companion: chooseCompanion,
 };

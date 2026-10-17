@@ -23,3 +23,13 @@ without calling the CLI.
 without model calls: the replies are replayed through `ChooseSession` and checked as Lantern does when it opens a
 file. It writes `<run>-run1-subject.json` beside the results, a `lantern/2` subject file for a development build
 with the Choose room (`?chooseRoom`).
+
+## Ask Amber (CO-48)
+
+From `app/`, `npm run eval:amber -- --runs 3` runs the 24 `amber-1` cases (app, subject and general questions, selections
+and follow-ups, English and French) on Amber's default model, `claude-haiku-5-5`, at low effort with no tools, as the app
+calls it. A case passes when the reply opens with the expected `<category>` tag and the answer meets its check (the key
+or button named, no invented feature, the wrong explanation corrected, no live price, short, in the user's language).
+The gate is 95 % of cases in every run **and** the category right on every case. Each result also records the time to
+the first text. `--dry` lists the cases without calling the CLI; `--dry --show <id>` prints the system prompt and that
+case's prompt. `--model` and `--effort` override the defaults.

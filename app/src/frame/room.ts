@@ -15,6 +15,15 @@ export interface SpaceProps {
 }
 /** RS-15/RS-19: the room's own fields in the subject menu. `changed(true)` also says "applies to the next generation". */
 export interface SubjectMenuProps { visit: RoomVisit; revision: number; changed: (appliesNext: boolean) => void }
+/** RS-3, CO-22, CO-23: what Amber says about a room. Bottom resting positions join in v0.4.0 slice 6. */
+export interface RoomCompanion {
+  /** One line for Amber's app help: what the room is for. */
+  about: string;
+  /** CO-21: ids are stable, since seen tips are remembered by id (SE-50). */
+  tips: readonly { id: string; text: string }[];
+  /** CO-22, GV-73: *What can I do here?* per space id, each line an action and its key. */
+  guide: Record<string, readonly string[]>;
+}
 /** RS-1..3, RS-30, SE-12, DM-66, ST-7. The frame calls only these members (RS-2). */
 export interface RoomDefinition {
   id: string; name: string;
@@ -41,4 +50,6 @@ export interface RoomDefinition {
   summarize: (visit: VisitSummary) => Partial<SubjectSummary>;
   /** RS-15/RS-19: rendered in the subject menu below the title. */
   subjectMenu: Component<SubjectMenuProps>;
+  /** RS-3 (round 9): Amber's tips and guide lines for this room; a room without it gets the frame's alone. */
+  companion?: RoomCompanion;
 }

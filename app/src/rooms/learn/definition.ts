@@ -11,6 +11,7 @@ import Gallery from './Gallery.svelte';
 import Study from './Study.svelte';
 import LearnSettings from './LearnSettings.svelte';
 import SubjectMenu from './SubjectMenu.svelte';
+import { learnCompanion } from './companion';
 export const learnRoom: RoomDefinition = {
   id:'learn', name:strings.learn, accent:{ '--accent':'#e8b66e' },
   spaces:[{ id:'welcome',label:strings.welcome,icon:'⌂',shortcutIndex:1,component:Welcome },{id:'study',label:strings.study,icon:'⌘',shortcutIndex:2,component:Study},{id:'gallery',label:strings.gallery,icon:'▦',shortcutIndex:3,component:Gallery}],
@@ -25,5 +26,5 @@ export const learnRoom: RoomDefinition = {
   legend:[{label:'open',glyph:'○'},{label:'lit',glyph:'●'},{label:'demonstrated',glyph:'✓'},{label:'self-declared',glyph:'✓'},{label:'dismissed',glyph:'◌'},{label:'question',glyph:'◇'}],
   statsSummary(subject) { const s = stats(subject.rooms.learn); return {text:strings.headerStats(s.lit,s.understood,s.dark),tooltip:`${s.input} in / ${s.output} out`}; },
   newSubject:(title,tone,settings,direction) => newLearnSubject(title,{tone,model:settings.provider.defaultModel,effort:settings.provider.defaultEffort,direction},settings.user.displayName),
-  validate:validateLearn, summarize:learnSummary, subjectMenu:SubjectMenu
+  validate:validateLearn, summarize:learnSummary, subjectMenu:SubjectMenu, companion:learnCompanion
 };
