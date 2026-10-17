@@ -328,6 +328,41 @@
         "q-r9-scope",
         "q-r9-anything"
       ]
+    },
+    {
+      "id": "custom-endpoints",
+      "title": "Custom endpoints",
+      "area": "endpoints",
+      "status": "review",
+      "file": "specs/custom-endpoints.md",
+      "summary": "An OpenAI-compatible provider for local servers (Ollama, llama.cpp) then cloud APIs (NVIDIA first): endpoints, models, context, errors, keys, privacy.",
+      "questions": [
+        "q-r10-why",
+        "q-r10-shape",
+        "q-r10-where",
+        "q-r10-models",
+        "q-r10-context",
+        "q-r10-web",
+        "q-r10-quality",
+        "q-r10-protocol",
+        "q-r10-keys",
+        "q-r10-rules",
+        "q-r10-errors",
+        "q-r10-usage",
+        "q-r10-scope",
+        "q-r10-version",
+        "q-r10-setup",
+        "q-r10-anything",
+        "q-r11-claude",
+        "q-r11-protocol",
+        "q-r11-ollama",
+        "q-r11-web",
+        "q-r11-codex",
+        "q-r11-check",
+        "q-r11-keys",
+        "q-r11-hardware",
+        "q-r11-anything"
+      ]
     }
   ]
 }

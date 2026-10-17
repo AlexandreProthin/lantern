@@ -5,7 +5,7 @@ description: The ordered steps from README through each release, and where the p
 tags: [roadmap, milestones]
 status: stable
 stale_after: 2026-12-31T00:00:00Z
-generated: { by: claude-code/opus-5.5, at: 2026-10-02T18:55:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-17T12:00:00Z }
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
@@ -22,7 +22,8 @@ Order decided 2026-09-27: README → PoC → OKF wiki → specs + v0.1.0 plan.
 | 7 | v0.1.2, plan in [v0-1-2](/plans/v0-1-2.md): the identity in the app | released 2026-10-06; later work in the [backlog](/plans/backlog.md) |
 | 8 | v0.2.0 plan, in [v0-2-0](/plans/v0-2-0.md): the second room, Choose | done: Part A released as v0.2.0 2026-10-14; Part B (Choose) released as **v0.3.0** 2026-10-16 |
 | 9 | v0.4.0, plan in [v0-4-0](/plans/v0-4-0.md): Amber, the companion, with the new top bar built alongside (`claude/lantern-top-bar`) | released 2026-10-17 |
-| 10 | Next | not scheduled; candidates in the [backlog](/plans/backlog.md): the Think, Explore and Interview rooms, export a subject, regenerate an explanation |
+| 10 | Custom endpoints: models beyond Claude Code, local servers first (Ollama, llama.cpp), then cloud APIs (NVIDIA first); spec [custom-endpoints](/specs/custom-endpoints.md) | spec rounds 10–11 done 2026-10-17, spec awaiting the user's agreement. One version for local, then one for cloud; numbers not fixed, and before releasing local the agent asks whether to wait and ship both in one bump (CE-5). Work starts in a worktree, then moves to a feature branch when the user judges it good enough; the user decides the merge (CE-6) |
+| 11 | Next | not scheduled; candidates in the [backlog](/plans/backlog.md): the Think, Explore and Interview rooms, export a subject, regenerate an explanation |
 
 # Inputs to the specs
 

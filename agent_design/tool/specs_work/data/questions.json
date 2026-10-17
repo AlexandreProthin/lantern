@@ -60,6 +60,11 @@
       "id": "companion",
       "title": "Companion",
       "blurb": "How the little lantern of the identity lives in the app."
+    },
+    {
+      "id": "endpoints",
+      "title": "Custom endpoints",
+      "blurb": "Models beyond Claude Code: local servers first (Ollama, llama.cpp), then cloud APIs (NVIDIA first)."
     }
   ],
   "rounds": [
@@ -107,6 +112,16 @@
       "number": 9,
       "created_at": "2026-10-16T22:00:00Z",
       "intro": "**Round 9: Amber.** Your round 8 answers are in the **Companion** spec (Specs tab): the name, hanging from the header with a rope you can grab, the resting positions, tips, the guide, Ask Amber on Haiku 5.5, the gestures and the rules. RS-33 is amended as you accepted.\n\nYour notes added a lot, and a few of them pull against boxes you ticked. The first four questions put each conflict side by side; the rest fill in the new features. The last question sorts everything into a first version and later."
+    },
+    {
+      "number": 10,
+      "created_at": "2026-10-17T12:00:00Z",
+      "intro": "**Round 10: custom endpoints.** Today every call goes through the Claude Code CLI ([inference-provider](/wiki/specs/inference-provider.md)). This round decides how Lantern talks to other models: **local servers first** (Ollama, llama.cpp), **then cloud APIs**, NVIDIA first since you have a key.\n\nOne fact shapes most of the questions: Ollama, llama.cpp's `llama-server`, LM Studio, vLLM, NVIDIA and most cloud hosts all speak the same **OpenAI-compatible** `/v1/chat/completions` API. So *local* and *cloud* can be the same provider. The real differences are an **API key** (cloud only; IP-63 says keys need their own security rules before any API provider ships), **privacy** (cloud gets your subject's text) and **context size** (local servers often default to a few thousand tokens).\n\nPoints your plan didn't cover, each one a question below:\n\n- **The Choose room's web research** uses WebSearch and WebFetch, which only the Claude CLI provides.\n- **Prompt quality**: the prompts and the tagged-block protocol were tuned and eval-gated on Claude. Small models may break the protocol.\n- **Context window**: Lantern's map budget is 12k tokens, and Ollama silently drops the start of a prompt that doesn't fit.\n- **Errors**, **usage figures**, **thinking models** and the **model picker** all assume the CLI.\n\nThe [local models for Amber](/wiki/plans/backlog.md) backlog entry is related but separate: it's about embeddings and classifiers, not an endpoint. The last question asks whether Amber can use a local endpoint in this version.\n\nAnswer, **Save**, then tell me **next**."
+    },
+    {
+      "number": 11,
+      "created_at": "2026-10-17T15:30:00Z",
+      "intro": "**Round 11: custom endpoints, the loose ends.** Your round 10 answers are in the draft **Custom endpoints** spec (Specs tab, CE-1 to CE-91). Thirteen of your answers are settled. Three stay open: **web**, which you flagged, the **protocol**, and the **scope**.\n\n**Your scope placement makes sense**, except for two points that pull against other answers:\n\n- **Protocol:** you chose *keep the text, then a repair call* but put *repair call* in Later.\n- **Checks:** you put *Check this model* in v0.5.0 and the hand-run evals in Later. These work well together, since the button *is* the eval runner and the hand-run scores become optional. One question settles what the button runs.\n\n**On your web question:**\n\n- **NVIDIA:** as far as I know, NVIDIA's API only runs models and has no hosted web search. Its models can call tools, but Lantern would have to run the search itself, which is *Lantern's own web tools* (Later). I'll confirm against NVIDIA's docs when the cloud phase starts.\n- **Codex:** the Codex CLI does have a web search tool. A Codex provider could therefore run Choose's research the way Claude Code does.\n\nYou asked to discuss anything that changes the Claude path first. The first question lists every such change, so you can accept or refuse each one.\n\nAnswer, **Save**, then **next**."
     }
   ],
   "questions": [
@@ -4401,6 +4416,878 @@
       "settled": {
         "summary": "Nothing added.",
         "spec": "specs/companion.md"
+      }
+    },
+    {
+      "id": "q-r10-why",
+      "kind": "multi",
+      "title": "What are custom endpoints for?",
+      "context": "Your reasons set the defaults and decide what the first version has to prove. Pick every reason that applies, and put the main one in the notes.",
+      "options": [
+        {
+          "id": "tokens",
+          "label": "Spend fewer Claude tokens",
+          "detail": "Keep the subscription's usage for the tasks that need Claude."
+        },
+        {
+          "id": "offline",
+          "label": "Work offline",
+          "detail": "No network needed with a local model."
+        },
+        {
+          "id": "privacy",
+          "label": "Keep subjects on my machine"
+        },
+        {
+          "id": "noclaude",
+          "label": "Use Lantern without a Claude subscription",
+          "detail": "For other people too, if Lantern is shared one day."
+        },
+        {
+          "id": "explore",
+          "label": "Try other models",
+          "detail": "Compare how open models teach and research."
+        },
+        {
+          "id": "speed",
+          "label": "Lower latency",
+          "detail": "No CLI start-up, which is about 3 s a call ([llm-latency](/wiki/issues/llm-latency.md))."
+        }
+      ],
+      "allow_other": true,
+      "take": "Mostly **tokens**, **explore** and **speed**. An HTTP call has no CLI start-up, so a local endpoint can start answering in well under a second. *noclaude* matters more later: it means Lantern has to run with no CLI installed at all, which changes first-launch and Settings (SE-40 to SE-47).",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Every reason, Claude-free use included (CE-1). Codex as a second CLI provider is taken up in round 11.",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-shape",
+      "kind": "single",
+      "title": "One OpenAI-compatible provider, or one per vendor?",
+      "context": "The provider contract (IP-1 to IP-13) stays the same. The question is what implements it behind the CLI provider.",
+      "options": [
+        {
+          "id": "compat",
+          "label": "One OpenAI-compatible provider, with presets",
+          "detail": "One HTTP provider (`/v1/chat/completions`, streamed). A preset fills in the base URL, whether a key is needed, and how to list models: *Ollama* `localhost:11434/v1`, *llama.cpp* `localhost:8080/v1`, *LM Studio* `localhost:1234/v1`, *NVIDIA* `integrate.api.nvidia.com/v1`, and *Custom URL* for anything else.",
+          "recommended": true
+        },
+        {
+          "id": "compatnative",
+          "label": "OpenAI-compatible, plus Ollama's native API for Ollama",
+          "detail": "Same as above, but Ollama goes through `/api/chat`, which lets Lantern set the context size per request (see the context question)."
+        },
+        {
+          "id": "vendor",
+          "label": "One adapter per vendor",
+          "detail": "Each API in its own form. More code; each vendor's features are reachable."
+        }
+      ],
+      "allow_other": true,
+      "take": "**compat**, unless you pick *Lantern sets it* in the context question, in which case **compatnative**: Ollama's OpenAI-compatible endpoint can't set the context size per request. Every server you named speaks the compatible API, so one parser, one set of stream fixtures and one fake provider cover them all.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "One OpenAI-compatible provider with presets (CE-10, CE-12). Ollama's context size is reopened in round 11.",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-where",
+      "kind": "single",
+      "title": "Where does a custom model get chosen?",
+      "context": "Today a subject has its own model (SE-23, picked in Welcome and in the subject menu), Amber has its own (`companion.model`), and the model list is static (SE-48).",
+      "options": [
+        {
+          "id": "picker",
+          "label": "Endpoints in Settings; their models join every model picker",
+          "detail": "Settings → Provider gets an *Endpoints* list (add, test, remove). The pickers group models under each endpoint: *Claude Code · Opus 5.5*, *Ollama · qwen3:14b*, *NVIDIA · nemotron-…*. A subject or Amber can use any of them.",
+          "recommended": true
+        },
+        {
+          "id": "global",
+          "label": "One active provider for the whole app",
+          "detail": "A switch in Settings: either Claude Code or one endpoint. Simpler, but no mixing."
+        },
+        {
+          "id": "task",
+          "label": "Per task",
+          "detail": "For example explanations on Claude and check-answer replies on a local model. This is the *cheaper model for cheap tasks* backlog entry."
+        }
+      ],
+      "allow_other": true,
+      "take": "**picker**. It reuses the per-subject model that already exists and lets you compare models subject by subject. *Per task* builds on it later and needs no format change, because each log record already stores its `model` (DM-30). It would also need the endpoint, which the stored model id can carry (`ollama:qwen3:14b`).",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Endpoints in Settings; pinned models join every picker, grouped by endpoint (CE-20, CE-22, CE-23).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-models",
+      "kind": "single",
+      "title": "How does Lantern know an endpoint's models?",
+      "context": "Servers list their models at `GET /v1/models` (Ollama also has `/api/tags`). Cloud catalogues can be long: NVIDIA lists over a hundred.",
+      "options": [
+        {
+          "id": "fetch",
+          "label": "Fetched on Test and when a picker opens, plus free text",
+          "detail": "The list is cached per endpoint. A model that isn't listed can still be typed in, as with SE-48."
+        },
+        {
+          "id": "pinned",
+          "label": "Fetched, but I pin the ones I use",
+          "detail": "Settings shows the full list with a pin on each; pickers show only pinned models. This keeps a 100-model cloud list out of the way.",
+          "recommended": true
+        },
+        {
+          "id": "manual",
+          "label": "Typed by hand only"
+        }
+      ],
+      "allow_other": true,
+      "take": "**pinned**. Ollama's list is short and only holds what you've pulled, but NVIDIA's would swamp every picker. You could also pin everything by default for local servers and nothing for cloud ones.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Fetched, pinned, plus free text (CE-21).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-context",
+      "kind": "single",
+      "title": "How does Lantern handle the model's context window?",
+      "context": "A Learn turn sends up to 12k tokens of map (CA, configurable 2k–100k) plus the system prompt and dialogue: often 15–20k tokens. Ollama's default context is a few thousand tokens and it **drops the start of the prompt silently**, which loses the system prompt and the protocol. `llama-server` sets its size at launch (`-c`). Cloud models are usually 128k.",
+      "options": [
+        {
+          "id": "lantern",
+          "label": "Lantern reads the window and sets it where it can",
+          "detail": "Each model gets a context size, read from the server when it reports one (`/api/show` for Ollama, `/props` for llama.cpp) and editable. Lantern fits the map budget inside it. For Ollama it also sets the size on each request (native API).",
+          "recommended": true
+        },
+        {
+          "id": "warn",
+          "label": "Lantern reads the window and warns",
+          "detail": "Same reading, but Lantern never changes the server's settings. A prompt that wouldn't fit fails with a clear *context too long* error that says how to raise the size."
+        },
+        {
+          "id": "user",
+          "label": "I set it by hand per model",
+          "detail": "No reading from the server."
+        }
+      ],
+      "allow_other": true,
+      "take": "**lantern**. A silently truncated prompt looks like a bad model, not a configuration problem, so it would be the hardest failure to understand. Larger windows cost VRAM, so the size is shown and editable, and a request that still doesn't fit fails as *context too long* rather than being cut.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Lantern reads the window, fits the map inside it, and fails as context-too-long instead of cutting (CE-30 to CE-33).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-web",
+      "kind": "single",
+      "title": "Choose's web research on a custom endpoint?",
+      "context": "Choose's research tasks call the CLI with WebSearch and WebFetch (IP-20, CR-40), and SOURCES requires every fact to have a source (CP-20). An HTTP endpoint has no tools. Lantern could run its own search, but that needs a search API (Brave, Tavily…) with its own key, plus tool calling, which small models do unevenly.",
+      "options": [
+        {
+          "id": "hybrid",
+          "label": "Web tasks always run on Claude Code; everything else follows the subject's model",
+          "detail": "A Choose subject on a local model still researches through the CLI. The log shows both models.",
+          "recommended": true
+        },
+        {
+          "id": "noroom",
+          "label": "Choose requires Claude Code",
+          "detail": "Its model picker offers only Claude models."
+        },
+        {
+          "id": "own",
+          "label": "Lantern brings its own web tools",
+          "detail": "A search API with a key, page fetching in Rust, and a tool-calling loop. A large piece of work."
+        },
+        {
+          "id": "noweb",
+          "label": "Research without the web on a custom endpoint",
+          "detail": "From the model's own knowledge, marked *unsourced*. This weakens SOURCES."
+        }
+      ],
+      "allow_other": true,
+      "take": "**hybrid** for this version, with **own** in Later. It keeps Choose's sourcing guarantee and still moves Choose's non-research calls to your endpoint. Without a Claude subscription (*noclaude* in the first question) Choose would fall back to *noroom*, and the UI should say so plainly.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Research on a CLI provider with web tools: Claude Code now, Codex later; own web tools Later (CE-55).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-quality",
+      "kind": "single",
+      "title": "Which models can a subject use, given the prompts were tuned on Claude?",
+      "context": "Every prompt version passes a three-run eval gate before it ships (PQ-33). That gate ran only on Claude. Small models often skip or garble the tagged blocks (`<options>`, `<branch>`), so a light-up shows no options.",
+      "options": [
+        {
+          "id": "any",
+          "label": "Any model, marked *not evaluated*",
+          "detail": "The picker and the node meta line say the model hasn't passed this room's evals. Recommended models for each preset are eval-gated by hand during development."
+        },
+        {
+          "id": "gated",
+          "label": "Only models that passed the room's evals",
+          "detail": "Each one is listed with its pass rate. Others stay reachable as free text."
+        },
+        {
+          "id": "check",
+          "label": "Any model, plus a *Check this model* button",
+          "detail": "Runs the room's eval cases on that model from Settings and shows the score. It costs a few minutes of the model's time."
+        }
+      ],
+      "allow_other": true,
+      "take": "**any** in this version, with **check** in Later. The real eval runner (`app/evals/`) can already run against a new provider, so we gate two or three recommended local models by hand and record the scores. A per-model prompt variant is a last resort: every variant doubles the eval work.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Any model, marked *not evaluated* until checked (CE-56).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-protocol",
+      "kind": "single",
+      "title": "When a model breaks the protocol",
+      "context": "For example, a light-up returns an explanation with no `<options>` block, or with a malformed one. On Claude this is rare, and it fails as a protocol error.",
+      "options": [
+        {
+          "id": "keep",
+          "label": "Keep the text and offer *More options*",
+          "detail": "The explanation is kept, the node is lit with no children, and a note says the model gave no options."
+        },
+        {
+          "id": "repair",
+          "label": "One automatic follow-up call for the missing block",
+          "detail": "A short repair prompt asks for the options alone. It costs one more call, and the log marks it."
+        },
+        {
+          "id": "keeprepair",
+          "label": "Keep the text, then the repair call",
+          "detail": "You can read straight away while the options come in.",
+          "recommended": true
+        },
+        {
+          "id": "fail",
+          "label": "Fail as today",
+          "detail": "The node returns to its previous state."
+        }
+      ],
+      "allow_other": true,
+      "take": "**keeprepair**. Nothing readable is lost, and a cheap second call usually gets the block on its own. This would apply to every provider, Claude included, so it amends the tutor protocol, its prompt version and the eval gate. Say so if you'd rather keep it to custom endpoints.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Endpoint replies with no options keep their text; the repair call is Later (CE-57).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-keys",
+      "kind": "single",
+      "title": "Where are API keys kept? (cloud phase)",
+      "context": "IP-63 and SE-7: never in `settings.json` or subject files, and their own security rules before any API provider ships. Decided now so that the local phase leaves room for keys.",
+      "options": [
+        {
+          "id": "vault",
+          "label": "Windows Credential Manager",
+          "detail": "Stored through the OS credential store, one entry per endpoint. After saving, Settings shows only the last 4 characters, with *Replace* and *Remove*. The key is never logged, never sent to the webview and never put in a prompt; Rust adds it to the request.",
+          "recommended": true
+        },
+        {
+          "id": "env",
+          "label": "An environment variable I name",
+          "detail": "Settings stores only the variable's name (`NVIDIA_API_KEY`)."
+        },
+        {
+          "id": "both",
+          "label": "Either one, per endpoint"
+        }
+      ],
+      "allow_other": true,
+      "take": "**vault**. It's the standard place, it's encrypted for your Windows account, and it survives reinstalls. *env* is handy for scripts but easy to leak into other processes. The key never reaching the webview matters most: the UI can never show or leak it.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Windows Credential Manager, and the key never returns to the webview (CE-70 to CE-75). The safety rules are confirmed in round 11.",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-rules",
+      "kind": "multi",
+      "title": "Rules for endpoints: tick the ones you accept",
+      "context": "Proposed rules for the spec. Untick any you disagree with and say why in the notes.",
+      "options": [
+        {
+          "id": "rust",
+          "label": "Every call is made from Rust, never from the webview",
+          "detail": "No CORS or content-security changes, cancel kills the request, and the key stays out of the UI.",
+          "recommended": true
+        },
+        {
+          "id": "https",
+          "label": "`http://` only for this machine (localhost, 127.0.0.1); `https://` everywhere else",
+          "recommended": true
+        },
+        {
+          "id": "lan",
+          "label": "…except a LAN address I confirm once",
+          "detail": "For example a GPU box at `192.168.1.20`. Untick this to keep localhost only."
+        },
+        {
+          "id": "consent",
+          "label": "Adding a cloud endpoint says once that subject text goes to that host",
+          "recommended": true
+        },
+        {
+          "id": "meta",
+          "label": "The node meta line names the endpoint",
+          "detail": "*Ollama · qwen3:14b · 4.1k in / 900 out · 6 s*",
+          "recommended": true
+        },
+        {
+          "id": "test",
+          "label": "Each endpoint has its own *Test*",
+          "detail": "It lists the models and makes one tiny call. As with IP-41, nothing runs automatically.",
+          "recommended": true
+        },
+        {
+          "id": "noauto",
+          "label": "Lantern never starts or installs a server",
+          "detail": "If Ollama isn't running, it says so with *Check again*, as with the CLI's instructions.",
+          "recommended": true
+        },
+        {
+          "id": "cliopt",
+          "label": "Lantern works with no Claude Code installed when an endpoint is set",
+          "detail": "The *not installed* banner then shows only when a Claude model is picked."
+        }
+      ],
+      "allow_other": true,
+      "take": "Tick them all except perhaps **lan**, which you'll know better: do you run models on another machine? **cliopt** matters only if *noclaude* matters to you.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "All accepted, LAN included; *Test* works on one model at a time (CE-11, CE-24, CE-25, CE-26, CE-80 to CE-82).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-errors",
+      "kind": "multi",
+      "title": "Error types for endpoints: tick the ones you accept",
+      "context": "IP-10's error types are CLI-shaped (*not installed*, *not signed in*). The proposed mapping for HTTP is below; each type gets its own fix-it message, with *Details* as today (SE-43, SE-44).",
+      "options": [
+        {
+          "id": "unreach",
+          "label": "*unreachable*: connection refused or DNS failure",
+          "detail": "\"Ollama isn't running at localhost:11434. Start it, then *Check again*.\" For a cloud host, the existing *network* message.",
+          "recommended": true
+        },
+        {
+          "id": "auth",
+          "label": "*key-rejected*: 401 or 403",
+          "detail": "\"NVIDIA rejected the API key.\" *Replace key*.",
+          "recommended": true
+        },
+        {
+          "id": "model",
+          "label": "*model-unknown*: 404, or the model isn't on the server",
+          "detail": "For Ollama: \"Run `ollama pull qwen3:14b` first.\"",
+          "recommended": true
+        },
+        {
+          "id": "rate",
+          "label": "*rate-limited*: 429, with the wait time when `Retry-After` gives one",
+          "recommended": true
+        },
+        {
+          "id": "ctx",
+          "label": "*context-too-long*, a new type",
+          "detail": "Detected before sending when the window is known, otherwise from the server's error.",
+          "recommended": true
+        },
+        {
+          "id": "load",
+          "label": "A longer wait for the first token on local servers",
+          "detail": "Loading a model into memory can take a minute. The stall timeout (IP-31, 120 s) starts only after the first byte, and the companion line says *loading the model…*.",
+          "recommended": true
+        }
+      ],
+      "allow_other": true,
+      "take": "All of them. *load* matters most for daily use: the first call after a while on Ollama is slow for reasons that have nothing to do with Lantern.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "All accepted (CE-40, CE-41).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-usage",
+      "kind": "single",
+      "title": "Tokens, thinking and effort on endpoints",
+      "context": "Servers report usage in the stream's last chunk when asked (`stream_options.include_usage`), though not always. Reasoning models (Qwen3, DeepSeek-R1, Nemotron) send their thinking either in a `reasoning_content` field or inline as `<think>…</think>`. Some servers accept `reasoning_effort`. Cost is unknown.",
+      "options": [
+        {
+          "id": "std",
+          "label": "Thinking hidden and counted; effort sent where supported; local tokens on their own line",
+          "detail": "Thinking never reaches the text or the parser, and counts as `thinking` tokens. Effort maps to `reasoning_effort` when the preset says the server takes it, otherwise it's ignored (IP-3). Missing usage is estimated and shown with *≈*. The stats hover and Gallery show *Claude* and *local* tokens separately; cloud endpoints count with Claude. `costUsd` stays absent.",
+          "recommended": true
+        },
+        {
+          "id": "one",
+          "label": "Same, but one token total for everything"
+        },
+        {
+          "id": "show",
+          "label": "Same, but thinking can be shown",
+          "detail": "As a fold above the explanation, for curiosity."
+        }
+      ],
+      "allow_other": true,
+      "take": "**std**. Local tokens cost you nothing, so mixing them into *tokens spent* would hide the figure you care about (your Claude usage). The `<think>` stripping must happen before the tagged-block parser, or a model that thinks about `<options>` would break it.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Thinking hidden and counted, effort where supported, local tokens on their own line (CE-50 to CE-53). How Claude-only users see it is in round 11.",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-scope",
+      "kind": "scope",
+      "title": "What goes in which phase?",
+      "context": "Your plan: local first, then cloud with NVIDIA first, then other cloud hosts. Sort each piece. Pieces your other answers already rule out can go to *Later* or *Never*.",
+      "items": [
+        {
+          "id": "provider",
+          "label": "The OpenAI-compatible provider: streaming, cancel, errors, fixtures, fake provider"
+        },
+        {
+          "id": "settings",
+          "label": "Settings → Endpoints: add, test, remove, models"
+        },
+        {
+          "id": "pickers",
+          "label": "Endpoint models in every model picker"
+        },
+        {
+          "id": "ollama",
+          "label": "Ollama preset (with its context handling)"
+        },
+        {
+          "id": "llamacpp",
+          "label": "llama.cpp `llama-server` preset"
+        },
+        {
+          "id": "lmstudio",
+          "label": "LM Studio preset"
+        },
+        {
+          "id": "custom",
+          "label": "Custom URL (any compatible server)"
+        },
+        {
+          "id": "keys",
+          "label": "API keys in Windows Credential Manager"
+        },
+        {
+          "id": "nvidia",
+          "label": "NVIDIA preset"
+        },
+        {
+          "id": "clouds",
+          "label": "Other cloud presets: OpenRouter, Groq, Mistral, DeepSeek, Together…"
+        },
+        {
+          "id": "anthropic",
+          "label": "The Anthropic API with a key (Claude without the CLI)"
+        },
+        {
+          "id": "amber",
+          "label": "Amber on an endpoint model"
+        },
+        {
+          "id": "evals",
+          "label": "Hand-run eval scores for 2–3 recommended local models"
+        },
+        {
+          "id": "repair",
+          "label": "The protocol repair call"
+        },
+        {
+          "id": "pertask",
+          "label": "Models per task (cheap tasks on a small model)"
+        },
+        {
+          "id": "webtools",
+          "label": "Lantern's own web tools for Choose"
+        },
+        {
+          "id": "checkbtn",
+          "label": "*Check this model* button"
+        }
+      ],
+      "buckets": [
+        {
+          "id": "local",
+          "label": "Phase 1: local"
+        },
+        {
+          "id": "cloud",
+          "label": "Phase 2: cloud"
+        },
+        {
+          "id": "later",
+          "label": "Later"
+        },
+        {
+          "id": "never",
+          "label": "Never"
+        }
+      ],
+      "take": "**Local:** provider, settings, pickers, ollama, llamacpp, custom, amber, evals, repair. LM Studio is nearly free with the custom URL. **Cloud:** keys, nvidia, then clouds. **Later:** anthropic, pertask, webtools, checkbtn. *anthropic* is worth a thought: with a key it would be the fastest way to call Claude (no CLI start-up), but it bills per token rather than using your subscription.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Placement kept, with *Check this model* and the repair call moved to Later in round 11 (CE-3).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-version",
+      "kind": "single",
+      "title": "How do the phases ship?",
+      "context": "Since one provider covers both, the cloud phase mostly adds keys, the consent step and presets.",
+      "options": [
+        {
+          "id": "split",
+          "label": "v0.5.0 local, v0.6.0 cloud",
+          "detail": "Each phase is released and used before the next one starts.",
+          "recommended": true
+        },
+        {
+          "id": "one",
+          "label": "One v0.5.0 with both, local slices first"
+        },
+        {
+          "id": "patch",
+          "label": "v0.5.0 local, v0.5.1 cloud"
+        }
+      ],
+      "allow_other": true,
+      "take": "**split**. You use the local version daily before keys and privacy enter the picture, and API keys are a security feature worth its own release and acceptance pass. *patch* also works if cloud turns out small, but keys are more than a fix.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "v0.5.0 local, v0.6.0 cloud (CE-3).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-setup",
+      "kind": "text",
+      "title": "Your local setup",
+      "context": "Which servers and models will you test with, and on what hardware (GPU, VRAM, RAM)? This decides the recommended models, the default context size, and which models get eval-gated first. Also, which NVIDIA model you have in mind, if you know.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Gemma 4, locally first, then on NVIDIA (CE-4). Hardware is asked in round 11.",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r10-anything",
+      "kind": "text",
+      "title": "Anything else?",
+      "context": "Other servers, things to avoid, or anything this round missed.",
+      "area": "endpoints",
+      "round": 10,
+      "settled": {
+        "summary": "Key safety written as CE-70 to CE-75. No change that degrades the Claude Code path without discussion first (CE-2, *Touches to the Claude Code path*).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r11-claude",
+      "kind": "multi",
+      "title": "Changes that touch the Claude Code path: tick the ones you accept",
+      "context": "Everything else in the spec applies only when an endpoint is used. Stored model ids, the CLI provider, its errors and timeouts, and Choose's research don't change.",
+      "options": [
+        {
+          "id": "group",
+          "label": "Pickers group models by endpoint",
+          "detail": "Claude models sit under *Claude Code*, in the same order as today. Until an endpoint is added, there's only that one group, so the picker looks as it does now.",
+          "recommended": true
+        },
+        {
+          "id": "tokens",
+          "label": "A local token line appears only once a local token has been spent",
+          "detail": "If you only ever use Claude, the stats and Gallery look exactly as they do today.",
+          "recommended": true
+        },
+        {
+          "id": "tokensalways",
+          "label": "…or always show the two lines, Claude and local"
+        },
+        {
+          "id": "banner",
+          "label": "With an endpoint set and no Claude Code installed, the not installed banner shows only when a Claude model is picked",
+          "detail": "With no endpoint set, nothing changes.",
+          "recommended": true
+        },
+        {
+          "id": "repairclaude",
+          "label": "The protocol repair call also runs on Claude",
+          "detail": "This would change today's Claude behaviour and needs a new prompt version with its eval gate. Leave it unticked to keep the repair call for endpoints only."
+        }
+      ],
+      "allow_other": true,
+      "take": "Tick **group**, **tokens** and **banner**, and leave the others unticked. With these, someone who never adds an endpoint sees no change at all.",
+      "area": "endpoints",
+      "round": 11,
+      "settled": {
+        "summary": "Grouped pickers, the local line only once used, the banner only with an endpoint; no repair call on Claude (Touches to the Claude Code path).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r11-protocol",
+      "kind": "single",
+      "title": "In v0.5.0, when an endpoint model breaks the protocol",
+      "context": "In round 10 you chose *keep the text, then a repair call*, but placed the repair call in Later. Either way this applies to endpoint models only; Claude keeps today's behaviour unless you ticked *repairclaude* above.",
+      "options": [
+        {
+          "id": "keep",
+          "label": "v0.5.0 keeps the text and offers More options; the repair call comes later",
+          "detail": "No extra call. The node is lit with no children, and a note says the model gave no options.",
+          "recommended": true
+        },
+        {
+          "id": "keeprepair",
+          "label": "Bring the repair call into v0.5.0",
+          "detail": "The text is kept and a short follow-up call asks for the options alone. The log marks it."
+        },
+        {
+          "id": "fail",
+          "label": "Fail as on Claude today"
+        }
+      ],
+      "allow_other": true,
+      "take": "**keep**. It respects both of your answers: nothing readable is lost now, and the repair call stays in Later. *Check this model* will show how often Gemma 4 actually breaks the protocol, which tells us whether the repair is worth building.",
+      "area": "endpoints",
+      "round": 11,
+      "settled": {
+        "summary": "Keep the text and offer *More options* (CE-57).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r11-ollama",
+      "kind": "single",
+      "title": "How does Lantern set Ollama's context size?",
+      "context": "You chose one OpenAI-compatible provider and *Lantern sets the window*. Ollama's compatible endpoint can't take a context size per request, and `/api/show` reports the model's maximum, not the size Ollama will really use. Ollama's default is small and it cuts the start of the prompt without saying so.",
+      "options": [
+        {
+          "id": "native",
+          "label": "Ollama's chat calls go through its native `/api/chat`",
+          "detail": "It's one small exception in the same provider, and `num_ctx` is sent on each request. Everything else (model list, errors, presets) stays shared.",
+          "recommended": true
+        },
+        {
+          "id": "env",
+          "label": "Stay on the compatible API; I set `OLLAMA_CONTEXT_LENGTH` myself",
+          "detail": "Settings shows how. Lantern can't check that it was done, so a truncated prompt stays possible."
+        }
+      ],
+      "allow_other": true,
+      "take": "**native**. A silent truncation looks exactly like a bad model, and it's the one failure Lantern couldn't explain to you. The exception is about forty lines and has its own fixtures.",
+      "area": "endpoints",
+      "round": 11,
+      "settled": {
+        "summary": "Ollama's native `/api/chat` with `num_ctx` (CE-32).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r11-web",
+      "kind": "single",
+      "title": "Choose's web research",
+      "context": "This follows up your flag. NVIDIA has no hosted search (see the intro), so on NVIDIA the research would need Lantern's own web tools. The Codex CLI has a web search tool.",
+      "options": [
+        {
+          "id": "cli",
+          "label": "Research runs on a CLI provider with web tools: Claude Code now, Codex once it exists",
+          "detail": "Choose's other tasks follow the subject's model. With neither CLI installed, Choose says research needs one of them.",
+          "recommended": true
+        },
+        {
+          "id": "claude",
+          "label": "Research always runs on Claude Code (as in round 10)"
+        },
+        {
+          "id": "own",
+          "label": "Bring Lantern's own web tools forward",
+          "detail": "A search API with its own key, page fetching in Rust, and a tool-calling loop. Research would then work on any model, NVIDIA included. It's a large piece of work."
+        }
+      ],
+      "allow_other": true,
+      "take": "**cli**. It keeps round 10's choice and leaves room for Codex at no extra cost now. *own* is the only route to research on NVIDIA or a local model, and it deserves its own spec round once endpoints are in daily use.",
+      "area": "endpoints",
+      "round": 11,
+      "settled": {
+        "summary": "A CLI provider with web tools; own web tools later (CE-55).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r11-codex",
+      "kind": "single",
+      "title": "When does the Codex provider come?",
+      "context": "Codex (`codex exec --json`, signed in with a ChatGPT plan) would be a second CLI provider beside Claude Code, with its own detection, flags, event stream, errors and fixtures. You can't test it on this machine right now: without a plan there are no real recordings and no acceptance pass.",
+      "options": [
+        {
+          "id": "own",
+          "label": "Its own version, scheduled once you have a Codex plan to test with",
+          "detail": "It goes in the backlog now, with what it needs.",
+          "recommended": true
+        },
+        {
+          "id": "v06",
+          "label": "In v0.6.0, with the cloud phase"
+        },
+        {
+          "id": "v05",
+          "label": "In v0.5.0, untested",
+          "detail": "Built against Codex's documentation and the fake provider. Acceptance waits for a plan."
+        }
+      ],
+      "allow_other": true,
+      "take": "**own**. A provider that only exists against documentation tends to fail on the first real stream: the Claude CLI's fixtures caught several wording surprises (IP-11). It doesn't need to block v0.5.0 or v0.6.0.",
+      "area": "endpoints",
+      "round": 11,
+      "settled": {
+        "summary": "Its own version once a Codex plan can be tested (CE-58, backlog).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r11-check",
+      "kind": "single",
+      "title": "What does Check this model run?",
+      "context": "The eval cases in `app/evals/` are checked by code, not by a human: they check the blocks, ids, counts and categories. Learn's and Amber's cases can run in the app. Choose's research cases need web tools, which endpoints don't have.",
+      "options": [
+        {
+          "id": "rooms",
+          "label": "Learn's cases, Choose's non-research cases, and Amber's cases, each scored separately",
+          "detail": "A model is marked as checked per room: *Learn 94 % · Choose — · Amber 88 %*. Results are stored with the endpoint and the prompt version, so a new prompt marks them *out of date*.",
+          "recommended": true
+        },
+        {
+          "id": "learn",
+          "label": "Learn's cases only, for v0.5.0"
+        },
+        {
+          "id": "later",
+          "label": "Move the button to Later with the hand-run evals"
+        }
+      ],
+      "allow_other": true,
+      "take": "**rooms**. The cases already exist and are checked by code. The work is running them through the app's provider and showing a score. It also answers the protocol question with numbers.",
+      "area": "endpoints",
+      "round": 11,
+      "settled": {
+        "summary": "Later (CE-60, backlog).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r11-keys",
+      "kind": "multi",
+      "title": "API key safety (v0.6.0): tick the rules you accept",
+      "context": "You asked for the safest way. These are CE-70 to CE-75 in the spec. Untick any you'd change, and add any rule you'd want.",
+      "options": [
+        {
+          "id": "store",
+          "label": "Entered once in the app, sent straight to Rust, stored in Windows Credential Manager, never in a file",
+          "recommended": true
+        },
+        {
+          "id": "noreturn",
+          "label": "The key never goes back to the webview; Settings shows only the last 4 characters",
+          "recommended": true
+        },
+        {
+          "id": "https",
+          "label": "A key is only sent over `https://` to the host it was saved for; changing the host removes the key",
+          "recommended": true
+        },
+        {
+          "id": "redact",
+          "label": "Keys are removed from every error, Details text and diagnostic, and tested with a planted key",
+          "recommended": true
+        },
+        {
+          "id": "memory",
+          "label": "Never in a prompt, URL or child-process environment; memory cleared after use",
+          "recommended": true
+        },
+        {
+          "id": "remove",
+          "label": "Removing an endpoint removes its key",
+          "recommended": true
+        },
+        {
+          "id": "confirm",
+          "label": "Replacing or removing a key asks for confirmation"
+        }
+      ],
+      "allow_other": true,
+      "take": "Tick them all. *confirm* is a small comfort and costs nothing. Showing the key again later (even behind Windows Hello) is deliberately missing: it's the one feature that would make the key readable from the UI.",
+      "area": "endpoints",
+      "round": 11,
+      "settled": {
+        "summary": "All seven rules (CE-70 to CE-76).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r11-hardware",
+      "kind": "text",
+      "title": "Gemma 4 locally: which size, on what machine?",
+      "context": "Which Gemma 4 size will you run, on which server (Ollama or llama.cpp), and with how much GPU memory and RAM? This decides the default context size (CE-30) and how long *loading the model…* will typically take (CE-41).",
+      "area": "endpoints",
+      "round": 11,
+      "settled": {
+        "summary": "Gemma 4 E4B Q4 on Ollama, set up by the user (CE-4); the default context size is confirmed on first runs (Open).",
+        "spec": "specs/custom-endpoints.md"
+      }
+    },
+    {
+      "id": "q-r11-anything",
+      "kind": "text",
+      "title": "Anything else?",
+      "context": "After this round the spec goes to *review*, then to *agreed*, and the v0.5.0 plan comes next.",
+      "area": "endpoints",
+      "round": 11,
+      "settled": {
+        "summary": "Worktree first, then a feature branch; the user decides the merge (CE-6). Versions not fixed (CE-5).",
+        "spec": "specs/custom-endpoints.md"
       }
     }
   ]
