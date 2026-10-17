@@ -62,3 +62,45 @@ test('RS-12: with Amber on, the capsule has no Ask button', async ({ page }) => 
   await expect(page.locator('header').getByRole('button', { name: 'Settings' })).toBeVisible();
   await expect(page.locator('header').getByRole('button', { name: 'Ask Amber' })).toHaveCount(0);
 });
+
+// NP-54, CO-45: Ask Amber on a selection, in both rooms' reading panels; the same with Amber off.
+async function selectInPanel(page: import('@playwright/test').Page, text: string, settled: import('@playwright/test').Locator) {
+  // The intro streams and re-renders the explanation; select once it has settled.
+  await expect(settled).toBeVisible();
+  const paragraph = page.locator('.panel .md p', { hasText: text }).first();
+  await expect(paragraph).toBeVisible();
+  // Drag across the first words, as a user selects (a triple-click's last click can land on the popover).
+  await page.evaluate(() => getSelection()?.removeAllRanges());
+  const box = (await paragraph.boundingBox())!, y = box.y + 10;
+  await page.mouse.move(box.x + 1, y); await page.mouse.down(); await page.mouse.move(box.x + 140, y, { steps: 5 }); await page.mouse.up();
+  await expect(page.locator('.selection')).toBeVisible();
+}
+test('NP-54, CO-45: the popover\'s Ask Amber and Alt+D open a card by the selection; Ask the tutor quotes it; Esc closes', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('lantern.settings', JSON.stringify({ format: 'lantern-settings/1', companion: { show: false } })));
+  await page.goto('/?study=1&subject=Tides');
+  await selectInPanel(page, 'This subject connects', page.locator('.panel', { hasText: 'Experiment 1' }));
+  await expect(page.locator('.selection').getByRole('button')).toHaveText(['Ask about this', 'Make it a node', 'Ask Amber']);
+  await page.locator('.selection').getByRole('button', { name: 'Ask Amber' }).click();
+  const card = page.getByRole('dialog', { name: 'Ask Amber' });
+  await expect(card).toContainText('here means the part of the idea the explanation leans on');
+  await expect(card.locator('q')).toContainText('This subject connects');
+  await page.keyboard.press('Escape'); await expect(card).toHaveCount(0);
+  // Alt+D does the same; Ask the tutor puts the quote in the composer (NP-51) and closes the card.
+  await selectInPanel(page, 'This subject connects', page.locator('.panel', { hasText: 'Experiment 1' }));
+  await page.keyboard.press('Alt+d');
+  await expect(card).toContainText('leans on');
+  await card.getByRole('button', { name: 'Ask the tutor' }).click();
+  await expect(card).toHaveCount(0);
+  const composer = page.locator('.panel').getByRole('textbox', { name: /^Ask about this/ });
+  await expect(composer).toBeFocused(); await expect(composer).toHaveValue(/^> This subject connects/);
+  const log = await page.evaluate(() => JSON.parse(localStorage.getItem('lantern.amberLog') ?? '[]'));
+  expect(log.map((r: { kind: string; category: string }) => [r.kind, r.category])).toEqual([['selection', 'subject'], ['selection', 'subject']]);
+});
+test('NP-54: Alt+D works in the Choose room\'s Survey panel', async ({ page }) => {
+  await page.addInitScript(() => { const s = JSON.parse(localStorage.getItem('lantern.settings') ?? '{}'); s.ui = { ...(s.ui ?? {}), lastRoom: 'choose' }; localStorage.setItem('lantern.settings', JSON.stringify(s)); });
+  await page.goto('/?study=1&subject=3D%20printer');
+  await expect(page.locator('html')).toHaveAttribute('data-room', 'choose');
+  await selectInPanel(page, '3D printer builds objects', page.locator('.graph .node', { hasText: 'Print volume' }));
+  await page.keyboard.press('Alt+d');
+  await expect(page.getByRole('dialog', { name: 'Ask Amber' })).toContainText('leans on');
+});

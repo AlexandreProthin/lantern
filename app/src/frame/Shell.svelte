@@ -30,6 +30,9 @@
   import { applyRoomChrome, windowTitle } from './window-chrome';
   import { isValidModel } from '../core/models';
   import AskBox from './amber/AskBox.svelte';
+  import SelectionCard from './amber/SelectionCard.svelte';
+  import { ASK_AMBER_EVENT } from '../ui/ask-amber';
+  import type { AskAmberDetail } from '../ui/ask-amber';
   import { AmberChat } from './amber/chat';
   import { AmberFakeProvider } from './amber/fake-provider';
   import { amberContext, amberHelp } from './amber/help';
@@ -60,6 +63,16 @@
   const amberChat = new AmberChat(amberProvider, desktop ? desktopAmberLog : browserAmberLog, () => settings.companion.model,
     () => amberHelp(rooms), () => amberContext(room, space, session), () => amberRevision++);
   function closeAsk() { amberChat.close(); askOpen = false; }
+  // CO-45, NP-54: each selection gets its own one-question chat, forgotten when the card closes.
+  let selectionAsk = $state<{ detail: AskAmberDetail; chat: AmberChat } | null>(null), selectionRevision = $state(0);
+  const amberLog = desktop ? desktopAmberLog : browserAmberLog;
+  function openSelectionAsk(e: Event) {
+    selectionAsk?.chat.close();
+    const detail = (e as CustomEvent<AskAmberDetail>).detail;
+    selectionAsk = { detail, chat: new AmberChat(amberProvider, amberLog, () => settings.companion.model, () => amberHelp(rooms), () => amberContext(room, space, session), () => selectionRevision++) };
+  }
+  function closeSelectionAsk() { selectionAsk?.chat.close(); selectionAsk = null; }
+  $effect(() => { window.addEventListener(ASK_AMBER_EVENT, openSelectionAsk); return () => window.removeEventListener(ASK_AMBER_EVENT, openSelectionAsk); });
   const storage = desktop ? desktopStorage : browserStorage;
   let settings = $state(defaultSettings('', '', baseRooms));
   let defaults = $state(defaultSettings('', '', baseRooms));
@@ -326,6 +339,7 @@
   openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
+{#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}
 {#if askOpen}<AskBox bind:this={askBox} chat={amberChat} revision={amberRevision} close={closeAsk} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts(rooms.map(r=>r.name)):''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>

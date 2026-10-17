@@ -7,7 +7,7 @@ import type { Completion, ErrorKind, InferenceProvider, Request } from '../provi
 export class AmberFakeProvider implements InferenceProvider {
   constructor(public delayMs = 12, public failNext?: ErrorKind) {}
   async stream(req: Request, onText: (chunk: string) => void): Promise<Completion> {
-    const start = performance.now(), message = /USER'S MESSAGE: ([\s\S]*)$/.exec(req.prompt)?.[1] ?? '';
+    const start = performance.now(), message = /USER'S MESSAGE: ([\s\S]*?)(\n\n|$)/.exec(req.prompt)?.[1] ?? '';
     const selected = /^SELECTED TEXT: "([^"]*)"/m.exec(req.prompt)?.[1];
     const earlier = (req.prompt.match(/^USER: /gm) ?? []).length;
     const category = selected ? 'subject' : /lantern|shortcut|key|button|setting|amber|room|space/i.test(message) ? 'app' : /this|node|subject|explanation/i.test(message) ? 'subject' : 'general';

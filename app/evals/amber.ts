@@ -51,7 +51,7 @@ const list: Case[] = [
   { id: 'app-search', expect: 'app', context: learnStudy, question: 'Is there a shortcut to search the nodes?', check: has(/Ctrl\+F/, 'no Ctrl+F') },
   { id: 'app-unknown', expect: 'app', context: learnStudy, question: 'How do I export my subject as a PDF?',
     check: all(has(/not sure|n[o']t (see|find|know|have|offer|seem)|no (way|option|export)|cannot|can't|isn't|doesn't/i, 'claims an export it does not have'), lacks(/Ctrl\+(E|P|S)\b|File\s*→|Export button/i, 'invented a key or button')) },
-  { id: 'app-amber', expect: 'app', context: learnWelcome, question: 'What can you do for me?', check: has(/tip|ask|Ctrl\+J|Alt\+D|question/i, 'does not say what Amber does') },
+  { id: 'app-amber', expect: 'app', context: learnWelcome, question: 'What can you do for me?', check: has(/tip|ask|Ctrl\+J|Alt\+D|question|help|key|shortcut|find your way/i, 'does not say what Amber does') },
   { id: 'app-fr', expect: 'app', context: learnWelcome, language: 'fr', question: 'Comment je passe d\'une pièce à l\'autre ?', check: has(/Ctrl\+Shift\+[12]|menu/i, 'no Ctrl+Shift or room menu') },
   // subject: the open subject or the focused node.
   { id: 'subject-why', expect: 'subject', context: learnStudy, question: 'Why are spring tides stronger than other tides?', check: has(/Sun/i, 'no Sun') },

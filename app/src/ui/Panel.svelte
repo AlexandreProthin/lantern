@@ -3,6 +3,7 @@
   // The rooms' shared reading panel (PS-5): breadcrumb, labels, explanation, children, dialogue and composer.
   // The room supplies its vocabulary, rules, actions and three snippets (panel-types.ts).
   import Markdown from './Markdown.svelte';
+  import { askAmber } from './ask-amber';
   import { strings } from './strings';
   import { modelLabel,durationLabel } from './format';
   import { childrenOf, pathTo, deleteSubtree, editLabel, revertText, subtreeIds } from '../core/graph';
@@ -27,7 +28,7 @@
   let scroller: HTMLDivElement;
   let nearBottom=$state(true);
   let composer = $state<HTMLTextAreaElement>();
-  let selection = $state(''), selectionX = $state(0), selectionY = $state(0);
+  let selection = $state(''), selectionX = $state(0), selectionY = $state(0), selectionRect = { left: 0, top: 0, bottom: 0 };
   const deleteIds = $derived(deleting ? subtreeIds(visit, deleting) : []);
   const compact = (n: number) => n >= 1_000_000 ? `${(n/1_000_000).toFixed(1)}M` : n >= 1000 ? `${(n/1000).toFixed(1)}k` : String(n);
   function provenance(target: GraphNode | Turn): string {
@@ -91,11 +92,17 @@
     const range = selected.getRangeAt(0), anchor = selected.anchorNode?.parentElement;
     if (!anchor?.closest('.md') || !scroller?.contains(anchor)) return;
     const text = selected.toString().trim(); if (text.length < 2) return;
-    const rect = range.getBoundingClientRect(); selection = text; selectionX = Math.min(innerWidth-300, rect.x); selectionY = Math.max(8, rect.y-42);
+    const rect = range.getBoundingClientRect(); selection = text; selectionX = Math.min(innerWidth-360, rect.x); selectionY = Math.max(8, rect.y-42);
+    selectionRect = { left: rect.left, top: rect.top, bottom: rect.bottom };
   }
-  function askSelection() {
-    drafts[node.id] = (drafts[node.id] ? drafts[node.id] + '\n\n' : '') + selection.split('\n').map(line => '> ' + line).join('\n') + '\n\n';
+  function askSelection(text = selection) {
+    drafts[node.id] = (drafts[node.id] ? drafts[node.id] + '\n\n' : '') + text.split('\n').map(line => '> ' + line).join('\n') + '\n\n';
     selection = ''; composer?.focus();
+  }
+  /** NP-54: Ask Amber on the selection; the card's *Ask the tutor* does NP-51 for the same words. */
+  function amberSelection() {
+    const text = selection, nodeId = node.id; selection = '';
+    askAmber({ text, rect: selectionRect, askTutor: () => { if (visit.focusId === nodeId) askSelection(text); } });
   }
   function makeSelection() {
     const text = selection.replace(/\s+/g, ' ').trim(); selection = '';
@@ -106,6 +113,7 @@
     if (e.key === 'Escape' && selection) { selection = ''; e.stopPropagation(); }
     if (selection && e.altKey && e.key.toLowerCase() === 'a' && !running) { e.preventDefault(); askSelection(); }
     if (selection && e.altKey && e.key.toLowerCase() === 'n' && !busy && lit) { e.preventDefault(); makeSelection(); }
+    if (selection && e.altKey && e.key.toLowerCase() === 'd') { e.preventDefault(); amberSelection(); }
   }
 </script>
 <svelte:window onkeydown={onGlobalKey} onmouseup={selectText} />
@@ -173,7 +181,7 @@
     {@render footer(node, { running, busy, perform })}</div>
   </footer>{/if}
 </aside>
-{#if selection}<div class="selection" style:left={`${selectionX}px`} style:top={`${selectionY}px`}><button disabled={!!running} onclick={askSelection}>{strings.askSelection}</button><button disabled={busy || !lit} onclick={makeSelection}>{strings.nodeSelection}</button></div>{/if}
+{#if selection}<div class="selection" style:left={`${selectionX}px`} style:top={`${selectionY}px`}><button disabled={!!running} title="Alt+A" onclick={() => askSelection()}>{strings.askSelection}</button><button disabled={busy || !lit} title="Alt+N" onclick={makeSelection}>{strings.nodeSelection}</button><button title="Alt+D" onclick={amberSelection}>{strings.askAmber}</button></div>{/if}
 <dialog bind:this={deleteDialog} oncancel={() => deleting = null}><h2>{strings.deleteNode}</h2>{#if deleting}<p>{strings.deleteDescription(visit.nodes[deleting].title,deleteIds.length)}</p>{#if room.deleteNote?.(visit, deleteIds)}<p>{room.deleteNote(visit, deleteIds)}</p>{/if}{#if running && deleteIds.includes(running.nodeId)}<p>{strings.generationCancelled}</p>{/if}{/if}<p>{strings.deleteHistory}</p><button onclick={() => { deleting = null; deleteDialog.close(); }}>{strings.cancel}</button><button onclick={remove}>{strings.delete}</button></dialog>
 <dialog bind:this={compareDialog} oncancel={() => compare = null}><div class="compare">{#if compare}<section><h2>{strings.previous}</h2><Markdown text={compare.previous!} {visit} focus={id => session.setFocus(id)} {preview} /></section><section><h2>{strings.current}</h2><Markdown text={'text' in compare ? compare.text : compare.content} {visit} focus={id => session.setFocus(id)} {preview} /></section>{/if}</div><button disabled={busy} onclick={() => { perform(() => revertText(compare!)); compare = null; compareDialog.close(); }}>{strings.revert}</button><button onclick={() => { compare = null; compareDialog.close(); }}>{strings.keepCurrent}</button></dialog>
 <style>

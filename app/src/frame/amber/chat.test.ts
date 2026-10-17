@@ -35,7 +35,7 @@ test('CO-43: the system holds the guides and the app help; the prompt the place,
   expect(r.prompt).toContain('Subject: "Tides"\nFocused node: "Spring tides"');
   expect(r.prompt).toContain('w'.repeat(FOCUS_CLIP) + '…'); expect(r.prompt).not.toContain('w'.repeat(FOCUS_CLIP + 1));
   expect(r.prompt).toContain('EARLIER IN THIS CHAT\nUSER: What is a neap tide?\nAMBER: A weak one.');
-  expect(r.prompt.endsWith("USER'S MESSAGE: And a spring tide?")).toBe(true);
+  expect(r.prompt.endsWith("USER'S MESSAGE: And a spring tide?\n\nBegin your reply with the category tag.")).toBe(true);
   const none = amberRequest(help, { room: 'Choose', space: 'Welcome' }, [], 'Hi', 'heated bed');
   expect(none.prompt).toContain('(no subject is open)'); expect(none.prompt).toContain('SELECTED TEXT: "heated bed"\nUSER\'S MESSAGE: Hi');
   expect(none.prompt).not.toContain('EARLIER IN THIS CHAT');

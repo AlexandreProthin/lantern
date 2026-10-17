@@ -2,6 +2,7 @@
 
 ## 2026-10-17
 
+* **v0.4.0 slices 2 and 3 done**: `amber-1` passed its eval gate on Haiku 5.5 (24/24 three times, categories all right) after one amendment for the tag and for key and room names in French; Ask Amber on a selection (Alt+D, a card by the selection, *Ask the tutor*) in both rooms. Details in the [plan](/plans/v0-4-0.md).
 * **v0.4.0: top bar merged, lines agreed**: master's top bar merged into `claude/lantern-amber` (the shortcut table keeps Ctrl+K and gains Ctrl+J); the *Ask* button is now the capsule's last segment while Amber is off (RS-12, CO-41). The user agreed the [Amber lines](/plans/v0-4-0-amber-lines.md) as drafted; the Ctrl+K tip joined the frame tips.
 * **v0.4.0 slice 2 built** (Ask Amber without the character): prompt `amber-1` with the category tag gate, the temporary chat with its log, the Ask box on Ctrl+J, Amber's fake provider, and 24 eval cases in `app/evals/amber.ts`. The real eval runs wait for the user's review of the prompt and cases. Room content (`companion` on the room definition) came forward from slice 4 with the draft lines. Details in the [plan](/plans/v0-4-0.md).
 * **v0.4.0 slice 1 done** (Amber's settings, state and log): *Settings → Companion* (*Show Amber*, *Amber's model*, tokens spent), `companion` in `state.json` (spots per space, seen tips) and `amber-log.jsonl` beside it, with Rust commands and browser stand-ins; `claude-haiku-5-5` joins the model list in code, which had lagged behind SE-48. Details in the [plan](/plans/v0-4-0.md).
