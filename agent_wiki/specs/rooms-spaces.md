@@ -97,7 +97,8 @@ controls, drags the window too; the top 3 px stay the resize edge. *(Amended 202
   *(Amended 2026-10-16, spec workshop round 9.)* While Amber is off, an **Ask** button sits just
   after the gear, as the capsule's last segment, styled like the others, and opens Ask Amber ([companion](/specs/companion.md) CO-41). With the accepted top
   bar (`agent_design/top-bar`, r005-02) it is the capsule's last segment, after settings *(user,
-  2026-10-17)*. While Amber is on, there is no Ask button,
+  2026-10-17)*. Its menu (right-click, the context-menu key or Shift+F10) offers *Bring Amber back*, which
+  turns *Show Amber* on (CO-4; the user, 2026-10-17). While Amber is on, there is no Ask button,
   its rope is tied to the header's bottom edge and it hangs below it (CO-10, CO-11); the header's
   controls are never covered.
 - **RS-53** *Identity assets.* The header mark (RS-12) MUST use `ember-on-dark-32.svg` from

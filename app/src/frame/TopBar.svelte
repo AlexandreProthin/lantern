@@ -9,18 +9,32 @@
   import type { BarFit } from './topbar';
   import type { RoomDefinition } from './room';
   let { rooms, room, space, subjectCount, title, busy, summary, showTokenStats, desktop, mark, panelOpen, roomMenu = $bindable(), fieldWidth = $bindable(),
-    navigate, switchRoom, openSettings, togglePanel, ask }: {
+    navigate, switchRoom, openSettings, togglePanel, ask, bringBack }: {
     rooms: readonly RoomDefinition[]; room: RoomDefinition; space: string; subjectCount: number; title: string | null; busy: boolean;
     summary: { text: string; tooltip: string } | null; showTokenStats: boolean; desktop: boolean; mark: string; panelOpen: boolean;
     roomMenu: boolean; fieldWidth: number;
     navigate: (space: string) => void; switchRoom: (id: string) => void; openSettings: () => void; togglePanel: () => void;
     /** RS-12, CO-41: given only while Amber is off; the capsule then ends with *Ask*. */
     ask?: () => void;
+    /** CO-4, RS-12: the Ask button's menu turns Amber back on. */
+    bringBack?: () => void;
   } = $props();
   /** The window controls' width (3 × 46 px); the stats end one gap before them. */
   const CONTROLS = 138, PAD = 16;
   let header = $state<HTMLElement>(), capsule = $state<HTMLElement>(), stats = $state<HTMLElement>(), field = $state<HTMLElement>();
   let fit = $state.raw<BarFit>({ tokenHover: true, stats: true, words: true, fieldPct: 34 });
+  let askButton = $state<HTMLButtonElement>(), askMenu = $state<HTMLElement>(), askMenuOpen = $state(false);
+  async function openAskMenu() { askMenuOpen = true; await tick(); askMenu?.querySelector<HTMLElement>('[role=menuitem]')?.focus(); }
+  function closeAskMenu(refocus: boolean) { askMenuOpen = false; if (refocus) askButton?.focus(); }
+  function askKey(e: KeyboardEvent) { if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); void openAskMenu(); } }
+  function askMenuKey(e: KeyboardEvent) { if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); closeAskMenu(true); } }
+  // A press outside closes the menu, as the room menu.
+  $effect(() => {
+    if (!askMenuOpen) return;
+    const outside = (e: PointerEvent) => { if (!askMenu?.contains(e.target as Node)) closeAskMenu(false); };
+    window.addEventListener('pointerdown', outside, true); return () => window.removeEventListener('pointerdown', outside, true);
+  });
+  $effect(() => { if (!ask) askMenuOpen = false; });
   let marker = $state({ left: 0, width: 0, dot: 0, shown: false }), instant = $state(true), placedKey = '';
 
   /** RS-18: measure what each part needs at full size, whatever the current fold, then pick the level. */
@@ -64,7 +78,8 @@
     <span class="sep" aria-hidden="true"></span>
     <button class="gear" aria-label={strings.settings} title={`${strings.settings} · Ctrl+,`} onclick={openSettings}><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true">{@html glyphs.settings}</svg></button>
     <!-- RS-12, CO-41: while Amber is off, its Ask button is the capsule's last segment. -->
-    {#if ask}<span class="sep" aria-hidden="true"></span><button class="ask" aria-label={strings.askAmber} title={`${strings.askAmber} · Ctrl+J`} onclick={ask}><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true">{@html glyphs.ask}</svg></button>{/if}
+    {#if ask}<span class="sep" aria-hidden="true"></span><span class="ask-chip"><button class="ask" bind:this={askButton} aria-label={strings.askAmber} aria-haspopup={bringBack ? 'menu' : undefined} aria-expanded={bringBack ? askMenuOpen : undefined} title={bringBack ? strings.askAmberTitle : `${strings.askAmber} · Ctrl+J`} onclick={ask}
+      oncontextmenu={e => { if (!bringBack) return; e.preventDefault(); void openAskMenu(); }} onkeydown={e => { if (bringBack) askKey(e); }}><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true">{@html glyphs.ask}</svg></button>{#if askMenuOpen && bringBack}<div class="room-menu ask-menu" role="menu" tabindex="-1" aria-label={strings.askAmber} bind:this={askMenu} onkeydown={askMenuKey}><button role="menuitem" onclick={() => { askMenuOpen = false; bringBack(); }}>{strings.bringAmberBack}</button></div>{/if}</span>{/if}
     {#if marker.shown}<span class="marker" aria-hidden="true" style:left={`${marker.left}px`} style:width={`${marker.width}px`}></span><span class="dot" aria-hidden="true" style:left={`${marker.dot}px`}></span>{/if}
   </div>
   <button class="subject-field" bind:this={field} aria-haspopup="dialog" aria-expanded={panelOpen} aria-keyshortcuts="Control+K" title={title ?? strings.openASubject} onclick={togglePanel}>
@@ -100,7 +115,8 @@
   .dot { position:absolute; top:7px; width:5px; height:5px; margin-left:-2px; border-radius:50%; background:var(--accent); }
   .marker, .dot { transition:left .24s cubic-bezier(.2,.8,.2,1), width .24s cubic-bezier(.2,.8,.2,1); }
   .instant .marker, .instant .dot { transition:none; }
-  .room-chip { position:relative; display:inline-flex; }
+  .room-chip, .ask-chip { position:relative; display:inline-flex; }
+  .ask-menu { left:auto; right:-4px; transform:none; }
   .room-menu { position:absolute; left:50%; transform:translateX(-50%); top:42px; z-index:13; display:grid; gap:2px; min-width:180px; padding:6px; background:var(--surface); border:1px solid var(--line); border-radius:6px; box-shadow:0 12px 32px color-mix(in srgb, var(--bg) 70%, transparent); }
   .room-menu button { height:32px; display:flex; align-items:center; gap:8px; padding:0 10px; border-radius:4px; color:var(--ink); text-align:left; }
   .room-menu button:hover { background:color-mix(in srgb, var(--ink) 6%, transparent); }

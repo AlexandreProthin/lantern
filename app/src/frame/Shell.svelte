@@ -77,6 +77,8 @@
   /** CO-41: Ctrl+J and the capsule's Ask open the bubble with Amber on, the box with Amber off. */
   function openAsk() { if (settings.companion.show && amber) void amber.open(true); else if (askOpen) askBox?.focus(); else askOpen = true; }
   /** CO-4: Hide turns the setting off and says where to turn it back on. */
+  /** CO-4: the Ask button's menu turns Amber back on; it appears at its remembered spot. */
+  function bringAmberBack() { closeAsk(); settings.companion.show = true; preferencesChanged(); if (toast === strings.amberHidden) toast = ''; }
   function hideAmber() { amberChat.close(); settings.companion.show = false; preferencesChanged(); toast = strings.amberHidden; }
   // CO-45, NP-54: each selection gets its own one-question chat, forgotten when the card closes.
   let selectionAsk = $state<{ detail: AskAmberDetail; chat: AmberChat } | null>(null), selectionRevision = $state(0);
@@ -375,7 +377,7 @@
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
 {#if !loading && settings.appearance.backdrop}<Backdrop {space} room={room.id} reduceSetting={settings.appearance.reduceMotion} />{/if}
 <TopBar {rooms} {room} {space} {subjectCount} title={session?.subject.title ?? null} busy={!!running} {summary} showTokenStats={settings.appearance.showTokenStats} {desktop} mark={lanternMark}
-  {panelOpen} bind:roomMenu bind:fieldWidth {navigate} switchRoom={id=>void switchRoom(id)} openSettings={()=>{settingsSection='general';settingsOpen=true;}} togglePanel={()=>{roomMenu=false;panelOpen=!panelOpen;}} ask={settings.companion.show?undefined:openAsk} />
+  {panelOpen} bind:roomMenu bind:fieldWidth {navigate} switchRoom={id=>void switchRoom(id)} openSettings={()=>{settingsSection='general';settingsOpen=true;}} togglePanel={()=>{roomMenu=false;panelOpen=!panelOpen;}} ask={settings.companion.show?undefined:openAsk} bringBack={settingsReadOnly?undefined:bringAmberBack} />
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
 {#if unavailable}<div class="banner provider-notice" role="alert"><div><strong>{strings.errorKinds[unavailable.kind]}</strong><p>{unavailable.kind==='not-installed'?strings.installInstructions:strings.signinInstructions}</p></div><button onclick={()=>{settingsSection='provider';settingsOpen=true;}}>{strings.settings}</button><button disabled={anyRunning||checkingReady} onclick={checkReady}>{strings.checkAgain}</button>{#if checkingReady}<button onclick={()=>readyController?.abort()}>{strings.cancel}</button>{/if}</div>{/if}
 {#if saveError}<div class="banner error" role="alert">{strings.saveFailed}<details><summary>{strings.details}</summary>{saveError}</details><button onclick={retrySaves}>{strings.retry}</button></div>{/if}

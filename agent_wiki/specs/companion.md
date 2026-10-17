@@ -36,7 +36,9 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
   - the generation state: the busy state the app shows today.
 - **CO-3** Amber MUST never be the only place a piece of information or an action appears. *(r8)*
 - **CO-4** *Hide* in Amber's menu turns the same setting off and says, in a toast, where to turn it back
-  on. Amber comes back only from Settings, never on its own (C09). *(r8)*
+  on. Amber comes back only when the user asks, never on its own (C09): from Settings, or from the menu of the
+  capsule's *Ask* button (right-click, the context-menu key or Shift+F10), whose one item is *Bring Amber back*.
+  *(r8; the menu added by the user, 2026-10-17, after acceptance)*
 - **CO-5** Amber never speaks or moves unless the user did something: a click, hover, grab, question,
   a generation the user started, or opening the app (the greeting, CO-30). *(r8, r9)*
 

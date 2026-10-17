@@ -192,12 +192,12 @@ test('CO-16/58/15: the menu opens on right-click and Shift+F10; Move to… moves
   await page.keyboard.press('Escape'); await expect(menu).toHaveCount(0); await expect(amber(page)).toBeFocused();
 });
 
-test('CO-4, RS-12: Hide turns Amber off with a toast; the capsule gains Ask; Amber comes back only from Settings', async ({ page }) => {
+test('CO-4, RS-12: Hide turns Amber off with a toast; the capsule gains Ask; Amber comes back from Settings', async ({ page }) => {
   await page.goto('/?study=1&subject=Tides');
   await amber(page).click({ button: 'right' });
   await page.getByRole('menu', { name: 'Amber' }).getByRole('menuitem', { name: 'Hide' }).click();
   await expect(amber(page)).toHaveCount(0);
-  await expect(page.getByRole('status').filter({ hasText: 'Amber is hidden. Bring it back in Settings → Companion.' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Amber is hidden. Bring it back in Settings → Companion, or right-click Ask in the top bar.' })).toBeVisible();
   await expect(page.locator('header').getByRole('button', { name: 'Ask Amber' })).toBeVisible();
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.settings')!).companion.show)).toBe(false);
   await page.reload(); await expect(page.locator('header').getByRole('button', { name: 'Ask Amber' })).toBeVisible(); await expect(amber(page)).toHaveCount(0);
@@ -207,6 +207,29 @@ test('CO-4, RS-12: Hide turns Amber off with a toast; the capsule gains Ask; Amb
   await dialog.getByRole('checkbox', { name: 'Show Amber' }).check();
   await page.keyboard.press('Escape');
   await expect(amber(page)).toBeVisible(); await expect(page.locator('header').getByRole('button', { name: 'Ask Amber' })).toHaveCount(0);
+});
+
+test('CO-4, RS-12: with Amber off, the Ask button’s menu brings Amber back (right-click or Shift+F10); Esc closes it', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides');
+  await amber(page).click({ button: 'right' });
+  await page.getByRole('menu', { name: 'Amber' }).getByRole('menuitem', { name: 'Hide' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'or right-click Ask in the top bar.' })).toBeVisible();
+  const ask = page.locator('header').getByRole('button', { name: 'Ask Amber' });
+  // Shift+F10 opens the menu with its item focused; Esc closes it and gives focus back.
+  await ask.focus(); await page.keyboard.press('Shift+F10');
+  const menu = page.getByRole('menu', { name: 'Ask Amber' });
+  await expect(menu.getByRole('menuitem', { name: 'Bring Amber back' })).toBeFocused();
+  await page.keyboard.press('Escape'); await expect(menu).toHaveCount(0); await expect(ask).toBeFocused();
+  // A press outside closes it too.
+  await ask.click({ button: 'right' }); await expect(menu).toBeVisible();
+  await page.mouse.click(300, 400); await expect(menu).toHaveCount(0);
+  // A left click still asks.
+  await ask.click(); await expect(box(page)).toBeVisible(); await page.keyboard.press('Escape');
+  await ask.click({ button: 'right' }); await menu.getByRole('menuitem', { name: 'Bring Amber back' }).click();
+  await expect(amber(page)).toBeVisible(); await expect(ask).toHaveCount(0);
+  await expect(page.getByRole('status').filter({ hasText: 'Amber is hidden' })).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.settings')!).companion.show)).toBe(true);
+  await page.reload(); await expect(amber(page)).toBeVisible();
 });
 
 test('CO-17: clicks beside Amber\'s drawn shape reach what is underneath; popovers draw above it', async ({ page }) => {
