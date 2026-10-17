@@ -1,5 +1,6 @@
 use super::*;
 use super::endpoint::{Endpoint, EndpointProvider, ModelInfo};
+use super::keys;
 use std::{collections::HashMap, sync::Mutex};
 use tauri::{State, ipc::Channel};
 pub struct Calls { pub active: Mutex<HashMap<String, Cancel>>, pub executable: Mutex<Option<PathBuf>> }
@@ -60,3 +61,19 @@ pub async fn endpoint_model_info(endpoint: Endpoint, model: String) -> Result<Mo
     tauri::async_runtime::spawn_blocking(move || endpoint::model_info(&endpoint, &model)).await.map_err(|e| failure(ErrorKind::ProcessCrashed, e.to_string()))?.map_err(|(k, d)| failure(k, d))
 }
 fn failure(kind: ErrorKind, details: String) -> ProviderError { ProviderError { kind, details, model: String::new(), usage: Usage::default(), duration_ms: 0, tool_calls: None } }
+/// CE-70, CE-72: the key comes from the password field once and is stored for this https address; the webview's copy is never sent back.
+#[tauri::command]
+pub async fn set_endpoint_key(endpoint_id: String, base_url: String, key: String) -> Result<keys::KeyStatus, String> {
+    let key = zeroize::Zeroizing::new(key);
+    tauri::async_runtime::spawn_blocking(move || keys::set(&endpoint_id, &base_url, key)).await.map_err(|e| e.to_string())?
+}
+/// CE-71: whether a key is set, its last 4 characters and its host, never the key.
+#[tauri::command]
+pub async fn endpoint_key_status(endpoint_id: String) -> Result<keys::KeyStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || keys::status(&endpoint_id)).await.map_err(|e| e.to_string())?
+}
+/// CE-75, CE-76: the frame confirms first; removing a missing key is fine.
+#[tauri::command]
+pub async fn remove_endpoint_key(endpoint_id: String) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || keys::remove(&endpoint_id)).await.map_err(|e| e.to_string())?
+}

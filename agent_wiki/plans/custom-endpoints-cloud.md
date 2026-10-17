@@ -110,6 +110,42 @@ The local plan's rules hold. In particular:
 - **Exit:** unit tests for the host binding, the https refusal and redaction; one ignored test against
   the real credential store with a fake key, which it removes again. The local version's tests are
   unchanged.
+- **Done 2026-10-18**, on its own branch `claude/custom-endpoints-keys-71080d` (cut from
+  `claude/lantern-custom-endpoints`; the user decides when it merges back).
+  - `provider/keys.rs`: one generic credential `Lantern/endpoint/<endpointId>` (`CRED_PERSIST_LOCAL_MACHINE`,
+    so it does not roam), the host in its comment. Read with `CredReadW`, copied into a `Zeroizing` buffer,
+    and the system's copy zeroed before `CredFree`. `zeroize = "=1.9.0"` is a direct dependency now, and
+    `windows-sys` gained `Win32_Security_Credentials`. There is a non-Windows stub with no store.
+  - Commands `set_endpoint_key`, `endpoint_key_status` (`{ set, last4, host }`) and `remove_endpoint_key`,
+    registered in `lib.rs`. The id follows the frontend's rule.
+  - The provider reads the key at each call (stream, `models`, `model_info`), for the URL it is about to
+    call, and adds `Authorization: Bearer …` itself. The header value is marked sensitive. An endpoint with
+    no key sends exactly what it did; a test checks that no `Authorization` goes out.
+  - Redaction: the stream and `get_json` each have a single exit that rewrites `details` and `model`. It
+    replaces the key's value (as is, and percent-encoded in upper and lower hex), any `Authorization`
+    value, and any `Bearer` token with `[key]`.
+  - Decisions to review:
+    1. The bound host is `host`, or `host:port` when the port is not the default one.
+    2. A key saved for another host, or a call that is not https, fails as `key-rejected`, so slice 3's
+       *Replace key* applies. The text says the key was saved for another address.
+    3. Keys must be RFC 6750 `b64token`s (letters, digits, `-._~+/`, trailing `=`, at most 2560). Such a
+       key reads the same inside JSON, so every echo of it is found.
+    4. `last4` is withheld for a key under 8 characters.
+    5. If the store cannot be read, an http endpoint goes on keyless, since no key could be sent anyway,
+       while an https call fails.
+    6. Tests never touch Credential Manager: under `cfg(test)` the store is an in-memory map. A
+       `cfg(test)`-only thread flag lets a test send a planted key to its own `127.0.0.1` server over http
+       (no TLS offline). The shipped build cannot do this.
+  - Limits: copies inside reqwest/hyper and Tauri's IPC buffers cannot be wiped from here (CE-74's
+    "where Rust allows it"). A server that writes the key into the **reply text** is not redacted: the
+    text streams out chunk by chunk, and only errors and model names are covered.
+  - Tests: 10 new in `provider/keys_tests.rs`. They cover the id and key rules, the https-only save,
+    status never holding the key, the host binding and http refusal before any connection opens, keyless
+    calls sending no header, the bearer header, and planted keys absent from every error path: a 401 that
+    echoes the header, a 403 problem+json echoing the key raw and percent-encoded, a stream error and a
+    served model name holding it, a refused connection, a cut stream. Redaction also has its own table.
+    The ignored `real_credential_store_round_trip` was run once: it passed, and `cmdkey` shows the entry
+    gone. `cargo test --offline --lib`: **58 passed, 9 ignored** (48 and 8 before, unchanged).
 
 # Slice 2. The NVIDIA preset and per-preset capabilities
 

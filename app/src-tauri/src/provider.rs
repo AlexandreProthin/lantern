@@ -5,6 +5,7 @@ use std::{collections::BTreeMap, io::{BufRead, BufReader, Read, Write}, path::Pa
 mod stream;
 mod process;
 pub mod endpoint;
+pub mod keys;
 pub mod commands;
 pub use stream::StreamParser;
 /// IP-6: tool uses per tool name, absent when the call used none.

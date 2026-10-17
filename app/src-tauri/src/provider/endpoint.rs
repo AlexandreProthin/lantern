@@ -1,6 +1,7 @@
 //! CE-10 to CE-14: the provider contract over HTTP, for OpenAI-compatible servers and Ollama's native chat.
-use super::{Cancel, Completion, ErrorKind, InferenceProvider, ProviderError, Request, Streamed, Usage};
-use reqwest::{blocking::Client, Url};
+use super::{keys, Cancel, Completion, ErrorKind, InferenceProvider, ProviderError, Request, Streamed, Usage};
+use reqwest::{blocking::Client, header::{HeaderValue, AUTHORIZATION}, Url};
+use zeroize::Zeroizing;
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::{io::{BufRead, BufReader, Read}, net::IpAddr, sync::{atomic::Ordering, mpsc}, time::{Duration, Instant}};
@@ -174,8 +175,23 @@ fn read_capped(mut r: impl Read) -> String { let mut b = Vec::new(); let _ = r.b
 
 pub struct EndpointProvider { pub endpoint: Endpoint, pub stall_timeout: Duration }
 impl EndpointProvider { pub fn new(endpoint: Endpoint) -> Self { Self { endpoint, stall_timeout: Duration::from_secs(120) } } }
+/// CE-71, CE-72: the call's `Authorization` header, from the key stored for this endpoint, kept in `key` until the call ends.
+fn auth(e: &Endpoint, url: &str, key: &mut Option<Zeroizing<String>>) -> Result<Option<HeaderValue>, (ErrorKind, String)> {
+    let url = Url::parse(url).map_err(|err| (ErrorKind::Protocol, format!("Not a valid URL: {err}")))?;
+    *key = keys::authorize(&e.id, &url)?;
+    key.as_deref().map(|k| keys::bearer(k)).transpose().map_err(|d| (ErrorKind::Protocol, d))
+}
 impl InferenceProvider for EndpointProvider {
+    /// CE-73: every error leaves through here, with the key and any `Authorization` value replaced by `[key]`.
     fn stream(&self, req: &Request, cancel: Cancel, on_event: &mut dyn FnMut(Streamed)) -> Result<Completion, ProviderError> {
+        let mut key = None;
+        let result = self.call(req, cancel, on_event, &mut key); let k = key.as_deref().map(String::as_str);
+        result.map(|mut c| { c.model = keys::redact(&c.model, k); c })
+            .map_err(|mut err| { err.details = keys::redact(&err.details, k); err.model = keys::redact(&err.model, k); err })
+    }
+}
+impl EndpointProvider {
+    fn call(&self, req: &Request, cancel: Cancel, on_event: &mut dyn FnMut(Streamed), key: &mut Option<Zeroizing<String>>) -> Result<Completion, ProviderError> {
         let start = Instant::now(); let e = &self.endpoint; let mut parser = EndpointParser::new(e.format());
         let fail = |kind, details: String, model: &str, usage: Usage| ProviderError { kind, details, model: model.into(), usage, duration_ms: start.elapsed().as_millis() as u64, tool_calls: None };
         let asked = req.model.clone().unwrap_or_default();
@@ -186,11 +202,14 @@ impl InferenceProvider for EndpointProvider {
         if asked.is_empty() { return Err(fail(ErrorKind::ModelUnknown, "No model given for this endpoint".into(), &named(""), Usage::default())); }
         check_url(e).map_err(|d| fail(ErrorKind::Protocol, d, &named(""), Usage::default()))?;
         let chat = e.chat_url(); let payload = body(e, req).to_string();
+        let authorization = auth(e, &chat, key).map_err(|(k, d)| fail(k, d, &named(""), Usage::default()))?;
         let (tx, rx) = mpsc::sync_channel::<Msg>(256);
         // The reader owns the connection; once this call returns, its next send fails and dropping the response closes it (CE-11).
         let reader = std::thread::spawn(move || {
             let client = match client() { Ok(c) => c, Err(d) => { let _ = tx.send(Msg::Transport(ErrorKind::Protocol, d)); return; } };
-            let response = match client.post(&chat).header("Content-Type", "application/json").body(payload).send() {
+            let mut post = client.post(&chat).header("Content-Type", "application/json").body(payload);
+            if let Some(value) = authorization { post = post.header(AUTHORIZATION, value); }
+            let response = match post.send() {
                 Ok(r) => r, Err(err) => { let (k, d) = transport(&err); let _ = tx.send(Msg::Transport(k, d)); return; } };
             let status = response.status().as_u16();
             if !(200..300).contains(&status) {
@@ -259,10 +278,18 @@ pub fn parse_show(v: &Value) -> ModelInfo {
 pub fn parse_props(v: &Value) -> ModelInfo {
     ModelInfo { context_size: v["default_generation_settings"]["n_ctx"].as_u64().or(v["n_ctx"].as_u64()), thinking: None }
 }
+/// CE-73: as the stream, every error is redacted on the way out.
 fn get_json(e: &Endpoint, url: &str, post: Option<Value>) -> Result<Value, (ErrorKind, String)> {
+    let mut key = None;
+    let result = fetch_json(e, url, post, &mut key);
+    result.map_err(|(kind, d)| (kind, keys::redact(&d, key.as_deref().map(String::as_str))))
+}
+fn fetch_json(e: &Endpoint, url: &str, post: Option<Value>, key: &mut Option<Zeroizing<String>>) -> Result<Value, (ErrorKind, String)> {
     check_url(e).map_err(|d| (ErrorKind::Protocol, d))?;
+    let authorization = auth(e, url, key)?;
     let client = Client::builder().connect_timeout(Duration::from_secs(5)).timeout(Duration::from_secs(20)).build().map_err(|err| (ErrorKind::Protocol, err.to_string()))?;
     let request = match post { Some(b) => client.post(url).header("Content-Type", "application/json").body(b.to_string()), None => client.get(url) };
+    let request = match authorization { Some(value) => request.header(AUTHORIZATION, value), None => request };
     let response = request.send().map_err(|err| transport(&err))?;
     let status = response.status().as_u16(); let text = read_capped(response);
     if !(200..300).contains(&status) { return Err((classify_http(status, &text), format!("HTTP {status}: {text}"))); }

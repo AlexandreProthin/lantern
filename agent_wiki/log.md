@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-10-18
+
+* **Custom endpoints, cloud slice 1 done** (branch `claude/custom-endpoints-keys-71080d`): API keys in Windows Credential Manager (`provider/keys.rs`, `windows-sys`, `zeroize`), three key commands that never return the key, the `Authorization` header added in Rust only for the host the key was saved for and only over https, and redaction of every endpoint error. 58 Rust tests pass, 9 ignored; the real credential store test was run once with a fake key and removed it ([plan](/plans/custom-endpoints-cloud.md)).
+
 ## 2026-10-17
 
 * **Custom endpoints, cloud slice 0 done**: the user's full NVIDIA run. Thinking cannot be turned off on Nemotron (both switches are refused with a 500), and about 200k tokens of prompt were accepted. New CE-27, with the user: keep the requested model id, log the served name, and warn when they differ ([plan](/plans/custom-endpoints-cloud.md)).

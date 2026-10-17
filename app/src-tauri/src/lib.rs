@@ -17,6 +17,7 @@ pub fn run() {
             commands::save_companion_state, commands::append_amber_log, commands::amber_log_totals,
             commands::delete_subject, commands::subject_thumbnail, commands::reveal_subject, commands::subject_file, commands::import_poc, provider::commands::generate,
             provider::commands::cancel_generation, provider::commands::provider_status, provider::commands::endpoint_models, provider::commands::endpoint_model_info,
+            provider::commands::set_endpoint_key, provider::commands::endpoint_key_status, provider::commands::remove_endpoint_key,
             commands::load_settings, commands::save_settings, commands::open_external,
             commands::pick_library, commands::validate_library, commands::switch_library, commands::reveal_library, commands::save_window_state, commands::snap_layouts,
             updates::check_update, updates::install_update, updates::release_update])
