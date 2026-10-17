@@ -2,6 +2,7 @@
 
 ## 2026-10-17
 
+* **v0.4.0 released**: `app/ACCEPTANCE-AMBER.md` passed, the update launch included; `master` fast-forwarded to `claude/lantern-amber`, tagged `v0.4.0` and pushed; GitHub release v0.4.0 with the signed installer and `latest.json` (key id checked against the app's public key); the same files in the local update folder. [Roadmap](/plans/roadmap.md) and the root README at v0.4.0.
 * **v0.4.0 prepared**: version bumped to 0.4.0 on `claude/lantern-amber`. Next: the user builds and signs the installer, checks the update launch over v0.3.0, then merge and release ([plan](/plans/v0-4-0.md)).
 * **v0.4.0 acceptance passed** in a preview installer, except the update launch, which waits for the 0.4.0 build. Added at the user's request: with Amber hidden, the capsule's *Ask* has a right-click menu, *Bring Amber back* ([companion](/specs/companion.md) CO-4, [rooms-spaces](/specs/rooms-spaces.md) RS-12).
 * **v0.4.0 slice 9 started**: slice 8's six points agreed by the user and recorded under [companion](/specs/companion.md) CO-30, CO-31 and CO-36. Every check run (one Playwright animation test flaky under load), the browser preview at 1024 px in both rooms, with reduced motion and with Amber off; the acceptance checklist is `app/ACCEPTANCE-AMBER.md`. Next: the version bump, the installed build and the user's pass ([plan](/plans/v0-4-0.md)).

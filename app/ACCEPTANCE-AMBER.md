@@ -11,11 +11,11 @@ Before installing, put real release notes in that `latest.json`'s `notes`, long 
 
 ## First launch after the update
 
-- [ ] Amber hangs from the top bar on the right, by its loop, on a rope (CO-10).
-- [ ] The bubble names the new version and shows the release notes, cut, with *Show all* and *Full release notes ›*
+- [x] Amber hangs from the top bar on the right, by its loop, on a rope (CO-10).
+- [x] The bubble names the new version and shows the release notes, cut, with *Show all* and *Full release notes ›*
   at the end. *Show all* shows the full text; the link opens the release page (CO-31).
-- [ ] Hovering the bubble keeps it; once the pointer leaves, it fades on its own (CO-30, CO-31).
-- [ ] The update notice is gone, and Settings → General → *Check for updates* says the app is up to date.
+- [x] Hovering the bubble keeps it; once the pointer leaves, it fades on its own (CO-30, CO-31).
+- [x] The update notice is gone, and Settings → General → *Check for updates* says the app is up to date.
 
 ## Later launches
 

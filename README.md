@@ -68,8 +68,11 @@ subject        what you're working through ("how TCP congestion control works")
 
 ## State
 
-**v0.3.0** (2026-10-16): the **Choose** room, the second room, on a room-generic frame.
-Switch rooms with the room chip or Ctrl+Shift+1 / Ctrl+Shift+2; Learn is unchanged.
+**v0.4.0** (2026-10-17): **Amber**, Lantern's companion, hanging from a new top bar. It gives tips and
+the guide for each space, greets you, keeps you company while a generation starts and answers
+*Ask Amber* (Ctrl+J, or Alt+D on a selection). It can be moved, and hidden; nothing depends on it.
+v0.3.0 (2026-10-16) added the **Choose** room, the second room, on a room-generic frame;
+switch rooms with the room chip or Ctrl+Shift+1 / Ctrl+Shift+2.
 v0.2.0 (2026-10-14) laid that frame and moved subjects to the `lantern/2` format,
 converting Learn files on first open. Installed builds update themselves from GitHub
 releases (from a local update folder while the repository is private).
@@ -83,6 +86,7 @@ releases (from a local update folder while the repository is private).
 4. **v0.1.x, the Learn room** ✔ [`app/`](app/README.md), plans
    [v0.1.0](agent_wiki/plans/v0-1-0.md) to [v0.1.2](agent_wiki/plans/v0-1-2.md).
 5. **v0.2.0 and v0.3.0, the Choose room** ✔ [plan](agent_wiki/plans/v0-2-0.md).
+6. **v0.4.0, Amber and the top bar** ✔ [plan](agent_wiki/plans/v0-4-0.md).
 
 Where the project stands and what comes next: [roadmap](agent_wiki/plans/roadmap.md).
 
