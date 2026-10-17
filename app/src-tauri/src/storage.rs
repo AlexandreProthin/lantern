@@ -210,21 +210,28 @@ pub fn append_amber_log(config: &Path, record: &Value) -> Result<()> {
 }
 /// The tokens *Settings → Companion* shows (input and output, as a subject counts them); unreadable lines are skipped.
 pub fn amber_log_totals(config: &Path) -> Result<Value> {
-    let (mut input, mut output, mut calls)=(0u64, 0u64, 0u64);
+    let (mut input, mut output, mut calls)=(0u64, 0u64, 0u64); let mut models=serde_json::Map::new();
     if let Ok(text)=fs::read_to_string(amber_log_path(config)) {
         for record in text.lines().filter_map(|l| serde_json::from_str::<Value>(l).ok()).filter(|r| r.is_object()) {
-            input+=record["usage"]["input"].as_u64().unwrap_or(0); output+=record["usage"]["output"].as_u64().unwrap_or(0); calls+=1;
+            let (i, o)=(record["usage"]["input"].as_u64().unwrap_or(0), record["usage"]["output"].as_u64().unwrap_or(0)); input+=i; output+=o; calls+=1;
+            // CE-53: per model, so the frame can tell local tokens from Claude's.
+            if let Some(model)=record["model"].as_str() {
+                let entry=models.entry(model.to_string()).or_insert_with(|| json!({"input":0,"output":0}));
+                entry["input"]=json!(entry["input"].as_u64().unwrap_or(0)+i); entry["output"]=json!(entry["output"].as_u64().unwrap_or(0)+o);
+            }
         }
     }
-    Ok(serde_json::json!({"input":input,"output":output,"calls":calls}))
+    let mut totals=serde_json::json!({"input":input,"output":output,"calls":calls});
+    if !models.is_empty() { totals["models"]=Value::Object(models); }
+    Ok(totals)
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CacheEntry { #[serde(default)] pub version: u32, pub modified_ns: u128, pub size: u64, pub summary: Value }
 type Cache = HashMap<String, CacheEntry>;
 /// ST-36: entries written before lantern/2 summaries are discarded, so every file is read (and converted) once.
-/// Version 3 adds `kindStates` and larger visit data (ST-7, B4).
-const CACHE_VERSION: u32 = 3;
+/// Version 3 adds `kindStates` and larger visit data (ST-7, B4); version 4 adds `modelInputs` (CE-53).
+const CACHE_VERSION: u32 = 4;
 fn read_cache(config: &Path) -> Cache { let mut cache: Cache = fs::read(config.join("summaries.json")).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default(); cache.retain(|key, entry| entry.version == CACHE_VERSION && !key.starts_with(r"\\?\")); cache }
 /// ST-7: per visit, counts the rooms interpret; this layer knows no room.
 pub fn summary(subject: &Value) -> Value {
@@ -244,15 +251,15 @@ pub fn summary(subject: &Value) -> Value {
             .filter(|(_, value)| match value { Value::String(text) => text.chars().count() <= 64, Value::Number(_) | Value::Bool(_) => true,
                 Value::Object(_) | Value::Array(_) => serde_json::to_string(value).is_ok_and(|text| text.len() <= 4096), _ => false })
             .map(|(k, value)| (k.clone(), value.clone())).collect();
-        let mut input = 0u64; let mut output = 0u64; let mut models = HashMap::<String, u64>::new(); let mut latest = HashMap::new();
+        let mut input = 0u64; let mut output = 0u64; let mut models = HashMap::<String, u64>::new(); let mut inputs = HashMap::<String, u64>::new(); let mut latest = HashMap::new();
         let log = v["log"].as_array().cloned().unwrap_or_default();
         for (i, g) in log.iter().enumerate() {
-            input += g["usage"]["input"].as_u64().unwrap_or(0); let out = g["usage"]["output"].as_u64().unwrap_or(0); output += out;
-            let model = g["model"].as_str().unwrap_or("unknown").to_string(); *models.entry(model.clone()).or_default() += out; latest.insert(model, i);
+            let inp = g["usage"]["input"].as_u64().unwrap_or(0); input += inp; let out = g["usage"]["output"].as_u64().unwrap_or(0); output += out;
+            let model = g["model"].as_str().unwrap_or("unknown").to_string(); *models.entry(model.clone()).or_default() += out; *inputs.entry(model.clone()).or_default() += inp; latest.insert(model, i);
         }
         let main = models.keys().max_by_key(|m| (models[*m], latest[*m]));
         rooms.insert(room.clone(), json!({ "states": states, "kindStates": kind_states, "nodeData": node_data, "data": data,
-            "input": input, "output": output, "tokens": input + output, "mainModel": main, "modelOutputs": models, "generations": log.len() }));
+            "input": input, "output": output, "tokens": input + output, "mainModel": main, "modelOutputs": models, "modelInputs": inputs, "generations": log.len() }));
     }
     json!({ "id": subject["id"], "title": subject["title"], "createdAt": subject["createdAt"], "rooms": rooms })
 }

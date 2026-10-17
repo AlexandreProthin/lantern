@@ -122,6 +122,20 @@ fn amber_log_appends_lines_and_sums_tokens_skipping_bad_lines() {
     assert!(!config.path().join("state.json").exists());
 }
 #[test]
+fn amber_totals_and_summaries_split_tokens_per_model() {
+    // CE-53: per-model figures let the frame tell local tokens from Claude's.
+    let config=tempfile::tempdir().unwrap();
+    let record=|model:&str,i:u64,o:u64| json!({"requestId":"r","model":model,"usage":{"input":i,"output":o,"thinking":0,"cacheRead":0,"cacheWrite":0}});
+    for r in [record("claude-haiku-5-5",100,20),record("ollama:gemma4:e2b",2305,44),record("ollama:gemma4:e2b",5,1)] { append_amber_log(config.path(),&r).unwrap(); }
+    assert_eq!(amber_log_totals(config.path()).unwrap(),json!({"input":2410,"output":65,"calls":3,
+        "models":{"claude-haiku-5-5":{"input":100,"output":20},"ollama:gemma4:e2b":{"input":2310,"output":45}}}));
+    let subject=json!({"id":"s","title":"Tides","rooms":{"learn":{"nodes":{},"log":[
+        {"model":"claude-opus-5-5","usage":{"input":900,"output":300}},{"model":"ollama:gemma4:e2b","usage":{"input":911,"output":188}}]}}});
+    let s=summary(&subject);
+    assert_eq!(s["rooms"]["learn"]["modelInputs"],json!({"claude-opus-5-5":900,"ollama:gemma4:e2b":911}));
+    assert_eq!(s["rooms"]["learn"]["modelOutputs"],json!({"claude-opus-5-5":300,"ollama:gemma4:e2b":188}));
+}
+#[test]
 fn library_copy_preserves_originals_and_renames_collisions() {
     let old=tempfile::tempdir().unwrap(); let new=tempfile::tempdir().unwrap(); let install=tempfile::tempdir().unwrap(); let config=tempfile::tempdir().unwrap();
     let s=subject(3); save_subject(old.path(),&s,None,true).unwrap(); save_subject(new.path(),&s,None,true).unwrap();

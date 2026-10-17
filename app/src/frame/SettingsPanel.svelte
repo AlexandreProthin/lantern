@@ -13,6 +13,7 @@
   import { REVEAL_CLICKS, revealsDeveloper } from './updates';
   import { browserAmberLog, desktopAmberLog, type AmberTotals } from './amber/log';
   import { tokens } from './library-format';
+  import { splitModels } from './token-split';
   let { settings, defaults, rooms, provider, health=null, initialSection='general', changed, close, switchLibrary, updater, checkUpdates, installUpdate, generating=false, readonly=false, endpointHealth={}, fakeEndpoint={} }: {
     settings:Settings; defaults:Settings; rooms:readonly RoomDefinition[]; provider:InferenceProvider; health?:Completion|ProviderError|null;
     updater:UpdateController; checkUpdates:()=>Promise<void>; installUpdate:()=>Promise<void>;
@@ -107,7 +108,7 @@
       {#if !settings.companion.show}<p>{strings.amberHiddenHint}</p>{/if}
       <div class="field"><label for="amber-model">{strings.amberModel}</label><ModelPicker id="amber-model" value={settings.companion.model} label={strings.amberModel} commit={model=>{settings.companion.model=model;validation='';changed();}} /></div>
       <p>{strings.amberEffortHint}</p>
-      {#if amberTotals}<p data-testid="amber-tokens">{amberTotals.calls?strings.amberSpent(tokens(amberTotals.input+amberTotals.output),tokens(amberTotals.input),tokens(amberTotals.output),amberTotals.calls):strings.amberSpentNone}</p>{/if}
+      {#if amberTotals}<p data-testid="amber-tokens">{#if amberTotals.calls}{@const split=splitModels(amberTotals.models)}{split?strings.amberSpentSplit(strings.inOut(tokens(split.claude.input),tokens(split.claude.output)),strings.inOut(tokens(split.local.input),tokens(split.local.output)),amberTotals.calls):strings.amberSpent(tokens(amberTotals.input+amberTotals.output),tokens(amberTotals.input),tokens(amberTotals.output),amberTotals.calls)}{:else}{strings.amberSpentNone}{/if}</p>{/if}
     {:else if section==='developer'}
       <label>{strings.updateFolder}<input value={settings.developer.updateFolder} readonly spellcheck="false" /></label>
       <div class="actions"><button disabled={!desktop} onclick={pickFolder}>{strings.changeLibrary}</button><button disabled={!settings.developer.updateFolder} onclick={()=>{settings.developer.updateFolder='';changed();}}>{strings.clearFolder}</button></div>

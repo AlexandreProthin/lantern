@@ -285,6 +285,22 @@ user, CPU only on this machine. Fixtures are recorded against it first.
 - Amber's token figure in *Settings → Companion* follows the same rule.
 - **Exit:** tests for both displays with and without local records; a Claude-only library shows the
   same figures as before.
+- **Done 2026-10-17**:
+  - The room-neutral summary gains `modelInputs` beside `modelOutputs`, in Rust and in its TypeScript
+    mirror. The Rust summary cache moves to version 4, so every subject's summary is recomputed once
+    (ST-36). Amber's totals gain `models`, per model, only when records name one, so the existing
+    totals test is unchanged.
+  - `frame/token-split.ts` treats any endpoint model as local in this version. It splits a log, a
+    summary or Amber's totals, and returns nothing while no local token has been spent.
+  - Where the split shows: the Learn header hover, the Learn Gallery card and detail, the Choose Gallery
+    detail, and Settings → Companion. It reads *Claude 40.1k in / 20.2k out · local 1.4k in / 589 out*.
+    Until a local token has been spent every figure reads exactly as before, including the Learn
+    hover's raw numbers (pinned by a test). Choose's header has no token hover, and its delete note keeps
+    the subject's total.
+  - **One existing test changed:** `core/model.test.ts`'s ST-7 test pins the whole visit summary, so
+    its expected object gains `modelInputs`. It is a format addition, not a behaviour change.
+  - Checks: `npm run check` clean; 202 TS tests (3 new); 48 Rust tests (1 new); Playwright 96 passed
+    and 2 skipped.
 
 # Slice 7. Errors and waiting
 

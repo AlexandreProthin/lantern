@@ -5,6 +5,7 @@
   import type { CardDetail } from '../../ui/gallery-types';
   import { tokens, modelName, exactDate, relativeDate } from '../../frame/library-format';
   import { strings } from '../../ui/strings';
+  import { inOutText, splitSummary, totalText } from '../../frame/token-split';
   import GalleryGrid from '../../ui/GalleryGrid.svelte';
   import Thumbnail from './Thumbnail.svelte';
   let { visible, settings, library, revision, navigate }: SpaceProps = $props();
@@ -14,7 +15,7 @@
   <div class="progress" aria-label={`${strings.progress}: ${Math.round(detail.progress*100)}%`}><span style={`width:${detail.progress*100}%`}></span></div>
   <dl><div><dt>{strings.nodes}</dt><dd>{detail.total??0}</dd></div><div><dt>{strings.lit}</dt><dd>{detail.lit??0}</dd></div>
     <div><dt>{strings.understoodCount}</dt><dd>{strings.understoodSplit(detail.understood??0,detail.demonstrated??0,detail.self??0)}</dd></div>
-    {#if settings.appearance.showTokenStats}<div><dt>{strings.tokensSpent}</dt><dd>{tokens(summary.tokens)}</dd></div>{/if}
+    {#if settings.appearance.showTokenStats}<div><dt>{strings.tokensSpent}</dt><dd>{totalText(summary.tokens??0,splitSummary(summary))}</dd></div>{/if}
   </dl>
   <p class="span" title={exactDate(detail.lastOpenedAt)}>{strings.created} {summary.createdAt?new Date(summary.createdAt).toLocaleDateString():strings.noneYet} → {relativeDate(detail.lastOpenedAt)}</p>
   <p class="model">{modelName(summary.mainModel)}</p>
@@ -22,7 +23,7 @@
 {#snippet details(summary: SubjectSummary, detail: CardDetail)}
   <dl class="details">
     <div><dt>{strings.dark}</dt><dd>{detail.dark??0}</dd></div>
-    {#if settings.appearance.showTokenStats}<div><dt>{strings.tokensSpent}</dt><dd>{strings.inOut(tokens(detail.input),tokens(detail.output))}</dd></div>{/if}
+    {#if settings.appearance.showTokenStats}<div><dt>{strings.tokensSpent}</dt><dd>{inOutText(detail.input??0,detail.output??0,splitSummary(summary))}</dd></div>{/if}
     <div><dt>{strings.created}</dt><dd>{exactDate(detail.createdAt)}</dd></div><div><dt>{strings.lastOpened}</dt><dd>{exactDate(detail.lastOpenedAt)}</dd></div>
     <div><dt>{strings.tone}</dt><dd>{typeof detail.tone==='object'?detail.tone.custom:detail.tone?strings.tones[detail.tone]:strings.noneYet}</dd></div>
     <div><dt>{strings.modelsUsed}</dt><dd>{#each detail.models as model,j}{j?' · ':''}{modelName(model.model)}{#if 'share' in model&&model.share!==null}{` ${model.share}%`}{/if}{:else}{strings.noneYet}{/each}</dd></div>

@@ -4,6 +4,7 @@
   // the pick line, and the selected card lifted over a still grid with its history and the board's numbers.
   import type { SpaceProps } from '../../frame/room';
   import type { SubjectSummary } from '../../frame/catalogue';
+  import { inOutText, splitSummary } from '../../frame/token-split';
   import type { CardDetail, GalleryRoomView, GalleryToolbarContext } from '../../ui/gallery-types';
   import { tokens, modelName, exactDate } from '../../frame/library-format';
   import GalleryGrid from '../../ui/GalleryGrid.svelte';
@@ -102,7 +103,7 @@
       <dt>{text.nodes}</dt><dd>{detail.total ?? 0}</dd>
       <dt>{text.tone}</dt><dd>{typeof detail.tone === 'object' ? detail.tone.custom : detail.tone ?? '—'}</dd>
       <dt>{text.model}</dt><dd>{modelName(detail.mainModel)}</dd><dt>{text.generations}</dt><dd>{detail.generations ?? 0}{running(summary) ? ' · one running' : ''}</dd>
-      {#if settings.appearance.showTokenStats}<dt>{text.tokens}</dt><dd>{tokens(detail.input)} in / {tokens(detail.output)} out</dd>{/if}
+      {#if settings.appearance.showTokenStats}<dt>{text.tokens}</dt><dd>{inOutText(detail.input ?? 0, detail.output ?? 0, splitSummary(summary))}</dd>{/if}
     </dl></section>
   </div>{/if}
 {/snippet}

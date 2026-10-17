@@ -23,6 +23,8 @@ export const strings = {
   nodes: 'Nodes', lit: 'Lit', dark: 'Dark', modelsUsed: 'Models used', generations: 'Generations',
   noneYet: 'none yet', neverOpened: 'Not opened yet', today: 'today', yesterday: 'yesterday', daysAgo: (n: number) => `${n} days ago`,
   inOut: (input: string, output: string) => `${input} in / ${output} out`,
+  /** CE-53: once a local token has been spent. */
+  tokenSplit: (claude: string, local: string) => `Claude ${claude} · local ${local}`,
   understoodSplit: (total: number, demonstrated: number, self: number) => `${total} · ${demonstrated} demonstrated / ${self} self`,
   thumbnail: 'Subject graph', thumbnailFailed: 'Graph preview unavailable',
   appName: 'Lantern', scaffold: 'Light up what you’re working through.',
@@ -100,6 +102,7 @@ export const strings = {
   invalidName:'Use 1–40 characters.', invalidModel:'Use 1–100 letters, numbers, dots, underscores, colons or hyphens.', invalidBudget:'Use a whole number from 2000 to 100000.',
   companion:'Companion', showAmber:'Show Amber', amberModel:'Amber’s model', amberEffortHint:'Used for Ask Amber, at low effort.',
   amberSpent:(total:string, input:string, output:string, calls:number)=>`Amber has spent ${total} tokens (${input} in / ${output} out) over ${calls} question${calls===1?'':'s'}.`,
+  amberSpentSplit:(claude:string, local:string, calls:number)=>`Amber has spent ${claude} on Claude and ${local} locally over ${calls} question${calls===1?'':'s'}.`,
   amberSpentNone:'Amber has not answered any questions yet.', amberHiddenHint:'Off: Amber shows up nowhere. Ctrl+J, Alt+D and ? still work.',
   whatCanIDo:'What can I do here?', nextTip:'Next tip', amberTitle:'Amber · click for tips and questions, right-click to move or hide', moveTo:'Move to…', hideAmber:'Hide',
   amberHidden:'Amber is hidden. Bring it back in Settings → Companion, or right-click Ask in the top bar.', bringAmberBack:'Bring Amber back', askAmberTitle:'Ask Amber · Ctrl+J · right-click to bring Amber back', amberSpotHang:(n:number)=>`Hanging, position ${n} of 10`, amberRestLeft:'Bottom left', amberRestRight:'Bottom right',

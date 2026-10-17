@@ -5,7 +5,7 @@ export interface SubjectSummary {
   id: string; title: string; path: string; createdAt?: string; tone?: Tone;
   total?: number; lit?: number; understood?: number; demonstrated?: number; self?: number; dark?: number;
   input?: number; output?: number; tokens?: number; generations?: number;
-  mainModel?: string | null; modelOutputs?: Record<string, number>;
+  mainModel?: string | null; modelOutputs?: Record<string, number>; modelInputs?: Record<string, number>;
   readOnly?: boolean; unreadable?: boolean; error?: string; rooms?: Record<string, VisitSummary>;
   modifiedNs?: string; size?: number;
 }
