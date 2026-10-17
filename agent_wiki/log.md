@@ -2,6 +2,7 @@
 
 ## 2026-10-17
 
+* **v0.4.0 slice 4 done**: the `?` overlay shows *What can I do here?* for the current space (GV-73, CO-22). Every Amber feature is now reachable without the character (CO-2): Ctrl+J, the capsule's *Ask*, Alt+D, the overlay. Next: slice 5, Amber drawn on the top bar.
 * **v0.4.0 slices 2 and 3 done**: `amber-1` passed its eval gate on Haiku 5.5 (24/24 three times, categories all right) after one amendment for the tag and for key and room names in French; Ask Amber on a selection (Alt+D, a card by the selection, *Ask the tutor*) in both rooms. Details in the [plan](/plans/v0-4-0.md).
 * **v0.4.0: top bar merged, lines agreed**: master's top bar merged into `claude/lantern-amber` (the shortcut table keeps Ctrl+K and gains Ctrl+J); the *Ask* button is now the capsule's last segment while Amber is off (RS-12, CO-41). The user agreed the [Amber lines](/plans/v0-4-0-amber-lines.md) as drafted; the Ctrl+K tip joined the frame tips.
 * **v0.4.0 slice 2 built** (Ask Amber without the character): prompt `amber-1` with the category tag gate, the temporary chat with its log, the Ask box on Ctrl+J, Amber's fake provider, and 24 eval cases in `app/evals/amber.ts`. The real eval runs wait for the user's review of the prompt and cases. Room content (`companion` on the room definition) came forward from slice 4 with the draft lines. Details in the [plan](/plans/v0-4-0.md).

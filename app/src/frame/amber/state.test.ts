@@ -3,6 +3,8 @@ import { emptyAmberState, markTipSeen, nextTip, parseAmberState, setSpot, spotOf
 import { totalsOf } from './log';
 import { defaultSettings, validateSettings } from '../settings';
 import { MODELS } from '../../core/models';
+import { rooms } from '../../rooms';
+import { strings } from '../../ui/strings';
 
 test('SE-50: a missing or damaged companion part reads as empty; bad entries are dropped', () => {
   expect(parseAmberState(undefined)).toEqual(emptyAmberState());
@@ -38,4 +40,10 @@ test('SE-48: Haiku 5.5 sits in the model list before Haiku 4.5', () => {
   const ids = MODELS.map(m => m.id);
   expect(ids.indexOf('claude-haiku-5-5')).toBe(ids.indexOf('claude-haiku-4-5') - 1);
   expect(ids.indexOf('claude-haiku-5-5')).toBe(ids.indexOf('claude-sonnet-5') + 1);
+});
+
+test('CO-22, CO-23, GV-73: every space of every registered room has guide lines, and tip ids are unique', () => {
+  for (const room of rooms) for (const space of room.spaces) expect(room.companion?.guide[space.id]?.length, `${room.id}/${space.id}`).toBeGreaterThan(0);
+  const ids = [...strings.amberTips, ...rooms.flatMap(r => r.companion?.tips ?? [])].map(t => t.id);
+  expect(new Set(ids).size).toBe(ids.length);
 });

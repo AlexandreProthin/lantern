@@ -31,6 +31,7 @@
   import { isValidModel } from '../core/models';
   import AskBox from './amber/AskBox.svelte';
   import SelectionCard from './amber/SelectionCard.svelte';
+  import GuideLines from './amber/GuideLines.svelte';
   import { ASK_AMBER_EVENT } from '../ui/ask-amber';
   import type { AskAmberDetail } from '../ui/ask-amber';
   import { AmberChat } from './amber/chat';
@@ -341,7 +342,7 @@
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}
 {#if askOpen}<AskBox bind:this={askBox} chat={amberChat} revision={amberRevision} close={closeAsk} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
-{#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}><h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts(rooms.map(r=>r.name)):''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
+{#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}>{#if room.companion?.guide[space]?.length}<h2>{strings.whatCanIDo}</h2><GuideLines lines={room.companion.guide[space]} />{/if}<h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts(rooms.map(r=>r.name)):''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}
 <style>
   :global(html),:global(body),:global(#app) { height:100%; overflow:hidden; }
   :global(#app) {display:flex;flex-direction:column;} .banner {flex-shrink:0;}
@@ -350,5 +351,5 @@
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast.update-notice { top:auto; bottom:18px; display:flex; align-items:center; gap:8px; }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
-  .shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; }
+  .shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; margin:0; }.shortcuts { overflow:auto; display:grid; align-content:start; gap:10px; }.shortcuts h2 { font-size:15px; margin:0; }.shortcuts button { justify-self:start; }
 </style>

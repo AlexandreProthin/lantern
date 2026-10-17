@@ -104,3 +104,24 @@ test('NP-54: Alt+D works in the Choose room\'s Survey panel', async ({ page }) =
   await page.keyboard.press('Alt+d');
   await expect(page.getByRole('dialog', { name: 'Ask Amber' })).toContainText('leans on');
 });
+
+// GV-73, CO-2, CO-22: the ? overlay shows "What can I do here?" for the current space, in every space of both rooms.
+test('GV-73: the ? overlay leads with the current space\'s guide lines', async ({ page }) => {
+  const overlay = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+  const check = async (key: string, first: string) => {
+    await page.keyboard.press(key);
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.keyboard.press('?');
+    await expect(overlay.getByRole('heading', { name: 'What can I do here?' })).toBeVisible();
+    await expect(overlay.locator('.guide li').first()).toHaveText(first);
+    await page.keyboard.press('?'); await expect(overlay).toHaveCount(0);
+  };
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await check('Control+1', 'Bring a subject: type it and press Enter.');
+  await check('Control+2', 'Walk the graph: arrow keys; Home goes back to the root.');
+  await check('Control+3', 'Move through your subjects: arrow keys; Enter opens one.');
+  await page.keyboard.press('Control+Shift+2'); await expect(page.locator('html')).toHaveAttribute('data-room', 'choose');
+  await check('Control+1', 'Say what you want to buy: type it and press Enter.');
+  await check('Control+4', 'Move through your decisions: arrow keys; Enter opens one.');
+});
