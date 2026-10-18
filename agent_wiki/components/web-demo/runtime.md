@@ -49,7 +49,15 @@ ends up in them (checked on the built files: only the demo strings are there).
 `.github/workflows/web-demo.yml`: build, install Chromium, run `test:demo`, then deploy to GitHub Pages.
 A failing test deploys nothing and the previous demo stays online. It runs on every `v*` tag and by
 hand (*Actions → Web demo → Run workflow*, GitHub's `workflow_dispatch`). The site is
-`https://alexandreprothin.github.io/lantern/`. Pages must be set to *Source: GitHub Actions* once.
+`https://alexandreprothin.github.io/lantern/`. It never runs on a push to `master`.
+
+One-time setup, both on GitHub:
+
+- *Settings → Pages → Source: GitHub Actions*.
+- *Settings → Environments → github-pages → Deployment branches and tags*: branch `master` (for a run
+  by hand) and tag `v*` (for releases). GitHub creates the environment allowing `master` only, so a
+  tag run fails at *deploy* with *Tag "v…" is not allowed to deploy to github-pages* until the tag
+  rule is added (it was, 2026-10-18, after the first `v0.5.0` run failed).
 
 # Limits
 

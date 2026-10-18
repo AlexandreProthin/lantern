@@ -1,7 +1,7 @@
 ---
 type: Plan
 title: Web demo plan
-description: The Learn room as a free public demo on GitHub Pages - built on branch worktree-web-demo, waiting for the repository to go public before merge, push and first deploy.
+description: The Learn room as a free public demo on GitHub Pages - built, merged, and first deployed with the v0.5.0 tag on 2026-10-18.
 tags: [plan, web-demo, github-pages]
 status: draft
 stale_after: 2027-03-31T00:00:00Z
@@ -22,9 +22,10 @@ Written 2026-10-17. The why is in [the decision](/decisions/web-demo-prepared-an
 4. **Merged into `master` and pushed** on the user's word, 2026-10-17, before going public (the
    workflow only runs on tags and by hand, so nothing deployed).
 5. Licence chosen: [GPL-3.0-or-later](/decisions/gpl-3-licence.md), 2026-10-17. **The user** makes the repository public and sets *Settings → Pages → Source:
-   GitHub Actions*.
-6. Run *Actions → Web demo → Run workflow* once (or wait for the next `v*` tag). Check the site and the
-   README link.
+   GitHub Actions*. **Done.**
+6. **First deploy** with the `v0.5.0` tag, 2026-10-18. The first run failed at *deploy*: the
+   `github-pages` environment allowed branch `master` only. A `v*` tag rule was added and the user
+   re-ran it, which passed. Setup is in [Demo runtime](/components/web-demo/runtime.md#publishing).
 
 # Exit checks
 

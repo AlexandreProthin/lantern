@@ -2,6 +2,7 @@
 
 ## 2026-10-18
 
+* **Web demo deployed**: the `v0.5.0` tag run failed at *deploy* because the `github-pages` environment only allowed branch `master`. Added a `v*` tag rule (master stays, for runs by hand); the user re-ran it and it passed. The workflow still runs only on `v*` tags and by hand ([runtime](/components/web-demo/runtime.md), [plan](/plans/web-demo.md)).
 * **v0.5.0 released**: custom endpoints, local and cloud. Tag `v0.5.0`, GitHub release with the signed installer and `latest.json`; v0.4.0 updates to it through GitHub. README and roadmap at v0.5.0 ([plan](/plans/custom-endpoints-cloud.md)).
 * **v0.5.0 prepared**: custom endpoints (local and cloud) merged into `master`, and the version bumped to 0.5.0. Next: the user builds and signs the installer, checks the update launch over v0.4.0, then tags and releases ([plan](/plans/custom-endpoints-cloud.md)).
 * **Custom endpoints, cloud accepted**: the user ran `app/ACCEPTANCE-CLOUD.md` (23 of 23) and the key search (*not found*) in a preview installer, with no regression. Long *Details* text now wraps. Version 0.5.0 for local and cloud together; the branch merges into `master` ([plan](/plans/custom-endpoints-cloud.md)).
