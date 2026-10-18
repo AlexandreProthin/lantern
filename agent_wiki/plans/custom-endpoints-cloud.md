@@ -264,6 +264,13 @@ The local plan's rules hold. In particular:
   percent-encoded text. The script prints only paths and counts, never the key, a part of it or its length, and
   says when files could not be read because Lantern is still open. Checked with a planted fake key in a
   scratch folder (found in UTF-8 and UTF-16, exit 1). The runs need the user's key in the desktop build.
+- **Done 2026-10-18**, by the user, in the preview installer
+  `Lantern_0.4.0-preview-202610180736_x64-setup.exe` built from this branch at 519e1f0: *Test*, Learn,
+  Choose and Amber on NVIDIA all passed (the boxes under *Learn, Choose and Amber* in
+  `app/ACCEPTANCE-CLOUD.md`). The key search, run by the user in their own terminal, said *not found* everywhere:
+  config 4 files, library 23 files, webview 485 files. 39 webview files could not be read because the webview
+  still held them (its lock files and GPU, Dawn and HTTP caches). Rust sends the key, not the webview, so
+  these caches never see it. The user accepted the search as it stood.
 
 # Slice 6. Verification, acceptance, the release
 
@@ -277,6 +284,11 @@ The local plan's rules hold. In particular:
   and the regression pass for Ollama and Claude Code.
 - Then, on the user's word: the version number for local and cloud together, the version bump, the signed
   installer, the update launch over v0.4.0, `master`, the tag and the release, as for v0.4.0.
+- **Accepted by the user 2026-10-18** in that preview installer: `app/ACCEPTANCE-CLOUD.md` fully ticked
+  (23 of 23), no regression in Ollama or Claude Code. One visual note: long *Details* text (NVIDIA's 401
+  JSON) ran past the error box. It is fixed in d1c6f81 (`details pre` wraps, in `app.css`). The user's
+  answers: version **0.5.0** for local and cloud together (CE-5), and merge into `master` (CE-6). The
+  worktrees are removed after the merge.
 
 # Risks to retire early
 
@@ -292,4 +304,4 @@ The local plan's rules hold. In particular:
 # Open
 
 - *(Settled, slice 0.)* The NVIDIA model is `nvidia/nemotron-3.5-super-vl-120b-a12b`, the user's choice.
-- The version number for the joint release (slice 6, the user).
+- *(Settled, slice 6.)* The version for the joint release is 0.5.0, the user's choice.
