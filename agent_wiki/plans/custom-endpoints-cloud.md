@@ -289,6 +289,11 @@ The local plan's rules hold. In particular:
   JSON) ran past the error box. It is fixed in d1c6f81 (`details pre` wraps, in `app.css`). The user's
   answers: version **0.5.0** for local and cloud together (CE-5), and merge into `master` (CE-6). The
   worktrees are removed after the merge.
+- **Merged and version 0.5.0, 2026-10-18** (the user): the branch merged into `master` (8eb4433; master's
+  `HeldProvider` kept inside the routing). Both worktrees removed. Version 0.5.0 in `package.json`,
+  `package-lock.json`, `Cargo.toml`, `Cargo.lock` and `tauri.conf.json`; the app README names
+  `ACCEPTANCE-ENDPOINTS.md` and `ACCEPTANCE-CLOUD.md`. Next, on the user's word: the signed installer, the update
+  launch over v0.4.0, the tag and the release, then the root README and roadmap at v0.5.0.
 
 # Risks to retire early
 
