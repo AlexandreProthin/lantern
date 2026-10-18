@@ -55,3 +55,11 @@ test('IP-1/IP-60: no Learn call asks for a tool', async () => {
   await session.run('light', id); await session.run('more', id); await session.run('check', id); await session.run('reply', id, 'Because the moon pulls.');
   expect(requests.length).toBe(5); expect(requests.every(r => r.web === undefined)).toBe(true);
 });
+test('CE-27: the model asked for is recorded, and a different name the server answered with is kept beside it', async () => {
+  const s = newLearnSubject('Tides'), inner = new FakeProvider(0);
+  const served = { stream: async (r: Request, onText: (c: string) => void) => ({ ...await inner.stream(r, onText), model: 'nvidia:nvidia/nemotron', servedModel: 'private/nvidia/nemotron' }) };
+  const session = new LearnSession(s, served, () => {}); await session.run('intro', session.visit.rootId);
+  expect(session.visit.log[0]).toMatchObject({ model: 'nvidia:nvidia/nemotron', servedModel: 'private/nvidia/nemotron' });
+  const plain = new LearnSession(newLearnSubject('Tides'), new FakeProvider(0), () => {}); await plain.run('intro', plain.visit.rootId);
+  expect('servedModel' in plain.visit.log[0]).toBe(false);
+});

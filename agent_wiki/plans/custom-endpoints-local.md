@@ -1,0 +1,390 @@
+---
+type: Plan
+title: Custom endpoints plan, local version
+description: The local phase of custom endpoints - the OpenAI-compatible provider in Rust with Ollama's native chat, routing by model id, Settings → Endpoints, grouped pickers, context windows, the local token line and the new errors - with the order, the Claude Code regression guard, exit checks and risks.
+tags: [plan, endpoints, ollama, provider]
+status: draft
+stale_after: 2027-03-31T00:00:00Z
+generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:30:00Z }
+---
+
+Written 2026-10-17, after spec workshop rounds 10 and 11. The contract is the
+[custom-endpoints](/specs/custom-endpoints.md) spec, local version (CE-3), and the amendments it made,
+marked *Amended 2026-10-17*: [inference-provider](/specs/inference-provider.md) (the CLI section's
+intro, IP-10, IP-31, IP-63), [settings](/specs/settings.md) (`provider.endpoints`, `/` in model ids,
+SE-7, SE-40, SE-46, SE-48), [context-assembly](/specs/context-assembly.md) CA-10 and CA-12,
+[choose-room](/specs/choose-room.md) CR-40, [companion](/specs/companion.md) CO-46 and
+[welcome-gallery](/specs/welcome-gallery.md) WG-31. The user's words are in
+`agent_design/tool/specs_work/data/answers.json`, rounds 10 and 11. This plan orders the work and says
+when each part counts as done; it does not restate requirements. The cloud version (keys, NVIDIA)
+gets its own plan.
+
+# Ground rules
+
+The rules of the earlier plans still hold: every task cites its spec ids; a spec that turns out wrong
+is changed first, then the code, after asking the user; the frame knows no room; strings live in
+`app/src/ui/strings.ts` (PQ-4).
+
+**The Claude Code path must not get worse (CE-2).** Only the three agreed touches change it (the
+spec's *Touches to the Claude Code path*). Concretely: `provider.rs`'s `args`, `env`, `detect`,
+`classify`, the stream parser and their 34 Rust tests stay as they are; every existing TypeScript and
+Playwright test passes unchanged, except where a test pins one of the three agreed touches; a Claude
+Code call goes through exactly the code it goes through today. A change found to touch the Claude path
+in any other way stops the slice and goes to the user first.
+
+**Branch (CE-6).** The work starts in this worktree, on `worktree-lantern-custom-endpoints`, one
+commit per slice. When the user judges the implementation good enough (at the latest once a local
+endpoint can be tested in the app, after slice 4), it moves to a dedicated feature branch (proposed:
+`claude/lantern-custom-endpoints`) to be finished there. Only the user merges it into `master`.
+
+**Version (CE-5).** No version number is chosen here. When slice 8 passes, the agent asks the user
+whether to release the local version now or wait and release local and cloud in one bump.
+
+**The user's setup (CE-4).** Gemma 4 E2B (`gemma4:e2b`, Q4_K_M), served by Ollama 0.40.6, set up by the
+user, CPU only on this machine. Fixtures are recorded against it first.
+
+# How it fits together
+
+- A model id with an endpoint prefix (`ollama:gemma4:e4b`) names an endpoint model; any other id is a
+  Claude Code model (CE-23). The first `:` splits endpoint from model, since Ollama tags hold `:` too.
+- The frame wraps the desktop provider in a **routing provider**: an endpoint model is sent to
+  `generate` with an `endpoint` field (base URL, preset, context size) and the bare model id; a Claude
+  Code model is sent exactly as today. A call with `web` never goes to an endpoint (CE-55): it runs on
+  the subject's model if that is a Claude Code model, else on `provider.defaultModel` if that is one,
+  else on `opus`. Rooms do not know endpoints exist, except that they ask the frame for their
+  context budget (slice 5).
+- In Rust, `generate` dispatches on `endpoint`: absent → `ClaudeCliProvider`, untouched; present →
+  `EndpointProvider`. The CLI's executable check moves inside the CLI branch, so an endpoint call works
+  with no Claude Code installed (CE-26).
+- The resolved model stored in the log and on nodes is `<endpointId>:<model as the server reports it>`,
+  so the meta line and the stats can tell endpoint tokens apart (CE-25, CE-53).
+
+# Slice 0. Fixtures from the real servers
+
+- The user has Ollama serving Gemma 4 E4B. Record, with a small script under `app/src-tauri/fixtures/`
+  (not shipped): Ollama's native `/api/chat` stream (NDJSON, one JSON object per line, not SSE), its
+  `/v1/chat/completions` stream (SSE) for the shared parser, `/v1/models`, `/api/show`, and the error
+  bodies for a missing model, a server that is down (connection refused, nothing to record) and an
+  over-long prompt. If the user has llama.cpp's `llama-server` or LM Studio, the same for them (SSE,
+  `/props`); otherwise their fixtures come from their documentation and are marked so.
+- Also record a stream with thinking, if the model or another local model emits it
+  (`reasoning_content` or inline `<think>`), for CE-51.
+- **Exit:** the fixture files and a README line naming the server version each came from.
+- **Done 2026-10-17**: 15 cases in `app/src-tauri/fixtures/endpoint/` (`record.py`, `cases.json`,
+  `README.md`), from Ollama 0.40.6 and `gemma4:e2b`. llama.cpp and LM Studio were not running; their
+  fixtures come from documentation in slice 1. What the recordings showed:
+  1. Native thinking is in `message.thinking`; compatible thinking is in `delta.reasoning` (not
+     `reasoning_content`). The model **thinks by default** (`/api/show`: `thinking.default: true`);
+     `think: false` (native) or `reasoning_effort: "none"` (compatible) turns it off. Thinking roughly
+     doubles the reply time here.
+  2. A prompt over `num_ctx` is **cut with no error** (`done_reason: stop`, `prompt_eval_count` 1027
+     for a prompt of about 3k tokens at 2048): CE-32 and CE-33 confirmed. Without a size, the
+     compatible calls ran at the full 131072.
+  3. **3 of 6 replies left `<options>` unclosed** after a complete JSON array. Learn's parser
+     (`protocol.ts`, TP-31) needs the closing tag, so those light-ups would keep their text and get no
+     options (TP-34).
+  4. CPU only: about 8–9 output tokens per second, about 15 s to load the model, so a light-up takes
+     around 90 s.
+  5. Usage: native `prompt_eval_count`, `prompt_eval_cached_count` (cache read), `eval_count` (thinking
+     included); compatible `usage` only with `include_usage`. Missing model: 404 with `error` text in
+     both shapes.
+  **Settled by the user, 2026-10-17:** (a) TP-31 accepts an unclosed final `<options>` array, for every
+  provider (a Claude Code path change the user accepted, CE-2), built in slice 2 with the fixture
+  replies as tests; (b) thinking is a per-model setting in Settings → Endpoints, *Off* by default
+  (CE-52), sent by slice 1 and shown by slice 3.
+
+# Slice 1. The endpoint provider in Rust
+
+- `app/src-tauri/src/provider/endpoint.rs` (new): `EndpointProvider` implementing `InferenceProvider`
+  (CE-10, CE-11, CE-13, CE-14). A blocking HTTP client fits IP-8's blocking call: reqwest's blocking client,
+  already in the tree through the updater (slice 1, done).
+  - Request: `system` as the first message, `prompt` as the user message, `stream: true`; on the
+    compatible API `stream_options.include_usage`; on Ollama's native API `options.num_ctx` from the
+    endpoint's context size (CE-32); thinking from the model's setting, as `think` (native) or
+    `reasoning_effort: "none"` when off (compatible) (CE-52). No tools, ever.
+  - Two readers behind one parser: SSE (`data:` lines, `[DONE]`) and Ollama's NDJSON. Text deltas go to
+    the callback (IP-4); thinking is removed before the callback, from `reasoning_content` or inline
+    `<think>…</think>` split across chunks, and counted as `thinking` (CE-51).
+  - Usage from the last chunk (`usage`, or Ollama's `prompt_eval_count` / `eval_count`); none reported
+    → `ceil(chars / 3)` estimates and an `estimated` flag on the result for the *≈* (CE-50).
+    `costUsd` absent, `resolvedEffort` absent unless the preset takes `reasoning_effort` (CE-52; none of
+    the local presets do yet).
+  - Errors (CE-40, CE-42): one `classify_http` function with fixture tests; new `ErrorKind`s
+    `Unreachable`, `KeyRejected`, `ContextTooLong` (kebab-case on the wire). Details never include
+    request headers (the habit CE-73 needs in the cloud version).
+  - Cancel: checked between reads, with a short read timeout so a silent socket still sees it; the
+    connection is dropped (CE-11). Stall: the 120 s clock starts at the first byte (CE-41).
+  - URL rule (CE-80): `http://` only for loopback, or for a LAN address whose endpoint is marked
+    `lanConfirmed`; otherwise `https://`. Checked in Rust on every call, not only in Settings.
+- Commands in `provider/commands.rs`: `generate` gains the dispatch (the CLI branch keeps its current
+  body); new `endpoint_models` (`/v1/models`), `endpoint_context` (`/api/show` or `/props`) and the
+  per-model *Test* through `generate` (CE-24).
+- **Exit:** Rust tests on every fixture (ok, usage missing, thinking both ways, each error, stall after
+  first byte, cancel mid-stream, URL rule); the 34 existing Rust tests unchanged and green; one ignored
+  test against the user's real Ollama.
+- **Done 2026-10-17**: `provider/endpoint.rs` and `endpoint_tests.rs`. Built as follows:
+  1. **HTTP client: reqwest 0.12.28, blocking**, not `ureq`. The updater already builds that reqwest
+     with rustls, so the lockfile gains three lines and no second HTTP or TLS stack.
+  2. `generate` takes an optional `endpoint` argument beside the unchanged `Request`, so the CLI tests
+     compile untouched. Without it, the CLI branch runs exactly as before.
+  3. The HTTP read runs on its own thread, like the CLI's stdout reader. Cancel returns at once; the
+     reader's next send then fails and dropping the response closes the connection, which stops Ollama.
+  4. The stall clock starts at the **first body line**, not at the headers, because headers can come
+     before the model has loaded (CE-41).
+  5. The resolved model is named in Rust as `<endpointId>:<server's model>` (CE-23, CE-25).
+  6. Ollama's input is reported like Claude's: the cached part goes to `cacheRead`.
+  7. A web call sent to an endpoint is refused in Rust too (CE-55).
+  8. The only CLI-side code changes are three new `ErrorKind`s and the optional `usageEstimated` flag,
+     which the CLI parser sets to `None`; its JSON is unchanged.
+  9. llama.cpp's `/props` is parsed from its documentation, and LM Studio uses the shared SSE reader;
+     neither has a recording yet.
+  Checks: 47 Rust tests (the 34 existing ones unchanged, 13 new) and the ignored real-Ollama test, in
+  17.6 s on `gemma4:e2b`.
+
+# Slice 2. Contract, routing and the fake endpoint
+
+- `app/src/frame/provider.ts`: `ErrorKind` gains the three types; `Request` gains no field in the room
+  API (rooms keep sending `model`). New `RoutingProvider` (above), placed under `ObservedProvider` so
+  session health stays per provider: Claude Code health keeps SE-42, each endpoint has its own.
+- `app/src/core/models.ts`: `parseModelId`, `isEndpointModel`, display names (*Ollama · gemma4:e4b*),
+  `isValidModel` with `/` (settings amendment). `modelName` keeps its Claude behaviour.
+- The fake providers (IP-71) gain an endpoint mode: a slow first byte (CE-41), every new error type,
+  and a reply with a missing `<options>` block (CE-57 is TP-34).
+- Learn's parser (`app/src/rooms/learn/protocol.ts`) accepts an unclosed final `<options>` array
+  (TP-31, amended), tested with the three recorded replies that left it open, plus one cut short
+  (still invalid). Check whether Choose's parser reads `<options>` the same way, and if so ask the user
+  before changing it too.
+- **Exit:** unit tests for id parsing, routing (Claude model → unchanged request, endpoint model →
+  endpoint field, web call on an endpoint subject → Claude fallback chain), and the fakes.
+- **Done 2026-10-17**:
+  - `core/models.ts` gains `parseModelId`, `isEndpointModel` and `displayModel` (*Ollama · gemma4:e2b*).
+    `modelName` is unchanged, because an existing test pins it. `/` is now allowed in model ids, in
+    `isValidModel` and in the settings validation.
+  - `frame/endpoints.ts`: the `provider.endpoints` types and a lenient reader. Slice 3 adds the
+    validation and the UI.
+  - `frame/routing.ts`: `route` and `RoutingProvider`, wired in the Shell for the rooms and Amber, in
+    the desktop and fake builds.
+  - `DesktopProvider` gains `streamEndpoint`. A Claude Code call sends the same `generate` arguments as
+    before, which a test pins. Endpoint results go to their own `endpointHealth`, never to the Claude
+    Code health (SE-42).
+  - `frame/fake-endpoint.ts`: the fake endpoint, set in dev builds by
+    `?endpointDelay=`, `?endpointError=` and `?endpointReply=unclosed|no-options`.
+  - Three new error kinds with placeholder strings; slice 7 writes their fix-it messages.
+  - TP-31's tolerance is in Learn's parser, tested on the three recorded Gemma replies and on two cut or
+    trailing cases.
+  - Checks: `npm run check` clean; 191 TS tests (the 184 existing ones unchanged, 7 new); Playwright 93
+    passed and 2 skipped, as at v0.4.0. The worktree needed its own `npm ci`.
+  - Choose's parser (`rooms/choose/protocol.ts`) got the same tolerance for the last block of every tag,
+    on the user's word (TP-31 amended), with its own test.
+
+# Slice 3. Settings → Endpoints
+
+- `provider.endpoints` in the catalogue and `settings.ts` (validation, unknown keys kept, SE-2 to SE-6).
+- `SettingsPanel.svelte`: the *Claude Code* section stays as it is and first; the **Endpoints** list
+  follows (CE-20): add from a preset (Ollama, llama.cpp, LM Studio, Custom URL, CE-12), rename, remove,
+  the LAN confirmation (CE-80); per endpoint the fetched models with pins, each pinned model's context
+  size (read from the server, editable, CE-30) and thinking (*Off*, *On*, *Model default*, CE-52), and
+  *Test* on one chosen model (CE-24). Nothing calls a
+  server until the user presses something (IP-41's rule).
+- The frame banner (CE-26): with an endpoint set and no Claude Code installed, *not installed* shows
+  only when a Claude Code model is picked or used. With no endpoint, nothing changes.
+- **Exit:** settings tests (round trip, validation, no key field); a Playwright pass on the list with
+  the fake endpoint; the Claude Code section's existing tests unchanged.
+- **Done 2026-10-17**:
+  - `provider.endpoints` is validated in `settings.ts`: malformed entries and repeated ids drop, unknown
+    fields (an `apiKey`, say) are never kept. The key stays out of the defaults, so *Reset to defaults*
+    in Provider never removes an endpoint.
+  - `frame/EndpointsSettings.svelte` sits under a new *Claude Code* heading in Provider. It adds an
+    endpoint from a preset (`ollama`, `ollama-2`, …), renames and removes it (two steps), and asks for
+    the LAN confirmation for plain http to another machine, again whenever the URL changes. *Fetch
+    models* merges the list: settings are kept, new models are pinned when there are 20 or fewer, and
+    pinned models get their context size from the server. Each model has its size and thinking
+    controls, and *Test* runs on one chosen model through the normal provider path. Results show per
+    endpoint; nothing calls a server unasked.
+  - CE-26 in the Shell: with an endpoint set, Claude Code's *not installed* or *not signed in* banner
+    shows only while the open subject's model, or the default model on Welcome, is a Claude Code one.
+    Creating a subject on an endpoint model is not blocked by the CLI. With no endpoint, nothing changes.
+    **No automatic test covers this rule yet**; slice 8's acceptance includes it. Welcome's
+    *not ready* line follows the default model, not a model picked in Welcome's own picker.
+  - Checks: `npm run check` clean; 196 TS tests (4 new); Playwright 95 passed and 2 skipped (2 new, in
+    `tests/endpoints.spec.ts`). The panel was looked at in a Playwright screenshot, since the preview
+    tool serves the main checkout, not this worktree.
+
+# Slice 4. Pickers, meta line, Amber
+
+- `ModelPicker.svelte` groups models (CE-22): *Claude Code* first with SE-48's list in order, then each
+  endpoint's pinned models. With no endpoint it renders exactly as today, pinned by a test. Used by
+  Settings' default model, Welcome (WG-2), the subject menu (RS-15) and Amber's model (CO-46).
+- Endpoint models are marked *not evaluated* in the picker and the meta line (CE-56); the meta line
+  names the endpoint (CE-25).
+- Amber can run on an endpoint model (CO-46); its eval bar (CO-48) stays on Haiku 5.5.
+- **Exit:** the first real use: a Learn subject lit on Gemma 4 E2B in the desktop build, and an Ask
+  Amber question on it. **The point where the user may move the work to the feature branch (CE-6).**
+- **Done 2026-10-17**:
+  - `ui/model-choices.svelte.ts` holds the endpoints the Shell reads from settings. `ModelPicker` adds
+    a *Claude Code* group and one group per endpoint, with pinned models only, each marked *not
+    evaluated*. With no endpoint the picker renders as before; the existing test that counts 12 options
+    is unchanged. The four pickers (Settings, Welcome, subject menu, Amber) all get it.
+  - Model labels in the node meta line and the Gallery name the endpoint and say *not evaluated*
+    (CE-25, CE-56). The meta line shows no effort for an endpoint model (IP-3). Amber needed no change:
+    it sends its model through the routing provider and logs the resolved id.
+  - In the browser build, one fake per room now serves both paths, so its scenario runs on across
+    models.
+  - Checks: `npm run check` clean, 196 TS tests, Playwright 96 passed and 2 skipped (1 new).
+  - **First real use, desktop build (`tauri dev` from the worktree, driven over WebView2's debugging
+    port), Ollama 0.40.6 and `gemma4:e2b` on the CPU.** The user's settings were backed up first. They
+    end as before, plus the Ollama endpoint (gemma4:e2b pinned at 32768, thinking off); Amber's model
+    was set back to Haiku 5.5. A subject *Why are there two high tides a day? (Gemma test)* is now in
+    the user's library.
+    1. *Test*: ready in 32 s, model loading included.
+    2. Intro: 69 s, 911 in / 188 out. A clear explanation and three axes; the meta line reads
+       *Ollama · gemma4:e2b · not evaluated · 911 in / 188 out · 1 min 6 s*.
+    3. Light-up of *Lunar Gravitational Force*: 106 s, 471 in / 401 out. Three children, a working
+       `node:` link to a sibling, and bold key terms. **The physics is loose** (a swing analogy that does
+       not hold), which is the quality question CE-56's *not evaluated* is for.
+    4. **Ask Amber: protocol not kept.** In 64 s, the log has `tagOk: false` (fallback *general*), the
+       bubble shows the model's malformed `<app>` tag as text, and the answer did not address the
+       question. For the user: whether Amber's gate should hide a malformed leading tag (this would touch
+       the Claude path, CE-2), and whether Amber on a small model is worth offering before its evals run
+       on one.
+
+# Slice 5. Context windows
+
+- A frame helper gives a room its map budget for a model: CA-10's setting, capped for an endpoint
+  model by its context size, less the system prompt, the dialogue and room for the reply (CE-31).
+  Learn's and Choose's `buildContext` callers use it; their context functions do not change.
+- A prompt that still does not fit fails as `context-too-long` before it is sent, with how to raise the
+  size (CE-33).
+- The default context size sent to Ollama: the spec's open point (32k, capped at the model's maximum,
+  editable). Confirmed with the user on their first runs, then written into the spec.
+- **Exit:** tests for the cap, the over-long refusal, and a Learn subject large enough to need the
+  reduced form on a small context size.
+- **Done 2026-10-17**:
+  - `frame/context-fit.ts`: `fitPrompt` rebuilds a room's prompt with a lower map budget until the
+    whole prompt fits the model's context size, less room for the reply (a quarter of a small window, at
+    most 4096). The map shrinks through the room's own reduced form, and every node stays.
+    `promptFits` uses CA-11's estimate.
+  - Learn's and Choose's sessions build their prompts through it, using the model's size from
+    `contextSizeOf` (`ui/model-choices.svelte.ts`). Choose's web tasks run on Claude Code, so they skip
+    it. A Claude Code model has no size, so its prompt is built exactly as before, which a test pins.
+  - The routing provider refuses an endpoint prompt that still does not fit, before sending, as
+    `context-too-long` with how to raise the size (CE-33). The rooms show it through their usual error
+    notice and log.
+  - The default: a size read from Ollama starts at 32k (`OLLAMA_DEFAULT_CONTEXT`, capped at the model's
+    maximum); llama.cpp's is kept. The spec's open point is settled.
+  - Checks: `npm run check` clean; 199 TS tests (3 new, built on a 300-node Learn subject); Playwright
+    96 passed and 2 skipped.
+
+# Slice 6. The local token line
+
+- The stats hover and the Gallery show Claude and local tokens on separate lines once a local token
+  has been spent; until then they look exactly as today (CE-53, WG-31). Records whose model has an
+  endpoint prefix count as local (all endpoints are local in this version). The summary cache (SE-51)
+  already keeps output tokens per resolved model; the local split is derived from it, adding the input
+  tokens per model if they are missing.
+- Amber's token figure in *Settings → Companion* follows the same rule.
+- **Exit:** tests for both displays with and without local records; a Claude-only library shows the
+  same figures as before.
+- **Done 2026-10-17**:
+  - The room-neutral summary gains `modelInputs` beside `modelOutputs`, in Rust and in its TypeScript
+    mirror. The Rust summary cache moves to version 4, so every subject's summary is recomputed once
+    (ST-36). Amber's totals gain `models`, per model, only when records name one, so the existing
+    totals test is unchanged.
+  - `frame/token-split.ts` treats any endpoint model as local in this version. It splits a log, a
+    summary or Amber's totals, and returns nothing while no local token has been spent.
+  - Where the split shows: the Learn header hover, the Learn Gallery card and detail, the Choose Gallery
+    detail, and Settings → Companion. It reads *Claude 40.1k in / 20.2k out · local 1.4k in / 589 out*.
+    Until a local token has been spent every figure reads exactly as before, including the Learn
+    hover's raw numbers (pinned by a test). Choose's header has no token hover, and its delete note keeps
+    the subject's total.
+  - **One existing test changed:** `core/model.test.ts`'s ST-7 test pins the whole visit summary, so
+    its expected object gains `modelInputs`. It is a format addition, not a behaviour change.
+  - Checks: `npm run check` clean; 202 TS tests (3 new); 48 Rust tests (1 new); Playwright 96 passed
+    and 2 skipped.
+
+# Slice 7. Errors and waiting
+
+- The fix-it messages and single actions for `unreachable`, `model-unknown` (with the `ollama pull`
+  line for Ollama), `context-too-long` and the HTTP `rate-limited` case, in Settings and on the node
+  banner, one vocabulary (CE-40, SE-45).
+- *Loading the model…* while an endpoint call waits for its first byte (CE-41), in the node's waiting
+  state and in Amber's company line (CO-35).
+- Choose: with no Claude Code installed, research tasks say they need it (CE-55); the other tasks run on
+  the subject's model.
+- **Exit:** each error shown with the fake endpoint in the browser preview; one real `unreachable`
+  (Ollama stopped) and one real `model-unknown` in the desktop build.
+- **Done 2026-10-17**:
+  - `ui/error-message.ts`: `errorMessage(error, { web })` is the one vocabulary (SE-45). A Claude Code
+    failure reads exactly `strings.errorKinds`, for every kind, which a test pins. An endpoint failure
+    names its server and says what to do: *Ollama is not answering at localhost:11434. Start it, then
+    try again.*, *gemma4:e2b is not on Ollama. Run “ollama pull gemma4:e2b”, then try again.*, *too long
+    for … Raise the size in Settings → Provider → Endpoints*, and the same for rate limits, server
+    errors, unreadable answers, a rejected key and a removed endpoint.
+  - It is used on the Learn and Choose node notices, Ask Amber and its selection card, Welcome's
+    suggestion error, and the Endpoints list. Claude Code's own status and banner keep their texts.
+  - CE-41: while an endpoint call has no words yet, the panel says *Ollama is loading the model and
+    reading the prompt. A local model can take a minute.* in place of `…`, and Amber's company line adds
+    *Ollama may take a minute to load the model.*
+  - CE-55: Choose's notice remembers when the failed call was research. Research on an endpoint subject
+    runs on Claude Code; with no Claude Code installed, the notice says research needs it and the other
+    tasks can run on a local model. The *not installed* banner stays down for endpoint subjects
+    (slice 3).
+  - Checks: `npm run check` clean; 205 TS tests (3 new); Playwright 97 passed and 2 skipped (1 new: the
+    loading line, then a down server named on the node).
+  - **Not done here:** the two real errors in the desktop build. Stopping the user's Ollama is the
+    user's call. The Rust tests already cover both kinds against a real closed port and the recorded
+    404, and the acceptance checklist (slice 8) includes them.
+
+# Slice 8. Verification and acceptance
+
+- Every check: `npm run check`, the TypeScript tests, the Rust tests, Playwright. The Claude Code
+  regression guard: the existing suites green, and in an installed build one Learn light-up, one Choose
+  research call and one Ask Amber question on Claude Code, compared with v0.4.0.
+- Real use on Gemma 4 E4B: Learn (intro, light-ups, a check answer, a reply), Choose's non-research
+  tasks with research through Claude Code, Amber. Optionally the hand eval runner (`app/evals/`) pointed
+  at the endpoint for a first impression; eval scores are Later (CE-60), so nothing gates on them.
+- Acceptance checklist `app/ACCEPTANCE-ENDPOINTS.md`, passed by the user in an installed build.
+- **Exit:** the user passes the checklist; then the agent asks the user whether to release the local
+  version or wait for cloud (CE-5).
+- **Checks done 2026-10-17**:
+  - `npm run check` clean; 205 TS tests; 48 Rust tests, plus the ignored real-Ollama test and both
+    ignored real-CLI tests (stream and cancel; a web call limited to WebSearch and WebFetch).
+  - Playwright: 96 passed and 2 skipped, with one failure, `GV-90/91/92`, an animation-sampling test that
+    passed 3 of 3 alone and in every earlier full run this session (load, as in v0.4.0's checks).
+  - Found while writing the checklist and fixed: an unconfirmed LAN URL fails in Rust as `protocol`,
+    which the UI showed as an unreadable answer; it now shows the LAN hint. Errors from *Fetch models*
+    are worded for their endpoint instead of for Claude Code.
+- **Claude Code regression pass 2026-10-17**, desktop build from the worktree with the user's settings
+  (Ollama endpoint set), backed up and found unchanged afterwards:
+  - *Test*: *Signed in · claude-opus-5-5 · 3 s*. The pickers show *Claude Code* then *Ollama*, the
+    agreed touch.
+  - A Learn intro on Opus in 14 s, three axes; the meta line reads *Opus 5.5 · medium · 2 in / 571 out
+    · 10 s*. *2 in* is how the CLI reports input, matching the user's earlier Claude subjects.
+  - Ask Amber on Haiku 5.5: an on-topic app answer in about 3 s, `tagOk: true`.
+  - A subject *Why is the sky blue? (Claude regression check)* is now in the user's library.
+  - Not driven here: a Choose research call through the UI. The checklist has it; the CLI web path is
+    covered by the real-CLI test above.
+- **Acceptance checklist:** `app/ACCEPTANCE-ENDPOINTS.md`, for the user to run in a preview installer.
+- **Feature branch 2026-10-17 (CE-6, the user):** the worktree's branch was renamed
+  `claude/lantern-custom-endpoints`, with its 14 commits, in the same worktree; nothing pushed. Preview
+  installer built from it, version 0.4.0: `app/src-tauri/target/release/bundle/preview/Lantern_0.4.0-preview-202610172010_x64-setup.exe (5,330,556 bytes, about 91 KB more than v0.4.0's 5,239,744)`. Next: the user runs the checklist, then the
+  release question (CE-5); only the user merges into `master`.
+- **Accepted by the user 2026-10-17** in that preview installer: `app/ACCEPTANCE-ENDPOINTS.md` fully
+  ticked (27 of 27, the optional run without Claude Code included), no notes. Slices 0 to 8 are done.
+  The user's answer to CE-5: **wait**. This version stays unreleased; the cloud version follows in
+  [custom-endpoints-cloud](/plans/custom-endpoints-cloud.md), and both ship in one version bump.
+
+# Risks to retire early
+
+| Risk | Where it is retired |
+|---|---|
+| A change leaks into the Claude Code path | The ground rule: CLI code and tests untouched; the routing tests of slice 2; the regression pass of slice 8 |
+| Ollama's native stream differs from the compatible one | Slice 0 records both; slice 1 has one reader per format behind one parser |
+| Gemma 4 E4B breaks the tagged blocks often | TP-34 already keeps the text; slice 4's first real use shows how often; the repair call stays Later unless it is frequent |
+| A default context too large for the machine (slow, out of memory) | Slice 5 confirms the default on the user's first runs; the size is editable per model |
+| Cancel does not interrupt a blocking read | Slice 1's short read timeout and its mid-stream cancel test |
+| The new HTTP dependency grows the installer or pulls in OpenSSL | Slice 1 picks a rustls client and checks the installer size against v0.4.0 |
+
+# Open
+
+- The context size sent to Ollama by default (slice 5), from the spec's *Open*.

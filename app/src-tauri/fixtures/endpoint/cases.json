@@ -1,0 +1,644 @@
+{
+  "ollama-native-ok": {
+    "status": 200,
+    "contentType": "application/x-ndjson",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "think": false,
+      "options": {
+        "num_ctx": 8192
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 48.1,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-thinking": {
+    "status": 200,
+    "contentType": "application/x-ndjson",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "think": true,
+      "options": {
+        "num_ctx": 8192
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 74.2,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-think-default": {
+    "status": 200,
+    "contentType": "application/x-ndjson",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "options": {
+        "num_ctx": 8192
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 60.6,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-truncated": {
+    "status": 200,
+    "contentType": "application/x-ndjson",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day.\nMAP: node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. node about tides and the moon. "
+        }
+      ],
+      "stream": true,
+      "think": false,
+      "options": {
+        "num_ctx": 2048
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 113.5,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-model-missing": {
+    "status": 404,
+    "contentType": "application/json; charset=utf-8",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "no-such-model:1b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-bad-request": {
+    "status": 400,
+    "contentType": "application/json; charset=utf-8",
+    "method": "POST",
+    "path": "/api/chat",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": "not a list",
+      "stream": true
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-ok": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "reasoning_effort": "none"
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 56.7,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-think-default": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      }
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 84.4,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-no-usage": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "request": {
+      "model": "gemma4:e2b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "reasoning_effort": "none"
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 43.9,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-model-missing": {
+    "status": 404,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/v1/chat/completions",
+    "request": {
+      "model": "no-such-model:1b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-compat-models": {
+    "status": 200,
+    "contentType": "application/json",
+    "method": "GET",
+    "path": "/v1/models",
+    "request": null,
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-tags": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "method": "GET",
+    "path": "/api/tags",
+    "request": null,
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-show": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "method": "POST",
+    "path": "/api/show",
+    "request": {
+      "model": "gemma4:e2b"
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-native-show-missing": {
+    "status": 404,
+    "contentType": "application/json; charset=utf-8",
+    "method": "POST",
+    "path": "/api/show",
+    "request": {
+      "model": "no-such-model:1b"
+    },
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "ollama-version": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "method": "GET",
+    "path": "/api/version",
+    "request": null,
+    "server": "ollama 0.40.6",
+    "seconds": 0.0,
+    "recorded": "2026-10-17"
+  },
+  "nvidia-models": {
+    "status": 200,
+    "contentType": "application/json",
+    "method": "GET",
+    "path": "/models",
+    "request": null,
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.2,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  },
+  "nvidia-compat-model-missing": {
+    "status": 404,
+    "contentType": "text/plain; charset=utf-8",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "no-such-org/no-such-model",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.1,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/plain; charset=utf-8"
+    }
+  },
+  "nvidia-bad-key": {
+    "status": 403,
+    "contentType": "application/problem+json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.2,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/problem+json"
+    },
+    "fakeKey": true,
+    "echoesFakeKey": false
+  },
+  "nvidia-models-bad-key": {
+    "status": 200,
+    "contentType": "application/json",
+    "method": "GET",
+    "path": "/models",
+    "request": null,
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.1,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "fakeKey": true,
+    "echoesFakeKey": false
+  },
+  "nvidia-server-error": {
+    "status": 500,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      }
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.4,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json",
+      "Nvcf-Reqid": "d65d873d-515a-4359-a7a4-55d1765a7659",
+      "Nvcf-Status": "errored"
+    },
+    "note": "Every chat case on this model returned this, instantly (2026-10-17); kept as the server-error fixture."
+  },
+  "nvidia-probe-user-only": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "user",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise.\n\nSUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 26.1,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "1b35e879-29ef-493b-aa5e-9fd8ae070141",
+      "Nvcf-Status": "fulfilled"
+    }
+  },
+  "nvidia-probe-not-streamed": {
+    "status": 200,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": false
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 40.5,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json",
+      "Nvcf-Reqid": "eb196ecf-f346-4415-a690-5a46b2ab4b9c",
+      "Nvcf-Status": "fulfilled"
+    }
+  },
+  "nvidia-probe-text-parts": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": [
+            {
+              "type": "text",
+              "text": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+            }
+          ]
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 18.6,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "d57e1fb6-2da6-492f-9865-e5862cdd8c02",
+      "Nvcf-Status": "fulfilled"
+    }
+  },
+  "nvidia-compat-ok": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      }
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 8.5,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "37ce71ad-a293-4d41-a0c6-29045d7995c1",
+      "Nvcf-Status": "fulfilled"
+    }
+  },
+  "nvidia-compat-no-usage": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 8.8,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "e2d7edc9-4211-401a-a722-6924bf5cc318",
+      "Nvcf-Status": "fulfilled"
+    }
+  },
+  "nvidia-compat-reasoning-none": {
+    "status": 500,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      },
+      "reasoning_effort": "none"
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.4,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json",
+      "Nvcf-Reqid": "95bc549f-7701-40e5-abf2-0977e94efa39",
+      "Nvcf-Status": "errored"
+    }
+  },
+  "nvidia-probe-no-thinking": {
+    "status": 500,
+    "contentType": "application/json",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "model": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a patient tutor. Explain in two short paragraphs, then end with exactly one block:\n<options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper\"}]</options>\nwith three options. Kinds: deeper, application, adjacent, exercise."
+        },
+        {
+          "role": "user",
+          "content": "SUBJECT: Tides\nTASK: explain why there are two high tides a day."
+        }
+      ],
+      "stream": true,
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 0.4,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "application/json",
+      "Nvcf-Reqid": "166a1d23-42de-4474-9c14-6f83afd88702",
+      "Nvcf-Status": "errored"
+    }
+  },
+  "nvidia-compat-too-long": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "method": "POST",
+    "path": "/chat/completions",
+    "request": {
+      "note": "large prompt, not stored",
+      "chars": 806464
+    },
+    "server": "integrate.api.nvidia.com",
+    "seconds": 33.9,
+    "recorded": "2026-10-17",
+    "headers": {
+      "Content-Type": "text/event-stream",
+      "Nvcf-Reqid": "c6d79d59-02fe-41a1-b483-8e16e87dd005",
+      "Nvcf-Status": "fulfilled"
+    }
+  }
+}

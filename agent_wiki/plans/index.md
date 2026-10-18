@@ -16,4 +16,6 @@ it `deprecated` and link to what it produced rather than deleting it.
 * [v0.4.0 plan](v0-4-0.md) - Amber, the companion: settings and log, Ask Amber and its eval gate, the selection card, room content, then the character on the new top bar, its movement, motions and greetings.
 * [v0.4.0 Amber lines](v0-4-0-amber-lines.md) - Draft tips, guide lines, greetings and waiting lines for the user to review.
 * [Web demo plan](web-demo.md) - The Learn room as a free public demo on GitHub Pages; waits for the repository to go public.
+* [Custom endpoints plan, local version](custom-endpoints-local.md) - The endpoint provider in Rust with Ollama's native chat, routing by model id, Settings → Endpoints, grouped pickers, context windows, the local token line, new errors; the Claude Code path unchanged.
+* [Custom endpoints plan, cloud version](custom-endpoints-cloud.md) - API keys in Windows Credential Manager, the NVIDIA preset, consent, cloud tokens with Claude, real use on NVIDIA; then one release for local and cloud.
 * [Backlog](backlog.md) - Agreed future work with no version yet; first entry: the companion behaviour spec.

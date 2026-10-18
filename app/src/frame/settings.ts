@@ -1,9 +1,11 @@
 import type { Effort } from '../core/model';
+import { endpointsOf, type EndpointConfig } from './endpoints';
 /** SE-12: each room checks its own group, stored under its id. */
 export interface RoomSettingsSpec { id: string; settings: { defaults: Record<string, unknown>; validate: (stored: Record<string, unknown>) => Record<string, unknown> } }
 export interface Settings {
   format: 'lantern-settings/1'; library: { path: string; [key: string]: unknown }; user: { displayName: string; [key: string]: unknown };
-  provider: { defaultModel: string; defaultEffort: Effort; [key: string]: unknown };
+  /** `endpoints` (CE-20) stays out of the defaults, so *Reset to defaults* never removes an endpoint. */
+  provider: { defaultModel: string; defaultEffort: Effort; endpoints?: EndpointConfig[]; [key: string]: unknown };
   appearance: { reduceMotion: 'system' | 'on'; backdrop: boolean; showTokenStats: boolean; [key: string]: unknown };
   updates: { checkAtLaunch: boolean; [key: string]: unknown };
   developer: { updateFolder: string; [key: string]: unknown };
@@ -33,11 +35,13 @@ export function validateSettings(input: unknown, defaults = defaultSettings(), r
   if (typeof out.library.path !== 'string') out.library.path = defaults.library.path;
   if (typeof out.user.displayName !== 'string' || out.user.displayName.trim().length > 40 || !out.user.displayName.trim()) out.user.displayName = defaults.user.displayName;
   else out.user.displayName = out.user.displayName.trim();
-  if (typeof p.defaultModel !== 'string' || !/^[A-Za-z0-9._:-]{1,100}$/.test(p.defaultModel)) p.defaultModel = defaults.provider.defaultModel;
+  if (typeof p.defaultModel !== 'string' || !/^[A-Za-z0-9._:/-]{1,100}$/.test(p.defaultModel)) p.defaultModel = defaults.provider.defaultModel;
   const c = out.companion;
   if (typeof c.show !== 'boolean') c.show = defaults.companion.show;
-  if (typeof c.model !== 'string' || !/^[A-Za-z0-9._:-]{1,100}$/.test(c.model)) c.model = defaults.companion.model;
+  if (typeof c.model !== 'string' || !/^[A-Za-z0-9._:/-]{1,100}$/.test(c.model)) c.model = defaults.companion.model;
   if (!['low','medium','high','xhigh','max'].includes(p.defaultEffort)) p.defaultEffort = defaults.provider.defaultEffort;
+  // CE-20, SE-6: a malformed endpoint is dropped, the others kept; the key is never a place for an API key (SE-7, CE-70).
+  if ('endpoints' in p) p.endpoints = endpointsOf(p);
   // GV-100 forbids overriding an OS reduced-motion preference with "never reduce".
   if (!['system','on'].includes(a.reduceMotion)) a.reduceMotion = 'system';
   if (typeof a.backdrop !== 'boolean') a.backdrop = defaults.appearance.backdrop;

@@ -9,6 +9,22 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T00:30:00Z }
 
 Entries move out of here into a versioned plan when the user schedules them. Newest first.
 
+# Custom endpoints: the later pieces
+
+- **Added:** 2026-10-17, from spec workshop rounds 10–11 ([custom-endpoints](/specs/custom-endpoints.md) CE-3).
+- **Codex CLI provider** (CE-58): a second CLI provider on a ChatGPT plan, with its own detection,
+  stream, errors and fixtures; it can also run Choose's research (CE-55). Its own version, scheduled
+  once the user has a Codex plan to test with.
+- **Lantern's own web tools** (CE-55): a search API with its own key, page fetching in Rust and a
+  tool-calling loop, so Choose's research works on any model. The user wants it eventually; it needs
+  its own spec round.
+- **Check this model** (CE-60): the rooms' code-checked eval cases run from Settings on a pinned model,
+  a score per room.
+- **Protocol repair call** (CE-57): only if endpoint models often skip the options block.
+- **More cloud presets** (OpenRouter, Groq, Mistral, DeepSeek, Together) and **the Anthropic API with a
+  key** (Claude without the CLI, billed per token).
+- Models per task: the *Cheaper model for cheap tasks* entry below.
+
 # Local models for Amber (experiment)
 
 - **Added:** 2026-10-17, on the user's request, after the [companion](/specs/companion.md) spec was agreed.

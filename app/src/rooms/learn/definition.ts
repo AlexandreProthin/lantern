@@ -1,6 +1,7 @@
 import type { RoomDefinition } from '../../frame/room';
 import { strings } from '../../ui/strings';
 import { stats } from './stats';
+import { inOutText, splitLog } from '../../frame/token-split';
 import { learnSummary, newLearnSubject, validateLearn } from './rules';
 import { learnSettings, learnSettingsDefaults, validateLearnSettings } from './settings';
 import { LearnSession } from './session';
@@ -25,7 +26,7 @@ export const learnRoom: RoomDefinition = {
   nodeKinds:Object.fromEntries(['subject','axis','deeper','application','adjacent','exercise','question','own'].map(kind => [kind,{label:kind,glyph:kind === 'question' ? '◇' : '○'}])),
   nodeStates:{open:{label:'open',glyph:'○'},lit:{label:'lit',glyph:'●'},understood:{label:'understood',glyph:'✓'},dismissed:{label:'dismissed',glyph:'◌'}},
   legend:[{label:'open',glyph:'○'},{label:'lit',glyph:'●'},{label:'demonstrated',glyph:'✓'},{label:'self-declared',glyph:'✓'},{label:'dismissed',glyph:'◌'},{label:'question',glyph:'◇'}],
-  statsSummary(subject) { const s = stats(subject.rooms.learn); return {text:strings.headerStats(s.lit,s.understood,s.dark),tooltip:`${s.input} in / ${s.output} out`}; },
+  statsSummary(subject) { const s = stats(subject.rooms.learn); return {text:strings.headerStats(s.lit,s.understood,s.dark),tooltip:(split=>split?inOutText(s.input,s.output,split):`${s.input} in / ${s.output} out`)(splitLog(subject.rooms.learn.log))}; },
   newSubject:(title,tone,settings,direction) => newLearnSubject(title,{tone,model:settings.provider.defaultModel,effort:settings.provider.defaultEffort,direction},settings.user.displayName),
   validate:validateLearn, summarize:learnSummary, subjectMenu:SubjectMenu, companion:learnCompanion
 };

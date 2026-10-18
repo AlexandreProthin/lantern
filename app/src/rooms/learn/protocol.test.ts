@@ -1,4 +1,6 @@
 import { expect, test } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { newLearnSubject } from './rules';
 import { nodeLinks, parseReply, visibleText } from './protocol';
 test('TP-31: first parseable block wins, fences and unknown keys tolerated', () => {
@@ -28,4 +30,19 @@ test('TP-33/DM-22: link resolution changes after deletion without rewriting text
   const text = `[Tides](node:${id}) [Ghost](node:missing)`;
   expect(nodeLinks(text, v).map(l => l.exists)).toEqual([true, false]);
   delete v.nodes[id]; expect(nodeLinks(text, v).map(l => l.exists)).toEqual([false, false]);
+});
+test('TP-31 (amended): an options array left unclosed at the end still parses; one cut short does not', () => {
+  // The three replies Gemma 4 E2B left unclosed, rebuilt from the recorded streams (custom-endpoints slice 0).
+  const dir = resolve(__dirname, '../../../src-tauri/fixtures/endpoint');
+  const native = (name: string) => readFileSync(`${dir}/${name}.body`, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l).message?.content ?? '').join('');
+  const sse = (name: string) => readFileSync(`${dir}/${name}.body`, 'utf8').split('\n').filter(l => l.startsWith('data: {')).map(l => JSON.parse(l.slice(6)).choices[0]?.delta?.content ?? '').join('');
+  for (const raw of [native('ollama-native-ok'), sse('ollama-compat-no-usage'), sse('ollama-compat-think-default')]) {
+    expect(raw).not.toContain('</options>');
+    const r = parseReply(raw, 'light');
+    expect(r.optionsValid).toBe(true); expect(r.options).toHaveLength(3); expect(r.text).not.toContain('<options>');
+  }
+  const whole = native('ollama-native-ok');
+  expect(parseReply(whole.slice(0, whole.lastIndexOf('{')), 'light').optionsValid).toBe(false);
+  expect(parseReply('Text\n<options>[{"title":"A"}]\nMore prose after it', 'light').optionsValid).toBe(false);
+  expect(parseReply('Text\n<options>[{"title":"A"}]', 'more').options.map(o => o.title)).toEqual(['A']);
 });

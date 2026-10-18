@@ -6,7 +6,11 @@
   // Inlined as markup: an image URL would be a data: URI, which the app CSP blocks.
   import lanternMark from '../assets/identity/ember-on-dark-32.svg?raw';
   import { providerMode } from './provider-mode';
-  import { DesktopProvider, HeldProvider, ObservedProvider, ProviderError } from './provider';
+  import { DesktopProvider, HeldProvider, ObservedProvider, ProviderError, type InferenceProvider } from './provider';
+  import { RoutingProvider } from './routing';
+  import { endpointsOf } from './endpoints';
+  import { endpointNameOf, modelChoices } from '../ui/model-choices.svelte';
+  import { FakeEndpointTransport, fakeEndpointOptions } from './fake-endpoint';
   import type { Completion, ErrorKind } from './provider';
   import { rooms as baseRooms, roomsWithDevSample } from '../rooms';
   import type { RoomDefinition, RoomSession } from './room';
@@ -28,7 +32,7 @@
   import TopBar from './TopBar.svelte';
   import FieldPanel from './FieldPanel.svelte';
   import { applyRoomChrome, windowTitle } from './window-chrome';
-  import { isValidModel } from '../core/models';
+  import { isEndpointModel, isValidModel } from '../core/models';
   import AskBox from './amber/AskBox.svelte';
   import Amber from './amber/Amber.svelte';
   import { browserAmberStore, desktopAmberStore, emptyAmberState } from './amber/state';
@@ -54,18 +58,29 @@
   const fakeDelay = Number(new URLSearchParams(location.search).get('delay') ?? 12);
   const fakeWait = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('wait') ?? 0) : 0;
   const fakeKind = import.meta.env.DEV&&fakeError&&Object.hasOwn(strings.errorKinds,fakeError)?fakeError as ErrorKind:undefined;
-  const desktopProvider = fake ? null : new ObservedProvider(new DesktopProvider(), value => health=value);
-  const fakeProviders = new Map<string, ObservedProvider>();
-  /** One CLI provider for every room; in the browser build each room brings its own fake (IP-71). */
-  function providerFor(r: RoomDefinition): ObservedProvider {
+  /** CE-20 to CE-24: each endpoint's last call result, apart from Claude Code's `health` (SE-42). */
+  let endpointHealth = $state<Record<string, Completion | ProviderError>>({});
+  const routing = () => ({ endpoints: endpointsOf(settings.provider), defaultModel: settings.provider.defaultModel });
+  // CE-22: every picker and model label follows the stored endpoints.
+  $effect(() => { modelChoices.endpoints = endpointsOf(settings.provider); });
+  const reportEndpoint = (id: string, value: Completion | ProviderError) => { endpointHealth = { ...endpointHealth, [id]: value }; };
+  const routed = (claude: InferenceProvider, transport: ConstructorParameters<typeof RoutingProvider>[1]) => new RoutingProvider(claude, transport, routing, reportEndpoint);
+  const desktopBridge = fake ? null : new DesktopProvider();
+  const desktopProvider = desktopBridge ? routed(new ObservedProvider(desktopBridge, value => health=value), desktopBridge) : null;
+  const fakeEndpoint = fakeEndpointOptions(new URLSearchParams(location.search), import.meta.env.DEV ? strings.errorKinds : {});
+  const fakeProviders = new Map<string, InferenceProvider>();
+  /** One provider for every room, routing Claude Code and endpoint models (CE-23); in the browser build each room brings its own fake (IP-71). */
+  function providerFor(r: RoomDefinition): InferenceProvider {
     if (desktopProvider) return desktopProvider;
-    let p = fakeProviders.get(r.id); if (!p) { p = new ObservedProvider(new HeldProvider(r.fakeProvider(fakeDelay, fakeKind), fakeWait), value => health=value); fakeProviders.set(r.id, p); }
+    // One fake per room serves both paths, so its scenario (titles, counters) runs on across models.
+    let p = fakeProviders.get(r.id); if (!p) { const inner = r.fakeProvider(fakeDelay, fakeKind); p = routed(new ObservedProvider(new HeldProvider(inner, fakeWait), value => health=value), new FakeEndpointTransport(inner, fakeEndpoint)); fakeProviders.set(r.id, p); }
     return p;
   }
   const provider = $derived(providerFor(room));
   // CO-40 to CO-49: Ask Amber, one temporary chat for the app. The browser build answers from Amber's own fake (IP-71).
   const amberErrorParam = new URLSearchParams(location.search).get('amberError');
-  const amberProvider = desktopProvider ?? new ObservedProvider(new HeldProvider(new AmberFakeProvider(fakeDelay, import.meta.env.DEV && amberErrorParam && Object.hasOwn(strings.errorKinds, amberErrorParam) ? amberErrorParam as ErrorKind : undefined), fakeWait), value => health=value);
+  const amberFake = new AmberFakeProvider(fakeDelay, import.meta.env.DEV && amberErrorParam && Object.hasOwn(strings.errorKinds, amberErrorParam) ? amberErrorParam as ErrorKind : undefined);
+  const amberProvider = desktopProvider ?? routed(new ObservedProvider(new HeldProvider(amberFake, fakeWait), value => health=value), new FakeEndpointTransport(amberFake, fakeEndpoint));
   let askOpen = $state(false), amberRevision = $state(0), askBox = $state<ReturnType<typeof AskBox>>();
   const amberChat = new AmberChat(amberProvider, desktop ? desktopAmberLog : browserAmberLog, () => settings.companion.model,
     () => amberHelp(rooms), () => amberContext(room, space, session), () => amberRevision++);
@@ -101,7 +116,9 @@
     if (!session || !r || r.text) return null;
     const line = room.companion?.waiting?.[r.task]; if (!line) return null;
     const title = session.subject.rooms[room.id]?.nodes[r.nodeId]?.title ?? session.subject.title;
-    return line(title.length > 32 ? title.slice(0, 31) + '…' : title);
+    const said = line(title.length > 32 ? title.slice(0, 31) + '…' : title), local = endpointNameOf(String(session.subject.rooms[room.id]?.model ?? ''));
+    // CE-41: a local model's first words can take a minute.
+    return local ? `${said} ${strings.amberLocalWait(local)}` : said;
   });
   const amberWorking = $derived(!!amberWaiting || amberMoodParam === 'working');
   // CO-30 to CO-32: one greeting per launch, once Amber's state is read and no frame banner is up.
@@ -147,7 +164,10 @@
   const paletteSubjects = $derived.by(() => { revision; return catalogue.opened; });
   const running = $derived.by(() => { revision; return session?.running ? {...session.running} : null; });
   const anyRunning = $derived.by(() => { revision; return [...owned.values()].some(entry => !!entry.session.running); });
-  const unavailable=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
+  const cliProblem=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
+  /** CE-26: with an endpoint set, Claude Code's banner shows only while a Claude Code model is in use (the open subject's, else the default). With no endpoint, nothing changes. */
+  const claudeInUse=$derived.by(()=>{revision;if(!endpointsOf(settings.provider).length)return true;const model=session?.subject.rooms[room.id]?.model??settings.provider.defaultModel;return !isEndpointModel(String(model??''));});
+  const unavailable=$derived(cliProblem&&claudeInUse?cliProblem:null);
   const updater=new UpdateController();
   const showUpdateNotice=$derived(updater.fromLaunch&&['available','downloading','installing'].includes(updater.phase)&&shouldShowNotice(settings,updater.version,anyRunning&&updater.phase==='available'));
   /** UP-1, UP-21: a check the server answered counts, however it was started. */
@@ -213,7 +233,7 @@
     return {session:controller,persistence,room:owner.id};
   }
   async function createSubject(title: string, tone: Tone, model: string, direction = '') {
-    if (!libraryAvailable || unavailable) throw new Error(strings.cliNotReady);
+    if (!libraryAvailable || (cliProblem && !isEndpointModel(model))) throw new Error(strings.cliNotReady);
     if (!isValidModel(model)) throw new Error(strings.invalidModel);
     const subject=room.newSubject(checkedTitle(title),tone,settings,checkedDirection(direction));
     subject.rooms[room.id].model=model;
@@ -390,7 +410,7 @@
   openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/key}{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
 {#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} {desktop} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} thinking={amberThinking} working={amberWorking} lean={amberLean} greeting={amberGreeting} waiting={amberWaiting} greeted={()=>amberGreeting=null} {openRelease} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
-{#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
+{#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {endpointHealth} {fakeEndpoint} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}
 {#if askOpen}<AskBox bind:this={askBox} chat={amberChat} revision={amberRevision} close={closeAsk} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if shortcutsOpen}<div class="shortcuts" role="dialog" aria-label={strings.shortcuts}>{#if room.companion?.guide[space]?.length}<h2>{strings.whatCanIDo}</h2><GuideLines lines={room.companion.guide[space]} />{/if}<h2>{strings.shortcuts}</h2><pre>{strings.shortcutTable}{rooms.length>1?'\n'+strings.roomShortcuts(rooms.map(r=>r.name)):''}</pre><button onclick={()=>shortcutsOpen=false}>{strings.close}</button></div>{/if}

@@ -3,6 +3,7 @@
   import Panel from '../../../ui/Panel.svelte';
   import type { PanelNotice, PanelRoomView, PanelSession } from '../../../ui/panel-types';
   import { strings } from '../../../ui/strings';
+  import { errorMessage } from '../../../ui/error-message';
   import { editText } from '../../../core/graph';
   import type { GraphNode } from '../../../core/model';
   import { addChooseChild, ANSWER_LIMIT, answerOf, chooseData, kindOf, rejectedOf, REASON_LIMIT, setState, statusOf } from '../rules';
@@ -77,7 +78,7 @@
 {#snippet notice(n: PanelNotice, ctx: { running: unknown })}
   {@const note = n as SessionNotice}
   {#if note.kind === 'directions'}{strings.directionsCount(note.count!)}<button disabled={!!ctx.running} onclick={() => note.retry()}>{strings.moreOptions}</button>
-  {:else}<strong>{t.failed}</strong><p>{strings.errorKinds[note.error!.kind]}</p><details><summary>{strings.details}</summary><pre>{note.error!.details}</pre></details><button disabled={!!ctx.running} onclick={() => note.retry()}>{strings.retry}</button>{/if}
+  {:else}<strong>{t.failed}</strong><p>{errorMessage(note.error!, { web: note.web })}</p><details><summary>{strings.details}</summary><pre>{note.error!.details}</pre></details><button disabled={!!ctx.running} onclick={() => note.retry()}>{strings.retry}</button>{/if}
 {/snippet}
 {#snippet body(node: GraphNode, ctx: { running: unknown; busy: boolean; perform: (fn: () => void) => void })}
   {@const working = lane(node.id)}

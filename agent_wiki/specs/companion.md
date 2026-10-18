@@ -4,7 +4,7 @@ title: Companion
 description: How Amber, the little lantern of the identity, lives in the app - hanging from the header and moved by hand, resting positions, tips, the guide, greetings, keeping you company during a generation, Ask Amber (a temporary chat and a selection action on Haiku 5.5), gestures and motions, calm in Study, reduced motion, and how it is turned off without losing any feature.
 tags: [companion, amber, identity, frame, settings]
 status: stable
-generated: { by: claude-code/opus-5.5, at: 2026-10-16T22:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:00:00Z }
 verified: { by: "human:alex", at: 2026-10-16T22:45:00Z }
 ---
 
@@ -142,7 +142,7 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
   anchored to the selection**; Amber, when shown, leans toward it. The card offers *Ask the tutor*,
   which continues as *Ask about this* (NP-51). Esc closes it; it is not saved. With Amber off, the same
   card appears on its own. *(r8, r9)*
-- **CO-46** **Model.** *Settings → Companion → Amber's model*, default **Haiku 5.5**
+- **CO-46** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) Amber's model can be any pinned endpoint model, marked *not evaluated*: CO-48's eval bar stays on the default model, CE-22, CE-56.)* **Model.** *Settings → Companion → Amber's model*, default **Haiku 5.5**
   (`claude-haiku-5-5`), from the model list (SE-48), effort low. *(r8, r9)*
 - **CO-47** **Log.** Amber's calls go to an **app-level log**, not a subject's generation log, and do not
   count in any subject's tokens. *Settings → Companion* shows the tokens Amber has spent. *(r9)*

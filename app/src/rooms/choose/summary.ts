@@ -40,7 +40,7 @@ export function chooseSummary(s: VisitSummary): ChooseSummary {
     if (shortlisted < 2) missing.push(shortlisted ? 'one more product to shortlist' : 'two products to shortlist');
   }
   return {
-    input: s.input, output: s.output, tokens: s.tokens, mainModel: s.mainModel, modelOutputs: s.modelOutputs, generations: s.generations,
+    input: s.input, output: s.output, tokens: s.tokens, mainModel: s.mainModel, modelOutputs: s.modelOutputs, modelInputs: s.modelInputs, generations: s.generations,
     total: Object.values(s.states).reduce((a, b) => a + b, 0), tone: d.tone as SubjectSummary['tone'],
     choose: {
       status, pick, unchosen: status === 'exploring' && !!pick, history,

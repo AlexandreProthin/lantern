@@ -7,14 +7,18 @@
   import { ProviderError } from './provider';
   import { strings } from '../ui/strings';
   import ModelPicker from '../ui/ModelPicker.svelte';
+  import EndpointsSettings from './EndpointsSettings.svelte';
+  import type { FakeEndpointOptions } from './fake-endpoint';
   import type { UpdateController } from './updates.svelte';
   import { REVEAL_CLICKS, revealsDeveloper } from './updates';
   import { browserAmberLog, desktopAmberLog, type AmberTotals } from './amber/log';
   import { tokens } from './library-format';
-  let { settings, defaults, rooms, provider, health=null, initialSection='general', changed, close, switchLibrary, updater, checkUpdates, installUpdate, generating=false, readonly=false }: {
+  import { splitModels } from './token-split';
+  let { settings, defaults, rooms, provider, health=null, initialSection='general', changed, close, switchLibrary, updater, checkUpdates, installUpdate, generating=false, readonly=false, endpointHealth={}, fakeEndpoint={} }: {
     settings:Settings; defaults:Settings; rooms:readonly RoomDefinition[]; provider:InferenceProvider; health?:Completion|ProviderError|null;
     updater:UpdateController; checkUpdates:()=>Promise<void>; installUpdate:()=>Promise<void>;
-    changed:()=>void;close:()=>void;switchLibrary:(destination:string,mode:string)=>Promise<void>;initialSection?:string;generating?:boolean;readonly?:boolean
+    changed:()=>void;close:()=>void;switchLibrary:(destination:string,mode:string)=>Promise<void>;initialSection?:string;generating?:boolean;readonly?:boolean;
+    endpointHealth?:Record<string,Completion|ProviderError>;fakeEndpoint?:FakeEndpointOptions
   }=$props();
   const desktop='__TAURI_INTERNALS__' in window;
   /** SE-11/12: one submenu per registered room, after Provider, in registration order. */
@@ -90,19 +94,21 @@
     {:else if section==='provider'}
       <div class="field"><label for="default-model">{strings.defaultModel}</label><ModelPicker id="default-model" value={settings.provider.defaultModel} label={strings.defaultModel} commit={model=>{settings.provider.defaultModel=model;validation='';changed();}} /></div>
       <label>{strings.defaultEffort}<select bind:value={settings.provider.defaultEffort} onchange={changed}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label><p>{strings.newSubjectsHint}</p>
+      <h3>{strings.claudeCode}</h3>
       {#if found!==null}<p>{found?strings.found:strings.notFound} · {located} · {version}</p>{/if}
       <p role="status">{status}</p><button disabled={testing||generating} onclick={test}>{strings.testProvider}</button>
       {#if errorKind==='not-installed'}<p>{strings.installInstructions}</p><a href="https://code.claude.com/docs/en/setup" target="_blank" rel="noopener noreferrer" onclick={install}>{strings.installClaude}</a><button disabled={testing||generating} onclick={test}>{strings.checkAgain}</button>{/if}
       {#if errorKind==='not-logged-in'}<p>{strings.signinInstructions}</p><button disabled={testing||generating} onclick={test}>{strings.checkAgain}</button>{/if}
       {#if errorKind==='model-unknown'}<button onclick={()=>document.getElementById('default-model')?.focus()}>{strings.chooseModel}</button>{/if}
       {#if details}<details><summary>{strings.details}</summary><pre>{details}</pre><button onclick={()=>navigator.clipboard.writeText(details)}>{strings.copyDetails}</button></details>{/if}
+      <EndpointsSettings {settings} {changed} {provider} health={endpointHealth} fakeOptions={fakeEndpoint} disabled={generating} />
     {:else if roomOf(section)}{@const RoomSettings=roomOf(section)!.settingsMenu}<RoomSettings {settings} {changed} />
     {:else if section==='companion'}
       <label><input type="checkbox" bind:checked={settings.companion.show} onchange={changed} />{strings.showAmber}</label>
       {#if !settings.companion.show}<p>{strings.amberHiddenHint}</p>{/if}
       <div class="field"><label for="amber-model">{strings.amberModel}</label><ModelPicker id="amber-model" value={settings.companion.model} label={strings.amberModel} commit={model=>{settings.companion.model=model;validation='';changed();}} /></div>
       <p>{strings.amberEffortHint}</p>
-      {#if amberTotals}<p data-testid="amber-tokens">{amberTotals.calls?strings.amberSpent(tokens(amberTotals.input+amberTotals.output),tokens(amberTotals.input),tokens(amberTotals.output),amberTotals.calls):strings.amberSpentNone}</p>{/if}
+      {#if amberTotals}<p data-testid="amber-tokens">{#if amberTotals.calls}{@const split=splitModels(amberTotals.models)}{split?strings.amberSpentSplit(strings.inOut(tokens(split.claude.input),tokens(split.claude.output)),strings.inOut(tokens(split.local.input),tokens(split.local.output)),amberTotals.calls):strings.amberSpent(tokens(amberTotals.input+amberTotals.output),tokens(amberTotals.input),tokens(amberTotals.output),amberTotals.calls)}{:else}{strings.amberSpentNone}{/if}</p>{/if}
     {:else if section==='developer'}
       <label>{strings.updateFolder}<input value={settings.developer.updateFolder} readonly spellcheck="false" /></label>
       <div class="actions"><button disabled={!desktop} onclick={pickFolder}>{strings.changeLibrary}</button><button disabled={!settings.developer.updateFolder} onclick={()=>{settings.developer.updateFolder='';changed();}}>{strings.clearFolder}</button></div>
@@ -122,6 +128,6 @@
   .settings { position:fixed; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:12px; width:min(800px,85vw); padding:0; }
   .settings::backdrop { background:var(--code); opacity:.7; } header { display:flex; justify-content:space-between; align-items:center; padding:12px 24px; border-bottom:1px solid var(--line); } h2 {font-size:18px;}
   .body { display:grid; grid-template-columns:160px 1fr; min-height:400px; } nav {display:flex;flex-direction:column;gap:8px;padding:20px;border-right:1px solid var(--line);} nav button {text-align:left;} [aria-current='page'] {color:var(--accent);border-color:var(--accent);}
-  section { padding:24px; overflow:auto; max-height:65vh; } fieldset {padding:0;border:0;display:grid;gap:16px;} label,.field {display:grid;gap:8px;} p {color:var(--ink-mute);font-size:13px;} pre {white-space:pre-wrap;} a {color:var(--accent);} .actions {display:flex;gap:8px;flex-wrap:wrap;} .confirmation {border:1px solid var(--line);padding:12px;} .invalid {color:var(--focus);}
+  section { padding:24px; overflow:auto; max-height:65vh; } fieldset {padding:0;border:0;display:grid;gap:16px;} label,.field {display:grid;gap:8px;} p {color:var(--ink-mute);font-size:13px;} pre {white-space:pre-wrap;} h3 {font-size:15px;} a {color:var(--accent);} .actions {display:flex;gap:8px;flex-wrap:wrap;} .confirmation {border:1px solid var(--line);padding:12px;} .invalid {color:var(--focus);}
   .version {justify-self:start;background:none;border:0;padding:0;color:var(--ink-mute);font-size:13px;cursor:default;}
 </style>

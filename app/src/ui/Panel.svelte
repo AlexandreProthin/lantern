@@ -6,6 +6,8 @@
   import { askAmber } from './ask-amber';
   import { strings } from './strings';
   import { modelLabel,durationLabel } from './format';
+  import { isEndpointModel } from '../core/models';
+  import { endpointNameOf } from './model-choices.svelte';
   import { childrenOf, pathTo, deleteSubtree, editLabel, revertText, subtreeIds } from '../core/graph';
   import type { GraphNode, Turn } from '../core/model';
   import type { PanelRequest, PanelRoomView, PanelSession, PanelSnippets } from './panel-types';
@@ -35,7 +37,9 @@
     if (target.author?.kind === 'user') return strings.writtenBy(target.author.by);
     if (target.author?.kind !== 'model') return '';
     const author = target.author, generation = visit.log.find(g => g.id === author.generationId);
-    return [modelLabel(author.model), generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
+    // IP-3, CE-52: an endpoint model ignores effort, so the line does not show one.
+    // CE-27: a different name the server answered with is shown beside the model asked for.
+    return [modelLabel(author.model), generation?.servedModel ? strings.servedAs(generation.servedModel) : '', isEndpointModel(author.model) ? '' : generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
   }
   function perform(fn: () => void) { try { fn(); localError = ''; session.touch(); } catch (e) { localError = String(e); } }
   function beginEdit(field: string, target: GraphNode | Turn = node) {
@@ -130,7 +134,9 @@
       {#if !readOnly}<button class="quiet" onclick={() => beginEdit('labels')}>{strings.editLabels}</button>{/if}
     {/if}
     {#if busy && room.tasks.stream.includes(running!.task)}
-      <Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} {preview} />
+      <!-- CE-41: a local model can take a minute before its first words. -->
+      {#if !running!.text && endpointNameOf(visit.model)}<p class="loading-model" role="status">{strings.loadingModel(endpointNameOf(visit.model)!)}</p>
+      {:else}<Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} {preview} />{/if}
       <button onclick={() => session.cancel()}>{strings.cancel}</button>
     {:else if room.dormant(node)}
       {@render placeholder(node, { running, perform })}
@@ -189,7 +195,7 @@
   .state-chip { border:1px solid var(--line);border-radius:8px;padding:2px 6px; }
   .scroll { padding:20px 28px 32px; flex:1; overflow:auto; }
   .crumbs { display:flex; flex-wrap:wrap; align-items:center; gap:5px; min-height:20px; }.crumbs button { font-size:12px; border:0; background:none; padding:2px; }
-  .meta { font-size:11px; color:var(--ink-mute); margin-top:12px; } h1 { font-size:24px; font-weight:600; margin:12px 0; } h2 { font-size:13px; color:var(--ink-mute); font-weight:500; margin:20px 0 10px; }
+  .meta { font-size:11px; color:var(--ink-mute); margin-top:12px; } .loading-model { color:var(--ink-mute); font-style:italic; } h1 { font-size:24px; font-weight:600; margin:12px 0; } h2 { font-size:13px; color:var(--ink-mute); font-weight:500; margin:20px 0 10px; }
   .hook { font-style:italic; color:var(--ink-mute); }.quiet { font-size:11px; background:none; border:0; padding:4px 6px; color:var(--ink-mute); }
   .option { display:grid; text-align:left; width:100%; margin:8px 0; gap:5px; }.option strong { font-weight:500; }.option span,.option small { color:var(--ink-mute); font-size:12px; }
   .actions { display:flex; gap:6px; flex-wrap:wrap; margin:16px 0; }.actions :global(button) { font-size:12px; }

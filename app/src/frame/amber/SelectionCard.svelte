@@ -3,6 +3,7 @@
   import type { RoomVisit } from '../../core/model';
   import { renderMarkdown } from '../../ui/markdown';
   import { strings } from '../../ui/strings';
+  import { errorMessage } from '../../ui/error-message';
   import type { AskAmberDetail } from '../../ui/ask-amber';
   import type { AmberChat } from './chat';
   /** CO-45, NP-54: Amber's answer on a selection, in a card anchored to it; not saved. The same with Amber off. */
@@ -25,7 +26,7 @@
   <q>{detail.text.length > 120 ? detail.text.slice(0, 120) + '…' : detail.text}</q>
   {#if view.turn}<div class="answer" aria-live="polite">{@html renderMarkdown(view.turn.answer, noVisit)}</div>
   {:else if view.pending?.error}
-    <div class="error" role="alert"><strong>{strings.amberFailed}</strong><p>{strings.errorKinds[view.pending.error.kind]}</p>
+    <div class="error" role="alert"><strong>{strings.amberFailed}</strong><p>{errorMessage(view.pending.error)}</p>
       <div class="actions"><button onclick={() => void chat.retry()}>{strings.retry}</button>{#if fixable(view.pending.error.kind)}<button onclick={openSettings}>{strings.settings}</button>{/if}</div></div>
   {:else if view.phase === 'thinking'}<p class="thinking" role="status">{strings.amberThinking}</p>
   {:else if view.pending?.answer}<div class="answer" aria-live="polite">{@html renderMarkdown(view.pending.answer, noVisit)}</div>{/if}

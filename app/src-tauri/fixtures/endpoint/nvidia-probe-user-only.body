@@ -1,0 +1,702 @@
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"The"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" user wants me to"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" act as a patient"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" tutor,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" explain why there are"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" two high tides"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" a day in two"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" short paragraphs, then"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" end with exactly one"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" block containing"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" <options>["},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"..."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"]"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"</options> with three"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" options. Each"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" option needs"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" title, hook,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" kind. Kinds"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" must be from:"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" deeper, application,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" adjacent, exercise."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Three"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" options total"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":".\n\nConstraints:\n-"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Two short paragraphs explaining"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" t"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"ides ("},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"why"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" two high tides"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" a day).\n-"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Then end"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" with exactly one block"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":": <options>["},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"{\"title\": \"..."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\", \"hook\":"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" \"...\", \"kind"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\": \"...\""},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"}]</options>"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n- Three options in"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the array"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":".\n- Kinds"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":": deeper, application"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":", adjacent, exercise"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":". Probably"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" use three"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" distinct kinds or can"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" repeat? It"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" says \"K"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"inds: deeper,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" application, adjacent,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" exercise.\" and"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" \"with three options"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":".\" It"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" doesn't explicitly"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" say they must be"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" distinct, but good"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" to"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" use three different"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" ones or"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" at"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" least valid"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" ones. Let"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"'s use deeper"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":", application, exercise"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" maybe."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Or deeper"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":", adjacent, application"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":". I"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"'ll pick deeper"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":", application, exercise"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" to cover"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" variety"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":".\n\nNeed"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" to make"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" sure the output"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" ends"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" with exactly that"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" block and nothing after"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":". No extra text"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" after"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the block.\n\nContent"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" of"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" explanation:\nParagraph"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" 1: Moon"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"'s gravity pulls on"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Earth, creating bul"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"ge"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" on side facing Moon"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":". Also inertia"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"/"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"centrifugal effect"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" creates bulge on"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" opposite side because"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Earth is"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" being pulled toward Moon"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" more than the far"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" side water, leaving"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" water behind ("},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"or the"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Earth-Moon system"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" rotates around a"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" common center of mass"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":", causing outward"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" fl"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"ing)."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" M"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"ention that as"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Earth rotates, locations"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" pass through both"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" bulges.\n\nParagraph"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" 2: The"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Sun also"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" affects tides but"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the main daily"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" rhythm comes"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" from the Moon."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Because Earth rotates through"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" two"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" bulges ("},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"one facing Moon,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" one opposite),"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" most coastal areas experience"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" two high tides"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" roughly every 2"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"4 hours and"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" 50 minutes ("},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"lunar day),"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" not exactly 2"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"4 hours,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" because the Moon moves"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" in its orbit."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n\nKeep it patient,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" simple, short paragraphs"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":".\n\nThen"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the options"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" block."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Must"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" be exactly one block"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":". Format:"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n<options>["},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"{\"title\": \"..."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\", \"hook\": \"...\", \"kind"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\": \"deeper"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\"}, {\"title\": \"...\", \"hook"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\": \"...\", \"kind\": \"application\"}, {\"title\":"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" \"...\", \"hook\": \"...\", \""},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"kind\": \"exercise\"}]"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"</options>\n\nNeed to ensure valid JSON-like"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" structure inside."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" No"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" trailing commas."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n\nLet's draft titles"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"/hooks"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":":\n1. deeper"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":": \"The"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Far"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"-S"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"ide Bulge\""},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" hook"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":": \"Why does"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" water pile up on"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the side of Earth"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" opposite the Moon?\""},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n2. application:"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" \"Spring and Ne"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"ap Tides\""},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" hook: \"How"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" do the Sun and"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Moon align to create"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" extra-high or extra"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"-low tides?\""},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n3. exercise:"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" \"Track Your Local"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Tide\" hook"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":": \"Can"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" you find"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" today"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"'s"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" high tide times and"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" see if they match"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the lunar day?\""},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n\nMake sure the"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" block is exactly one"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" and at"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the end."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" No markdown code f"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"ences unless necessary"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"? The user said"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" \"end with exactly"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" one block:"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" <options>..."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"</options>\". So"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" just"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" output that raw"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n\nCheck paragraph"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" count: two short"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" paragraphs. Then"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" newline"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":","},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" then block."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" That"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" should be"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" fine.\n\nLet's"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" write.\n\nParagraph"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" 1:"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" The Moon’s gravity"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" pulls on Earth’s"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" oceans, creating"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" a bulge of"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" water on the side"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" facing the Moon."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" On the opposite side"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":", Earth"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" is pulled"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" toward"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the Moon slightly more"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" than the far"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"‑"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"side water is,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" so that water is"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" “"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"left behind,”"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" forming a"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" second bulge."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" You can think of"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" it as one"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" bul"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"ge from direct"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" pull"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" and another from inertia"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" as"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Earth"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" and the"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" Moon swing around their"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" shared"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" center of mass."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n\nParagraph 2:"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" As Earth spins,"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" a given coastline"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" rotates"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" through both bul"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"ges, so it"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" usually meets"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" two high tides"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" each day. Because"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the Moon also"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" moves in its orbit"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":", the cycle repeats"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" about every 2"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"4 hours and"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" 50 minutes—a"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" lunar day—"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"rather than exactly every"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" 24 hours"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":". The Sun changes"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the size"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" of the"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" tides, but"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" the twice"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"‑daily pattern"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" mainly"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" comes from the Moon"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"’s two bulges"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":".\n\nThat"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"'s two paragraphs"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"\n\nNow options block"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":".\n\nNeed to ensure"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" exactly"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" one block and"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":" nothing after. Let"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"'s produce final answer"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"The Moon","role":"assistant","reasoning_content":"."},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"’s gravity pulls on","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" Earth’s oceans,","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" creating a bulge","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" of water on the","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" side facing the Moon","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":". On the opposite","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" side, Earth is","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" pulled toward the Moon","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" slightly more than the","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" far‑side water","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" is, so that","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" water is effectively","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" “left behind,”","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" forming a second bul","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"ge. You can","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" think of one","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" bulge as","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" caused by direct gravitational","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" pull and the other","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" by inertia as Earth","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" and the Moon swing","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" around their shared center","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" of mass.\n\nAs","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" Earth spins, a","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" given coastline rotates through","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" both bulges,","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" so it usually meets","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" two high tides","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" each day. Because","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" the Moon also moves","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" in its orbit,","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" the cycle repeats about","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" every 24","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" hours and 5","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"0 minutes—a lunar","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" day—rather than","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" exactly every 2","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"4 hours. The","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" Sun changes the size","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" of the tides","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":", but the twice","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"‑daily pattern","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" mainly comes from the","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" Moon’s two bul","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"ges.\n\n<options","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":">[{\"title\":","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" \"The Far‑","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"Side Bulge\",","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" \"hook\": \"","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"Why does water pile","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" up on the side","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" of Earth opposite the","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" Moon?\", \"kind","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"\": \"deeper","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"\"}, {\"title\":","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" \"Spring and Ne","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"ap Tides\",","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" \"hook\": \"","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"How do the Sun","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" and Moon align to","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" create extra‑high","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" or extra‑low","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" tides?\", \"","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"kind\": \"application","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"\"}, {\"title\":","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" \"Track Your Local","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" Tide\", \"","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"hook\": \"Can","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" you find today’s","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" high tide times and","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" see if they match","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" the lunar day?\",","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":" \"kind\": \"","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"exercise\"}]","role":"assistant"},"finish_reason":null,"logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[{"index":0,"delta":{"content":"</options>","role":"assistant"},"finish_reason":"stop","logprobs":null}],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":null}
+
+data: {"id":"chatcmpl-15722602-55f3-4221-862d-f2bcd92d341b","choices":[],"created":1792272626,"model":"private/nvidia/nemotron-3.5-super-120b-a12b","service_tier":null,"system_fingerprint":null,"object":"chat.completion.chunk","usage":{"prompt_tokens":95,"completion_tokens":1166,"total_tokens":1261,"prompt_tokens_details":{"audio_tokens":null,"cached_tokens":0},"completion_tokens_details":{"accepted_prediction_tokens":null,"audio_tokens":null,"reasoning_tokens":866,"rejected_prediction_tokens":null}}}
+
+data: [DONE]
+

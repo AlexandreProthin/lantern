@@ -11,11 +11,14 @@ import type { CellEntry, Recommendation } from './protocol';
 import { fillTarget } from './context';
 import type { Slot } from './context';
 import { taskPrompt } from './prompts';
+import { fitPrompt } from '../../frame/context-fit';
+import { contextSizeOf } from '../../ui/model-choices.svelte';
 
 /** One call in flight: the main lane (LR-40) or the research lane (CP-41). `progress` is the last tool use (IP-13). */
 export interface Running { nodeId: string; task: Task; text: string; web: boolean; progress: ToolUse | null; controller: AbortController }
 export interface Research extends Running { slots: Slot[] }
-export interface SessionNotice { nodeId: string; kind: 'directions' | 'error'; count?: number; error?: ProviderError; retry: () => Promise<void> }
+/** `web`: the failed call was a research call, which runs on Claude Code (CE-55). */
+export interface SessionNotice { nodeId: string; kind: 'directions' | 'error'; count?: number; error?: ProviderError; web?: boolean; retry: () => Promise<void> }
 /** CP-30.4: a need the model offered to record; the user adds or ignores it. */
 export interface NeedOffer { nodeId: string; question: string; answer: string }
 export interface RunOptions { message?: string; turn?: number; cell?: Slot; retry?: boolean }
@@ -119,12 +122,13 @@ export class ChooseSession {
   /** The shared call: stream, log every outcome (LR-3, DM-32), apply on a copy and swap it in (LR-1). */
   private async call(lane: Running, current: () => boolean, apply: (result: Completion, next: RoomVisit, generationId: string) => void, retry: () => Promise<void>, extra: { turn?: number; target?: Slot[] } = {}): Promise<void> {
     const v = this.visit, id = lane.nodeId, generationId = newId(), startedAt = now(), started = performance.now(), tone = toneOf(v);
-    const prompts = taskPrompt(v, lane.task, id, { budgetTokens: this.budgetTokens, today: this.today(), web: lane.web, ...extra });
+    // CE-31: on an endpoint model the map also fits the model's context size (research runs on Claude Code, CE-55).
+    const prompts = fitPrompt(budgetTokens => taskPrompt(v, lane.task, id, { budgetTokens, today: this.today(), web: lane.web, ...extra }), this.budgetTokens, lane.web ? undefined : contextSizeOf(v.model));
     let raw = '';
-    const record = (r: { model: string; usage: Generation['usage']; durationMs: number; costUsd?: number; toolCalls?: Record<string, number> }, outcome: Generation['outcome']): Generation => ({
+    const record = (r: { model: string; usage: Generation['usage']; durationMs: number; costUsd?: number; toolCalls?: Record<string, number>; servedModel?: string }, outcome: Generation['outcome']): Generation => ({
       id: generationId, nodeId: id, task: lane.task, effort: v.effort, model: r.model || 'unknown', promptVersion: prompts.promptVersion, startedAt,
       durationMs: r.durationMs || Math.round(performance.now() - started), usage: r.usage ?? zeroUsage(), ...(r.costUsd !== undefined ? { costUsd: r.costUsd } : {}),
-      ...(r.toolCalls && Object.keys(r.toolCalls).length ? { toolCalls: r.toolCalls } : {}), outcome, data: { tone, web: lane.web } });
+      ...(r.toolCalls && Object.keys(r.toolCalls).length ? { toolCalls: r.toolCalls } : {}), ...(r.servedModel ? { servedModel: r.servedModel } : {}), outcome, data: { tone, web: lane.web } });
     try {
       const result = await this.provider.stream({ requestId: generationId, system: prompts.system, prompt: prompts.prompt, model: v.model, effort: v.effort, web: lane.web, cancel: lane.controller.signal },
         chunk => { raw += chunk; if (current() && !lane.controller.signal.aborted) { lane.text = visibleText(raw); this.render(); } },
@@ -138,7 +142,7 @@ export class ChooseSession {
     } catch (e) {
       const error = e instanceof ProviderError ? e : new ProviderError('protocol', String(e));
       this.visit.log.push(record(error, error.kind === 'cancelled' ? 'cancelled' : 'error'));
-      if (error.kind !== 'cancelled') this.notice = { nodeId: id, kind: 'error', error, retry };
+      if (error.kind !== 'cancelled') this.notice = { nodeId: id, kind: 'error', error, retry, ...(lane.web ? { web: true } : {}) };
     }
   }
 

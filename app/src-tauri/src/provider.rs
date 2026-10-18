@@ -4,6 +4,8 @@ use std::{collections::BTreeMap, io::{BufRead, BufReader, Read, Write}, path::Pa
     sync::{Arc, atomic::{AtomicBool, Ordering}, mpsc}, time::{Duration, Instant}};
 mod stream;
 mod process;
+pub mod endpoint;
+pub mod keys;
 pub mod commands;
 pub use stream::StreamParser;
 /// IP-6: tool uses per tool name, absent when the call used none.
@@ -14,11 +16,17 @@ pub type ToolCalls = Option<BTreeMap<String, u64>>;
 pub struct Usage { pub input: u64, pub output: u64, pub thinking: u64, pub cache_read: u64, pub cache_write: u64 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
-pub enum ErrorKind { NotInstalled, NotLoggedIn, UsageLimit, ModelUnknown, Network, ProcessCrashed, Protocol, Cancelled }
+pub enum ErrorKind { NotInstalled, NotLoggedIn, UsageLimit, ModelUnknown, Network, ProcessCrashed, Protocol, Cancelled,
+    /// CE-40: endpoints only.
+    Unreachable, KeyRejected, ContextTooLong }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Completion { pub text: String, pub model: String, pub usage: Usage, pub duration_ms: u64,
-    pub cost_usd: Option<f64>, #[serde(skip_serializing_if = "Option::is_none")] pub tool_calls: ToolCalls, pub outcome: String, pub resolved_effort: Option<String> }
+    pub cost_usd: Option<f64>, #[serde(skip_serializing_if = "Option::is_none")] pub tool_calls: ToolCalls, pub outcome: String, pub resolved_effort: Option<String>,
+    /// CE-50: the usage is Lantern's estimate, the server reported none (endpoints only).
+    #[serde(default, skip_serializing_if = "Option::is_none")] pub usage_estimated: Option<bool>,
+    /// CE-27: the name the server answered with, when it is not the model asked for (endpoints only).
+    #[serde(default, skip_serializing_if = "Option::is_none")] pub served_model: Option<String> }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProviderError { pub kind: ErrorKind, pub details: String, pub model: String, pub usage: Usage, pub duration_ms: u64,

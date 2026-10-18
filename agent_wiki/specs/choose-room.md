@@ -4,7 +4,7 @@ title: Choose room
 description: The second room - from knowing nothing about a kind of product to a reasoned choice - its spaces, node kinds and states, decision board, needs, research with sources, and accent.
 tags: [rooms, choose, buying, decision]
 status: stable
-generated: { by: claude-code/opus-5.5, at: 2026-10-12T22:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:00:00Z }
 verified: { by: "human:alex", at: 2026-10-15T17:00:00Z }
 ---
 
@@ -174,7 +174,7 @@ DM-4).
 
 # Research and sources
 
-- **CR-40** Product facts go stale and the model's knowledge stops at its training date, so the room
+- **CR-40** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) The research tasks run on a CLI provider with web tools, Claude Code now and Codex later, whatever the subject's model; Choose's other tasks follow the subject's model. With no such CLI installed, Choose says research needs one, CE-55.)* Product facts go stale and the model's knowledge stops at its training date, so the room
   MAY use **web search and page fetching** (q-buy-web, option b), with no other tool and no file
   access. Tasks that may search (q-r6-web-tasks): finding products and families, product facts
   (specs, known issues, firmware, ecosystem), a price idea (a range at a date, with where it was

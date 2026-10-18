@@ -1,9 +1,16 @@
 import { invoke, Channel } from '@tauri-apps/api/core';
 import type { Effort, Usage } from '../core/model';
-export type ErrorKind = 'not-installed' | 'not-logged-in' | 'usage-limit' | 'model-unknown' | 'network' | 'process-crashed' | 'protocol' | 'cancelled';
+import type { WireEndpoint } from './endpoints';
+export type ErrorKind = 'not-installed' | 'not-logged-in' | 'usage-limit' | 'model-unknown' | 'network' | 'process-crashed' | 'protocol' | 'cancelled'
+  /** CE-40: endpoints only. */
+  | 'unreachable' | 'key-rejected' | 'context-too-long';
 /** IP-6: tool uses per tool name, absent when the call used none. */
 export type ToolCalls = Record<string, number>;
-export interface Completion { text: string; model: string; usage: Usage; durationMs: number; costUsd?: number; toolCalls?: ToolCalls; outcome: 'ok' | 'cancelled' | 'error'; resolvedEffort?: Effort }
+export interface Completion { text: string; model: string; usage: Usage; durationMs: number; costUsd?: number; toolCalls?: ToolCalls; outcome: 'ok' | 'cancelled' | 'error'; resolvedEffort?: Effort;
+  /** CE-50: the server reported no usage; the figures are Lantern's estimate. */
+  usageEstimated?: boolean;
+  /** CE-27: the name the server answered with, when it differs from the model asked for (endpoints only). */
+  servedModel?: string }
 /** IP-1: `web` allows WebSearch and WebFetch only; absent means no tool at all. */
 export interface Request { requestId: string; system: string; prompt: string; model?: string; effort?: Effort; web?: boolean; cancel: AbortSignal }
 /** IP-13: the search query for WebSearch, the page's host for WebFetch. */
@@ -35,8 +42,13 @@ export class HeldProvider implements InferenceProvider {
     return this.inner.stream(request, onText, onTool);
   }
 }
-export class DesktopProvider implements InferenceProvider {
-  async stream(request: Request, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void): Promise<Completion> {
+/** CE-11: how an endpoint call reaches Rust (or the fake, IP-71). */
+export interface EndpointTransport { streamEndpoint(request: Request, endpoint: WireEndpoint, onText: (chunk: string) => void): Promise<Completion> }
+export class DesktopProvider implements InferenceProvider, EndpointTransport {
+  stream(request: Request, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void): Promise<Completion> { return this.call(request, null, onText, onTool); }
+  streamEndpoint(request: Request, endpoint: WireEndpoint, onText: (chunk: string) => void): Promise<Completion> { return this.call(request, endpoint, onText); }
+  /** A Claude Code call sends exactly the arguments it always did; an endpoint call adds `endpoint` (CE-2). */
+  private async call(request: Request, endpoint: WireEndpoint | null, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void): Promise<Completion> {
     if (request.cancel.aborted) throw new ProviderError('cancelled', '');
     const channel = new Channel<{ requestId: string; text?: string; tool?: ToolUse }>();
     channel.onmessage = event => {
@@ -46,7 +58,8 @@ export class DesktopProvider implements InferenceProvider {
     const cancel = () => { invoke('cancel_generation', { requestId: request.requestId }).catch(() => {}); };
     request.cancel.addEventListener('abort', cancel, { once: true });
     try {
-      return await invoke<Completion>('generate', { request: { requestId: request.requestId, system: request.system, prompt: request.prompt, model: request.model ?? null, effort: request.effort ?? null, web: request.web ?? false }, channel });
+      const args = { request: { requestId: request.requestId, system: request.system, prompt: request.prompt, model: request.model ?? null, effort: request.effort ?? null, web: request.web ?? false }, channel };
+      return await invoke<Completion>('generate', endpoint ? { ...args, endpoint } : args);
     } catch (e) {
       const error = e as { kind?: ErrorKind; details?: string; model?: string; usage?: Usage; durationMs?: number; toolCalls?: ToolCalls };
       throw new ProviderError(error.kind ?? 'process-crashed', error.details ?? String(e), error.model, error.usage, error.durationMs, error.toolCalls);

@@ -8,16 +8,21 @@ export interface AmberLogRecord {
   /** The category the reply named; a missing or broken tag reads `general` and sets `tagOk` false (CO-42). */
   category: AmberCategory | null; tagOk: boolean;
   usage: Usage; durationMs: number; costUsd?: number; outcome: 'ok' | 'cancelled' | 'error'; errorKind?: string;
+  /** CE-27: the endpoint answered with another model name than `model`. */
+  servedModel?: string;
 }
-export interface AmberTotals { input: number; output: number; calls: number }
+/** `models` (CE-53): per resolved model, so the panel can tell local tokens from Claude's. */
+export interface AmberTotals { input: number; output: number; calls: number; models?: Record<string, { input: number; output: number }> }
 export const zeroTotals = (): AmberTotals => ({ input: 0, output: 0, calls: 0 });
 
 /** Sums what *Settings → Companion* shows, counted as a subject's tokens are (input and output); a record without usable numbers counts as a call with no tokens. */
 export function totalsOf(records: readonly unknown[]): AmberTotals {
   const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 0;
   return records.reduce<AmberTotals>((t, r) => {
-    const usage = (r as { usage?: Partial<Usage> } | null)?.usage ?? {};
-    return { input: t.input + num(usage.input), output: t.output + num(usage.output), calls: t.calls + 1 };
+    const usage = (r as { usage?: Partial<Usage> } | null)?.usage ?? {}, model = (r as { model?: unknown } | null)?.model;
+    const next: AmberTotals = { input: t.input + num(usage.input), output: t.output + num(usage.output), calls: t.calls + 1, ...(t.models ? { models: t.models } : {}) };
+    if (typeof model === 'string') { const m = { ...(next.models ?? {}) }; m[model] = { input: (m[model]?.input ?? 0) + num(usage.input), output: (m[model]?.output ?? 0) + num(usage.output) }; next.models = m; }
+    return next;
   }, zeroTotals());
 }
 

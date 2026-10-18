@@ -14,7 +14,19 @@ export const MODELS: readonly { id: string; label: string }[] = [
 ];
 export const isListedModel = (id: string) => MODELS.some(m => m.id === id);
 /** Same rule as provider.defaultModel (settings catalogue). */
-export const isValidModel = (id: string) => /^[A-Za-z0-9._:-]{1,100}$/.test(id);
+/** `/` is allowed for endpoint ids such as `nvidia:google/gemma-…` (settings, amended 2026-10-17). */
+export const isValidModel = (id: string) => /^[A-Za-z0-9._:/-]{1,100}$/.test(id);
+/** CE-23: an endpoint model is `<endpointId>:<model>`, split at the first `:` (Ollama tags hold `:` too). Claude Code ids have no `:`. */
+export function parseModelId(id: string): { endpointId: string | null; model: string } {
+  const at = id.indexOf(':');
+  return at > 0 ? { endpointId: id.slice(0, at), model: id.slice(at + 1) } : { endpointId: null, model: id };
+}
+export const isEndpointModel = (id: string) => parseModelId(id).endpointId !== null;
+/** CE-22, CE-25: *Ollama · gemma4:e2b* for an endpoint model, `modelName` for a Claude Code one. */
+export function displayModel(id: string, endpointNames: Readonly<Record<string, string>> = {}): string {
+  const { endpointId, model } = parseModelId(id);
+  return endpointId === null ? modelName(id) : `${endpointNames[endpointId] ?? endpointId} · ${model}`;
+}
 
 /** Display name of a stored or resolved id; the stored value is never rewritten. */
 export function modelName(id: string): string {

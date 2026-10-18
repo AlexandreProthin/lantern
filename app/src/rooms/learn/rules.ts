@@ -67,5 +67,5 @@ export function learnSummary(s: VisitSummary) {
   return { total: count('open') + count('lit') + count('understood'), lit: count('lit') + count('understood'), dark: count('open'),
     understood: count('understood'), demonstrated: by.demonstrated ?? 0, self: by.self ?? 0,
     tone: s.data.tone as Tone | undefined, input: s.input, output: s.output, tokens: s.tokens, mainModel: s.mainModel,
-    modelOutputs: s.modelOutputs, generations: s.generations };
+    modelOutputs: s.modelOutputs, modelInputs: s.modelInputs, generations: s.generations };
 }

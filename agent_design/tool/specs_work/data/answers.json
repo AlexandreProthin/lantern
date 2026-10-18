@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "revision": 33,
-  "saved_at": "2026-10-16T21:49:22.545730+00:00",
+  "revision": 37,
+  "saved_at": "2026-10-17T15:11:09.466455+00:00",
   "answers": {
     "q-poc-off": {
       "notes": "missing: \n- node content author (model name who wrote it, thinking effort if available + user name if he edited it), this i a node metadata like the state (\"LIT\", ...) tag\n- token count as generation go (to know how many the graph cost to reach a given state)\n- side pannel need to be resizable\n- generation time i am ok to wait no a constraint here (keep the live stream as tokens arrive)\n- Exactly 3 options is too restrictive: i want to be able to dismiss one, ask for others, or add my own\n- i want a way to edit/correct a node content (to influence, orient or adjust the next one generation context), will be handy in case the model halucinate wrong/false info\n- delete or regenerate a node and a cancel while it streams => yes\n- home screen needs more work to be welcoming, allow edits, see progress ...\n- need the ability to choose/change llm model (even mid session)\n- a room setting pannel (sub menu in the global app setting)\n- a proper prompt engineer pre-prompt and an optimized context managment\n- ctrl + clic multiple node to generate a new node merging the ideas\n- settings pannel: to connect the llm provider (v0.1.0 is focused to work with a claude code subscription plan but later codex or other provider even api key suport, when implemented we will have a focus on security here (probably nex version))\nLantern is like Prism, the lantern app (will) have multiple room to do different things. Each room can have multiple spaces.\nLantern spaces example:\n- learning space (the poc)\n- welcome (landing) space to start a new subject or pick a recent one to continue a previous session (up to 3 most recent session)\n- gallery to browse the knowlege exploration with associated stats ",
@@ -890,6 +890,197 @@
       },
       "updated_at": "2026-10-16T21:49:07.913Z",
       "notes": "the card says static rope but you can animate/physics it "
+    },
+    "q-r10-why": {
+      "choice": [
+        "tokens",
+        "offline",
+        "privacy",
+        "noclaude",
+        "explore",
+        "speed"
+      ],
+      "updated_at": "2026-10-17T14:15:33.032Z",
+      "notes": "also support codex (chat gpt) the same way we did for calude (we could not test this one on this machine as i do not have active codex plan right now"
+    },
+    "q-r10-anything": {
+      "notes": "Special care about the safety when using api keys (user give it using the app then the app store and use it safely)\n\nIf the incomming changes will break or degrade in any may the current claude based workflow, we discuss about it first ",
+      "updated_at": "2026-10-17T14:22:39.011Z"
+    },
+    "q-r10-shape": {
+      "choice": [
+        "compat"
+      ],
+      "updated_at": "2026-10-17T14:17:42.251Z"
+    },
+    "q-r10-where": {
+      "choice": [
+        "picker"
+      ],
+      "updated_at": "2026-10-17T14:19:11.349Z"
+    },
+    "q-r10-models": {
+      "choice": [
+        "pinned"
+      ],
+      "updated_at": "2026-10-17T14:19:50.999Z"
+    },
+    "q-r10-context": {
+      "choice": [
+        "lantern"
+      ],
+      "updated_at": "2026-10-17T14:21:22.508Z"
+    },
+    "q-r10-web": {
+      "choice": [
+        "hybrid"
+      ],
+      "updated_at": "2026-10-17T14:26:24.195Z",
+      "flag": "discuss",
+      "notes": "can web search be performed using the nvidia api ?\nalso codex should support it i guess"
+    },
+    "q-r10-quality": {
+      "choice": [
+        "any"
+      ],
+      "updated_at": "2026-10-17T14:27:13.126Z"
+    },
+    "q-r10-protocol": {
+      "choice": [
+        "keeprepair"
+      ],
+      "updated_at": "2026-10-17T14:30:24.533Z"
+    },
+    "q-r10-keys": {
+      "choice": [
+        "vault"
+      ],
+      "updated_at": "2026-10-17T14:31:09.176Z",
+      "notes": "i want the safest way"
+    },
+    "q-r10-rules": {
+      "choice": [
+        "rust",
+        "https",
+        "lan",
+        "consent",
+        "meta",
+        "test",
+        "noauto",
+        "cliopt"
+      ],
+      "updated_at": "2026-10-17T14:35:15.933Z",
+      "notes": "Each endpoint has its own *Test*: we can test one model at a time (especially needed for nvidia end point, too many models)"
+    },
+    "q-r10-errors": {
+      "choice": [
+        "ctx",
+        "unreach",
+        "auth",
+        "model",
+        "rate",
+        "load"
+      ],
+      "updated_at": "2026-10-17T14:35:36.084Z"
+    },
+    "q-r10-usage": {
+      "choice": [
+        "std"
+      ],
+      "updated_at": "2026-10-17T14:35:54.735Z"
+    },
+    "q-r10-scope": {
+      "placement": {
+        "provider": "local",
+        "settings": "local",
+        "pickers": "local",
+        "ollama": "local",
+        "llamacpp": "local",
+        "lmstudio": "local",
+        "custom": "local",
+        "keys": "cloud",
+        "nvidia": "cloud",
+        "clouds": "later",
+        "anthropic": "later",
+        "amber": "local",
+        "evals": "later",
+        "repair": "later",
+        "pertask": "later",
+        "webtools": "later",
+        "checkbtn": "local"
+      },
+      "updated_at": "2026-10-17T14:39:54.413Z",
+      "notes": "confirm my placement makes sense"
+    },
+    "q-r10-version": {
+      "choice": [
+        "split"
+      ],
+      "updated_at": "2026-10-17T14:40:46.975Z"
+    },
+    "q-r10-setup": {
+      "notes": "local gemma4, nvidia gemma4 first then maybe other",
+      "updated_at": "2026-10-17T14:41:44.965Z"
+    },
+    "q-r11-claude": {
+      "choice": [
+        "group",
+        "tokens",
+        "banner"
+      ],
+      "updated_at": "2026-10-17T14:57:39.319Z",
+      "notes": "protocol repair call for later (if ever needed)"
+    },
+    "q-r11-protocol": {
+      "choice": [
+        "keep"
+      ],
+      "updated_at": "2026-10-17T14:58:45.007Z"
+    },
+    "q-r11-ollama": {
+      "choice": [
+        "native"
+      ],
+      "updated_at": "2026-10-17T14:59:39.390Z"
+    },
+    "q-r11-web": {
+      "choice": [
+        "cli"
+      ],
+      "updated_at": "2026-10-17T15:01:12.615Z",
+      "notes": "at some point but later we will bring Lantern's own web tools"
+    },
+    "q-r11-codex": {
+      "choice": [
+        "own"
+      ],
+      "updated_at": "2026-10-17T15:05:39.080Z"
+    },
+    "q-r11-check": {
+      "choice": [
+        "later"
+      ],
+      "updated_at": "2026-10-17T15:06:14.958Z"
+    },
+    "q-r11-keys": {
+      "choice": [
+        "confirm",
+        "remove",
+        "memory",
+        "redact",
+        "https",
+        "noreturn",
+        "store"
+      ],
+      "updated_at": "2026-10-17T15:07:33.877Z"
+    },
+    "q-r11-hardware": {
+      "notes": "Gemma4 E4B Q4 on ollama. i will handle the setup and make ollama serves it. I may experiment with other models.",
+      "updated_at": "2026-10-17T15:09:15.982Z"
+    },
+    "q-r11-anything": {
+      "notes": "This work is for now in a worktree. at some point i will decide the implementation to be good enought, at this point we will move it to a dedicated feature branch to end the job there. I decide when to merge this branch into master",
+      "updated_at": "2026-10-17T15:11:06.470Z"
     }
   }
 }
