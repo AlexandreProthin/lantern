@@ -294,6 +294,11 @@ The local plan's rules hold. In particular:
   `package-lock.json`, `Cargo.toml`, `Cargo.lock` and `tauri.conf.json`; the app README names
   `ACCEPTANCE-ENDPOINTS.md` and `ACCEPTANCE-CLOUD.md`. Next, on the user's word: the signed installer, the update
   launch over v0.4.0, the tag and the release, then the root README and roadmap at v0.5.0.
+- **Released 2026-10-18**: the user signed the installer. `master` was pushed with tag `v0.5.0`, and the GitHub release
+  has `Lantern_0.5.0_x64-setup.exe` and `latest.json`. The repository is public, so installed v0.4.0 copies update
+  through the GitHub channel. No local update folder was filled, and the update launch over v0.4.0 was not
+  checked before the release. The README and roadmap are at v0.5.0.
+  **Slice 6 done; the cloud plan is complete.**
 
 # Risks to retire early
 

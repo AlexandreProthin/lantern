@@ -11,7 +11,7 @@
 
 A desktop workspace for thinking with an AI, not just asking it things.
 
-![version](https://img.shields.io/badge/version-0.4.0-e8913a) ![platform](https://img.shields.io/badge/platform-Windows-2b3a55) ![Tauri 2](https://img.shields.io/badge/Tauri-2-24c8db) ![Svelte 5](https://img.shields.io/badge/Svelte-5-ff3e00)
+![version](https://img.shields.io/badge/version-0.5.0-e8913a) ![platform](https://img.shields.io/badge/platform-Windows-2b3a55) ![Tauri 2](https://img.shields.io/badge/Tauri-2-24c8db) ![Svelte 5](https://img.shields.io/badge/Svelte-5-ff3e00)
 
 **[Try the Learn room in your browser →](https://alexandreprothin.github.io/lantern/)**<br>
 <sub>A free web demo with prepared answers: no sign-in, nothing leaves your browser.</sub>
@@ -100,6 +100,7 @@ Built with **Tauri 2** (Rust) and **Svelte 5 + TypeScript**, the same stack as
 
 ## Releases
 
+- **v0.5.0** (2026-10-18): custom endpoints, local servers such as Ollama and NVIDIA's cloud, beside Claude Code.
 - **v0.4.0** (2026-10-17): Amber, the companion, and a new top bar.
 - **v0.3.0** (2026-10-16): the Choose room.
 - **v0.2.0** (2026-10-14): a room-generic frame; subjects move to the `lantern/2` format.
@@ -113,7 +114,8 @@ Built with **Tauri 2** (Rust) and **Svelte 5 + TypeScript**, the same stack as
 - **Specs**: [`agent_wiki/specs/`](agent_wiki/specs/index.md), worked out in the
   [spec workshop](agent_design/tool/specs_work/README.md).
 - **Plans**: [v0.1.0](agent_wiki/plans/v0-1-0.md) to [v0.1.2](agent_wiki/plans/v0-1-2.md),
-  [v0.2.0](agent_wiki/plans/v0-2-0.md), [v0.4.0](agent_wiki/plans/v0-4-0.md);
+  [v0.2.0](agent_wiki/plans/v0-2-0.md), [v0.4.0](agent_wiki/plans/v0-4-0.md),
+  custom endpoints [local](agent_wiki/plans/custom-endpoints-local.md) and [cloud](agent_wiki/plans/custom-endpoints-cloud.md) (v0.5.0);
   agreed but unscheduled work in the [backlog](agent_wiki/plans/backlog.md).
 - **Proof of concept**: kept at the `poc-final` tag (`git show poc-final:poc/README.md`).
 

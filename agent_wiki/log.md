@@ -2,6 +2,7 @@
 
 ## 2026-10-18
 
+* **v0.5.0 released**: custom endpoints, local and cloud. Tag `v0.5.0`, GitHub release with the signed installer and `latest.json`; v0.4.0 updates to it through GitHub. README and roadmap at v0.5.0 ([plan](/plans/custom-endpoints-cloud.md)).
 * **v0.5.0 prepared**: custom endpoints (local and cloud) merged into `master`, and the version bumped to 0.5.0. Next: the user builds and signs the installer, checks the update launch over v0.4.0, then tags and releases ([plan](/plans/custom-endpoints-cloud.md)).
 * **Custom endpoints, cloud accepted**: the user ran `app/ACCEPTANCE-CLOUD.md` (23 of 23) and the key search (*not found*) in a preview installer, with no regression. Long *Details* text now wraps. Version 0.5.0 for local and cloud together; the branch merges into `master` ([plan](/plans/custom-endpoints-cloud.md)).
 * **Custom endpoints, cloud slice 4 done**: NVIDIA's and other cloud endpoints' tokens count with Claude, while local and LAN endpoints stay *local* (CE-53). A rate limit names the wait when NVIDIA sends `Retry-After`. Slices 5 and 6 need the user (a real key in the desktop build, then the release) ([plan](/plans/custom-endpoints-cloud.md)).
