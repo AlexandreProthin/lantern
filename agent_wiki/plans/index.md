@@ -19,5 +19,5 @@ below except the roadmap, the backlog and the network plan has landed and is `de
 * [Web demo plan](web-demo.md) - The Learn room as a free public demo on GitHub Pages; deployed 2026-10-18.
 * [Custom endpoints plan, local version](custom-endpoints-local.md) - The endpoint provider in Rust with Ollama's native chat, routing by model id, Settings → Endpoints, grouped pickers, context windows, the local token line, new errors; the Claude Code path unchanged.
 * [Custom endpoints plan, cloud version](custom-endpoints-cloud.md) - API keys in Windows Credential Manager, the NVIDIA preset, consent, cloud tokens with Claude, real use on NVIDIA; then one release for local and cloud.
-* [Serve over the network plan](serve-over-network.md) - A Settings toggle serving Lantern over HTTPS on the LAN: QR pairing, use-not-administer rights, self-signed certificate, phone layout.
+* [Serve over the network plan](serve-over-network.md) - A Settings toggle serving Lantern over HTTPS on the LAN: QR pairing, use-not-administer rights, self-signed certificate, phone layout. Built 2026-10-23; waits for the user's try on a phone.
 * [Backlog](backlog.md) - Agreed future work with no version yet: custom endpoints' later pieces, local models for Amber, more rooms, export, regenerate, a cheaper model for cheap tasks.

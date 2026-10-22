@@ -27,3 +27,4 @@ Stable specs from the spec workshop, rounds 1–3 (2026-10-01/02), agreed with t
 * [Choose protocol](choose-protocol.md) - Choose's data under lantern/2, the choose-1 prompts and blocks, context with needs and board, evals (B2).
 * [Companion](companion.md) - Amber, the identity's little lantern in the app: placement and moving, tips, guide, Ask Amber, gestures, calm; optional (workshop rounds 8–9, agreed 2026-10-16).
 * [Custom endpoints](custom-endpoints.md) - One OpenAI-compatible provider for local servers, then cloud APIs with keys; the Claude Code path unchanged (rounds 10–11, agreed 2026-10-17).
+* [Serve over the network](network-serving.md) - A Settings toggle serving Lantern over HTTPS on the LAN: self-signed certificate, QR pairing, use-not-administer rights, phone layout (decided 2026-10-22).

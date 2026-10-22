@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-10-23
+
+* **Serve over the network, built** (branch `worktree-serve-over-network`): a *Settings → Network* toggle serves Lantern over HTTPS on the LAN with a self-signed certificate; a phone pairs by QR code and keeps a device cookie; remote devices can use but not administer; a phone layout below 720 px. New spec [network-serving](/specs/network-serving.md) (NW-1..43, as landed) and component [network server](/components/network-server.md); [settings](/specs/settings.md) SE-8 and [platform-quality](/specs/platform-quality.md) PQ-5 added; [plan](/plans/serve-over-network.md) and [roadmap](/plans/roadmap.md) updated. 74 Rust, 224 TS, Playwright 103 passed; live checks against the debug app passed. Waits for the user's try on a phone before the merge.
+
 ## 2026-10-22
 
 * **The *not installed* banner can be closed**: the frame banner gains *Close*, which hides it until the next launch and lets Amber's greeting show; *not signed in* stays as it was ([settings](/specs/settings.md) SE-47). Playwright test added in `settings.spec.ts`.

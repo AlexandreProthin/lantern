@@ -26,7 +26,7 @@ Decided with the user (2026-10-22):
 
 ```
 phone / other PC (browser)           desktop app (Tauri)
-  same Svelte build ── HTTPS ──▶   Rust server (axum on hyper + tokio-rustls, ring)
+  same Svelte build ── HTTPS ──▶   Rust server (hyper + tokio-rustls, ring)
   ipc.ts: invoke → POST /api/…           │  same functions the Tauri commands call
   Channel → NDJSON stream                │  library, keys, Claude CLI, endpoints
                                          ▼
@@ -123,6 +123,15 @@ phone / other PC (browser)           desktop app (Tauri)
    the app in the built-in browser at phone width, against the running server.
 7. **Wiki**: a component page, the specs touched (settings, platform quality), the roadmap.
 8. **The user tries it** on the phone and the other PC. Then merge, on the user's word.
+
+Progress (2026-10-23): steps 2 to 7 are done on the branch. The requirements as landed are in the spec
+[network-serving](/specs/network-serving.md) (hyper rather than axum; the phone layout as built, with a
+two-row top bar, a node sheet with *Details* and *‹ Graph*, and a long press for the node menu); the code
+is described in [network server](/components/network-server.md). Checks: 74 Rust tests, 224 TS tests,
+`npm run check` clean, Playwright 103 passed (2 skipped) including the phone spec; the debug app served
+a scratch config and passed the `curl -k` checks (401, 403, library override, settings merge, endpoint
+match, pairing lockout, certificate names, a real streamed generation) and `scripts/live-remote.mjs`.
+Step 8 is next.
 
 # Exit checks
 

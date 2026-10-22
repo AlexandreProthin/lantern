@@ -61,6 +61,8 @@ The last-opened times and the recents list are **not** in this file: they live i
 - **SE-6** Each value MUST be validated on read and on change; an invalid stored value falls back to its default without discarding the others.
 - **SE-7** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) Endpoint API keys live in Windows Credential Manager, CE-70; `provider.endpoints` holds no key.)* The file MUST NOT contain secrets (API keys are Later and get their own spec: [inference-provider](/specs/inference-provider.md), IP-63).
 
+- **SE-8** *(Added 2026-10-23, [network-serving](/specs/network-serving.md).)* Serving over the network is not in `settings.json`: its toggle and port live in `<config>/Lantern/network/config.json`, owned by Rust (NW-1). A remote device's settings save keeps the stored `library`, `provider.endpoints` and `developer` (NW-23).
+
 # Panel
 
 - **SE-10** The panel MUST open from the **gear in the header** and from **Ctrl+,** (table: [graph-view](/specs/graph-view.md) GV-76); Esc closes it. It is an overlay, so the current space stays visible underneath.
