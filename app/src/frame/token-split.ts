@@ -1,4 +1,4 @@
-import { parseModelId } from '../core/models';
+import { CODEX, parseModelId } from '../core/models';
 import { isCloudEndpoint } from './endpoints';
 import { modelChoices } from '../ui/model-choices.svelte';
 import { strings } from '../ui/strings';
@@ -9,10 +9,10 @@ export interface TokenSplit { claude: TokenPair; local: TokenPair }
 /**
  * CE-53, cloud slice 4: a model is local when it runs on an endpoint on this machine or the local network. NVIDIA and
  * other cloud endpoints count with Claude. A record from an endpoint that is no longer set up counts as local, unless
- * its id is a preset's own (`nvidia`, `nvidia-2`).
+ * its id is a preset's own (`nvidia`, `nvidia-2`). CE-58: Codex runs in OpenAI's cloud, so it counts with Claude.
  */
 export function isLocalModel(id: string): boolean {
-  const { endpointId } = parseModelId(id); if (endpointId === null) return false;
+  const { endpointId } = parseModelId(id); if (endpointId === null || endpointId === CODEX) return false;
   const e = modelChoices.endpoints.find(x => x.id === endpointId);
   return e ? !isCloudEndpoint(e) : !/^nvidia(-\d+)?$/.test(endpointId);
 }

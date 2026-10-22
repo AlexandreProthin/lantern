@@ -19,4 +19,5 @@ below except the roadmap and the backlog has landed and is `deprecated`.
 * [Web demo plan](web-demo.md) - The Learn room as a free public demo on GitHub Pages; deployed 2026-10-18.
 * [Custom endpoints plan, local version](custom-endpoints-local.md) - The endpoint provider in Rust with Ollama's native chat, routing by model id, Settings → Endpoints, grouped pickers, context windows, the local token line, new errors; the Claude Code path unchanged.
 * [Custom endpoints plan, cloud version](custom-endpoints-cloud.md) - API keys in Windows Credential Manager, the NVIDIA preset, consent, cloud tokens with Claude, real use on NVIDIA; then one release for local and cloud.
+* [Codex CLI provider](codex-cli.md) - Codex as a second CLI provider (CE-58), built from OpenAI's docs without a plan to test with; what a first real run must check.
 * [Backlog](backlog.md) - Agreed future work with no version yet: custom endpoints' later pieces, local models for Amber, more rooms, export, regenerate, a cheaper model for cheap tasks.

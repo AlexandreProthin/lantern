@@ -164,6 +164,10 @@ planned.
 - **CE-58** **Codex** (the user's round 10 note): a second CLI provider beside Claude Code, using a
   ChatGPT plan (`codex exec --json`), with its own detection, flags, event stream, errors and fixtures.
   It has its own version, scheduled once the user has a Codex plan to test with ([backlog](/plans/backlog.md)).
+  *(Amended 2026-10-22: built on `claude/codex-cli-provider` at the user's request before any Codex plan,
+  from OpenAI's published docs; see the [Codex plan](/plans/codex-cli.md). Models are `codex:<model>`, shown
+  while `provider.codex` is on; Codex runs web calls itself with live search (CE-55) and counts with
+  Claude (CE-53).)*
 
 # Check this model (Later)
 

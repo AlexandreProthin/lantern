@@ -8,6 +8,7 @@
   import { strings } from '../ui/strings';
   import ModelPicker from '../ui/ModelPicker.svelte';
   import EndpointsSettings from './EndpointsSettings.svelte';
+  import CodexSettings from './CodexSettings.svelte';
   import type { FakeEndpointOptions } from './fake-endpoint';
   import type { UpdateController } from './updates.svelte';
   import { REVEAL_CLICKS, revealsDeveloper } from './updates';
@@ -101,6 +102,7 @@
       {#if errorKind==='not-logged-in'}<p>{strings.signinInstructions}</p><button disabled={testing||generating} onclick={test}>{strings.checkAgain}</button>{/if}
       {#if errorKind==='model-unknown'}<button onclick={()=>document.getElementById('default-model')?.focus()}>{strings.chooseModel}</button>{/if}
       {#if details}<details><summary>{strings.details}</summary><pre>{details}</pre><button onclick={()=>navigator.clipboard.writeText(details)}>{strings.copyDetails}</button></details>{/if}
+      <CodexSettings {settings} {changed} {provider} health={endpointHealth.codex} fakeOptions={fakeEndpoint} disabled={generating} />
       <EndpointsSettings {settings} {changed} {provider} health={endpointHealth} fakeOptions={fakeEndpoint} disabled={generating} />
     {:else if roomOf(section)}{@const RoomSettings=roomOf(section)!.settingsMenu}<RoomSettings {settings} {changed} />
     {:else if section==='companion'}

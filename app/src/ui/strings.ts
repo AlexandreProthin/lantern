@@ -120,6 +120,22 @@ export const strings = {
     keyElsewhere: (name: string) => `The API key for ${name} was saved for another address, so Lantern did not send it. Save it again in Settings → Provider → Endpoints.`,
   },
   researchNeedsClaude: 'Research uses the web through Claude Code, which is not installed. The other tasks can run on a local model.',
+  // CE-58: the Codex CLI provider, in Settings → Provider and in failures.
+  codex: {
+    title: 'Codex', use: 'Show Codex models in the model pickers',
+    hint: 'Codex runs OpenAI models with your ChatGPT plan. Subject text you send to a Codex model goes to OpenAI.',
+    install: 'Install Codex', installUrl: 'https://developers.openai.com/codex/cli',
+    installInstructions: 'Install the Codex CLI from OpenAI’s page, then return to Lantern and choose Check again.',
+    signinInstructions: 'Start Codex once outside Lantern and choose Sign in with ChatGPT. Then return here and choose Check again.',
+    errors: {
+      'not-installed': 'Codex is not installed. Install it from Settings → Provider → Codex, or pick another model.',
+      'not-logged-in': 'Codex is not signed in. See Settings → Provider → Codex.',
+      'usage-limit': 'Your ChatGPT usage limit for Codex was reached.',
+      network: 'Could not reach OpenAI through Codex. Check your connection.',
+      'process-crashed': 'Codex stopped unexpectedly.', protocol: 'Codex gave an answer Lantern could not read. Updating Codex may help.',
+    } as Record<string, string>,
+    modelUnknown: (model: string) => `The model “${model}” is not available to your Codex account.`,
+  },
   amberLocalWait: (name: string) => `${name} may take a minute to load the model.`,
   loadingModel: (name: string) => `${name} is loading the model and reading the prompt. A local model can take a minute.`, endpointReady: (model: string, seconds: number) => `Ready · ${model} · ${seconds} s`, notEvaluated: 'not evaluated'
   , changeLibrary:'Browse…', applyLibrary:'Apply path', revealLibrary:'Reveal library in Explorer', appVersion:(version:string)=>`Lantern ${version}`,

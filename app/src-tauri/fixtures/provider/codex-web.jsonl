@@ -1,0 +1,11 @@
+{"type":"thread.started","thread_id":"0199a213-81c0-7800-8aa1-bbab2a035a53"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"reasoning","text":"**Looking up the printer's build volume**"}}
+{"type":"item.started","item":{"id":"item_1","type":"agent_message","text":"I'll check the maker's site."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I'll check the maker's site."}}
+{"type":"item.started","item":{"id":"item_2","type":"web_search","query":"Bambu Lab A1 mini build volume","action":{"type":"search","query":"Bambu Lab A1 mini build volume"}}}
+{"type":"item.completed","item":{"id":"item_2","type":"web_search","query":"Bambu Lab A1 mini build volume","action":{"type":"search","query":"Bambu Lab A1 mini build volume"}}}
+{"type":"item.started","item":{"id":"item_3","type":"agent_message","text":"Bambu Lab lists"}}
+{"type":"item.updated","item":{"id":"item_3","type":"agent_message","text":"Bambu Lab lists a build volume"}}
+{"type":"item.completed","item":{"id":"item_3","type":"agent_message","text":"Bambu Lab lists a build volume of 180 × 180 × 180 mm."}}
+{"type":"turn.completed","usage":{"input_tokens":24763,"cached_input_tokens":24448,"output_tokens":122,"reasoning_output_tokens":64}}

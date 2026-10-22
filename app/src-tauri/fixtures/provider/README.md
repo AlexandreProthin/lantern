@@ -19,6 +19,14 @@ claims to have recorded authentication, quota or network failures. No credential
 or account state were changed to provoke them. More real error captures remain
 an M2 exit item as those failures become available.
 
+`codex-web.jsonl` and `codex-failed.jsonl` (CE-58) are **not recorded**: no Codex run
+was available. They are written from OpenAI's published `codex exec --json` schema
+(`codex-rs/exec/src/exec_events.rs` and the non-interactive mode docs, October 2026):
+`thread.started`, `turn.started`, `item.*` with `agent_message`, `reasoning` and
+`web_search` items, `turn.completed` with its usage, `error` and `turn.failed`.
+The usage-limit wording is a guess at Codex's message. Replace them with recorded
+runs once a Codex plan is available.
+
 The ignored integration test runs a real Haiku call followed by cancellation.
 The normal Windows Job Object test starts a hidden child/grandchild and verifies
 the job has zero active processes after cancellation.
