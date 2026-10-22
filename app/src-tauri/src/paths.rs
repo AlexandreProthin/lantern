@@ -103,3 +103,15 @@ pub fn reveal_file(path: &Path) -> Result<(), String> {
 }
 #[cfg(not(windows))]
 pub fn reveal_file(_: &Path) -> Result<(), String> {Err("Explorer is only supported on Windows".into())}
+/// The frameless window has no system maximize button for Windows 11 to hang its Snap Layouts
+/// flyout on, so hovering the header's own button sends Win+Z, which opens it for the foreground window.
+#[cfg(windows)]
+pub fn snap_layouts() {
+    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP, VK_LWIN, VIRTUAL_KEY};
+    let key=|vk:VIRTUAL_KEY,flags| INPUT{r#type:INPUT_KEYBOARD,Anonymous:INPUT_0{ki:KEYBDINPUT{wVk:vk,wScan:0,dwFlags:flags,time:0,dwExtraInfo:0}}};
+    let z=b'Z' as VIRTUAL_KEY;
+    let inputs=[key(VK_LWIN,0),key(z,0),key(z,KEYEVENTF_KEYUP),key(VK_LWIN,KEYEVENTF_KEYUP)];
+    unsafe { SendInput(inputs.len() as u32,inputs.as_ptr(),std::mem::size_of::<INPUT>() as i32); }
+}
+#[cfg(not(windows))]
+pub fn snap_layouts() {}

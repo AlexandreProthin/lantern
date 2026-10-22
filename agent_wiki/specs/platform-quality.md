@@ -15,7 +15,7 @@ Source: spec workshop rounds 1–3 (2026-10-01/02). Agreed with the user 2026-10
 ## Platform
 
 - **PQ-1** v0.1.0 MUST target Windows only.
-- **PQ-2** Windows-specific code MUST be confined to the provider and paths modules, so a port stays cheap *(2026-10-18: the snap-layouts hint in `commands.rs` is the one exception)*.
+- **PQ-2** Windows-specific code MUST be confined to the provider and paths modules, so a port stays cheap *(2026-10-22: the snap-layouts hint moved from `commands.rs` to `paths.rs`; there is no exception)*.
 - **PQ-3** The tech stack MUST be the one in [prism-tech-stack](/decisions/prism-tech-stack.md) (Tauri 2, Svelte 5, TypeScript).
 - **PQ-4** The UI MUST be English, and all UI strings MUST live in one module so a French translation is cheap later.
 

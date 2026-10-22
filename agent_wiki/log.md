@@ -2,6 +2,7 @@
 
 ## 2026-10-22
 
+* **PQ-2 kept, no exception**: the Windows-only snap-layouts hint moved from `commands.rs` to `paths::snap_layouts`, with a no-op off Windows ([platform-quality](/specs/platform-quality.md)). `app/README.md` brought up to date (no version in the title, public update channel, all rooms and evals).
 * **The *not installed* banner can be closed**: the frame banner gains *Close*, which hides it until the next launch and lets Amber's greeting show; *not signed in* stays as it was ([settings](/specs/settings.md) SE-47). Playwright test added in `settings.spec.ts`.
 
 ## 2026-10-18

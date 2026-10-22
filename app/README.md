@@ -1,6 +1,6 @@
-# Lantern v0.1.2
+# Lantern app
 
-New implementation; the proof of concept it replaced is kept at the `poc-final` git tag. Requirements and milestone exit gates live in `../agent_wiki/plans/v0-1-0.md`.
+The Lantern desktop app (Tauri 2, Svelte 5, TypeScript), at the version in `package.json`. Specs and plans live in `../agent_wiki/`; the proof of concept it replaced is kept at the `poc-final` git tag.
 
 From this directory:
 
@@ -12,23 +12,16 @@ npm test                   # pure TypeScript units
 npm run check
 npm run build
 npx playwright install chromium
-npx playwright test        # web scaffold (main-loop coverage lands with M3)
+npx playwright test        # end-to-end, fake provider
+npm run test:demo          # the web demo (dev:demo / build:demo build it)
 cargo test --manifest-path src-tauri/Cargo.toml --locked
 ```
 
-M0 supplies an empty shell and provider mode switch. M2 supplies the fake provider,
-real CLI bridge, learn-1 protocol/context, Learn action coordinator and eval runner:
-`npm run eval -- --model haiku --effort low --runs 3` (consumes subscription usage).
-See `evals/README.md` for cases and scoring limitations. The Rust real stream/cancel
+Evals call the real CLI and consume subscription usage: `npm run eval -- --model haiku --effort low --runs 3`
+for Learn, `npm run eval:choose` for Choose and `npm run eval:amber` for Amber (set `LANTERN_CLAUDE` to the
+CLI executable). See `evals/README.md` for cases and scoring limitations. The Rust real stream/cancel
 check is `cargo test --manifest-path src-tauri/Cargo.toml --locked real_cli_stream_and_cancel -- --ignored`.
-M1 now supplies the domain, shared stats, Rust library storage and a debounced
-frame persistence controller. M3 supplies the Study loop and connects persistence
-errors, reload/conflict notices and window-close flushing to the UI.
 
-M4 implements the accepted D1 Welcome recipe and Gallery: per-subject model/tone,
-suggestions, cached recents, selection/stats, rename, recycle, Explorer reveal,
-lazy bounded thumbnails and shared motion. `tests/library.spec.ts` covers their
-fake-provider flows, including deletion during generation and timer-driven handoff.
 The idle 50-subject browser gate is `LANTERN_PERF=1 npx playwright test tests/library-performance.spec.ts`
 (set the environment variable with `$env:LANTERN_PERF='1'` in PowerShell, then
 remove it after the run). Its native cached-list companion is
@@ -52,11 +45,11 @@ If the build is run without the password, it still writes the installer and only
 the signing step fails; sign it afterwards (the password is asked for interactively):
 `npx tauri signer sign -f $HOME\.tauri\lantern-updater.key src-tauri\target\release\bundle\nsis\Lantern_<version>_x64-setup.exe`.
 
-Upload the installer and `latest.json` to the GitHub release. A release without
-`latest.json` can never update itself. While the repository is private the GitHub
-channel answers 404 (UP-45); `--out` fills a **local update folder** instead, which
-an installed build uses once it is set in the hidden Settings → Developer section
-(five clicks on the version line, UP-60..66). No signing key is generated or committed. Follow `ACCEPTANCE.md` (and, from v0.3.0, `ACCEPTANCE-CHOOSE.md`; from v0.4.0, `ACCEPTANCE-AMBER.md`; from v0.5.0, `ACCEPTANCE-ENDPOINTS.md` and `ACCEPTANCE-CLOUD.md`) before releasing.
+Upload the installer and `latest.json` to the GitHub release; installed builds update
+from there. A release without `latest.json` can never update itself. To test an update
+before releasing, `--out` fills a **local update folder**, which an installed build uses
+once it is set in the hidden Settings → Developer section (five clicks on the version
+line, UP-60..66). No signing key is generated or committed. Follow `ACCEPTANCE.md` (and, from v0.3.0, `ACCEPTANCE-CHOOSE.md`; from v0.4.0, `ACCEPTANCE-AMBER.md`; from v0.5.0, `ACCEPTANCE-ENDPOINTS.md` and `ACCEPTANCE-CLOUD.md`) before releasing.
 
 Storage tests use isolated temporary libraries and never modify real subjects.
 They cover round-trip, path safety, conflicts, cache invalidation, read-only newer
@@ -72,4 +65,4 @@ Keep `src-tauri/Cargo.lock`: the Tauri runtime and macro family is aligned with
 the working PoC. Unconstrained transitive upgrades can produce incompatible
 Windows types and menu macros even while keeping the same Tauri shell version.
 
-Layout: `src/core` holds room-agnostic domain operations, `src/rooms/learn` holds Learn prompts and context, `src/frame` holds app coordination, `src/ui` holds reusable UI and strings. Rust `storage`, `paths` and `provider` own file I/O, OS concerns and inference. Browser calls use a deterministic fake; `VITE_PROVIDER=fake` also forces it in desktop development.
+Layout: `src/core` holds room-agnostic domain operations, `src/rooms/learn` and `src/rooms/choose` hold each room's prompts and context (`src/rooms/sample` is a dev-only room), `src/demo` the web demo, `src/frame` holds app coordination, `src/ui` holds reusable UI and strings. Rust `storage`, `paths` and `provider` own file I/O, OS concerns and inference (Claude Code and custom endpoints, with keys in Windows Credential Manager); Windows-only code stays in `paths` and `provider` (PQ-2). Browser calls use a deterministic fake; `VITE_PROVIDER=fake` also forces it in desktop development.
