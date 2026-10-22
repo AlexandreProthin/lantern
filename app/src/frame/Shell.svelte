@@ -126,7 +126,7 @@
   $effect(() => {
     if (loading || !amberLoaded || amberGreeted) return;
     if (!settings.companion.show) { amberGreeted = true; return; }
-    if (banner || unavailable) return;
+    if (banner || providerNotice) return;
     amberGreeted = true;
     const said = untrack(() => greeting(amberState, __APP_VERSION__, subjectCount > 0 && !import.meta.env.VITE_DEMO /* the demo's seeded subject is no past visit */, { first: strings.amberFirstLaunch, updated: strings.amberUpdated, pool: strings.amberGreetings }));
     amberGreeting = said.greeting; saveAmberState(said.next);
@@ -168,6 +168,9 @@
   /** CE-26: with an endpoint set, Claude Code's banner shows only while a Claude Code model is in use (the open subject's, else the default). With no endpoint, nothing changes. */
   const claudeInUse=$derived.by(()=>{revision;if(!endpointsOf(settings.provider).length)return true;const model=session?.subject.rooms[room.id]?.model??settings.provider.defaultModel;return !isEndpointModel(String(model??''));});
   const unavailable=$derived(cliProblem&&claudeInUse?cliProblem:null);
+  /** A not-installed banner can be closed; it stays closed for this launch. */
+  let installNoticeClosed=$state(false);
+  const providerNotice=$derived(unavailable&&!(unavailable.kind==='not-installed'&&installNoticeClosed)?unavailable:null);
   const updater=new UpdateController();
   const showUpdateNotice=$derived(updater.fromLaunch&&['available','downloading','installing'].includes(updater.phase)&&shouldShowNotice(settings,updater.version,anyRunning&&updater.phase==='available'));
   /** UP-1, UP-21: a check the server answered counts, however it was started. */
@@ -400,7 +403,7 @@
 <TopBar {rooms} {room} {space} {subjectCount} title={session?.subject.title ?? null} busy={!!running} {summary} showTokenStats={settings.appearance.showTokenStats} {desktop} mark={lanternMark}
   {panelOpen} bind:roomMenu bind:fieldWidth {navigate} switchRoom={id=>void switchRoom(id)} openSettings={()=>{settingsSection='general';settingsOpen=true;}} togglePanel={()=>{roomMenu=false;panelOpen=!panelOpen;}} ask={settings.companion.show?undefined:openAsk} bringBack={settingsReadOnly?undefined:bringAmberBack} />
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
-{#if unavailable}<div class="banner provider-notice" role="alert"><div><strong>{strings.errorKinds[unavailable.kind]}</strong><p>{unavailable.kind==='not-installed'?strings.installInstructions:strings.signinInstructions}</p></div><button onclick={()=>{settingsSection='provider';settingsOpen=true;}}>{strings.settings}</button><button disabled={anyRunning||checkingReady} onclick={checkReady}>{strings.checkAgain}</button>{#if checkingReady}<button onclick={()=>readyController?.abort()}>{strings.cancel}</button>{/if}</div>{/if}
+{#if providerNotice}<div class="banner provider-notice" role="alert"><div><strong>{strings.errorKinds[providerNotice.kind]}</strong><p>{providerNotice.kind==='not-installed'?strings.installInstructions:strings.signinInstructions}</p></div><button onclick={()=>{settingsSection='provider';settingsOpen=true;}}>{strings.settings}</button><button disabled={anyRunning||checkingReady} onclick={checkReady}>{strings.checkAgain}</button>{#if checkingReady}<button onclick={()=>readyController?.abort()}>{strings.cancel}</button>{/if}{#if providerNotice.kind==='not-installed'}<button onclick={()=>installNoticeClosed=true}>{strings.close}</button>{/if}</div>{/if}
 {#if saveError}<div class="banner error" role="alert">{strings.saveFailed}<details><summary>{strings.details}</summary>{saveError}</details><button onclick={retrySaves}>{strings.retry}</button></div>{/if}
 {#if toast}<div class="toast" role="status">{toast}<button onclick={()=>toast=''}>{strings.close}</button></div>{/if}
 {#if showUpdateNotice}<div class="toast update-notice" role="status">{updater.phase==='downloading'?strings.updateDownloading(updater.percent):updater.phase==='installing'?strings.updateInstalling:strings.updateAvailable(updater.version)}

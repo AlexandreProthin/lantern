@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-10-22
+
+* **The *not installed* banner can be closed**: the frame banner gains *Close*, which hides it until the next launch and lets Amber's greeting show; *not signed in* stays as it was ([settings](/specs/settings.md) SE-47). Playwright test added in `settings.spec.ts`.
+
 ## 2026-10-18
 
 * **Web demo deployed**: the `v0.5.0` tag run failed at *deploy* because the `github-pages` environment only allowed branch `master`. Added a `v*` tag rule (master stays, for runs by hand); the user re-ran it and it passed. The workflow still runs only on `v*` tags and by hand ([runtime](/components/web-demo/runtime.md), [plan](/plans/web-demo.md)).

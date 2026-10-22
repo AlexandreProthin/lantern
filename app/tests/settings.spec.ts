@@ -68,6 +68,12 @@ test('SE-47: missing CLI instructions and Check again use the shared readiness h
   await page.locator('.panel').getByRole('button',{name:'Retry',exact:true}).click();
   await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
 });
+test('the not-installed banner can be closed',async({page})=>{
+  await page.goto('/?study=1&subject=Readiness&error=not-installed');
+  const frame=page.locator('.provider-notice');
+  await frame.getByRole('button',{name:'Close',exact:true}).click();
+  await expect(frame).toHaveCount(0);
+});
 test('SE-11, CO-1, CO-46, CO-47: the Companion section sits before Appearance, with show, model and tokens spent', async ({page}) => {
   await page.goto('/?study=1&subject=Companion');
   await page.evaluate(()=>localStorage.setItem('lantern.amberLog',JSON.stringify([{requestId:'a',usage:{input:1200,output:300}},{requestId:'b',usage:{input:800,output:200}}])));
