@@ -1,5 +1,5 @@
 // UP-20..UP-32: one controller shared by the launch notice and Settings → General.
-import { Channel, invoke } from '@tauri-apps/api/core';
+import { Channel, invoke } from './ipc';
 import { strings } from '../ui/strings';
 export type UpdatePhase = 'idle' | 'checking' | 'up-to-date' | 'available' | 'unconfigured' | 'failed' | 'downloading' | 'installing';
 type Checked = { status: 'up-to-date' | 'unconfigured' } | { status: 'available'; version: string; current: string; notes: string | null };

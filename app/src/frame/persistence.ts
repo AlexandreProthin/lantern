@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from './ipc';
 import { parseSubject, cloneJson } from '../core/model';
 import type { Subject } from '../core/model';
 export interface Stamp { size: number; modifiedNs: string; hash: string }

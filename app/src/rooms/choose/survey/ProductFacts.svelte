@@ -1,6 +1,7 @@
 <script lang="ts">
   // CR-41, CR-42: every product fact shows its source (kind tag, name) and the date it was read; a price is an indication at that date.
-  import { invoke } from '@tauri-apps/api/core';
+  import { invoke } from '../../../frame/ipc';
+  import { native } from '../../../frame/host';
   import type { GraphNode } from '../../../core/model';
   import { facts } from '../rules';
   import type { Fact, Source } from '../rules';
@@ -9,7 +10,7 @@
   const list = $derived(facts(node));
   const isPrice = (f: Fact) => f.label.trim().toLowerCase() === 'price';
   const when = (s: Source) => s.kind === 'model' ? t.readIn(s.read) : t.readOn(s.read);
-  function open(e: MouseEvent, url: string) { if ('__TAURI_INTERNALS__' in window) { e.preventDefault(); void invoke('open_external', { url }); } }
+  function open(e: MouseEvent, url: string) { if (native) { e.preventDefault(); void invoke('open_external', { url }); } }
 </script>
 <section class="facts" aria-label={t.facts}>
   <h2>{t.facts}</h2>

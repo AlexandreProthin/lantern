@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from '../ipc';
 import type { Effort, Usage } from '../../core/model';
 /** CO-42: what a question is about; `null` before the tag closed (an error or a cancel). */
 export type AmberCategory = 'app' | 'subject' | 'general';

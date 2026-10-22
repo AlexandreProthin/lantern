@@ -1,4 +1,4 @@
-import { invoke, Channel } from '@tauri-apps/api/core';
+import { invoke, Channel } from './ipc';
 import type { Effort, Usage } from '../core/model';
 import type { WireEndpoint } from './endpoints';
 export type ErrorKind = 'not-installed' | 'not-logged-in' | 'usage-limit' | 'model-unknown' | 'network' | 'process-crashed' | 'protocol' | 'cancelled'
