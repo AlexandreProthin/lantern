@@ -4,7 +4,12 @@ use serde_json::Value;
 use tauri::{AppHandle, Manager, State};
 use crate::storage::{self, AppState, Loaded, SaveResult, Stamp};
 pub struct StorageLock(pub Mutex<()>);
-pub(crate) fn config(app: &AppHandle) -> Result<PathBuf, String> { app.path().config_dir().map(|p| p.join("Lantern")).map_err(|e| e.to_string()) }
+pub(crate) fn config(app: &AppHandle) -> Result<PathBuf, String> {
+    // Debug builds only: a test run can keep its settings, devices and certificate out of the real folder.
+    #[cfg(debug_assertions)]
+    if let Some(dir) = std::env::var_os("LANTERN_CONFIG_DIR") { return Ok(dir.into()); }
+    app.path().config_dir().map(|p| p.join("Lantern")).map_err(|e| e.to_string())
+}
 fn settings_major(doc:&Value)->Option<u32>{doc["format"].as_str()?.strip_prefix("lantern-settings/")?.parse::<u32>().ok().filter(|n|*n>=1)}
 #[tauri::command]
 pub fn default_library(app: AppHandle) -> Result<PathBuf, String> { app.path().document_dir().map(|p| p.join("Lantern")).map_err(|e| e.to_string()) }
