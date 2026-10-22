@@ -4,7 +4,7 @@ title: v0.1.0 release preparation
 description: Per-user unsigned NSIS preview packaging, inert updater wiring and the remaining installed-app acceptance gates.
 resource: /app/src-tauri/tauri.conf.json
 tags: [implementation, release, installer, acceptance]
-status: draft
+status: stable
 generated: { by: Claude/Sonnet-5.5, at: 2026-10-02T19:50:00Z }
 ---
 
@@ -20,8 +20,8 @@ artifact signing for local acceptance builds. Windows code signing and updater
 artifact signatures are separate: the preview is unsigned in both senses. A
 future updater-enabled build needs a real public key and an externally supplied
 private signing key; this task does not generate or commit keys. Empty updater
-endpoints and a blank public key are deliberate inactive configuration, never a
-working update channel.
+endpoints and a blank public key were deliberate inactive configuration at v0.1.0; both are
+filled in now (see below).
 
 # Acceptance boundary
 
@@ -39,7 +39,7 @@ Build/test results are recorded in the [log](/log.md). Acceptance was signed off
 The updater is no longer inert: [updates](/specs/updates.md) specifies the daily launch check, notice,
 manual check and install. `tauri.conf.json` carries the endpoint
 `https://github.com/AlexandreProthin/lantern/releases/latest/download/latest.json` and passive NSIS install
-mode; the public key stays empty until the user generates the pair, and with an empty key the app reports
+mode; the public key was set once the user generated the pair (it is in `tauri.conf.json`); with an empty key the app reports
 *Updates are not set up in this build* instead of failing. Release routine: `app/README.md` (build signed,
 `app/scripts/make-latest-json.mjs`, upload both files). The preview overlay still turns updater signing off.
 

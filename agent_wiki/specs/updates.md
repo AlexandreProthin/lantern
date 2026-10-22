@@ -116,8 +116,10 @@ Added 2026-10-08 on the user's request: test real updates while the repository i
 ## Privacy
 
 - **UP-50** The check sends only what the HTTP request itself carries (and the app version and platform
-  the updater adds). No identifier, no subject data, no settings. It is the only request Lantern itself
-  makes ([inference-provider](/specs/inference-provider.md) covers the tutor, which runs through the CLI).
+  the updater adds). No identifier, no subject data, no settings. It was the only request Lantern itself
+  made in v0.1.0; since v0.5.0 the Rust endpoint provider also contacts the endpoints the user adds
+  ([custom-endpoints](/specs/custom-endpoints.md) CE-11), and the tutor otherwise runs through the CLI
+  ([inference-provider](/specs/inference-provider.md)).
 
 # Acceptance
 

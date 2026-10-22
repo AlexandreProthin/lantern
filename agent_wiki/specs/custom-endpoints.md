@@ -40,9 +40,9 @@ planned.
   phase, for now. The numbers are not fixed and need not be consecutive minor versions. When the local
   version is ready, the agent **asks the user** whether to release it or to wait and release local and
   cloud in the same version bump.
-  *(Decided 2026-10-17, after the local version's acceptance: **wait**. The local version stays
-  unreleased on `claude/lantern-custom-endpoints`; the cloud version is planned next, and both ship in one
-  version bump, its number chosen then.)*
+  *(Decided 2026-10-17, after the local version's acceptance: **wait**. The local version stayed
+  unreleased on `claude/lantern-custom-endpoints` until the cloud version was done, and both shipped in
+  one bump, v0.5.0, on 2026-10-18.)*
 - **CE-6** **Branches** (the user, round 11): the work starts in a worktree. When the user judges the
   implementation good enough (at the latest once the local endpoint can be tested), it moves to a
   dedicated feature branch to be finished there. Only the user decides when that branch merges into
@@ -50,7 +50,7 @@ planned.
 
 # The endpoint provider
 
-- **CE-10** One provider, `OpenAiCompatProvider`, implements the contract over HTTP:
+- **CE-10** One provider, `EndpointProvider` (`provider/endpoint.rs`; it also speaks Ollama's native `/api/chat` NDJSON), implements the contract over HTTP:
   `POST {baseUrl}/chat/completions` with `stream: true` and `stream_options.include_usage: true`,
   reading server-sent events. `system` becomes the first message (role `system`), `prompt` the user
   message (IP-2).
@@ -119,7 +119,7 @@ planned.
   | `unreachable` | connection refused, DNS failure | Local: "Ollama isn't running at localhost:11434. Start it, then *Check again*." Cloud: the `network` message. |
   | `key-rejected` | 401, 403 | "NVIDIA rejected the API key." *Replace key* (cloud version). |
   | `model-unknown` | 404, or the model is not on the server | For Ollama: "Run `ollama pull gemma4` first." |
-  | `rate-limited` | 429 | The wait, when `Retry-After` gives one; *Try again*. |
+  | `usage-limit` | 429 | The wait, when `Retry-After` gives one; *Try again*. |
   | `context-too-long` | CE-33, or the server's error | How to raise the context size. |
   | `protocol` | unreadable event stream, stall | as IP-10 |
   | `cancelled` | the user | as IP-10 |

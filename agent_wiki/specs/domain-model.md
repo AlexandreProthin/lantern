@@ -47,7 +47,7 @@ Library (a folder) → Subject → RoomVisit (one per room the subject visited) 
 
 Per room visit, one record per LLM call. Purpose: to know how many tokens it took for the graph to reach a given state.
 
-- **DM-30** A record MUST hold: `id`, `nodeId`, `task` (`intro`|`light`|`reply`|`check`|`more`), `model`, `effort`, `tone`, `promptVersion`, `startedAt`, `durationMs`, `usage {input, output, thinking, cacheRead, cacheWrite}`, `costUsd?` (API-equivalent, stored, not shown) and `outcome` (`ok`|`cancelled`|`error`). The `merge` task is Later. `suggest` (*Suggest 3 subjects* on Welcome) runs before a subject exists, so there is no room visit to hold its record: it is **not logged** in v0.1.0 and is not a value of `task`.
+- **DM-30** A record MUST hold: `id`, `nodeId`, `task` (`intro`|`light`|`reply`|`check`|`more`), `model`, `effort`, `tone`, `promptVersion`, `startedAt`, `durationMs`, `usage {input, output, thinking, cacheRead, cacheWrite}`, `costUsd?` (API-equivalent, stored, not shown) and `outcome` (`ok`|`cancelled`|`error`) and `servedModel?` (the name an endpoint answered under when it differs from `model`, CE-27; *added 2026-10-18 to match the code*). The `merge` task is Later. `suggest` (*Suggest 3 subjects* on Welcome) runs before a subject exists, so there is no room visit to hold its record: it is **not logged** in v0.1.0 and is not a value of `task`.
 - **DM-33** `model` MUST be the resolved model id reported by the provider (e.g. `claude-sonnet-5-5`), not the alias the user picked, and `effort` the level passed to the provider ([inference-provider](/specs/inference-provider.md), IP-6).
 - **DM-31** Totals MUST be derived from the log, never stored a second time.
 - **DM-32** Cancelled and failed calls MUST still be logged and marked, with whatever usage is known (often none for a cancel).
@@ -89,7 +89,7 @@ field into a `data` object. Rules DM-1 to DM-55 still hold, read with the change
 - **DM-64** A **generation record** has these core fields: `id`, `nodeId`, `task` (a non-empty
   string whose values the room defines), `model`, `effort`, `promptVersion`, `startedAt`,
   `durationMs`, `usage {input, output, thinking, cacheRead, cacheWrite}`, `costUsd?`, `outcome`,
-  `toolCalls?` (a count per tool name, for example `{"WebSearch": 3}`; absent means none), and
+  `servedModel?` (as in DM-30), `toolCalls?` (a count per tool name, for example `{"WebSearch": 3}`; absent means none), and
   `data` (absent means `{}`).
 - **DM-65** **Learn's `data`**:
 
@@ -152,7 +152,7 @@ The `lantern/1` example below, converted:
       },
       "log": [
         { "id": "g1", "nodeId": "n1", "task": "intro", "model": "claude-sonnet-5-5", "effort": "medium",
-          "promptVersion": "learn-3", "startedAt": "2026-10-01T20:00:00Z", "durationMs": 12400,
+          "promptVersion": "learn-2", "startedAt": "2026-10-01T20:00:00Z", "durationMs": 12400,
           "usage": { "input": 1800, "output": 640, "thinking": 120, "cacheRead": 0, "cacheWrite": 13000 },
           "costUsd": 0.021, "outcome": "ok", "data": { "tone": "engineer" } }
       ]
@@ -199,7 +199,7 @@ The values are illustrative (this example uses a sonnet model); the app's defaul
       },
       "log": [
         { "id": "g1", "nodeId": "n1", "task": "intro", "model": "claude-sonnet-5-5", "effort": "medium", "tone": "engineer",
-          "promptVersion": "learn-3", "startedAt": "2026-10-01T20:00:00Z", "durationMs": 12400,
+          "promptVersion": "learn-2", "startedAt": "2026-10-01T20:00:00Z", "durationMs": 12400,
           "usage": { "input": 1800, "output": 640, "thinking": 120, "cacheRead": 0, "cacheWrite": 13000 },
           "costUsd": 0.021, "outcome": "ok" }
       ]

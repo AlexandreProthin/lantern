@@ -11,7 +11,7 @@ generated: { by: Codex/GPT-6, at: 2026-10-02T06:42:04Z }
 # Boundaries
 
 The [implementation plan](/plans/v0-1-0.md) starts in a fresh `app/` directory.
-`poc/` remains unchanged. Pure core code owns domain operations; Learn owns prompts
+`poc/` remained unchanged (removed on 2026-10-04, kept at tag `poc-final`). Pure core code owns domain operations; Learn owns prompts
 and context; frame owns application coordination. Rust owns storage and inference,
 with OS code confined to paths and provider ([quality](/specs/platform-quality.md) PQ-2).
 

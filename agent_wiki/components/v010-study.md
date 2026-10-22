@@ -4,7 +4,7 @@ title: v0.1.0 Frame and Study
 description: Room-contributed Study UI, graph and node panel, rendering, settings foundations and browser evidence.
 resource: /app/src/frame/Shell.svelte
 tags: [implementation, frame, study, graph, panel, settings]
-status: draft
+status: stable
 generated: { by: Claude/Sonnet-5.5, at: 2026-10-02T19:50:00Z }
 ---
 

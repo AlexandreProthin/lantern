@@ -21,4 +21,9 @@ Use `type: Component`.
 - [v0.1.0 Learn runtime](/components/v010-learn-runtime.md) — M2 protocol, context, provider, coordinator and eval evidence.
 - [v0.1.0 Frame and Study](/components/v010-study.md) — M3 UI and Settings foundations, browser evidence and remaining gates.
 - [v0.1.0 Settings and library switching](/components/v010-settings.md) — M5 implementation and native acceptance boundaries.
+- [Amber, the companion](/components/amber-companion.md) - Placement, rope and motion, Ask Amber's one-call chat with its category gate, greetings, the app-level log.
+- [Choose room](/components/choose-room.md) - The decision graph, Compare table and Gallery; session lanes, protocol parser and `choose-1` prompts.
+- [Endpoint provider and API keys](/components/endpoint-provider.md) - Local and cloud endpoints in Rust, keys in Windows Credential Manager, routing by model id, Settings → Endpoints.
+- [Update check and local feed](/components/update-channel.md) - Update commands, the loopback feed for a local release folder, and the frame's controller and rules.
+
 - [v0.1.0 Welcome and Gallery](/components/v010-library-spaces.md) — M4 screens, library actions, thumbnails and shared motion.

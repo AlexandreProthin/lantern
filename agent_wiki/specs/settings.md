@@ -27,7 +27,7 @@ the settings below only supply their **defaults**.
 | Learn room | `learn.contextBudget` | integer (advanced) | 12000 | 2000–100000 tokens | next generation (the map part only; the CLI's own ~13k baseline is extra) |
 | General | `updates.checkAtLaunch` | boolean | true | — | next launch; off means no update request unless *Check for updates* is pressed ([updates](/specs/updates.md) UP-3) |
 | Developer (hidden) | `developer.updateFolder` | absolute path | empty | empty, or an existing folder | replaces GitHub as the update source ([updates](/specs/updates.md) UP-60 to UP-66) |
-| Appearance | `appearance.reduceMotion` | enum | `system` | `system`/`on`/`off` | immediate; `system` follows the OS |
+| Appearance | `appearance.reduceMotion` | enum | `system` | `system`/`on` | immediate; `system` follows the OS; any other stored value falls back to `system` (GV-100) *(Amended 2026-10-18: `off` is not kept.)* |
 | Appearance | `appearance.backdrop` | boolean | true | — | immediate; off removes the ambient backdrop and its glass ([rooms-spaces](/specs/rooms-spaces.md) RS-34) |
 | Companion | `companion.show` | boolean | true | — | immediate; off removes Amber everywhere; its features keep their own entry points ([companion](/specs/companion.md) CO-1, CO-2) |
 | Companion | `companion.model` | string | `claude-haiku-5-5` | an entry of the model list (SE-48) or free-text id, as `provider.defaultModel` | next Ask Amber call (CO-46); effort is always low |
@@ -43,6 +43,7 @@ file but has no settings control:
 | `ui.legendCollapsed` | boolean | false | legend state |
 | `ui.lastRoom` | string | `learn` | the room whose Welcome opens at launch |
 | `ui.graphLayout` | `free`/`tree` | `free` | graph layout toggle |
+| `ui.textLinks` | boolean | true | whether the reference links between nodes (links written in the text) are drawn; a checkbox in the graph's controls *(Added 2026-10-18 to match the code.)* |
 | `ui.lastUpdateCheck` | number (ms since epoch) | 0 | last successful update check ([updates](/specs/updates.md) UP-1) |
 | `ui.dismissedUpdate` | string | empty | version whose launch notice the user dismissed (UP-11) |
 
@@ -75,7 +76,7 @@ The last-opened times and the recents list are **not** in this file: they live i
 
 - **SE-20** The display name default MUST be the Windows user name (`USERNAME`), read at first run and stored; the user can change it. It is the author name on learner turns and edits ([domain-model](/specs/domain-model.md)).
 - **SE-21** *Reveal library in Explorer* MUST open the library folder.
-- **SE-22** The section MUST end with the app version, *Lantern 0.1.2*, taken at build time from `package.json` (kept equal to `Cargo.toml` and `tauri.conf.json`), followed by the *Check for updates* button and the *Check for updates at launch* checkbox ([updates](/specs/updates.md) UP-3, UP-20).
+- **SE-22** The section MUST end with the app version, *Lantern 0.5.0* (the current version), taken at build time from `package.json` (kept equal to `Cargo.toml` and `tauri.conf.json`), followed by the *Check for updates* button and the *Check for updates at launch* checkbox ([updates](/specs/updates.md) UP-3, UP-20).
 
 # Library folder change flow
 
@@ -102,7 +103,7 @@ The status area in **Provider** shows what the Claude Code CLI provider ([infere
 |---|---|---|
 | `not-installed` | "Claude Code is not installed. Lantern uses it to talk to Claude with your subscription." | the install instructions of SE-47 (with the install link), *Check again* |
 | `not-logged-in` | "Claude Code is installed but not signed in. Sign in with your Claude account." | the sign-in instructions of SE-47, *Check again* |
-| `rate-limited` / `usage-limit` | "Your Claude usage limit was reached. It resets at <time if known>." | *Try again* |
+| `usage-limit` | "Your Claude usage limit was reached. It resets at <time if known>." | *Try again* |
 | `model-unknown` | "The model '<id>' is not available to your account." | *Choose a model* (focuses the default model field) |
 | `network` | "Could not reach Claude. Check your internet connection." | *Try again* |
 | `process-crashed` | "Claude Code stopped unexpectedly." | *Details*, *Try again* |

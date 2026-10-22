@@ -4,7 +4,7 @@ title: v0.1.0 Welcome and Gallery
 description: D1 Welcome implementation and summary-backed Gallery, library actions, lazy thumbnails and shared ember motion.
 resource: /app/src/rooms/learn/Welcome.svelte
 tags: [implementation, welcome, gallery, library, suggestions]
-status: draft
+status: stable
 generated: { by: Codex/GPT-6, at: 2026-10-02T19:20:00Z }
 ---
 
@@ -48,7 +48,7 @@ Largest remainders make the shares total 100%; all-zero outputs have no shares.
 With token stats off, the presentation object omits token amounts and shares,
 while retaining model names, tone and generation count (WG-34/36/68).
 
-`app/src/rooms/learn/suggestions.ts` implements WG-4 using the approved `learn-1`
+`app/src/rooms/learn/suggestions.ts` implements WG-4 using the approved `learn-1` (now `learn-2`)
 suggest prompt and parser. It snapshots model, effort and tone, allows only one
 request at a time, exposes typed errors for retry, replaces old chips on a new
 request and rejects duplicates or already-existing titles. Cancellation ignores

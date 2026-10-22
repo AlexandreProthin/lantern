@@ -15,7 +15,7 @@ Source: spec workshop rounds 1–3 (2026-10-01/02). Agreed with the user 2026-10
 ## Platform
 
 - **PQ-1** v0.1.0 MUST target Windows only.
-- **PQ-2** Windows-specific code MUST be confined to the provider and paths modules, so a port stays cheap.
+- **PQ-2** Windows-specific code MUST be confined to the provider and paths modules, so a port stays cheap *(2026-10-18: the snap-layouts hint in `commands.rs` is the one exception)*.
 - **PQ-3** The tech stack MUST be the one in [prism-tech-stack](/decisions/prism-tech-stack.md) (Tauri 2, Svelte 5, TypeScript).
 - **PQ-4** The UI MUST be English, and all UI strings MUST live in one module so a French translation is cheap later.
 
@@ -24,7 +24,7 @@ Source: spec workshop rounds 1–3 (2026-10-01/02). Agreed with the user 2026-10
 - **PQ-20** Unit tests MUST cover the core: protocol parsing, graph mutations, storage round-trip, context assembly.
 - **PQ-21** Rust tests MUST cover provider stream parsing (against recorded CLI output), file I/O and path safety.
 - **PQ-22** UI end-to-end tests (Playwright against the web build with the fake tutor, [inference-provider](/specs/inference-provider.md) IP-71) MUST cover the main loop: start a subject, light a node, reply, understand, restart, and also: dismiss and restore an open node, edit a node's explanation (and see the edited mark), cancel a running generation (the node returns to its previous state), and persistence across a restart (same graph, same states, edits kept).
-- **PQ-23** No CI is required in v0.1.0; the tests MUST be runnable locally with documented commands.
+- **PQ-23** No CI is required in v0.1.0 (since 2026-10-17 `.github/workflows/web-demo.yml` runs on `v*` tags for the web demo); the tests MUST be runnable locally with documented commands.
 
 ## Prompt evals
 

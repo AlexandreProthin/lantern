@@ -4,7 +4,7 @@ title: v0.1.0 Settings and library switching
 description: Settings validation, provider health, native library picker and verified move/copy transaction, with app-side window memory.
 resource: /app/src/frame/SettingsPanel.svelte
 tags: [implementation, settings, storage, provider, windows]
-status: draft
+status: stable
 generated: { by: Codex/GPT-6, at: 2026-10-02T17:40:00Z }
 ---
 
@@ -43,7 +43,7 @@ the window; the capability explicitly permits that operation.
 The fake browser test covers validation, scoped reset, provider health and live
 motion persistence. The native picker/Explorer/window APIs compile but require a
 manual Windows walkthrough. AC-6/7 (CLI missing, signed out, ready; library flow)
-are not signed off. Real auth/quota/network captures remain unavailable without
+were not signed off when this was written; the user signed v0.1.0 off on 2026-10-04. Real auth/quota/network captures remain unavailable without
 changing the user's current CLI session. Frame readiness banners share the same install/sign-in instructions and
 Check again path; their fake failure/recovery browser scenario passes. Other
-error actions still need the first-run acceptance pass. The [plan](/plans/v0-1-0.md) keeps M5 in progress.
+error actions still need the first-run acceptance pass. The [plan](/plans/v0-1-0.md) kept M5 in progress until v0.1.0 was signed off on 2026-10-04.

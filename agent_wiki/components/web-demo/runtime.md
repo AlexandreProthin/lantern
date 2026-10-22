@@ -3,7 +3,7 @@ type: Component
 title: Web demo runtime
 description: The demo build (vite --mode demo) - Learn alone, a scripted tutor with a model-like wait, the TCP subject seeded as a recent project, Blender 3D prefilled on Welcome, a banner with Reset, and the Pages workflow.
 tags: [web-demo, build, provider, github-pages]
-status: draft
+status: stable
 resource: /app/src/demo/
 generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:30:00Z }
 ---

@@ -3,10 +3,12 @@ type: Plan
 title: Web demo plan
 description: The Learn room as a free public demo on GitHub Pages - built, merged, and first deployed with the v0.5.0 tag on 2026-10-18.
 tags: [plan, web-demo, github-pages]
-status: draft
+status: deprecated
 stale_after: 2027-03-31T00:00:00Z
 generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:30:00Z }
 ---
+
+Landed: built, merged, and deployed with the v0.5.0 tag on 2026-10-18; what runs is described in [Demo runtime](/components/web-demo/runtime.md).
 
 Written 2026-10-17. The why is in [the decision](/decisions/web-demo-prepared-answers.md); the how in
 [Demo runtime](/components/web-demo/runtime.md) and [Demo content](/components/web-demo/content.md).

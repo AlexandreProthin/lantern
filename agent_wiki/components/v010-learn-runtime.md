@@ -1,7 +1,7 @@
 ---
 type: Component
 title: v0.1.0 Learn runtime
-description: The learn-1 parser, deterministic context, provider bridge, fake tutor, action coordinator and eval evidence.
+description: The learn-1 and learn-2 parser, deterministic context, provider bridge, fake tutor, action coordinator and eval evidence.
 resource: /app/src/rooms/learn/session.ts
 tags: [learn, protocol, provider, context, evals, implementation]
 status: stable
@@ -54,7 +54,7 @@ configurable delays and typed injected failures.
 Agent sampling of first-run English/French prose confirmed the requested languages
 but found internally inconsistent analogies. This is recorded separately as
 [tutor prose quality](/issues/tutor-prose-quality.md); the automatic percentage is
-a protocol score and does not sign off pedagogy. The approved prompt stays `learn-1`.
+a protocol score and does not sign off pedagogy. The prompt approved at v0.1.0 was `learn-1`; the shipped one is now `learn-2`.
 
 A final pre-acceptance Haiku/low run on 2026-10-02 also passed **24/24 (100%)**,
 with the unchanged `learn-1` prompt. The detailed local result is

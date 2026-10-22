@@ -3,10 +3,12 @@ type: Plan
 title: Custom endpoints plan, local version
 description: The local phase of custom endpoints - the OpenAI-compatible provider in Rust with Ollama's native chat, routing by model id, Settings → Endpoints, grouped pickers, context windows, the local token line and the new errors - with the order, the Claude Code regression guard, exit checks and risks.
 tags: [plan, endpoints, ollama, provider]
-status: draft
+status: deprecated
 stale_after: 2027-03-31T00:00:00Z
 generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:30:00Z }
 ---
+
+Landed: shipped in v0.5.0 on 2026-10-18 together with the [cloud version](/plans/custom-endpoints-cloud.md) (CE-5); kept as the record of the slices.
 
 Written 2026-10-17, after spec workshop rounds 10 and 11. The contract is the
 [custom-endpoints](/specs/custom-endpoints.md) spec, local version (CE-3), and the amendments it made,

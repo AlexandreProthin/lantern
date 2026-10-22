@@ -3,10 +3,12 @@ type: Plan
 title: Custom endpoints plan, cloud version
 description: The cloud phase of custom endpoints, on top of the accepted local version - API keys in Windows Credential Manager and never in the webview, the NVIDIA preset, the consent step, cloud tokens counted with Claude, real use on NVIDIA's Gemma 4 - then one release for local and cloud together.
 tags: [plan, endpoints, nvidia, api-keys, security]
-status: draft
+status: deprecated
 stale_after: 2027-03-31T00:00:00Z
 generated: { by: claude-code/opus-5.5, at: 2026-10-17T21:00:00Z }
 ---
+
+Landed: released as v0.5.0 on 2026-10-18, local and cloud together (see the [roadmap](/plans/roadmap.md)); kept as the record of the slices.
 
 Written 2026-10-17, after the local version passed its acceptance
 ([custom-endpoints-local](/plans/custom-endpoints-local.md)). The contract is the cloud part of

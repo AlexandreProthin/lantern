@@ -3,7 +3,7 @@ type: Component
 title: Web demo content
 description: The prepared Learn subjects in app/demo/ - TCP congestion control (seeded, every node lightable and testable) and Blender 3D (created live from the prefilled Welcome) - and how to change or add one.
 tags: [web-demo, content, learn]
-status: draft
+status: stable
 resource: /app/demo/
 generated: { by: claude-code/opus-5.5, at: 2026-10-17T16:30:00Z }
 ---

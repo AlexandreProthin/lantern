@@ -53,7 +53,7 @@ API, local or other provider MUST fit without changing callers.
 |---|---|---|
 | `not-installed` | `spawn` fails with *not found*; no `claude` in PATH or common install paths | "Claude Code is not installed." Step-by-step install instructions with a link to the install page, and a *Check again* button (IP-44). |
 | `not-logged-in` | `result` with `is_error` whose text mentions login / authentication / `/login`; or 401-type text | "Claude Code is installed but not signed in." Step-by-step sign-in instructions (IP-44) and *Check again*. No sign-in button. |
-| `rate-limited` / `usage-limit` | `is_error` result with limit / quota / overloaded / 429 text; a reset time is shown when the text gives one | "Your Claude usage limit was reached." Reset time if known; the node returns to its previous state; *Try again*. |
+| `usage-limit` | `is_error` result with limit / quota / overloaded / 429 text; a reset time is shown when the text gives one | "Your Claude usage limit was reached." Reset time if known; the node returns to its previous state; *Try again*. |
 | `model-unknown` | `is_error` result mentioning an unknown / invalid / unavailable model | "The model 'x' is not available." Open the model picker. |
 | `network` | `is_error` result mentioning connection / timeout / DNS / fetch failed, or no `init` line and stderr naming a network failure | "Could not reach Claude. Check your connection." *Try again*. |
 | `process-crashed` | Non-zero exit or killed by a signal with no `result` line; stderr kept | "Claude Code stopped unexpectedly." *Try again*, *Details*. |
