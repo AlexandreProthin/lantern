@@ -241,7 +241,7 @@
     x: Math.max(8, Math.min(width - 200, transform.x + width / 2 + menuNode.x * transform.k + 18)),
     y: Math.max(8, Math.min(height - menuHeight - 8, transform.y + height / 2 + menuNode.y * transform.k - 12)) } : null);
   $effect(() => { if (menu && (!menuNode || !visible)) untrack(() => closeMenu(false)); });
-  /** NW-42: a touch held still for half a second opens the node menu, as a right click does; the tap that ends it does not also select. */
+  /** NW-41: a touch held still for half a second opens the node menu, as a right click does; the tap that ends it does not also select. */
   let press: { timer: ReturnType<typeof setTimeout>; x: number; y: number } | null = null, pressedMenu = false;
   function pressStart(e: PointerEvent, id: string, pending: boolean) {
     if (e.pointerType !== 'touch' || pending) return;
@@ -778,7 +778,7 @@
     {#if fileNote}<span class="file-note" role="status">{fileNote}</span>{/if}
   </div>
   <div class="legend">
-    <!-- NW-42: on a phone the legend starts folded each time, whatever the desktop keeps. -->
+    <!-- NW-40: on a phone the legend starts folded each time, whatever the desktop keeps. -->
     <button aria-expanded={legendShown} onclick={() => { if (phone.current) phoneLegend = !phoneLegend; else { settings.ui.legendCollapsed = !settings.ui.legendCollapsed; preferencesChanged(); } }}>{strings.legend}</button>
     {#if legendShown}
       {@render legend()}
@@ -971,7 +971,7 @@
   }
   .legend button, .open-file { padding:3px 8px; font-size:12px; }
   .legend label { display:flex; align-items:center; gap:4px; }
-  /* NW-42, NW-43: on a phone the controls take a finger, the search field does not zoom the page, and the corner clears the zoom buttons. */
+  /* NW-41, NW-42: on a phone the controls take a finger, the search field does not zoom the page, and the corner clears the zoom buttons. */
   @media (max-width: 719px) {
     .controls { right:12px; top:12px; } .controls button, .zoom-controls button { width:40px; height:40px; }
     .zoom-controls { right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); }

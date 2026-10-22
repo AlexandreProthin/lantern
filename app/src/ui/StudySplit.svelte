@@ -7,14 +7,14 @@
   import { phone } from './phone.svelte';
   let { settings, preferencesChanged, visible, ready = true, panelBusy = false, sheetButton = true, graph, panel, divider }: {
     settings: Settings; preferencesChanged: () => void; visible: boolean; ready?: boolean; panelBusy?: boolean;
-    /** NW-42: whether the phone layout's Details button shows over the graph side (a room hides it while it covers the graph). */
+    /** NW-40: whether the phone layout's Details button shows over the graph side (a room hides it while it covers the graph). */
     sheetButton?: boolean;
     /** Receives whether the graph side is shown (not collapsed). */
     graph: Snippet<[boolean]>; panel: Snippet; divider?: Snippet;
   } = $props();
   let body: HTMLDivElement;
   let width = $state(1000), dragging = $state(false);
-  /** NW-42: on a phone the graph fills the space and the panel is a sheet over it, opened by a tap on a node or its menu. */
+  /** NW-40, NW-41: on a phone the graph fills the space and the panel is a sheet over it, opened by a tap on a node or its menu. */
   let sheet = $state(false);
   const narrow = $derived(phone.current);
   $effect(() => { if (!narrow || !visible) sheet = false; });

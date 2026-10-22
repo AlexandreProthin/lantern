@@ -99,7 +99,7 @@
   /* RS-15: centred under the field, just below the bar, above the spaces (and above Amber, CO-17). */
   .field-panel { position:fixed; left:50%; top:52px; transform:translateX(-50%); z-index:12; width:clamp(440px, 36vw, 560px); max-height:calc(100vh - 72px); overflow:auto; box-sizing:border-box;
     padding:6px; background:var(--surface); border:1px solid var(--line); border-radius:6px; box-shadow:0 12px 32px color-mix(in srgb, var(--bg) 70%, transparent); color:var(--ink); }
-  /* NW-41: on a phone the panel spans the width, under the bar's second row (the field). */
+  /* NW-40: on a phone the panel spans the width, under the bar's second row (the field). */
   @media (max-width: 719px) {
     .field-panel { left:12px; right:12px; width:auto; transform:none; top:calc(110px + env(safe-area-inset-top)); max-height:calc(100dvh - 124px - env(safe-area-inset-top)); }
   }

@@ -136,7 +136,7 @@
   .spacer { flex:1; align-self:stretch; min-width:0; }
   .stats { font-size:12px; color:var(--ink-mute); white-space:nowrap; display:inline-block; overflow:hidden; }
   .stats.folded { max-width:0; visibility:hidden; }
-  /* NW-41: on a phone the bar takes two rows: the mark and the capsule, then the subject field across the width. */
+  /* NW-40: on a phone the bar takes two rows: the mark and the capsule, then the subject field across the width. */
   @media (max-width: 719px) {
     header { height:auto; flex-wrap:wrap; row-gap:8px; gap:10px; padding:max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left)); }
     .capsule { min-width:0; } .capsule button, .capsule .room { height:40px; padding:0 8px; } .capsule { height:42px; border-radius:21px; }

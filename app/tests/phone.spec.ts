@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 // NW-40..43: the phone layout, below 720 px. Desktop widths keep the split.
 const noSideScroll = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
 
-test('NW-41, NW-42: a phone gets two bar rows, the graph alone, and the panel as a sheet opened by a tap', async ({ page }) => {
+test('NW-40, NW-41: a phone gets two bar rows, the graph alone, and the panel as a sheet opened by a tap', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/?study=1&subject=Ocean%20tides');
@@ -28,7 +28,7 @@ test('NW-41, NW-42: a phone gets two bar rows, the graph alone, and the panel as
   expect(errors).toEqual([]);
 });
 
-test('NW-42, NW-43: Settings fills a phone screen and its fields are 16 px', async ({ page }) => {
+test('NW-40, NW-42: Settings fills a phone screen and its fields are 16 px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/');
   await page.getByRole('button', { name: 'Settings' }).click();
@@ -39,7 +39,7 @@ test('NW-42, NW-43: Settings fills a phone screen and its fields are 16 px', asy
   expect(await noSideScroll(page)).toBe(true);
 });
 
-test('NW-40: at desktop widths nothing of the phone layout shows', async ({ page }) => {
+test('NW-43: at desktop widths nothing of the phone layout shows', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/?study=1&subject=Ocean%20tides');
   await expect(page.locator('.panel')).toBeVisible();

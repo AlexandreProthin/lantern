@@ -134,7 +134,7 @@
   .settings::backdrop { background:var(--code); opacity:.7; } header { display:flex; justify-content:space-between; align-items:center; padding:12px 24px; border-bottom:1px solid var(--line); } h2 {font-size:18px;}
   .body { display:grid; grid-template-columns:160px 1fr; min-height:400px; } nav {display:flex;flex-direction:column;gap:8px;padding:20px;border-right:1px solid var(--line);} nav button {text-align:left;} [aria-current='page'] {color:var(--accent);border-color:var(--accent);}
   section { padding:24px; overflow:auto; max-height:65vh; } fieldset {padding:0;border:0;display:grid;gap:16px;} label,.field {display:grid;gap:8px;} p {color:var(--ink-mute);font-size:13px;} pre {white-space:pre-wrap;} h3 {font-size:15px;} a {color:var(--accent);} .actions {display:flex;gap:8px;flex-wrap:wrap;} .confirmation {border:1px solid var(--line);padding:12px;} .invalid {color:var(--focus);}
-  /* NW-42: on a phone Settings fills the screen and its sections become a row of tabs. */
+  /* NW-40: on a phone Settings fills the screen and its sections become a row of tabs. */
   @media (max-width: 719px) {
     .settings { width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; margin:0; border:0; border-radius:0; box-sizing:border-box; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
     .settings[open] { display:flex; flex-direction:column; } header { padding:8px 16px; } header button { min-width:44px; min-height:44px; font-size:20px; }
