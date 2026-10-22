@@ -23,6 +23,8 @@
   import { strings } from '../strings';
   import type { Settings } from '../../frame/settings';
   import type { LibrarySpaces } from '../../frame/library-spaces';
+  import { remote } from '../../frame/host';
+  import { phone } from '../phone.svelte';
   import { GraphScene, type SceneNode } from './graph-scene';
   import { SpawnMotion } from './spawn-motion';
   import { searchNodes, stepMatch } from './graph-search';
@@ -51,6 +53,8 @@
   let simLinks: SimLink[] = [];
   let tick = $state(0);
   let transform = $state<ZoomTransform>(zoomIdentity);
+  let phoneLegend = $state(false);
+  const legendShown = $derived(phone.current ? phoneLegend : !settings.ui.legendCollapsed);
   let width = $state(800);
   let height = $state(600);
   const layout = $derived<Layout>(settings.ui.graphLayout === 'tree' || Object.keys(session.visit.nodes).length > 800 ? 'tree' : 'force');
@@ -237,6 +241,15 @@
     x: Math.max(8, Math.min(width - 200, transform.x + width / 2 + menuNode.x * transform.k + 18)),
     y: Math.max(8, Math.min(height - menuHeight - 8, transform.y + height / 2 + menuNode.y * transform.k - 12)) } : null);
   $effect(() => { if (menu && (!menuNode || !visible)) untrack(() => closeMenu(false)); });
+  /** NW-42: a touch held still for half a second opens the node menu, as a right click does; the tap that ends it does not also select. */
+  let press: { timer: ReturnType<typeof setTimeout>; x: number; y: number } | null = null, pressedMenu = false;
+  function pressStart(e: PointerEvent, id: string, pending: boolean) {
+    if (e.pointerType !== 'touch' || pending) return;
+    pressEnd(); pressedMenu = false;
+    press = { x: e.clientX, y: e.clientY, timer: setTimeout(() => { press = null; if (menu !== id) { pressedMenu = true; openMenu(e, id); } }, 500) };
+  }
+  function pressMove(e: PointerEvent) { if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 8) pressEnd(); }
+  function pressEnd() { if (press) clearTimeout(press.timer); press = null; }
   function openMenu(e: MouseEvent, id: string) {
     e.preventDefault(); session.setFocus(id); menu = id;
     afterUpdate().then(() => menuEl?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus());
@@ -701,8 +714,9 @@
         aria-pressed={focused}
         aria-label="{title(n.title)} · {n.kind} · {n.state}{room.labelExtra?.(n) ?? ''}{busy ? ' · '+strings.preparing : ''}"
         title="{title(n.title)} · {n.state}{room.tooltipExtra?.(n) ?? ''}"
-        onclick={() => session.setFocus(n.id)}
-        oncontextmenu={(e) => { if (!n.pending) openMenu(e, n.id); }}
+        onclick={() => { if (pressedMenu) { pressedMenu = false; return; } session.setFocus(n.id); }}
+        oncontextmenu={(e) => { if (n.pending) return; if (menu === n.id) { e.preventDefault(); return; } openMenu(e, n.id); }}
+        onpointerdown={(e) => pressStart(e, n.id, !!n.pending)} onpointermove={pressMove} onpointerup={pressEnd} onpointercancel={pressEnd}
         aria-haspopup="menu"
       >
         <span class="disc">{@render glyph(n)}</span>
@@ -759,12 +773,14 @@
   </nav>
   <div class="corner">
   <div class="file-row">
-    <button class="open-file" title={strings.openFileHint} onclick={openFile} oncontextmenu={copyFilePath}>{strings.openFile}</button>
+    <!-- NW-31: the subject's file is on the computer running Lantern, out of a paired device's reach. -->
+    {#if !remote}<button class="open-file" title={strings.openFileHint} onclick={openFile} oncontextmenu={copyFilePath}>{strings.openFile}</button>{/if}
     {#if fileNote}<span class="file-note" role="status">{fileNote}</span>{/if}
   </div>
   <div class="legend">
-    <button aria-expanded={!settings.ui.legendCollapsed} onclick={() => { settings.ui.legendCollapsed = !settings.ui.legendCollapsed; preferencesChanged(); }}>{strings.legend}</button>
-    {#if !settings.ui.legendCollapsed}
+    <!-- NW-42: on a phone the legend starts folded each time, whatever the desktop keeps. -->
+    <button aria-expanded={legendShown} onclick={() => { if (phone.current) phoneLegend = !phoneLegend; else { settings.ui.legendCollapsed = !settings.ui.legendCollapsed; preferencesChanged(); } }}>{strings.legend}</button>
+    {#if legendShown}
       {@render legend()}
       <label><input type="checkbox" bind:checked={settings.ui.textLinks} onchange={preferencesChanged} />{strings.textLinks}</label>
     {/if}
@@ -955,6 +971,15 @@
   }
   .legend button, .open-file { padding:3px 8px; font-size:12px; }
   .legend label { display:flex; align-items:center; gap:4px; }
+  /* NW-42, NW-43: on a phone the controls take a finger, the search field does not zoom the page, and the corner clears the zoom buttons. */
+  @media (max-width: 719px) {
+    .controls { right:12px; top:12px; } .controls button, .zoom-controls button { width:40px; height:40px; }
+    .zoom-controls { right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); }
+    .search { height:40px; border-radius:20px; } .search input { width:min(46vw, 200px); font-size:16px; }
+    .corner { left:12px; bottom:calc(12px + env(safe-area-inset-bottom)); max-width:calc(100% - 180px); }
+    .legend button, .open-file { padding:8px 12px; font-size:13px; }
+    .node-menu button { padding:12px 14px; font-size:15px; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .node .disc, .node .name { animation:none !important; }
     :global(.traveler), :global(.link-preview) {

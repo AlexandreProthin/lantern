@@ -92,5 +92,12 @@
   .rec { margin:0 8px 18px; font:600 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; border-radius:999px; padding:6px 0; background:transparent; border:1px solid var(--accent); color:var(--accent); }
   .rec.on { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); box-shadow:0 0 24px 6px var(--glow-far); }
   .rec:hover:not(:disabled) { background:var(--accent); color:var(--accent-ink); }
+  /* NW-42: on a phone the rail is a bar under the graph; its counters run in a row. */
+  @media (max-width: 719px) {
+    .rail { flex:none; width:100%; height:auto; flex-direction:row; align-items:center; border-left:0; border-top:2px solid var(--accent); padding-bottom:env(safe-area-inset-bottom); }
+    .open { flex-direction:row; align-items:center; gap:14px; padding:8px 12px; overflow-x:auto; scrollbar-width:none; text-align:left; }
+    .ctr { flex:none; } .ctr b { font-size:20px; } .ctr small { margin-top:2px; font-size:10px; } .gap, .spine-run, .tip { display:none !important; }
+    .rec { flex:none; margin:0 12px 0 0; padding:8px 12px; }
+  }
   .spine-run { position:absolute; left:-2px; top:0; bottom:0; width:2px; background:var(--focus); transform-origin:50% 100%; pointer-events:none; box-shadow:0 0 8px var(--glow-near); opacity:0; }
 </style>

@@ -174,7 +174,7 @@
   .starters{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 16px 6px 0}.shint{font-size:11px;color:var(--ink-faint);margin-right:2px}.starter{border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink-mute);padding:3px 10px;font-size:12px;animation:appear 200ms both;animation-delay:var(--delay)}.starter:hover{border-color:var(--accent);color:var(--accent)}
   button,input{transition:color 180ms ease-out,opacity 180ms ease-out,box-shadow 180ms ease-out,background 180ms ease-out}.embers{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
   @keyframes underline{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-  @media(max-width:760px){.subj{font-size:26px}.cap:global(.on) .subj{font-size:20px}.cards{grid-template-columns:1fr}.wrap,.wrap.first{padding-top:10vh}}
+  @media(max-width:760px){.subj{font-size:26px}.cap:global(.on) .subj{font-size:20px}.primary{padding:10px 16px;font-size:13px}.cap:global(.on){padding-left:18px}.cards{grid-template-columns:1fr}.wrap,.wrap.first{padding-top:10vh}}
   @media(prefers-reduced-motion:reduce){*,*:before{animation:none!important;transition:none!important}.embers{display:none}}
   :global(html[data-reduce-motion='on']) *{animation:none!important;transition:none!important}
 </style>

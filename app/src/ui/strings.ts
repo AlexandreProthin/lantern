@@ -71,7 +71,7 @@ export const strings = {
   understoodLost: (n: number) => `${n} understood nodes will be lost.`
   , tone: 'Tone', customTone: 'Custom tone', advanced: 'Advanced', contextBudget: 'Map context budget',
   newSubjectsHint: 'Applies to new subjects.', contextBudgetHint: 'Applies to the map in your next generation. The CLI baseline is separate.',
-  collapseGraph: 'Collapse graph', collapsePanel: 'Collapse panel', restoreGraph: 'Restore graph', restorePanel: 'Restore panel',
+  collapseGraph: 'Collapse graph', collapsePanel: 'Collapse panel', restoreGraph: 'Restore graph', restorePanel: 'Restore panel', openPanel: 'Details', backToGraph: 'Graph',
   general: 'General', provider: 'Provider', appearance: 'Appearance', defaultModel: 'Default model', defaultEffort: 'Default effort',
   libraryFolder: 'Library folder', reduceMotion: 'Reduce motion', followSystem: 'Follow system', alwaysReduce: 'Always reduce',
   shortcuts: 'Keyboard shortcuts', close: 'Close', settingsRecovered: 'Unreadable settings were backed up and reset to defaults.',
