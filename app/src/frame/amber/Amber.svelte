@@ -229,6 +229,11 @@
   const tip = $derived(pool.find(t => t.id === tipId));
   const guide = $derived(room.companion?.guide[space] ?? []);
   const box = $derived(bubbleBox(spot, width, BUBBLE_W, height));
+  /** The bubble's tail, on the edge facing Amber, under its centre and clear of the bubble's rounded corners. */
+  function tailOf(at: { left: number; top?: number; bottom?: number }, w: number) {
+    const x = at.left + Math.max(30, Math.min(w - 30, spot.left + AMBER_W / 2 - at.left));
+    return { left: x, top: at.top !== undefined ? at.top - 7 : undefined, bottom: at.bottom !== undefined ? at.bottom - 7 : undefined };
+  }
   /** CO-21: the next tip, unseen first; it is remembered as seen once shown. */
   function showNextTip() {
     const id = nextTip(pool.map(t => t.id), amberState, tipId); tipId = id; mode = 'tip';
@@ -278,8 +283,9 @@
   onpointerover={() => { if (!hovered) { hovered = true; if (!act) play(GESTURE.rest); } }} onpointerout={e => { if (!button?.contains(e.relatedTarget as Node)) hovered = false; }}
   onfocus={() => { if (!act) play(GESTURE.rest); }} onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}>{@html svg}<svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
 {/if}
-{#if saying && ready && !bubble && !menu && motion.kind === 'still'}{@const at = bubbleBox(spot, width, SAY_W, height)}
-  <div class="say" class:fading role="status" aria-live="polite" data-testid="amber-says" style:left={`${at.left}px`} style:top={at.top !== undefined ? `${at.top}px` : undefined} style:bottom={at.bottom !== undefined ? `${at.bottom}px` : undefined} style:width={`${SAY_W}px`}
+{#if saying && ready && !bubble && !menu && motion.kind === 'still'}{@const at = bubbleBox(spot, width, SAY_W, height)}{@const t = tailOf(at, SAY_W)}
+  <div class="tail" class:up={t.top !== undefined} class:fading aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
+  <div class="say living" class:still={reduced} class:fading role="status" aria-live="polite" data-testid="amber-says" style:left={`${at.left}px`} style:top={at.top !== undefined ? `${at.top}px` : undefined} style:bottom={at.bottom !== undefined ? `${at.bottom}px` : undefined} style:width={`${SAY_W}px`}
     onpointerenter={() => { if (saying === 'greeting') pauseFade(); }} onpointerleave={() => { if (saying === 'greeting' && sayHover) resumeFade(); }}>
     {#if saying === 'waiting'}<p>{waiting}</p>
     {:else if greeting}<p>{greeting.text}</p>
@@ -290,8 +296,9 @@
     {/if}
   </div>
 {/if}
-{#if bubble}
-  <div class="bubble" role="dialog" aria-label={strings.amberName} tabindex="-1" bind:this={bubbleEl} style:left={`${box.left}px`} style:top={box.top !== undefined ? `${box.top}px` : undefined} style:bottom={box.bottom !== undefined ? `${box.bottom}px` : undefined} style:width={`${BUBBLE_W}px`}
+{#if bubble}{@const t = tailOf(box, BUBBLE_W)}
+  <div class="tail" class:up={t.top !== undefined} aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
+  <div class="bubble living" class:still={reduced} role="dialog" aria-label={strings.amberName} tabindex="-1" bind:this={bubbleEl} style:left={`${box.left}px`} style:top={box.top !== undefined ? `${box.top}px` : undefined} style:bottom={box.bottom !== undefined ? `${box.bottom}px` : undefined} style:width={`${BUBBLE_W}px`}
     onkeydown={e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeBubble(true); } }}>
     {#if mode === 'tip'}<p class="tip">{#if tip}<Emphasis text={tip.text} />{/if}</p>
     {:else}<h3>{strings.whatCanIDo}</h3><GuideLines lines={guide} />{/if}
@@ -325,13 +332,26 @@
   .hit { position:absolute; inset:0; } .hit path { fill:transparent; pointer-events:visiblePainted; }
   .amber:hover:not(:disabled), .amber:active { background:none; border:0; box-shadow:none; }
   .amber:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
-  .bubble { position:fixed; z-index:9; display:grid; gap:10px; padding:14px 16px; box-sizing:border-box; max-height:min(70vh,560px); overflow:auto;
-    background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.35); font-size:14px; line-height:1.5; }
-  .say { position:fixed; z-index:9; display:grid; gap:6px; padding:10px 14px; box-sizing:border-box; max-height:min(60vh,480px); overflow:auto;
-    background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:0 10px 28px rgba(0,0,0,.3); font-size:14px; line-height:1.5; transition:opacity .4s; }
-  .say.fading { opacity:0; } .say p { margin:0; } .say .notes { white-space:pre-wrap; color:var(--ink-mute); font-size:13px; }
+  .bubble { position:fixed; z-index:9; display:grid; gap:10px; padding:16px 18px; box-sizing:border-box; max-height:min(70vh,560px); overflow:auto; font-size:14px; line-height:1.5; }
+  .say { position:fixed; z-index:9; display:grid; gap:6px; padding:12px 16px; box-sizing:border-box; max-height:min(60vh,480px); overflow:auto; font-size:14px; line-height:1.5; transition:opacity .4s; }
+  /* Amber's bubbles live: the outline slowly changes shape and the light of the flame breathes along its edge. */
+  .living, .tail { --rim:color-mix(in srgb, var(--amber-halo, #ffac38) 30%, var(--line)); background:var(--surface); border:1px solid var(--rim); }
+  .living { border-radius:22px 28px 24px 30px / 26px 22px 30px 24px; box-shadow:0 0 22px color-mix(in srgb, var(--amber-halo, #ffac38) 12%, transparent), 0 12px 30px rgba(0,0,0,.35);
+    animation:morph 9s ease-in-out infinite, glow 4.5s ease-in-out infinite; }
+  .living.still { animation:none; }
+  @keyframes morph {
+    0%, 100% { border-radius:22px 28px 24px 30px / 26px 22px 30px 24px; }
+    33% { border-radius:28px 22px 30px 24px / 22px 30px 24px 28px; }
+    66% { border-radius:24px 30px 22px 28px / 30px 24px 28px 22px; }
+  }
+  @keyframes glow { 50% { box-shadow:0 0 30px color-mix(in srgb, var(--amber-halo, #ffac38) 20%, transparent), 0 12px 30px rgba(0,0,0,.35); } }
+  /* The tail points at Amber: up to a hanging one, down to a resting one; it covers the bubble's edge where they meet. */
+  .tail { position:fixed; z-index:10; width:14px; height:14px; margin-left:-7px; box-sizing:border-box; pointer-events:none; transform:rotate(45deg); transition:opacity .4s;
+    border-top-color:transparent; border-left-color:transparent; border-bottom-right-radius:4px; }
+  .tail.up { border-color:var(--rim); border-right-color:transparent; border-bottom-color:transparent; border-radius:4px 0 0 0; }
+  .say.fading, .tail.fading { opacity:0; } .say p { margin:0; } .say .notes { white-space:pre-wrap; color:var(--ink-mute); font-size:13px; }
   .say .quiet { justify-self:start; background:none; border:0; padding:0; font-size:13px; color:var(--accent); }
-  @media (prefers-reduced-motion: reduce) { .say { transition:none; } }
+  @media (prefers-reduced-motion: reduce) { .say, .tail { transition:none; } .living { animation:none; } }
   .bubble:focus { outline:none; } .tip { margin:0; } h3 { margin:0; font-size:14px; font-weight:600; }
   .row { display:flex; gap:8px; flex-wrap:wrap; } .row button { font-size:13px; } .row [aria-pressed='true'] { border-color:var(--accent); }
   .menu { position:fixed; z-index:9; display:grid; gap:2px; min-width:220px; max-height:60vh; overflow:auto; padding:6px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.35); }
