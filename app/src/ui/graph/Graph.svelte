@@ -63,6 +63,12 @@
   let zoomer: ZoomBehavior<HTMLDivElement, unknown>;
   const spawn = new SpawnMotion(() => host, () => edgesSvg, () => !motionReduced() && visible && !document.hidden);
   let panFrame=0;
+  /** `transform` is relative to the view's centre (the world is drawn at +width/2, +height/2); d3-zoom's own
+      transform is relative to the corner, so a pinch, a wheel or the ± buttons zoom around the right point. */
+  const toZoom=(t:ZoomTransform)=>zoomIdentity.translate(t.x+width/2,t.y+height/2).scale(t.k);
+  function setView(t:ZoomTransform){select(host).call(zoomer.transform,toZoom(t));}
+  // A resize moves the centre: d3-zoom's copy follows, so the next gesture starts from what is shown.
+  $effect(()=>{width;height;untrack(()=>{if(!zoomer||panFrame)return;setView(transform);});});
   let halfRate=$state(false),settlingFrame=0,lastTick=0,slowSince=0;
   function halfStep(){let skip=false;
     function frame(){if(!visible||motionReduced())return;
@@ -74,10 +80,10 @@
   function stopPan(){cancelAnimationFrame(panFrame);panFrame=0;}
   function moveView(target:ZoomTransform,duration:number) {
     if(!zoomer)return;stopPan();
-    if(motionReduced()){select(host).call(zoomer.transform,target);return;}
+    if(motionReduced()){setView(target);return;}
     const from=transform,started=performance.now();
     function frame(at:number){const t=Math.min(1,(at-started)/duration),ease=t*t*(3-2*t);
-      select(host).call(zoomer.transform,zoomIdentity.translate(from.x+(target.x-from.x)*ease,from.y+(target.y-from.y)*ease).scale(from.k+(target.k-from.k)*ease));
+      setView(zoomIdentity.translate(from.x+(target.x-from.x)*ease,from.y+(target.y-from.y)*ease).scale(from.k+(target.k-from.k)*ease));
       if(t<1)panFrame=requestAnimationFrame(frame);else panFrame=0;}
     panFrame=requestAnimationFrame(frame);
   }
@@ -360,7 +366,7 @@
     if(id===shownSubject)return;
     viewMemory.set(shownSubject,{transform});shownSubject=id;resetSearch();
     const memory=viewMemory.get(id);prevFocus=session.visit.focusId;lastRoute=route;stopTravel();stopPan();
-    afterUpdate().then(()=>{if(!zoomer)return;if(memory)select(host).call(zoomer.transform,memory.transform);else setTimeout(reset,500);});
+    afterUpdate().then(()=>{if(!zoomer)return;if(memory)setView(memory.transform);else setTimeout(reset,500);});
   });});
 
   $effect(() => {
@@ -657,8 +663,9 @@
     zoomer = zoom<HTMLDivElement, unknown>()
       .scaleExtent([0.1, 3])
       .on('start',e=>{if(e.sourceEvent)stopPan();})
-      .on('zoom', (e) => { const t = e.transform; backdropPan(t.x - transform.x, t.y - transform.y, t.k / transform.k); transform = t; });
+      .on('zoom', (e) => { const t = zoomIdentity.translate(e.transform.x - width / 2, e.transform.y - height / 2).scale(e.transform.k); backdropPan(t.x - transform.x, t.y - transform.y, t.k / transform.k); transform = t; });
     select(host).call(zoomer).on('dblclick.zoom', null);
+    setView(transform);
     const onMotion = () => { if (motionReduced()) { spawn.stop();stopTravel(); } applyLayout(); };
     const initialFit = setTimeout(reset, 500);
     const onVisibility = () => { if(document.hidden) { spawn.stop();stopTravel(); } };

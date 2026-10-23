@@ -9,7 +9,7 @@
   let status = $state<Status | null>(null), port = $state(''), busy = $state(false), error = $state('');
   let pairing = $state<Pairing | null>(null), forgetting = $state(false);
   let expiry: ReturnType<typeof setTimeout> | undefined;
-  const qr = $derived(pairing ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(pairing.qr)}` : '');
+  const qr = $derived(pairing?.qr.replace(/^<\?xml[^>]*>\s*/, '') ?? '');
   async function run(task: () => Promise<Status>) {
     busy = true; error = '';
     try { status = await task(); port = String(status.port); if (!status.running) pairing = null; } catch (e) { error = String(e); } finally { busy = false; }
@@ -49,7 +49,8 @@
     <h3>{strings.networkPair}</h3>
     {#if pairing}
       <div class="pairing">
-        <img src={qr} alt={pairing.url} width="220" height="220" />
+        <!-- Inline: the desktop window's CSP has no data: images. The SVG is made by Rust from our own URL. -->
+        <div class="qr" role="img" aria-label={pairing.url} data-testid="network-qr">{@html qr}</div>
         <div><span>{strings.networkCode}</span><code class="code" data-testid="network-code">{pairing.code.slice(0, 4)} {pairing.code.slice(4)}</code><p>{strings.networkPairHint}</p></div>
       </div>
     {:else}<button onclick={pair}>{strings.networkPair}</button>{/if}
@@ -65,9 +66,10 @@
 <style>
   p { color:var(--ink-mute); font-size:13px; margin:0; } h3 { font-size:15px; margin:8px 0 0; } a { color:var(--accent); } label { display:grid; gap:8px; } .invalid { color:var(--focus); }
   label:has(input[type='checkbox']) { display:flex; gap:8px; align-items:center; }
-  .row { display:flex; gap:8px; align-items:end; flex-wrap:wrap; } .row label { max-width:120px; }
+  .row { display:flex; gap:8px; align-items:end; flex-wrap:wrap; } .row label { width:120px; } .row input { width:100%; box-sizing:border-box; }
+  .row button { min-height:38px; }
   .field { display:grid; gap:8px; } code { font-size:12px; word-break:break-all; color:var(--ink); }
-  .pairing { display:flex; gap:16px; align-items:center; flex-wrap:wrap; } .pairing img { background:#fff; border-radius:8px; padding:8px; }
+  .pairing { display:flex; gap:16px; align-items:center; flex-wrap:wrap; } .qr { width:220px; height:220px; background:#fff; border-radius:8px; overflow:hidden; } .qr :global(svg) { display:block; width:100%; height:100%; }
   .pairing div { display:grid; gap:8px; } .code { font-size:28px; letter-spacing:.12em; color:var(--accent); }
   ul { margin:0; padding-left:18px; color:var(--ink); font-size:13px; } li span { color:var(--ink-mute); }
 </style>
