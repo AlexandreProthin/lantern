@@ -38,7 +38,7 @@ export function cases(): EvalCase[] {
     rewrite.rooms.learn.nodes.n1.dialogue = [{ role: 'user', text: french ? 'Je ne comprends pas pourquoi la face éloignée monte aussi.' : "I don't get why the far side rises too.", at, author: { kind: 'user', by: 'fixture' } }];
     result.push({ id: `${language}-${size}-rewrite`, subject: rewrite, task: 'rewrite', focusId: 'n1', language, pending: false });
     result.push({ id: `${language}-${size}-rewrite-note`, subject: structuredClone(subject), task: 'rewrite', focusId: 'n1', language, pending: false,
-      note: french ? 'Explique-le avec une analogie de cuisine' : 'Explain it with a cooking analogy', follows: /cook|kitchen|recipe|oven|dough|batter|bak(e|ing)|bread|jell|sauce|soup|bowl|plate|dish|tray|counter|custard|cream|flan|plat\b|plateau|crème|ladle|spoon|whisk|pan\b|pot\b|cuisin|recette|four\b|pâte|casserole|soupe|marmite|louche|cuill|gelée|assiette|bol\b/i });
+      note: french ? 'Explique-le avec une analogie de cuisine' : 'Explain it with a cooking analogy', follows: /cook|kitchen|recipe|oven|dough|batter|bak(e|ing)|bread|jell|sauce|soup|bowl|plate|cake|frost|icing|taffy|caramel|candy|honey|miel|gâteau|bonbon|dish|tray|counter|custard|cream|flan|chees|fromage|mozzarella|pizza|butter|beurre|milk|lait\b|chocolat|plat\b|plateau|crème|ladle|spoon|whisk|pan\b|pot\b|cuisin|recette|four\b|pâte|casserole|soupe|marmite|louche|cuill|gelée|assiette|bol\b/i });
     const corrected = structuredClone(subject), n1 = corrected.rooms.learn.nodes.n1;
     n1.previous = n1.content; n1.edited = { by: 'fixture', at };
     n1.content += french ? " En plein océan, le bourrelet lunaire ne fait qu'environ 46 cm de haut." : ' In the open ocean, the lunar bulge is only about 46 cm high.';

@@ -89,5 +89,5 @@ test('TP-14, CA-40: a rewrite sees the parent, its own text and the dialogue; th
   expect(p.match(/"Use food analogies x+"/)![0].length).toBe(302);
   expect(p).not.toContain('{{'); expect(p).not.toMatch(/\n{3}/); expect(p).not.toContain('on-ramp');
   expect(taskPrompt(v, 'rewrite', 'n3').prompt).not.toContain('should change');
-  expect(taskPrompt(v, 'rewrite', 'n0').prompt).toContain('short on-ramp of 2 to 4 sentences');
+  expect(taskPrompt(v, 'rewrite', 'n0').prompt).toContain('short on-ramp of 2 to 4 sentences, plus a couple of core concepts if useful, under 150 words in all.');
 });
