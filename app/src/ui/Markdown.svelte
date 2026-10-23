@@ -3,7 +3,8 @@
   import type { RoomVisit } from '../core/model';
   import { renderMarkdown, renderDiagrams } from './markdown';
   import { strings } from './strings';
-  import { invoke } from '@tauri-apps/api/core';
+  import { invoke } from '../frame/ipc';
+  import { native } from '../frame/host';
   import 'katex/dist/katex.min.css';
   let { text, visit, streaming = false, focus, preview }: { text: string; visit: RoomVisit; streaming?: boolean; focus: (id: string) => void; preview?: (id: string | null) => void } = $props();
   let root: HTMLElement;
@@ -22,7 +23,7 @@
     const copy = element.closest<HTMLButtonElement>('[data-copy]');
     if (copy) { navigator.clipboard.writeText(copy.parentElement?.querySelector('code')?.textContent ?? '').then(() => { copy.textContent = strings.copied; }); return; }
     const external = element.closest<HTMLAnchorElement>('a[href]');
-    if (external && '__TAURI_INTERNALS__' in window) { e.preventDefault(); void invoke('open_external', { url: external.href }); }
+    if (external && native) { e.preventDefault(); void invoke('open_external', { url: external.href }); }
   }
 </script>
 <!-- Generated buttons/links handle the keyboard's synthetic click events. -->

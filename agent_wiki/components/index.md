@@ -25,5 +25,6 @@ Use `type: Component`.
 - [Choose room](/components/choose-room.md) - The decision graph, Compare table and Gallery; session lanes, protocol parser and `choose-1` prompts.
 - [Endpoint provider and API keys](/components/endpoint-provider.md) - Local and cloud endpoints in Rust, keys in Windows Credential Manager, routing by model id, Settings → Endpoints.
 - [Update check and local feed](/components/update-channel.md) - Update commands, the loopback feed for a local release folder, and the frame's controller and rules.
+- [Network server and browser transport](/components/network-server.md) - The HTTPS server in the desktop app, pairing and rights, the fetch transport, Settings → Network and the phone breakpoint.
 
 - [v0.1.0 Welcome and Gallery](/components/v010-library-spaces.md) — M4 screens, library actions, thumbnails and shared motion.

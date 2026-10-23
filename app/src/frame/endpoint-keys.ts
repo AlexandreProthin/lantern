@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from './ipc';
 
 /** CE-71: what Settings may know about a key: whether one is set, its last 4 characters and its host. Never the key. */
 export interface KeyStatus { set: boolean; last4?: string | null; host?: string | null }

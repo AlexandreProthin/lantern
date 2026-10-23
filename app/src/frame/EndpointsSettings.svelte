@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { invoke } from '@tauri-apps/api/core';
+  import { invoke } from './ipc';
+  import { backend } from './host';
   import type { Settings } from './settings';
   import { type EndpointConfig, type EndpointModel, type Preset, PRESETS, PRESET_CAPS, PRESET_URLS, endpointsOf, initialContextSize, isCloudEndpoint, isHttps, keyHost, mergeModels, needsLanConfirmation, newEndpoint, wireEndpoint } from './endpoints';
   import { type KeyAdmin, type KeyStatus, desktopKeyAdmin, fakeKeys } from './endpoint-keys';
@@ -11,7 +12,8 @@
   let { settings, changed, provider, health = {}, fakeOptions = {}, disabled = false, keys }: {
     settings: Settings; changed: () => void; provider: InferenceProvider; health?: Record<string, Completion | ProviderError>; fakeOptions?: FakeEndpointOptions; disabled?: boolean; keys?: KeyAdmin
   } = $props();
-  const desktop = '__TAURI_INTERNALS__' in window;
+  // NW-21: key changes stay on the desktop window; a paired device can still read whether a key is set.
+  const desktop = backend;
   const keyAdmin = $derived(keys ?? (desktop ? desktopKeyAdmin : fakeKeys));
   const list = $derived(endpointsOf(settings.provider));
   let addPreset = $state<Preset>('ollama'), removing = $state(''), busy = $state(''), chosen = $state<Record<string, string>>({});

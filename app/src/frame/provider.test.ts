@@ -1,7 +1,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 // A plain stub: with vi.fn, a thrown plain object failed the test in vitest 3.2.
 const bridge = vi.hoisted(() => ({ calls: [] as [string, any][], impl: async (): Promise<unknown> => undefined, channel: undefined as undefined | { onmessage: (event: unknown) => void } }));
-vi.mock('@tauri-apps/api/core', () => ({
+vi.mock('./ipc', () => ({
   invoke: (command: string, args: any) => { bridge.calls.push([command, args]); return bridge.impl(); },
   Channel: class { onmessage: (event: unknown) => void = () => {}; constructor() { bridge.channel = this; } },
 }));

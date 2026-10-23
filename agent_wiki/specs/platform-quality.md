@@ -18,6 +18,7 @@ Source: spec workshop rounds 1–3 (2026-10-01/02). Agreed with the user 2026-10
 - **PQ-2** Windows-specific code MUST be confined to the provider and paths modules, so a port stays cheap *(2026-10-22: the snap-layouts hint moved from `commands.rs` to `paths.rs`; there is no exception)*.
 - **PQ-3** The tech stack MUST be the one in [prism-tech-stack](/decisions/prism-tech-stack.md) (Tauri 2, Svelte 5, TypeScript).
 - **PQ-4** The UI MUST be English, and all UI strings MUST live in one module so a French translation is cheap later.
+- **PQ-5** *(Added 2026-10-23, [network-serving](/specs/network-serving.md).)* The desktop app stays Windows-only, but it can serve its frontend over HTTPS on the LAN to any recent browser, phones included. The phone layout applies below 720 px (NW-40..42) and leaves the desktop window unchanged (NW-43); `tests/phone.spec.ts` checks both.
 
 ## Tests
 

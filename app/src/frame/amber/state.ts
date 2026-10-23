@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from '../ipc';
 /** SE-50, CO-15, CO-21: Amber's part of the app state file, under `companion`. Room and space ids are data here; the frame names no room. */
 export interface AmberState {
   spots: Record<string, string>; seenTips: string[];

@@ -10,6 +10,11 @@ impl Default for Calls { fn default() -> Self { Self { active: Mutex::new(HashMa
 pub struct Chunk { request_id: String, #[serde(skip_serializing_if = "Option::is_none")] text: Option<String>, #[serde(skip_serializing_if = "Option::is_none")] tool: Option<ToolUse> }
 #[tauri::command]
 pub async fn generate(request: Request, endpoint: Option<Endpoint>, channel: Channel<Chunk>, calls: State<'_, Calls>) -> Result<Completion, ProviderError> {
+    run(request, endpoint, &calls, move |chunk| { let _ = channel.send(chunk); }).await
+}
+/// NW-30: the call itself, for the Tauri channel and for the network server's stream alike.
+pub async fn run(request: Request, endpoint: Option<Endpoint>, calls: &Calls, send: impl FnMut(Chunk) + Send + 'static) -> Result<Completion, ProviderError> {
+    let mut send = send;
     let error = |kind, details: &str| ProviderError { kind, details: details.into(), model: String::new(), usage: Usage::default(), duration_ms: 0, tool_calls: None };
     // CE-26: an endpoint call needs no Claude Code; a call without an endpoint is the CLI call it always was.
     let provider: Box<dyn InferenceProvider> = match endpoint {
@@ -27,7 +32,7 @@ pub async fn generate(request: Request, endpoint: Option<Endpoint>, channel: Cha
     }
     let id = request.request_id.clone();
     let result = tauri::async_runtime::spawn_blocking(move || {
-        provider.stream(&request, cancel, &mut |event| { let request_id = request.request_id.clone(); let _ = channel.send(match event {
+        provider.stream(&request, cancel, &mut |event| { let request_id = request.request_id.clone(); send(match event {
             Streamed::Text(text) => Chunk { request_id, text: Some(text.into()), tool: None },
             Streamed::Tool(tool) => Chunk { request_id, text: None, tool: Some(tool.clone()) },
         }); })

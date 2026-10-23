@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from './ipc';
 import { getCurrentWindow, availableMonitors, primaryMonitor, PhysicalPosition, PhysicalSize } from '@tauri-apps/api/window';
 import { DebouncedWriter } from './debounced-writer';
 export interface WindowMemory { x:number;y:number;width:number;height:number;maximized:boolean }

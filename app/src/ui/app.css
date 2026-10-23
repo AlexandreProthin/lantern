@@ -106,5 +106,12 @@ button.primary:hover:not(:disabled) {
 /* Code tokens (NP-70): distinct hues on --code, at least 9:1 (comments 5:1, deliberately quieter). */
 :root[data-room="learn"] { --code-keyword:#e8b66e; --code-string:#a6d189; --code-number:#d4a5e8; --code-function:#8cc4ec; --code-type:#7fd4c8; --code-attr:#f2a97f; --code-comment:#7d8698; }
 input, textarea, select { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px; }
+/* NW-40, NW-42: on a phone, fields are at least 16 px (no zoom on focus) and every dialog uses
+   the whole width. Desktop windows (1024 px and up) never match. */
+@media (max-width: 719px) {
+  input, textarea, select { font-size:16px; }
+  dialog:not(.settings) { max-width:calc(100vw - 24px) !important; box-sizing:border-box; }
+  dialog .compare { grid-template-columns:1fr !important; }
+}
 /* Error Details text wraps inside its box, even a long unbroken server reply. */
 details pre { white-space:pre-wrap; overflow-wrap:anywhere; }

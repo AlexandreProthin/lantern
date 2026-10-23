@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { invoke } from '@tauri-apps/api/core';
+  import { invoke } from './ipc';
   import { getCurrentWindow } from '@tauri-apps/api/window';
   import { strings } from '../ui/strings';
   // The window has no system frame (decorations: false), so the header carries its controls.

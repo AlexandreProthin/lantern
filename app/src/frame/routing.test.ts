@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest';
 const bridge = vi.hoisted(() => ({ calls: [] as [string, any][] }));
-vi.mock('@tauri-apps/api/core', () => ({
+vi.mock('./ipc', () => ({
   invoke: (command: string, args: any) => { bridge.calls.push([command, args]); return Promise.resolve({ text: 'ok', model: 'ollama:gemma4:e2b', usage: {}, durationMs: 0, outcome: 'ok' }); },
   Channel: class { onmessage: (event: unknown) => void = () => {}; },
 }));

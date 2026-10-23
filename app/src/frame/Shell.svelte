@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, untrack } from 'svelte';
-  import { invoke } from '@tauri-apps/api/core';
+  import { invoke } from './ipc';
+  import { backend, native as isNative } from './host';
   import { strings } from '../ui/strings';
   // RS-53: header mark is the ember favicon of the accepted identity release; only its flame takes the room accent (see style).
   // Inlined as markup: an image URL would be a data: URI, which the app CSP blocks.
@@ -47,14 +48,15 @@
   import { AmberFakeProvider } from './amber/fake-provider';
   import { amberContext, amberHelp } from './amber/help';
   import { browserAmberLog, desktopAmberLog } from './amber/log';
-  const desktop = '__TAURI_INTERNALS__' in window;
+  // NW-31: `native` is the Tauri window only; `desktop` is any page with real files behind it (the window, or a paired device).
+  const native = isNative, desktop = backend;
   const fake = providerMode(desktop, import.meta.env.VITE_PROVIDER) === 'fake';
   let health = $state<Completion | ProviderError | null>(null);
   const fakeError=new URLSearchParams(location.search).get('error');
   /** RS-4: the registered rooms; RS-10: the current one (settings.ui.lastRoom). */
   let rooms = $state<readonly RoomDefinition[]>(baseRooms), roomId = $state(baseRooms[0].id);
   const room = $derived(rooms.find(r => r.id === roomId) ?? rooms[0]);
-  $effect(() => { document.title = windowTitle(room); if (desktop) void applyRoomChrome(room, lanternMark).catch(e => console.warn('window chrome', e)); });
+  $effect(() => { document.title = windowTitle(room); if (native) void applyRoomChrome(room, lanternMark).catch(e => console.warn('window chrome', e)); });
   const fakeDelay = Number(new URLSearchParams(location.search).get('delay') ?? 12);
   const fakeWait = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('wait') ?? 0) : 0;
   const fakeKind = import.meta.env.DEV&&fakeError&&Object.hasOwn(strings.errorKinds,fakeError)?fakeError as ErrorKind:undefined;
@@ -132,7 +134,7 @@
     amberGreeting = said.greeting; saveAmberState(said.next);
   });
   /** UP-13: the release page, in the browser. */
-  function openRelease(version: string) { const url = releasePage(version); if (desktop) void invoke('open_external', { url }).catch(e => toast = String(e)); else window.open(url, '_blank', 'noopener'); }
+  function openRelease(version: string) { const url = releasePage(version); if (native) void invoke('open_external', { url }).catch(e => toast = String(e)); else window.open(url, '_blank', 'noopener'); }
   $effect(() => { window.addEventListener(ASK_AMBER_EVENT, openSelectionAsk); return () => window.removeEventListener(ASK_AMBER_EVENT, openSelectionAsk); });
   const storage = desktop ? desktopStorage : browserStorage;
   let settings = $state(defaultSettings('', '', baseRooms));
@@ -282,8 +284,8 @@
   const librarySpaces: LibrarySpaces = {
     catalogue,get provider(){return provider;},get available(){return libraryAvailable;},get providerReady(){return !unavailable;},
     create:createSubject,open,rename:renameSubject,remove:removeSubject,
-    async reveal(id){if(desktop)await invoke('reveal_subject',{library,id});else {await storage.load(library,id);throw new Error(strings.explorerDesktop);}},
-    async filePath(id){if(desktop)return invoke<string>('subject_file',{library,id});throw new Error(strings.explorerDesktop);},
+    async reveal(id){if(native)await invoke('reveal_subject',{library,id});else {await storage.load(library,id);throw new Error(strings.explorerDesktop);}},
+    async filePath(id){if(native)return invoke<string>('subject_file',{library,id});throw new Error(strings.explorerDesktop);},
     thumbnail(summary){
       const stamp=JSON.stringify([summary.modifiedNs,summary.size]);
       const cacheKey=`${room.id}:${summary.path}`;
@@ -365,15 +367,15 @@
           if(loaded.recovered) toast=strings.settingsRecovered; if(loaded.readOnly) banner=strings.readOnly;
           if(loaded.transferRecovered)toast=strings.transferRecovered;
           library=settings.library.path;
-          if(!loaded.readOnly && !(loaded.document as {library?:{path?:string}})?.library?.path) {
+          if(native && !loaded.readOnly && !(loaded.document as {library?:{path?:string}})?.library?.path) {
             try {library=await invoke<string>('validate_library',{path:library});settings.library.path=library;}catch(e){banner=strings.libraryUnavailable+' '+String(e);}
           }
-          await invoke('import_poc',{library});
+          if(native) await invoke('import_poc',{library});
           try {const state=await invoke<{recents:string[];window?:unknown}>('read_state');recentIds=state.recents;
-            windowMemory=await (await import('./window-memory')).rememberWindow(state.window,e=>saveError=String(e));
+            if(native) windowMemory=await (await import('./window-memory')).rememberWindow(state.window,e=>saveError=String(e));
           } catch(e) {toast=String(e);}
-          const {getCurrentWindow}=await import('@tauri-apps/api/window'); const window=getCurrentWindow();
-          unlisten=await window.onCloseRequested(async e=> {e.preventDefault();try {await flushClose();await window.destroy();}catch(error){saveError=String(error);}});
+          if(native) {const {getCurrentWindow}=await import('@tauri-apps/api/window'); const window=getCurrentWindow();
+          unlisten=await window.onCloseRequested(async e=> {e.preventDefault();try {await flushClose();await window.destroy();}catch(error){saveError=String(error);}});}
         } else {
           defaults=defaultSettings('browser','Learner',rooms);
           try {settings=validateSettings(JSON.parse(localStorage.getItem('lantern.settings')??'{}'),defaults,rooms);}catch{settings=defaultSettings('browser','Learner',rooms);}
@@ -384,7 +386,7 @@
         await refreshCatalogue();
         if(desktop){const status=await invoke<{kind:string}>('provider_status');if(status.kind==='not-installed')health=new ProviderError('not-installed','');}
         preferencesChanged();
-        if(shouldCheckAtLaunch(settings,Date.now(),desktop&&!settingsReadOnly))void checkUpdates(true);
+        if(shouldCheckAtLaunch(settings,Date.now(),native&&!settingsReadOnly))void checkUpdates(true);
         const query=new URLSearchParams(location.search);
         // Retained deterministic Study harness for focused graph/panel tests.
         if(import.meta.env.DEV && query.has('study')) {
@@ -400,7 +402,7 @@
 </script>
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
 {#if !loading && settings.appearance.backdrop}<Backdrop {space} room={room.id} reduceSetting={settings.appearance.reduceMotion} />{/if}
-<TopBar {rooms} {room} {space} {subjectCount} title={session?.subject.title ?? null} busy={!!running} {summary} showTokenStats={settings.appearance.showTokenStats} {desktop} mark={lanternMark}
+<TopBar {rooms} {room} {space} {subjectCount} title={session?.subject.title ?? null} busy={!!running} {summary} showTokenStats={settings.appearance.showTokenStats} desktop={native} mark={lanternMark}
   {panelOpen} bind:roomMenu bind:fieldWidth {navigate} switchRoom={id=>void switchRoom(id)} openSettings={()=>{settingsSection='general';settingsOpen=true;}} togglePanel={()=>{roomMenu=false;panelOpen=!panelOpen;}} ask={settings.companion.show?undefined:openAsk} bringBack={settingsReadOnly?undefined:bringAmberBack} />
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
 {#if providerNotice}<div class="banner provider-notice" role="alert"><div><strong>{strings.errorKinds[providerNotice.kind]}</strong><p>{providerNotice.kind==='not-installed'?strings.installInstructions:strings.signinInstructions}</p></div><button onclick={()=>{settingsSection='provider';settingsOpen=true;}}>{strings.settings}</button><button disabled={anyRunning||checkingReady} onclick={checkReady}>{strings.checkAgain}</button>{#if checkingReady}<button onclick={()=>readyController?.abort()}>{strings.cancel}</button>{/if}{#if providerNotice.kind==='not-installed'}<button onclick={()=>installNoticeClosed=true}>{strings.close}</button>{/if}</div>{/if}
@@ -412,7 +414,7 @@
   rename={title=>renameSubject(session!.subject.id,title)} changed={appliesNext=>{session!.touch();if(appliesNext)toast=strings.appliesNext;}}
   openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/key}{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
-{#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} {desktop} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} thinking={amberThinking} working={amberWorking} lean={amberLean} greeting={amberGreeting} waiting={amberWaiting} greeted={()=>amberGreeting=null} {openRelease} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
+{#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} desktop={native} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} thinking={amberThinking} working={amberWorking} lean={amberLean} greeting={amberGreeting} waiting={amberWaiting} greeted={()=>amberGreeting=null} {openRelease} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {endpointHealth} {fakeEndpoint} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}
 {#if askOpen}<AskBox bind:this={askBox} chat={amberChat} revision={amberRevision} close={closeAsk} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}

@@ -44,7 +44,7 @@
   $effect(() => { if (!visible) untrack(() => { if (board !== 'closed') board = 'closed'; }); });
   $effect(() => { window.addEventListener('keydown', key, true); return () => window.removeEventListener('keydown', key, true); });
 </script>
-<StudySplit {settings} {preferencesChanged} {visible} ready={!!choose} panelBusy={busy}>
+<StudySplit {settings} {preferencesChanged} {visible} ready={!!choose} panelBusy={busy} sheetButton={board === 'closed'}>
   {#snippet graph(shown)}
     <div class="survey-side">
       <div class="graph-kept" class:gone={board !== 'closed'}><SurveyGraph session={choose!} {revision} {settings} {preferencesChanged} {library} {linkPreview} {openInPanel} reject={askReject} visible={shown && board === 'closed'} /></div>
