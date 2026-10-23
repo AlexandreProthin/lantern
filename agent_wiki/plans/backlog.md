@@ -17,8 +17,6 @@ Entries move out of here into a versioned plan when the user schedules them. New
 - **Headless server (Docker)**: the same server as a standalone binary with the library on a volume,
   for a machine that runs without the desktop app. Needs the Claude Code CLI signed in inside the
   container (or endpoints only), Ollama reached through `host.docker.internal`, and updates by image.
-- **Generations that survive a dropped connection**: the server finishes and keeps the result, and
-  the device picks it up when it comes back (today the call is cancelled).
 
 # Custom endpoints: the later pieces
 

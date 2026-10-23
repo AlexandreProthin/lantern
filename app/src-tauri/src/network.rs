@@ -39,7 +39,7 @@ impl Network {
         let listener = std::net::TcpListener::bind(("0.0.0.0", port)).map_err(|e| format!("Port {port} is not available: {e}"))?;
         listener.set_nonblocking(true).map_err(|e| e.to_string())?;
         let (stop, stopped) = watch::channel(false);
-        let shared = Arc::new(server::Shared { app: app.clone(), registry: self.registry.clone(), calls: Mutex::default() });
+        let shared = Arc::new(server::Shared { app: app.clone(), registry: self.registry.clone(), jobs: Mutex::default() });
         tauri::async_runtime::spawn(server::serve(listener, identity.config, shared.clone(), stopped));
         *self.running.lock().map_err(|e| e.to_string())? = Some(Running { port, fingerprint: identity.fingerprint, stop, shared });
         Ok(())

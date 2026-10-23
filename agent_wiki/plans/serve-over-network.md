@@ -145,6 +145,6 @@ Step 8 is next.
 # Not in this pass
 
 - Headless or Docker server, Tailscale: [backlog](backlog.md).
-- A generation that survives the phone's screen locking: today the call is cancelled when the
-  connection drops (NW-30). Backlog.
+- A generation that survives the phone's screen locking: built afterwards on branch
+  `resume-and-regenerate` (NW-50..52).
 - Installing as an app (PWA): needs a trusted certificate for service workers, so it waits for Tailscale.

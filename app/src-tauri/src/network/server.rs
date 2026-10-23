@@ -6,9 +6,9 @@ use http_body_util::{combinators::BoxBody, BodyExt, Full, Limited, StreamBody};
 use hyper::{body::{Frame, Incoming}, header, Method, Response, StatusCode};
 use hyper_util::rt::TokioIo;
 use serde_json::{json, Value};
-use std::{collections::HashSet, convert::Infallible, net::SocketAddr, sync::{atomic::{AtomicBool, Ordering}, Arc, Mutex}, time::Duration};
+use std::{collections::HashMap, convert::Infallible, net::SocketAddr, sync::{atomic::{AtomicBool, Ordering}, Arc, Mutex}, time::Duration};
 use tauri::{AppHandle, Manager};
-use tokio::sync::{mpsc, watch};
+use tokio::sync::watch;
 
 type Body = BoxBody<Bytes, Infallible>;
 const COOKIE: &str = "lantern_device";
@@ -16,14 +16,42 @@ const COOKIE: &str = "lantern_device";
 const MAX_BODY: usize = 32 * 1024 * 1024;
 const CSP: &str = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'";
 
-pub struct Shared { pub app: AppHandle, pub registry: Arc<Registry>, pub calls: Mutex<HashSet<String>> }
+pub struct Shared { pub app: AppHandle, pub registry: Arc<Registry>, pub jobs: Mutex<HashMap<String, Arc<Job>>> }
 impl Shared {
     /// NW-5: the remote generations still running are cancelled when the server stops.
     pub fn cancel_all(&self) {
-        let ids: Vec<String> = self.calls.lock().map(|c| c.iter().cloned().collect()).unwrap_or_default();
+        let ids: Vec<String> = self.jobs.lock().map(|j| j.iter().filter(|(_, job)| !job.finished()).map(|(id, _)| id.clone()).collect()).unwrap_or_default();
         for id in ids { provider::commands::cancel_generation(id, self.app.state::<Calls>()); }
     }
 }
+
+/// NW-50: a remote generation and every NDJSON line it has written. It runs on when its connection drops
+/// (a phone that locks its screen), and a device reattaches from the last line it read.
+pub struct Job { lines: Mutex<Vec<Bytes>>, finished: AtomicBool, written: watch::Sender<u64> }
+impl Job {
+    pub fn new() -> Self { Self { lines: Mutex::default(), finished: AtomicBool::new(false), written: watch::Sender::new(0) } }
+    pub fn finished(&self) -> bool { self.finished.load(Ordering::SeqCst) }
+    pub fn push(&self, line: Bytes, last: bool) {
+        if let Ok(mut lines) = self.lines.lock() { lines.push(line); }
+        if last { self.finished.store(true, Ordering::SeqCst); }
+        self.written.send_modify(|n| *n += 1);
+    }
+    /// The lines from `from` on: those written so far, then each new one, until the last.
+    pub fn stream(self: Arc<Self>, from: usize) -> impl futures_util::Stream<Item = Bytes> {
+        let seen = self.written.subscribe();
+        futures_util::stream::unfold((self, from, seen), |(job, at, mut seen)| async move {
+            loop {
+                let next = job.lines.lock().ok().and_then(|lines| lines.get(at).cloned());
+                if let Some(line) = next { return Some((line, (job, at + 1, seen))); }
+                if job.finished() { return None; }
+                // A line written since the check above marks the value changed, so none is missed.
+                if seen.changed().await.is_err() { return None; }
+            }
+        })
+    }
+}
+/// NW-51: a finished job's lines wait this long for a device to come back.
+const KEEP_FINISHED: Duration = Duration::from_secs(15 * 60);
 
 pub async fn serve(listener: std::net::TcpListener, tls: Arc<rustls::ServerConfig>, shared: Arc<Shared>, mut stop: watch::Receiver<bool>) {
     let Ok(listener) = tokio::net::TcpListener::from_std(listener) else { return };
@@ -164,33 +192,36 @@ fn blocking(app: &AppHandle, command: &str, args: Value, settings: Value) -> Res
 }
 
 /// NW-30: NDJSON lines, `{"chunk":…}` while the call runs, then one `{"result":…}` or `{"error":…}`.
-/// A dropped connection cancels the call.
+/// NW-50: the same request again (same `requestId`) attaches to the running job from line `from`
+/// instead of starting another call; a dropped connection no longer cancels anything.
 async fn generate(shared: Arc<Shared>, body: Value) -> Response<Body> {
     let request: Request = match arg(&body, "request") { Ok(r) => r, Err(e) => return json_response(StatusCode::BAD_REQUEST, &e) };
+    let from = body.get("from").and_then(Value::as_u64).unwrap_or(0) as usize;
+    let existing = shared.jobs.lock().ok().and_then(|jobs| jobs.get(&request.request_id).cloned());
+    if let Some(job) = existing { return ndjson(job.stream(from)); }
+    // NW-51: a device that read part of a job the server no longer has gets 410, not a second call.
+    if from > 0 { return json_response(StatusCode::GONE, &json!({"kind":"network","details":"Lantern on the desktop no longer has this generation","model":"","usage":{"input":0,"output":0,"thinking":0,"cacheRead":0,"cacheWrite":0},"durationMs":0})); }
     let endpoint: Option<Endpoint> = match arg(&body, "endpoint") { Ok(e) => e, Err(e) => return json_response(StatusCode::BAD_REQUEST, &e) };
     if let Some(e) = &endpoint { if let Err(e) = rights::check_endpoint(e, &stored_settings(&shared.app)) { return json_response(StatusCode::BAD_REQUEST, &json!({"kind":"protocol","details":e,"model":"","usage":{"input":0,"output":0,"thinking":0,"cacheRead":0,"cacheWrite":0},"durationMs":0})); } }
     let id = request.request_id.clone();
-    if let Ok(mut calls) = shared.calls.lock() { calls.insert(id.clone()); }
-    let (tx, rx) = mpsc::unbounded_channel::<(Bytes, bool)>();
-    let done = Arc::new(AtomicBool::new(false));
+    let job = Arc::new(Job::new());
+    if let Ok(mut jobs) = shared.jobs.lock() { jobs.insert(id.clone(), job.clone()); }
     let line = |v: Value| { let mut b = serde_json::to_vec(&v).unwrap_or_default(); b.push(b'\n'); Bytes::from(b) };
     {
-        let (tx, done, shared, id) = (tx.clone(), done.clone(), shared.clone(), id.clone());
-        tokio::spawn(async move { tx.closed().await; if !done.load(Ordering::SeqCst) { provider::commands::cancel_generation(id, shared.app.state::<Calls>()); } });
+        let job = job.clone();
+        tokio::spawn(async move {
+            let chunks = job.clone();
+            let result = provider::commands::run(request, endpoint, &shared.app.state::<Calls>(), move |chunk| chunks.push(line(json!({"chunk":chunk})), false)).await;
+            job.push(line(match result { Ok(c) => json!({"result":c}), Err(e) => json!({"error":e}) }), true);
+            tokio::time::sleep(KEEP_FINISHED).await;
+            if let Ok(mut jobs) = shared.jobs.lock() { jobs.remove(&id); }
+        });
     }
-    tokio::spawn(async move {
-        let chunks = tx.clone();
-        let result = provider::commands::run(request, endpoint, &shared.app.state::<Calls>(), move |chunk| { let _ = chunks.send((line(json!({"chunk":chunk})), false)); }).await;
-        done.store(true, Ordering::SeqCst);
-        if let Ok(mut calls) = shared.calls.lock() { calls.remove(&id); }
-        let _ = tx.send((line(match result { Ok(c) => json!({"result":c}), Err(e) => json!({"error":e}) }), true));
-    });
-    let stream = futures_util::stream::unfold((rx, false), |(mut rx, finished)| async move {
-        if finished { return None; }
-        let (bytes, last) = rx.recv().await?;
-        Some((Ok::<_, Infallible>(Frame::data(bytes)), (rx, last)))
-    });
-    let mut r = Response::new(StreamBody::new(stream).boxed());
+    ndjson(job.stream(0))
+}
+fn ndjson(lines: impl futures_util::Stream<Item = Bytes> + Send + Sync + 'static) -> Response<Body> {
+    let frames = futures_util::StreamExt::map(lines, |line| Ok::<_, Infallible>(Frame::data(line)));
+    let mut r = Response::new(StreamBody::new(frames).boxed());
     let h = r.headers_mut();
     h.insert(header::CONTENT_TYPE, "application/x-ndjson".parse().unwrap());
     h.insert(header::CACHE_CONTROL, "no-store".parse().unwrap());
