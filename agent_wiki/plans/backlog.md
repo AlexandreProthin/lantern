@@ -9,6 +9,16 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T00:30:00Z }
 
 Entries move out of here into a versioned plan when the user schedules them. Newest first.
 
+# Learn prompts tuned for Haiku 5.5
+
+- **Added:** 2026-10-23. The user accepted `learn-3` on the rewrite cases alone ([tutor-protocol](/specs/tutor-protocol.md) TP-14).
+- **Gap:** on the full Learn eval set, Haiku 5.5 scores 35, 37 and 35 out of 38, below PQ-33's 95%
+  ([platform-quality](/specs/platform-quality.md)). The misses are in tasks `learn-3` left alone:
+  intro and light without exactly three options, and a clear check answer not marked understood.
+  `learn-2` was gated on Haiku 4.5, where those all pass.
+- **Work:** a prompt pass (`learn-4`) on the options block and on marking a check answer understood.
+  Gate: three full runs at PQ-33's bar on Haiku 5.5, with no loss on Haiku 4.5.
+
 # Lantern on the network: the later pieces
 
 - **Added:** 2026-10-22, from the [serve over the network plan](serve-over-network.md).
@@ -17,8 +27,6 @@ Entries move out of here into a versioned plan when the user schedules them. New
 - **Headless server (Docker)**: the same server as a standalone binary with the library on a volume,
   for a machine that runs without the desktop app. Needs the Claude Code CLI signed in inside the
   container (or endpoints only), Ollama reached through `host.docker.internal`, and updates by image.
-- **Generations that survive a dropped connection**: the server finishes and keeps the result, and
-  the device picks it up when it comes back (today the call is cancelled).
 
 # Custom endpoints: the later pieces
 
@@ -79,15 +87,6 @@ Entries move out of here into a versioned plan when the user schedules them. New
   concept per node, the scope's example in [product-scope](/specs/product-scope.md) *Later*), or
   something else. The user wants this determined properly before any implementation.
 - **How:** a spec workshop round on the format and its readers, then a spec, then implementation.
-
-# Regenerate an explanation
-
-- **Added:** 2026-10-07, on the user's request.
-- **What:** one action on a lit node that asks the tutor to rewrite its explanation; the old text
-  becomes the previous version ([domain-model](/specs/domain-model.md) DM-16 already stores one).
-- **Needs:** a new task in [tutor-protocol](/specs/tutor-protocol.md), so a new prompt version and the
-  three-run eval gate (PQ-33); the action in the panel and node menu ([graph-view](/specs/graph-view.md) GV-55).
-  Relates to [tutor-prose-quality](/issues/tutor-prose-quality.md). Listed as *Later* in product-scope.
 
 # Cheaper model for cheap tasks
 

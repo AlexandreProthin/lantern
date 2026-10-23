@@ -48,7 +48,7 @@ One scroll area holds everything except the composer, which is pinned at the bot
   in for the children.
 - **NP-9** The **dismissed fold** *Dismissed (n)* appears only when n > 0, collapsed by default; each
   row shows title and hook, a *Restore* button, and focuses the node on click.
-- **NP-10** The **actions** row holds *More options* and *Add my own node* (NP-31, NP-32) and an
+- **NP-10** The **actions** row holds *More options*, *Rewrite explanation* and *Add my own node* (NP-31, NP-35, NP-32) and an
   overflow menu (*⋯*) with *Dismiss* (open nodes only) and *Delete* (NP-100).
 - **NP-11** The **dialogue** section (*Dialogue*) lists turns in order: learner turns right-indented
   on `--surface-2`, tutor turns with a 2 px `--accent` left border; each **tutor** turn can be edited
@@ -69,7 +69,7 @@ One scroll area holds everything except the composer, which is pinned at the bot
 | State | Content shown | Composer and buttons | Other actions |
 |---|---|---|---|
 | **open** | Title, hook, and the dark state: *This node is still dark.* with the primary button **Light it up**. No explanation, no dialogue. | **No composer.** | *Dismiss*, *Delete*. |
-| **lit** | Everything of NP-1. | Composer, Send, Test me, **I get it**. | *More options*, *Add my own node*, *Delete*. |
+| **lit** | Everything of NP-1. | Composer, Send, Test me, **I get it**. | *More options*, *Rewrite explanation*, *Add my own node*, *Delete*. |
 | **understood** | As lit; the meta chip reads *understood · demonstrated* or *· self-declared*. | Composer, Send, Test me, **Not sure anymore** (returns to lit, clears `understoodBy`). | As lit. |
 | **dismissed** | **Read-only**: title, hook, a notice *Dismissed. It will not be proposed again.* with **Restore**. No pencil icons. | No composer. | *Delete*. *Restore* returns the node to open. |
 | **busy** (a generation is running on this node) | As its state, streaming at the target place; edit affordances hidden on the streaming section. | Cancel only (NP-14). *Light it up* shows *Lighting…* (disabled). | All disabled. Other nodes can still be browsed and read, but their start controls are disabled, with a tooltip, until the generation ends (NP-20). |
@@ -88,6 +88,7 @@ One scroll area holds everything except the composer, which is pinned at the bot
   streams its explanation; spawn animation per [graph-view](/specs/graph-view.md) GV-90.
 - **NP-31** *More options* adds **3 new open children** and never replaces existing ones; the tutor
   sees all children including dismissed ones and must propose different directions.
+- **NP-35** *Rewrite explanation* (2026-10-23) opens a short inline form under the explanation: one optional line, *What should change?* (300 characters max), with **Rewrite** and **Cancel**; Enter submits, Esc cancels. The new text streams in place of the old one, with *Cancel* keeping the old text; on success *Previous version* compares the two and can revert ([learn-room](/specs/learn-room.md) LR-45, [domain-model](/specs/domain-model.md) DM-16). The node menu's *Rewrite explanation* opens the same form.
 - **NP-32** *Add my own node* opens an inline form under the actions: **Title** (required, one
   line, 120 characters max) and **Hook** (optional, 200 characters max), as in [learn-room](/specs/learn-room.md) LR-20. Enter in the title submits; Esc cancels.
   It creates an open child, kind `own`, author = the user's display name, which is lit like any

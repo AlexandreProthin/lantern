@@ -9,7 +9,7 @@ resource: /app/src/rooms/learn/prompts.ts
 verified: { by: "human:alex", at: 2026-10-02T12:00:00Z }
 ---
 
-Superseded by [tutor-protocol](/specs/tutor-protocol.md) (prompts `learn-1`, now `learn-2`), [context-assembly](/specs/context-assembly.md) and [Learn runtime](/components/v010-learn-runtime.md). This page describes the PoC prompts as they were (tag `poc-final`).
+Superseded by [tutor-protocol](/specs/tutor-protocol.md) (prompts `learn-1`, now `learn-3`), [context-assembly](/specs/context-assembly.md) and [Learn runtime](/components/v010-learn-runtime.md). This page describes the PoC prompts as they were (tag `poc-final`).
 
 Seeded from the `learning-session` skill (see [related projects](/references/related-projects.md)).
 

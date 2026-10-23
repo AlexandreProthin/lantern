@@ -119,3 +119,23 @@ fn nw4_index_is_marked_and_tauri_csp_dropped() {
     assert!(out.contains(r#"<head><meta name="lantern-remote" content="1"><title>"#));
     assert!(!out.contains("Content-Security-Policy"));
 }
+
+#[tokio::test]
+async fn nw_50_a_job_replays_from_any_line_and_follows_until_its_last() {
+    use futures_util::StreamExt;
+    use std::sync::Arc;
+    let job = Arc::new(server::Job::new());
+    job.push("a\n".into(), false);
+    job.push("b\n".into(), false);
+    // A device that read one line comes back while the call still runs.
+    let late = tokio::spawn(job.clone().stream(1).collect::<Vec<_>>());
+    tokio::task::yield_now().await;
+    job.push("c\n".into(), false);
+    job.push("end\n".into(), true);
+    let lines: Vec<bytes::Bytes> = late.await.unwrap();
+    assert_eq!(lines, ["b\n", "c\n", "end\n"].map(bytes::Bytes::from));
+    // After the last line, a reattach gets what is left and stops.
+    assert_eq!(job.clone().stream(3).collect::<Vec<_>>().await, [bytes::Bytes::from_static(b"end\n")]);
+    assert!(job.clone().stream(4).collect::<Vec<_>>().await.is_empty());
+    assert!(job.finished());
+}

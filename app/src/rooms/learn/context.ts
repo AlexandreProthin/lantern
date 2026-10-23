@@ -81,18 +81,18 @@ export function buildContext(v: RoomVisit, task: Task, focusId: string, { budget
     blocks.MAP_BLOCK = render();
   }
   stats.mapTokens = mapSize(blocks.MAP_BLOCK); stats.overBudget = stats.mapTokens > budgetTokens;
-  if (['light', 'reply', 'check'].includes(task)) {
+  if (['light', 'reply', 'check', 'rewrite'].includes(task)) {
     const parent = path.at(-2);
     let parentBlock = parent ? explanation(parent, `WHAT THE PARENT NODE ("${title(parent)}") SAID (for continuity):`, 2500) : '';
     const ancestors = path.slice(0, -2).reverse().filter(n => n.edited && n.content).slice(0, 3);
     if (ancestors.length) parentBlock += `${parentBlock ? '\n\n' : ''}LEARNER CORRECTIONS ON EARLIER NODES OF THE PATH:\n${ancestors.map(n => explanation(n, `"${title(n)}":`, 2500)).join('\n\n')}`;
     if (parentBlock) blocks.PARENT_BLOCK = parentBlock;
   }
-  if (['more', 'reply', 'check'].includes(task)) {
+  if (['more', 'reply', 'check', 'rewrite'].includes(task)) {
     const focusBlock = explanation(focus, 'WHAT YOU EXPLAINED ON THIS NODE:', 6000);
     if (focusBlock) blocks.FOCUS_BLOCK = focusBlock;
   }
-  if (['reply', 'check'].includes(task) && focus.dialogue.length) {
+  if (['reply', 'check', 'rewrite'].includes(task) && focus.dialogue.length) {
     stats.omittedTurns = Math.max(0, focus.dialogue.length - 12);
     blocks.DIALOGUE_BLOCK = [stats.omittedTurns ? `(${stats.omittedTurns} earlier turn${stats.omittedTurns === 1 ? '' : 's'} omitted)` : '', 'DIALOGUE ON THIS NODE:',
       ...focus.dialogue.slice(-12).map(t => `${t.role === 'user' ? 'LEARNER' : `TUTOR${t.edited ? ' (corrected by the learner)' : ''}`}: ${t.text}`)].filter(Boolean).join('\n');

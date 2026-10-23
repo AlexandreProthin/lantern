@@ -21,28 +21,59 @@ async function failure(response: Response): Promise<never> {
 const post = (path: string, body: unknown, signal?: AbortSignal) =>
   fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin', signal });
 
-/** Lines `{"chunk"}` while the call runs, then `{"result"}` or `{"error"}`; closing the connection cancels it. */
+/** NW-52: tries in a row, while the page is shown, before a lost connection becomes an error. */
+const ATTEMPTS = 6;
+const shown = () => document.visibilityState !== 'hidden';
+/** Resolves when the page is shown again (a phone unlocked); at once when it is. */
+const whenShown = () => new Promise<void>(resolve => {
+  if (shown()) { resolve(); return; }
+  const back = () => { if (shown()) { document.removeEventListener('visibilitychange', back); resolve(); } };
+  document.addEventListener('visibilitychange', back);
+});
+const lost = (details: string) => ({ kind: 'network', details, model: '', usage: { input: 0, output: 0, thinking: 0, cacheRead: 0, cacheWrite: 0 }, durationMs: 0 });
+
+/**
+ * Lines `{"chunk"}` while the call runs, then `{"result"}` or `{"error"}`. NW-50..52: the call runs on the
+ * desktop whatever happens to the connection. When it drops (the screen locked, the network changed), the
+ * page asks again with the same request and the number of lines it has read, and carries on from there.
+ */
 async function generate(args: Record<string, unknown>): Promise<unknown> {
   const { channel, ...body } = args as { channel?: Channel } & Record<string, unknown>;
-  const response = await post('/api/generate', body);
-  if (!response.ok || !response.body) return failure(response);
-  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
-  let buffer = '';
+  let read = 0, failures = 0;
   for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += value;
-    let end: number;
-    while ((end = buffer.indexOf('\n')) >= 0) {
-      const line = buffer.slice(0, end).trim(); buffer = buffer.slice(end + 1);
-      if (!line) continue;
-      const message = JSON.parse(line) as { chunk?: unknown; result?: unknown; error?: unknown };
-      if ('chunk' in message) channel?.onmessage(message.chunk);
-      else if ('result' in message) { void reader.cancel().catch(() => {}); return message.result; }
-      else if ('error' in message) { void reader.cancel().catch(() => {}); throw message.error; }
-    }
+    await whenShown();
+    // Back from a locked screen, a connection can look open and never deliver again: drop it and reattach.
+    const controller = new AbortController();
+    const hidden = () => { if (!shown()) document.addEventListener('visibilitychange', () => controller.abort(), { once: true }); };
+    document.addEventListener('visibilitychange', hidden);
+    try {
+      const response = await post('/api/generate', read ? { ...body, from: read } : body, controller.signal);
+      if (!response.ok || !response.body) return await failure(response);
+      const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+      let buffer = '';
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        failures = 0; buffer += value;
+        let end: number;
+        while ((end = buffer.indexOf('\n')) >= 0) {
+          const line = buffer.slice(0, end).trim(); buffer = buffer.slice(end + 1);
+          if (!line) continue;
+          const message = JSON.parse(line) as { chunk?: unknown; result?: unknown; error?: unknown };
+          read++;
+          if ('chunk' in message) channel?.onmessage(message.chunk);
+          else if ('result' in message) { void reader.cancel().catch(() => {}); return message.result; }
+          else if ('error' in message) { void reader.cancel().catch(() => {}); throw message.error; }
+        }
+      }
+    } catch (error) {
+      // A thrown provider error or the server's refusal ends the call; only a broken connection is retried.
+      if (!(error instanceof TypeError) && !(error instanceof DOMException)) throw error;
+    } finally { document.removeEventListener('visibilitychange', hidden); }
+    if (controller.signal.aborted) continue;
+    if (shown() && ++failures >= ATTEMPTS) throw lost('Lantern on the network stopped answering');
+    if (shown()) await new Promise(resolve => setTimeout(resolve, Math.min(500 * 2 ** failures, 8000)));
   }
-  throw { kind: 'network', details: 'Lantern on the network closed the connection' };
 }
 
 export async function invoke<T>(command: string, args: Record<string, unknown> = {}): Promise<T> {

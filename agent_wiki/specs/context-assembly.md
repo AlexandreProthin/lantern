@@ -97,6 +97,7 @@ PATH TO CURRENT NODE: Tides (n1) > The Moon's pull (n2)
 | `more` | yes | yes | yes | - | - | yes | - | - | yes | - |
 | `reply` | yes | yes | yes | yes | yes | yes | yes | yes | - | - |
 | `check` | yes | yes | yes | yes | yes | yes | yes (avoids repeating a question) | - | - | - |
+| `rewrite` (`learn-3`) | yes | yes | yes | yes | yes | yes (the text it replaces) | yes (what was unclear) | - | - | - |
 | `suggest` | - | - | - | - | - | - | - | - | - | yes |
 
 - **CA-40** A task MUST receive exactly the parts marked above, no more. `intro` and `suggest` use no map because none exists or it is irrelevant. The *Existing children* slot is redundant with the outline in the full form on purpose: it states the "do not repeat" set where the task asks for it.

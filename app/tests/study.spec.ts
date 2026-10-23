@@ -139,13 +139,37 @@ test('GV-55: node menu offers the panel actions, runs them or hands them to the 
   await page.getByRole('dialog').getByRole('button',{name:'Cancel',exact:true}).click();
   // Root: no Delete; Add my own node opens the panel form.
   await page.locator('.graph .node[data-state="lit"]').first().click({button:'right'});
-  expect(await items()).toEqual(['More options','Add my own node']);
+  expect(await items()).toEqual(['More options','Rewrite explanation','Add my own node']);
   await menu.getByRole('menuitem',{name:'Add my own node'}).click();
   await expect(panel.getByRole('textbox',{name:'Title',exact:true})).toBeFocused();
   // A press outside closes it.
   await page.locator('.graph .node[data-state="lit"]').first().click({button:'right'});
   await page.locator('.graph').click({position:{x:30,y:300}});
   await expect(menu).toHaveCount(0);
+});
+test('LR-45: Rewrite explanation asks what should change, replaces the text and keeps the old one as the previous version', async ({page}) => {
+  await page.goto('/?study=1&subject=Rewrite%20me');
+  const panel=page.locator('.panel'), menu=page.locator('.node-menu');
+  await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  const before=await panel.locator('.md').first().textContent();
+  // From the panel: the form, then Cancel leaves everything as it was.
+  await panel.getByRole('button',{name:'Rewrite explanation',exact:true}).click();
+  const note=panel.getByRole('textbox',{name:'What should change? (optional)'});
+  await expect(note).toBeFocused();
+  await panel.locator('form.rewrite').getByRole('button',{name:'Cancel',exact:true}).click();
+  await expect(note).toHaveCount(0);
+  // From the node menu: the same form, then the new text streams in place.
+  await page.locator('.graph .node[data-state="lit"]').first().click({button:'right'});
+  await menu.getByRole('menuitem',{name:'Rewrite explanation'}).click();
+  await expect(note).toBeFocused();
+  await note.fill('Simpler, please');await note.press('Enter');
+  await expect(panel.getByText('Seen from another side')).toBeVisible();
+  await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled({timeout:20000});
+  await panel.getByRole('button',{name:'Previous version',exact:true}).click();
+  await expect(page.getByRole('dialog')).toContainText(before!.trim().slice(0,40));
+  await page.getByRole('dialog').getByRole('button',{name:'Revert to previous',exact:true}).click();
+  await expect(panel.getByText('Seen from another side')).toHaveCount(0);
+  await expect(panel.getByRole('button',{name:'Previous version',exact:true})).toHaveCount(0);
 });
 test('GV-44/56: hovering a node link previews the connection; Open reports in the browser', async ({page}) => {
   await page.goto('/?study=1&subject=Link%20preview');

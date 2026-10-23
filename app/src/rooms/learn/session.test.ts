@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { newLearnSubject, understoodBy } from './rules';
+import { newLearnSubject, understoodBy, validateLearn } from './rules';
 import { FakeProvider } from './fake-provider';
 import { LearnSession } from './session';
 import type { Request } from '../../frame/provider';
@@ -62,4 +62,25 @@ test('CE-27: the model asked for is recorded, and a different name the server an
   expect(session.visit.log[0]).toMatchObject({ model: 'nvidia:nvidia/nemotron', servedModel: 'private/nvidia/nemotron' });
   const plain = new LearnSession(newLearnSubject('Tides'), new FakeProvider(0), () => {}); await plain.run('intro', plain.visit.rootId);
   expect('servedModel' in plain.visit.log[0]).toBe(false);
+});
+test('LR-45, DM-16: a rewrite replaces the explanation, keeps the old text once, and sends the note', async () => {
+  const provider = new FakeProvider(0), prompts: string[] = [], stream = provider.stream.bind(provider);
+  provider.stream = (request, onText) => { prompts.push(request.prompt); return stream(request, onText); };
+  const s = newLearnSubject('Tides'), session = new LearnSession(s, provider, () => {});
+  await session.run('intro', session.visit.rootId); const id = Object.keys(session.visit.nodes).find(k => k !== session.visit.rootId)!;
+  await expect(session.run('rewrite', id)).rejects.toThrow('unavailable');
+  await session.run('light', id); const node = () => session.visit.nodes[id], kids = Object.keys(session.visit.nodes).length;
+  node().content = 'My corrected text'; node().previous = 'The model text'; node().edited = { by: 'Alex', at: node().createdAt };
+  await session.run('rewrite', id, 'Simpler please');
+  expect(prompts.at(-1)).toContain('"Simpler please"'); expect(prompts.at(-1)).toContain('(corrected by the learner)');
+  expect(node()).toMatchObject({ content: 'Seen from another side, this mechanism shows up in what we can measure. Picture it step by step.', previous: 'My corrected text', state: 'lit' });
+  expect(node().edited).toBeUndefined(); expect(node().author).toMatchObject({ kind: 'model', model: 'fake-tutor' });
+  expect(Object.keys(session.visit.nodes)).toHaveLength(kids); expect(session.visit.log.at(-1)).toMatchObject({ task: 'rewrite', promptVersion: 'learn-3', outcome: 'ok' });
+  expect(() => validateLearn(session.visit)).not.toThrow();
+  // A failed rewrite keeps the text, and Retry sends the same note.
+  provider.failNext = 'network'; await session.run('rewrite', id, 'Shorter');
+  expect(node().content).toContain('Seen from another side'); await session.notice!.retry(); expect(prompts.at(-1)).toContain('"Shorter"');
+  // Cancel keeps the text too.
+  provider.delayMs = 1000; const call = session.run('rewrite', id); session.cancel(); await call;
+  expect(node().content).toContain('Seen from another side'); expect(session.visit.log.at(-1)?.outcome).toBe('cancelled');
 });

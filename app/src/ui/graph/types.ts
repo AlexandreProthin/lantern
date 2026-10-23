@@ -9,7 +9,7 @@ export interface GraphSession {
 /** GV-55: one entry of the node menu and the panel's action row. `toPanel` entries open a form or dialog in the panel; `task` entries start a generation. */
 export interface MenuAction { id: string; label: string; disabled: boolean; toPanel?: boolean; task?: boolean }
 /** The node menu asks the panel to open its own form or dialog for a node. */
-export type PanelRequest = { kind: 'own' | 'delete'; nodeId: string; seq: number };
+export type PanelRequest = { kind: 'own' | 'delete' | 'rewrite'; nodeId: string; seq: number };
 /** The room's side of the graph (PS-5): the graph asks, the room answers. Optional members have the defaults named. */
 export interface GraphRoomView {
   /** Added to the graph's root, so the room's own CSS can reach node states (`:global(.graph.<className> ...)`). */

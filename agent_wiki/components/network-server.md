@@ -30,8 +30,9 @@ Contract: [network-serving](/specs/network-serving.md) (NW-*). Built by the
   `network/tests.rs`.
 - **`network/server.rs`**: hyper 1 over tokio-rustls. Routes: `/api/session` (paired or not), `/api/pair`,
   `/api/invoke/<cmd>` (dispatches to the same functions the Tauri commands call, blocking ones on a
-  worker thread), `/api/generate` (NDJSON chunks then one `result` or `error` line; the call is cancelled
-  when the connection drops or the server stops), and static assets from Tauri's asset resolver with the
+  worker thread), `/api/generate` (NDJSON chunks then one `result` or `error` line; the call runs to its end
+  in a `Job` that keeps its lines, a reattach with `from` replays and follows them, a finished job is kept
+  15 minutes, and only *Cancel* or the server stopping cancels it, NW-50..51), and static assets from Tauri's asset resolver with the
   SPA fallback, the `lantern-remote` meta tag and the CSP (NW-4).
 
 In a debug build, `LANTERN_CONFIG_DIR` overrides the config folder (`commands.rs` `config()`), so a scratch

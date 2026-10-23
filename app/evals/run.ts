@@ -15,7 +15,7 @@ if (!Number.isInteger(runs) || runs < 1 || runs > 3) throw new Error('--runs mus
 const executable = process.env.LANTERN_CLAUDE ?? join(homedir(), '.local', 'bin', 'claude.exe');
 if (!existsSync(executable)) throw new Error('Set LANTERN_CLAUDE to the installed CLI executable');
 async function call(c: EvalCase) {
-  const request = taskPrompt(c.subject.rooms.learn, c.task, c.focusId);
+  const request = taskPrompt(c.subject.rooms.learn, c.task, c.focusId, { note: c.note });
   const start = performance.now();
   return new Promise<{ text: string; model: string; usage: unknown; durationMs: number; details?: string }>((resolve, reject) => {
     const child = spawn(executable, ['-p', '--output-format', 'stream-json', '--verbose', '--include-partial-messages', '--safe-mode', '--strict-mcp-config', '--no-session-persistence', '--tools', '', '--system-prompt', request.system, '--model', model, '--effort', effort], { cwd: tmpdir(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
@@ -45,6 +45,16 @@ function judge(c: EvalCase, raw: string) {
   }
   if (c.task === 'check' && /<(options|branch|understood)/.test(raw)) failures.push('check emitted a block');
   if (c.task === 'reply' && /<options>/.test(raw)) failures.push('reply emitted options');
+  if (c.task === 'rewrite') {
+    if (/<(options|branch|understood)/.test(raw)) failures.push('rewrite emitted a block');
+    // A fresh text, not the old one touched up: no sentence of 40 characters or more is copied.
+    const old = v.nodes[c.focusId].content.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length >= 40);
+    if (old.some(s => parsed.text.includes(s) && !(c.keeps && s.includes(c.keeps)))) failures.push('copied a sentence of the old text');
+    if (/new version|rewrit|as I (said|explained)|(earlier|previous|first) explanation|nouvelle version|réécri|comme je l'ai (dit|expliqué)|explication (précédente|initiale)/i.test(parsed.text)) failures.push('mentions the rewrite');
+    if (c.follows && !c.follows.test(parsed.text)) failures.push("the learner's note not followed");
+    if (c.keeps && !parsed.text.includes(c.keeps)) failures.push("the learner's correction not kept");
+    if (c.focusId === v.rootId && parsed.text.length > 1200) failures.push('the introduction is no longer short');
+  }
   if (!c.pending && /<understood\s*\/>/.test(raw)) failures.push('understood without pending check');
   if (c.pending && !parsed.understood) failures.push('clear check answer not recognised');
   if (nodeLinks(raw, v).some(l => !l.exists || l.id === c.focusId)) failures.push('invalid node link');
@@ -55,7 +65,8 @@ function judge(c: EvalCase, raw: string) {
   return failures;
 }
 const results: Record<string, unknown>[] = [];
-const fixtures = cases();
+const only = args.includes('--only') ? new RegExp(argument('--only', '.')) : null;
+const fixtures = cases().filter(c => !only || only.test(c.id));
 for (let run = 1; run <= runs; run++) {
   let passed = 0;
   for (let index = 0; index < fixtures.length; index += 3) {
