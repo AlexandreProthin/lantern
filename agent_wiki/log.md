@@ -9,6 +9,7 @@
 
 ## 2026-10-22
 
+* **Codex CLI provider built** (CE-58) on branch `claude/codex-cli-provider`, at the user's request and without a Codex plan to test with: `provider/codex.rs` from OpenAI's published `codex exec --json` schema, a shared `run_cli` loop (Claude Code unchanged), `codex:<model>` ids behind `provider.codex`, Settings → Provider → Codex, Codex's own errors and health. 70 Rust, 224 Vitest and 105 Playwright tests pass (2 skipped). What a real run must check is in the [Codex plan](/plans/codex-cli.md).
 * **PQ-2 kept, no exception**: the Windows-only snap-layouts hint moved from `commands.rs` to `paths::snap_layouts`, with a no-op off Windows ([platform-quality](/specs/platform-quality.md)). `app/README.md` brought up to date (no version in the title, public update channel, all rooms and evals).
 * **The *not installed* banner can be closed**: the frame banner gains *Close*, which hides it until the next launch and lets Amber's greeting show; *not signed in* stays as it was ([settings](/specs/settings.md) SE-47). Playwright test added in `settings.spec.ts`.
 

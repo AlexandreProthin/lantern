@@ -13,18 +13,30 @@ export const MODELS: readonly { id: string; label: string }[] = [
   { id: 'claude-haiku-4-5', label: 'Haiku 4.5' }
 ];
 export const isListedModel = (id: string) => MODELS.some(m => m.id === id);
+/** CE-58: Codex models are `codex:<model>`, a prefix no endpoint may take; `codex:default` lets Codex choose. */
+export const CODEX = 'codex';
+export const CODEX_DEFAULT = 'default';
+export const CODEX_MODELS: readonly { id: string; label: string }[] = [
+  { id: 'codex:default', label: 'Codex default' },
+  { id: 'codex:gpt-6.1-sol', label: 'GPT-6.1 Sol' },
+  { id: 'codex:gpt-6-astra', label: 'GPT-6 Astra' },
+  { id: 'codex:gpt-6-luna', label: 'GPT-6 Luna' }
+];
+export const isCodexModel = (id: string) => parseModelId(id).endpointId === CODEX;
 /** Same rule as provider.defaultModel (settings catalogue). */
 /** `/` is allowed for endpoint ids such as `nvidia:google/gemma-…` (settings, amended 2026-10-17). */
 export const isValidModel = (id: string) => /^[A-Za-z0-9._:/-]{1,100}$/.test(id);
-/** CE-23: an endpoint model is `<endpointId>:<model>`, split at the first `:` (Ollama tags hold `:` too). Claude Code ids have no `:`. */
+/** CE-23: an endpoint model is `<endpointId>:<model>`, split at the first `:` (Ollama tags hold `:` too). Claude Code ids have no `:`. A Codex model reads as one too (CE-58). */
 export function parseModelId(id: string): { endpointId: string | null; model: string } {
   const at = id.indexOf(':');
   return at > 0 ? { endpointId: id.slice(0, at), model: id.slice(at + 1) } : { endpointId: null, model: id };
 }
+/** Whether the model is not a Claude Code one: an endpoint's or Codex's. */
 export const isEndpointModel = (id: string) => parseModelId(id).endpointId !== null;
 /** CE-22, CE-25: *Ollama · gemma4:e2b* for an endpoint model, `modelName` for a Claude Code one. */
 export function displayModel(id: string, endpointNames: Readonly<Record<string, string>> = {}): string {
   const { endpointId, model } = parseModelId(id);
+  if (endpointId === CODEX) return `Codex · ${CODEX_MODELS.find(m => m.id === id)?.label ?? model}`;
   return endpointId === null ? modelName(id) : `${endpointNames[endpointId] ?? endpointId} · ${model}`;
 }
 

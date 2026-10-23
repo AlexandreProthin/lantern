@@ -64,7 +64,7 @@
   let endpointHealth = $state<Record<string, Completion | ProviderError>>({});
   const routing = () => ({ endpoints: endpointsOf(settings.provider), defaultModel: settings.provider.defaultModel });
   // CE-22: every picker and model label follows the stored endpoints.
-  $effect(() => { modelChoices.endpoints = endpointsOf(settings.provider); });
+  $effect(() => { modelChoices.endpoints = endpointsOf(settings.provider); modelChoices.codex = settings.provider.codex === true; });
   const reportEndpoint = (id: string, value: Completion | ProviderError) => { endpointHealth = { ...endpointHealth, [id]: value }; };
   const routed = (claude: InferenceProvider, transport: ConstructorParameters<typeof RoutingProvider>[1]) => new RoutingProvider(claude, transport, routing, reportEndpoint);
   const desktopBridge = fake ? null : new DesktopProvider();
@@ -167,8 +167,8 @@
   const running = $derived.by(() => { revision; return session?.running ? {...session.running} : null; });
   const anyRunning = $derived.by(() => { revision; return [...owned.values()].some(entry => !!entry.session.running); });
   const cliProblem=$derived(health instanceof ProviderError&&['not-installed','not-logged-in'].includes(health.kind)?health:null);
-  /** CE-26: with an endpoint set, Claude Code's banner shows only while a Claude Code model is in use (the open subject's, else the default). With no endpoint, nothing changes. */
-  const claudeInUse=$derived.by(()=>{revision;if(!endpointsOf(settings.provider).length)return true;const model=session?.subject.rooms[room.id]?.model??settings.provider.defaultModel;return !isEndpointModel(String(model??''));});
+  /** CE-26: with an endpoint set or Codex on (CE-58), Claude Code's banner shows only while a Claude Code model is in use (the open subject's, else the default). With neither, nothing changes. */
+  const claudeInUse=$derived.by(()=>{revision;if(!endpointsOf(settings.provider).length&&settings.provider.codex!==true)return true;const model=session?.subject.rooms[room.id]?.model??settings.provider.defaultModel;return !isEndpointModel(String(model??''));});
   const unavailable=$derived(cliProblem&&claudeInUse?cliProblem:null);
   /** A not-installed banner can be closed; it stays closed for this launch. */
   let installNoticeClosed=$state(false);

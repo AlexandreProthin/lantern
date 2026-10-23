@@ -42,13 +42,15 @@ export class HeldProvider implements InferenceProvider {
     return this.inner.stream(request, onText, onTool);
   }
 }
-/** CE-11: how an endpoint call reaches Rust (or the fake, IP-71). */
-export interface EndpointTransport { streamEndpoint(request: Request, endpoint: WireEndpoint, onText: (chunk: string) => void): Promise<Completion> }
+/** CE-11: how an endpoint call reaches Rust (or the fake, IP-71); CE-58: a Codex call too, with its bare model (none for Codex's default). */
+export interface EndpointTransport { streamEndpoint(request: Request, endpoint: WireEndpoint, onText: (chunk: string) => void): Promise<Completion>;
+  streamCodex(request: Request, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void): Promise<Completion> }
 export class DesktopProvider implements InferenceProvider, EndpointTransport {
   stream(request: Request, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void): Promise<Completion> { return this.call(request, null, onText, onTool); }
   streamEndpoint(request: Request, endpoint: WireEndpoint, onText: (chunk: string) => void): Promise<Completion> { return this.call(request, endpoint, onText); }
-  /** A Claude Code call sends exactly the arguments it always did; an endpoint call adds `endpoint` (CE-2). */
-  private async call(request: Request, endpoint: WireEndpoint | null, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void): Promise<Completion> {
+  streamCodex(request: Request, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void): Promise<Completion> { return this.call(request, null, onText, onTool, 'codex'); }
+  /** A Claude Code call sends exactly the arguments it always did; an endpoint call adds `endpoint`, a Codex call `cli` (CE-2). */
+  private async call(request: Request, endpoint: WireEndpoint | null, onText: (chunk: string) => void, onTool?: (tool: ToolUse) => void, cli?: 'codex'): Promise<Completion> {
     if (request.cancel.aborted) throw new ProviderError('cancelled', '');
     const channel = new Channel<{ requestId: string; text?: string; tool?: ToolUse }>();
     channel.onmessage = event => {
@@ -59,7 +61,7 @@ export class DesktopProvider implements InferenceProvider, EndpointTransport {
     request.cancel.addEventListener('abort', cancel, { once: true });
     try {
       const args = { request: { requestId: request.requestId, system: request.system, prompt: request.prompt, model: request.model ?? null, effort: request.effort ?? null, web: request.web ?? false }, channel };
-      return await invoke<Completion>('generate', endpoint ? { ...args, endpoint } : args);
+      return await invoke<Completion>('generate', endpoint ? { ...args, endpoint } : cli ? { ...args, cli } : args);
     } catch (e) {
       const error = e as { kind?: ErrorKind; details?: string; model?: string; usage?: Usage; durationMs?: number; toolCalls?: ToolCalls };
       throw new ProviderError(error.kind ?? 'process-crashed', error.details ?? String(e), error.model, error.usage, error.durationMs, error.toolCalls);

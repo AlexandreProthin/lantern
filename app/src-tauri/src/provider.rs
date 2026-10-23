@@ -5,6 +5,7 @@ use std::{collections::BTreeMap, io::{BufRead, BufReader, Read, Write}, path::Pa
 mod stream;
 mod process;
 pub mod endpoint;
+pub mod codex;
 pub mod keys;
 pub mod commands;
 pub use stream::StreamParser;
@@ -84,48 +85,56 @@ impl InferenceProvider for ClaudeCliProvider {
         if req.effort.as_ref().is_some_and(|e| !["low", "medium", "high", "xhigh", "max"].contains(&e.as_str())) { return Err(initial_error(ErrorKind::Protocol, "Invalid effort".into())); }
         let mut cmd = process::command(&self.executable);
         cmd.args(args(req)).envs(env(req));
-        cmd.current_dir(std::env::temp_dir()).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
-        let mut child = cmd.spawn().map_err(|e| initial_error(if e.kind() == std::io::ErrorKind::NotFound { ErrorKind::NotInstalled } else { ErrorKind::ProcessCrashed }, e.to_string()))?;
-        let job = match process::ProcessTree::attach(&child) { Ok(job) => job, Err(e) => { let _ = child.kill(); let _ = child.wait(); return Err(initial_error(ErrorKind::ProcessCrashed, e)); } };
-        let mut stdin = child.stdin.take().expect("piped stdin"); let prompt = req.prompt.clone();
-        let writer = std::thread::spawn(move || stdin.write_all(prompt.as_bytes()));
-        let stdout = child.stdout.take().expect("piped stdout"); let stderr = child.stderr.take().expect("piped stderr");
-        let errors = std::thread::spawn(move || { let mut bytes = Vec::new(); let mut reader = BufReader::new(stderr);
-            let mut chunk = [0u8; 4096]; while let Ok(n) = reader.read(&mut chunk) { if n == 0 { break; } bytes.extend_from_slice(&chunk[..n]); if bytes.len() > 65536 { bytes.drain(..bytes.len()-65536); } } String::from_utf8_lossy(&bytes).into_owned() });
-        let (tx, rx) = mpsc::sync_channel(128);
-        let reader = std::thread::spawn(move || { for line in BufReader::new(stdout).lines() { if tx.send(line).is_err() { break; } } });
-        let mut last_event = Instant::now(); let mut failure = None;
-        loop {
-            if cancel.load(Ordering::SeqCst) { failure = Some((ErrorKind::Cancelled, String::new())); break; }
-            if last_event.elapsed() >= self.stall_timeout { failure = Some((ErrorKind::Protocol, "Stream stalled for 120 seconds".into())); break; }
-            match rx.recv_timeout(Duration::from_millis(25)) {
-                Ok(Ok(line)) => { if parser.consume(&line, on_event) { last_event = Instant::now(); } }
-                Ok(Err(e)) => { failure = Some((ErrorKind::Protocol, e.to_string())); break; }
-                Err(mpsc::RecvTimeoutError::Timeout) => continue,
-                Err(mpsc::RecvTimeoutError::Disconnected) => break,
+        let run = run_cli(cmd, req.prompt.clone(), &cancel, self.stall_timeout, &mut |line| parser.consume(line, on_event)).map_err(|(kind, details)| initial_error(kind, details))?;
+        if let Some((kind, details)) = run.failure { return Err(parser.error(kind, details, start.elapsed())); }
+        if run.write_failed { return Err(parser.error(ErrorKind::ProcessCrashed, "Could not write prompt to CLI".into(), start.elapsed())); }
+        parser.finish(run.exit_ok, run.stderr, req.effort.clone(), start.elapsed(), &mut |t| on_event(Streamed::Text(t)))
+    }
+}
+/// What a CLI run left: the failure that stopped it, if any, its exit status and stderr, and whether the prompt was written.
+pub(crate) struct Run { pub failure: Option<(ErrorKind, String)>, pub exit_ok: bool, pub stderr: String, pub write_failed: bool }
+/// IP-20, IP-28: the spawn, prompt, read, stall and cancel loop every CLI provider shares; `consume` reads one stdout
+/// line and says whether it was an event. A spawn failure is `NotInstalled` when the executable is gone.
+pub(crate) fn run_cli(mut cmd: std::process::Command, prompt: String, cancel: &Cancel, stall_timeout: Duration, consume: &mut dyn FnMut(&str) -> bool) -> Result<Run, (ErrorKind, String)> {
+    cmd.current_dir(std::env::temp_dir()).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
+    let mut child = cmd.spawn().map_err(|e| (if e.kind() == std::io::ErrorKind::NotFound { ErrorKind::NotInstalled } else { ErrorKind::ProcessCrashed }, e.to_string()))?;
+    let job = match process::ProcessTree::attach(&child) { Ok(job) => job, Err(e) => { let _ = child.kill(); let _ = child.wait(); return Err((ErrorKind::ProcessCrashed, e)); } };
+    let mut stdin = child.stdin.take().expect("piped stdin");
+    let writer = std::thread::spawn(move || stdin.write_all(prompt.as_bytes()));
+    let stdout = child.stdout.take().expect("piped stdout"); let stderr = child.stderr.take().expect("piped stderr");
+    let errors = std::thread::spawn(move || { let mut bytes = Vec::new(); let mut reader = BufReader::new(stderr);
+        let mut chunk = [0u8; 4096]; while let Ok(n) = reader.read(&mut chunk) { if n == 0 { break; } bytes.extend_from_slice(&chunk[..n]); if bytes.len() > 65536 { bytes.drain(..bytes.len()-65536); } } String::from_utf8_lossy(&bytes).into_owned() });
+    let (tx, rx) = mpsc::sync_channel(128);
+    let reader = std::thread::spawn(move || { for line in BufReader::new(stdout).lines() { if tx.send(line).is_err() { break; } } });
+    let mut last_event = Instant::now(); let mut failure = None;
+    loop {
+        if cancel.load(Ordering::SeqCst) { failure = Some((ErrorKind::Cancelled, String::new())); break; }
+        if last_event.elapsed() >= stall_timeout { failure = Some((ErrorKind::Protocol, format!("Stream stalled for {} seconds", stall_timeout.as_secs()))); break; }
+        match rx.recv_timeout(Duration::from_millis(25)) {
+            Ok(Ok(line)) => { if consume(&line) { last_event = Instant::now(); } }
+            Ok(Err(e)) => { failure = Some((ErrorKind::Protocol, e.to_string())); break; }
+            Err(mpsc::RecvTimeoutError::Timeout) => continue,
+            Err(mpsc::RecvTimeoutError::Disconnected) => break,
+        }
+    }
+    if failure.is_some() { job.kill(); let _ = child.kill(); }
+    // Drop the receiver before joining to unblock a full bounded channel on cancel.
+    drop(rx);
+    let status = loop {
+        match child.try_wait() {
+            Ok(Some(status)) => break Ok(status),
+            Err(e) => break Err(e),
+            Ok(None) => {
+                if cancel.load(Ordering::SeqCst) { failure = Some((ErrorKind::Cancelled, String::new())); }
+                else if last_event.elapsed() >= stall_timeout { failure = Some((ErrorKind::Protocol, "Stream stalled after stdout closed".into())); }
+                if failure.is_some() { job.kill(); let _ = child.kill(); }
+                std::thread::sleep(Duration::from_millis(25));
             }
         }
-        if failure.is_some() { job.kill(); let _ = child.kill(); }
-        // Drop the receiver before joining to unblock a full bounded channel on cancel.
-        drop(rx);
-        let status = loop {
-            match child.try_wait() {
-                Ok(Some(status)) => break Ok(status),
-                Err(e) => break Err(e),
-                Ok(None) => {
-                    if cancel.load(Ordering::SeqCst) { failure = Some((ErrorKind::Cancelled, String::new())); }
-                    else if last_event.elapsed() >= self.stall_timeout { failure = Some((ErrorKind::Protocol, "Stream stalled after stdout closed".into())); }
-                    if failure.is_some() { job.kill(); let _ = child.kill(); }
-                    std::thread::sleep(Duration::from_millis(25));
-                }
-            }
-        };
-        drop(job);
-        let _ = reader.join(); let write_result = writer.join(); let stderr = errors.join().unwrap_or_default();
-        if let Some((kind, details)) = failure { return Err(parser.error(kind, details, start.elapsed())); }
-        if write_result.is_err() || write_result.is_ok_and(|r| r.is_err()) { return Err(parser.error(ErrorKind::ProcessCrashed, "Could not write prompt to CLI".into(), start.elapsed())); }
-        parser.finish(status.map(|s| s.success()).unwrap_or(false), stderr, req.effort.clone(), start.elapsed(), &mut |t| on_event(Streamed::Text(t)))
-    }
+    };
+    drop(job);
+    let _ = reader.join(); let write_result = writer.join(); let stderr = errors.join().unwrap_or_default();
+    Ok(Run { failure, exit_ok: status.map(|s| s.success()).unwrap_or(false), stderr, write_failed: write_result.is_err() || write_result.is_ok_and(|r| r.is_err()) })
 }
 pub fn version(executable: &std::path::Path) -> Result<String, String> {
     let output = process::command(executable).arg("--version").current_dir(std::env::temp_dir()).output().map_err(|e| e.to_string())?;

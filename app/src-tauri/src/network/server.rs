@@ -203,6 +203,7 @@ async fn generate(shared: Arc<Shared>, body: Value) -> Response<Body> {
     if from > 0 { return json_response(StatusCode::GONE, &json!({"kind":"network","details":"Lantern on the desktop no longer has this generation","model":"","usage":{"input":0,"output":0,"thinking":0,"cacheRead":0,"cacheWrite":0},"durationMs":0})); }
     let endpoint: Option<Endpoint> = match arg(&body, "endpoint") { Ok(e) => e, Err(e) => return json_response(StatusCode::BAD_REQUEST, &e) };
     if let Some(e) = &endpoint { if let Err(e) = rights::check_endpoint(e, &stored_settings(&shared.app)) { return json_response(StatusCode::BAD_REQUEST, &json!({"kind":"protocol","details":e,"model":"","usage":{"input":0,"output":0,"thinking":0,"cacheRead":0,"cacheWrite":0},"durationMs":0})); } }
+    let cli: Option<String> = match arg(&body, "cli") { Ok(c) => c, Err(e) => return json_response(StatusCode::BAD_REQUEST, &e) };
     let id = request.request_id.clone();
     let job = Arc::new(Job::new());
     if let Ok(mut jobs) = shared.jobs.lock() { jobs.insert(id.clone(), job.clone()); }
@@ -211,7 +212,7 @@ async fn generate(shared: Arc<Shared>, body: Value) -> Response<Body> {
         let job = job.clone();
         tokio::spawn(async move {
             let chunks = job.clone();
-            let result = provider::commands::run(request, endpoint, &shared.app.state::<Calls>(), move |chunk| chunks.push(line(json!({"chunk":chunk})), false)).await;
+            let result = provider::commands::run(request, endpoint, cli, &shared.app.state::<Calls>(), move |chunk| chunks.push(line(json!({"chunk":chunk})), false)).await;
             job.push(line(match result { Ok(c) => json!({"result":c}), Err(e) => json!({"error":e}) }), true);
             tokio::time::sleep(KEEP_FINISHED).await;
             if let Ok(mut jobs) = shared.jobs.lock() { jobs.remove(&id); }

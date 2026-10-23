@@ -10,6 +10,7 @@
   import EndpointsSettings from './EndpointsSettings.svelte';
   import NetworkSettings from './NetworkSettings.svelte';
   import { backend, native, remote } from './host';
+  import CodexSettings from './CodexSettings.svelte';
   import type { FakeEndpointOptions } from './fake-endpoint';
   import type { UpdateController } from './updates.svelte';
   import { REVEAL_CLICKS, revealsDeveloper } from './updates';
@@ -104,6 +105,7 @@
       {#if errorKind==='model-unknown'}<button onclick={()=>document.getElementById('default-model')?.focus()}>{strings.chooseModel}</button>{/if}
       {#if details}<details><summary>{strings.details}</summary><pre>{details}</pre><button onclick={()=>navigator.clipboard.writeText(details)}>{strings.copyDetails}</button></details>{/if}
       {#if remote}<p>{strings.endpointsOnDesktop}</p>{/if}
+      <CodexSettings {settings} {changed} {provider} health={endpointHealth.codex} fakeOptions={fakeEndpoint} disabled={generating||remote} />
       <EndpointsSettings {settings} {changed} {provider} health={endpointHealth} fakeOptions={fakeEndpoint} disabled={generating||remote} />
     {:else if roomOf(section)}{@const RoomSettings=roomOf(section)!.settingsMenu}<RoomSettings {settings} {changed} />
     {:else if section==='companion'}

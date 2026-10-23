@@ -5,7 +5,9 @@ export interface RoomSettingsSpec { id: string; settings: { defaults: Record<str
 export interface Settings {
   format: 'lantern-settings/1'; library: { path: string; [key: string]: unknown }; user: { displayName: string; [key: string]: unknown };
   /** `endpoints` (CE-20) stays out of the defaults, so *Reset to defaults* never removes an endpoint. */
-  provider: { defaultModel: string; defaultEffort: Effort; endpoints?: EndpointConfig[]; [key: string]: unknown };
+  provider: { defaultModel: string; defaultEffort: Effort; endpoints?: EndpointConfig[];
+    /** CE-58: Codex models in the pickers; absent means off, and *Reset* keeps it, as it keeps the endpoints. */
+    codex?: boolean; [key: string]: unknown };
   appearance: { reduceMotion: 'system' | 'on'; backdrop: boolean; showTokenStats: boolean; [key: string]: unknown };
   updates: { checkAtLaunch: boolean; [key: string]: unknown };
   developer: { updateFolder: string; [key: string]: unknown };
@@ -42,6 +44,7 @@ export function validateSettings(input: unknown, defaults = defaultSettings(), r
   if (!['low','medium','high','xhigh','max'].includes(p.defaultEffort)) p.defaultEffort = defaults.provider.defaultEffort;
   // CE-20, SE-6: a malformed endpoint is dropped, the others kept; the key is never a place for an API key (SE-7, CE-70).
   if ('endpoints' in p) p.endpoints = endpointsOf(p);
+  if ('codex' in p && typeof p.codex !== 'boolean') delete p.codex;
   // GV-100 forbids overriding an OS reduced-motion preference with "never reduce".
   if (!['system','on'].includes(a.reduceMotion)) a.reduceMotion = 'system';
   if (typeof a.backdrop !== 'boolean') a.backdrop = defaults.appearance.backdrop;

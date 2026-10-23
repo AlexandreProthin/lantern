@@ -1,4 +1,4 @@
-import { parseModelId } from '../core/models';
+import { CODEX, parseModelId } from '../core/models';
 import type { ErrorKind } from '../frame/provider';
 import { modelChoices } from './model-choices.svelte';
 import { strings } from './strings';
@@ -16,6 +16,8 @@ function retryAfter(details = ''): string {
 export function errorMessage(error: { kind: ErrorKind; model?: string; details?: string }, context: { web?: boolean } = {}): string {
   const { endpointId, model } = parseModelId(error.model ?? '');
   if (endpointId === null) return context.web && error.kind === 'not-installed' ? strings.researchNeedsClaude : strings.errorKinds[error.kind];
+  // CE-58: Codex speaks for itself, in the CLI's vocabulary.
+  if (endpointId === CODEX) return error.kind === 'model-unknown' ? strings.codex.modelUnknown(model) : strings.codex.errors[error.kind] ?? strings.errorKinds[error.kind];
   const e = modelChoices.endpoints.find(x => x.id === endpointId), name = e?.name ?? endpointId, m = strings.endpointErrors;
   if (!e) return m.missing(endpointId);
   // CE-80: Rust refused plain http to an address that is not this machine nor a confirmed LAN address.

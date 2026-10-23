@@ -26,7 +26,7 @@ export function endpointsOf(provider: { [key: string]: unknown }): EndpointConfi
   const raw = Array.isArray(provider.endpoints) ? provider.endpoints : [];
   const seen = new Set<string>();
   return raw.flatMap((e): EndpointConfig[] => {
-    if (!isRecord(e) || typeof e.id !== 'string' || !/^[a-z0-9-]{1,32}$/.test(e.id) || seen.has(e.id) || typeof e.baseUrl !== 'string' || e.baseUrl.length > 500 || !PRESETS.includes(e.preset as Preset)) return [];
+    if (!isRecord(e) || typeof e.id !== 'string' || !/^[a-z0-9-]{1,32}$/.test(e.id) || e.id === 'codex' /* CE-58: Codex's prefix */ || seen.has(e.id) || typeof e.baseUrl !== 'string' || e.baseUrl.length > 500 || !PRESETS.includes(e.preset as Preset)) return [];
     seen.add(e.id);
     const ids = new Set<string>(), preset = e.preset as Preset;
     const models = (Array.isArray(e.models) ? e.models : []).flatMap((m): EndpointModel[] => !isRecord(m) || typeof m.id !== 'string' || !m.id || m.id.length > 100 || ids.has(m.id) || !ids.add(m.id) ? [] : [{

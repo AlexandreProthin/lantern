@@ -34,6 +34,8 @@ Entries move out of here into a versioned plan when the user schedules them. New
 - **Codex CLI provider** (CE-58): a second CLI provider on a ChatGPT plan, with its own detection,
   stream, errors and fixtures; it can also run Choose's research (CE-55). Its own version, scheduled
   once the user has a Codex plan to test with.
+  *(2026-10-22: built from OpenAI's docs on `claude/codex-cli-provider`; real runs still to do,
+  [Codex plan](/plans/codex-cli.md).)*
 - **Lantern's own web tools** (CE-55): a search API with its own key, page fetching in Rust and a
   tool-calling loop, so Choose's research works on any model. The user wants it eventually; it needs
   its own spec round.
