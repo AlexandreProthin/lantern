@@ -22,7 +22,7 @@
     untitled: strings.untitledQuestion,
     menuActions: nodeActions,
     runMenuAction(action: MenuAction, nodeId) {
-      if (action.toPanel) openInPanel(action.id as 'own' | 'delete', nodeId); else runNodeAction(session, action.id as Exclude<NodeActionId, 'own' | 'delete'>, nodeId);
+      if (action.toPanel) openInPanel(action.id as PanelRequest['kind'], nodeId); else runNodeAction(session, action.id as Exclude<NodeActionId, 'rewrite' | 'own' | 'delete'>, nodeId);
     },
     enter(nodeId) {
       if (session.focus.state === 'open' && !session.running) { void session.run('light', nodeId); return true; }

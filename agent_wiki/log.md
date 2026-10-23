@@ -2,6 +2,9 @@
 
 ## 2026-10-23
 
+* **Generations survive a dropped connection** (branch `resume-and-regenerate`): the desktop keeps each remote generation as a job with its lines; a device reattaches with the number of lines it read, and a phone coming back from a locked screen drops its stale connection and resumes. A finished job is kept 15 minutes, then a reattach gets a 410 ([network-serving](/specs/network-serving.md) NW-50..52, [network server](/components/network-server.md)). Removed from the [backlog](/plans/backlog.md).
+* **Rewrite explanation** (same branch): a new `rewrite` task and prompt `learn-3` ([tutor-protocol](/specs/tutor-protocol.md) TP-14, TP-20); the action in the panel and the node menu with an optional *What should change?* note ([learn-room](/specs/learn-room.md) LR-45, [node-panel](/specs/node-panel.md) NP-35, [graph-view](/specs/graph-view.md) GV-55); the replaced text becomes the previous version ([domain-model](/specs/domain-model.md) DM-16, DM-30); context matrix row ([context-assembly](/specs/context-assembly.md) CA-40); eval checks ([platform-quality](/specs/platform-quality.md) PQ-31). Removed from the backlog, roadmap and product-scope's *Later*.
+
 * **Serve over the network, built** (branch `worktree-serve-over-network`): a *Settings → Network* toggle serves Lantern over HTTPS on the LAN with a self-signed certificate; a phone pairs by QR code and keeps a device cookie; remote devices can use but not administer; a phone layout below 720 px. New spec [network-serving](/specs/network-serving.md) (NW-1..43, as landed) and component [network server](/components/network-server.md); [settings](/specs/settings.md) SE-8 and [platform-quality](/specs/platform-quality.md) PQ-5 added; [plan](/plans/serve-over-network.md) and [roadmap](/plans/roadmap.md) updated. 74 Rust, 224 TS, Playwright 103 passed; live checks against the debug app passed. Waits for the user's try on a phone before the merge.
 
 ## 2026-10-22

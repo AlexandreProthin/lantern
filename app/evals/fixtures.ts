@@ -1,6 +1,8 @@
 import type { GraphNode, RoomVisit, Subject, Turn } from '../src/core/model';
 import type { Task } from '../src/rooms/learn/protocol';
-export interface EvalCase { id: string; subject: Subject; task: Task; focusId: string; language: 'en' | 'fr'; pending: boolean }
+export interface EvalCase { id: string; subject: Subject; task: Task; focusId: string; language: 'en' | 'fr'; pending: boolean;
+  /** TP-14: the learner's note on a rewrite, a word the new text must show it followed, and a fact it must keep. */
+  note?: string; follows?: RegExp; keeps?: string }
 /** PQ-31/32: reproducible EN/FR subjects, small and large, with check/ordinary replies. */
 export function cases(): EvalCase[] {
   const result: EvalCase[] = [];
@@ -31,6 +33,20 @@ export function cases(): EvalCase[] {
     v.nodes.n1.dialogue = [question, answer];
     v.log.push({ id: 'check', nodeId: 'n1', task: 'check', model: 'fixture', effort: 'low', data: { tone: 'curious' }, promptVersion: 'learn-1', startedAt: at, durationMs: 0, usage: { input: 0, output: 0, thinking: 0, cacheRead: 0, cacheWrite: 0 }, outcome: 'ok' });
     result.push({ id: `${language}-${size}-check-answer`, subject: pending, task: 'reply', focusId: 'n1', language, pending: true });
+    // TP-14 (learn-3): rewrites of a lit node, plain after a confused question, steered by a note, and over a learner correction.
+    const rewrite = structuredClone(subject);
+    rewrite.rooms.learn.nodes.n1.dialogue = [{ role: 'user', text: french ? 'Je ne comprends pas pourquoi la face éloignée monte aussi.' : "I don't get why the far side rises too.", at, author: { kind: 'user', by: 'fixture' } }];
+    result.push({ id: `${language}-${size}-rewrite`, subject: rewrite, task: 'rewrite', focusId: 'n1', language, pending: false });
+    result.push({ id: `${language}-${size}-rewrite-note`, subject: structuredClone(subject), task: 'rewrite', focusId: 'n1', language, pending: false,
+      note: french ? 'Explique-le avec une analogie de cuisine' : 'Explain it with a cooking analogy', follows: /cook|kitchen|recipe|oven|dough|batter|bak(e|ing)|bread|jell|sauce|soup|bowl|plate|dish|tray|counter|custard|cream|flan|plat\b|plateau|crème|ladle|spoon|whisk|pan\b|pot\b|cuisin|recette|four\b|pâte|casserole|soupe|marmite|louche|cuill|gelée|assiette|bol\b/i });
+    const corrected = structuredClone(subject), n1 = corrected.rooms.learn.nodes.n1;
+    n1.previous = n1.content; n1.edited = { by: 'fixture', at };
+    n1.content += french ? " En plein océan, le bourrelet lunaire ne fait qu'environ 46 cm de haut." : ' In the open ocean, the lunar bulge is only about 46 cm high.';
+    result.push({ id: `${language}-${size}-rewrite-corrected`, subject: corrected, task: 'rewrite', focusId: 'n1', language, pending: false, keeps: '46' });
+    if (size === 5) {
+      const intro = structuredClone(subject); intro.rooms.learn.focusId = 'n0';
+      result.push({ id: `${language}-${size}-rewrite-root`, subject: intro, task: 'rewrite', focusId: 'n0', language, pending: false });
+    }
   }
   return result;
 }

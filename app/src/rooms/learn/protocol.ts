@@ -1,6 +1,6 @@
 import type { RoomVisit } from '../../core/model';
 import type { NodeKind } from './rules';
-export type Task = 'intro' | 'light' | 'more' | 'reply' | 'check' | 'suggest';
+export type Task = 'intro' | 'light' | 'more' | 'reply' | 'check' | 'rewrite' | 'suggest';
 export interface Option { title: string; hook: string; kind?: NodeKind }
 export const clip = (text: string, max: number) => text.length > max ? text.slice(0, max) + '…' : text;
 /** TP-32 is shared by streaming and final storage. No raw block can flash in the panel. */
@@ -50,7 +50,7 @@ export function parseReply(raw: string, task: Task, pendingCheck = false) {
   }
   const understood = task === 'reply' && pendingCheck && /<understood\s*\/>/.test(raw);
   return { text: task === 'more' || task === 'suggest' ? '' : text, options, optionsValid, branch, understood,
-    emptyError: ['intro', 'light', 'reply', 'check'].includes(task) && !text };
+    emptyError: ['intro', 'light', 'reply', 'check', 'rewrite'].includes(task) && !text };
 }
 /** Parse links without changing stored text; the renderer resolves existence at render time. */
 export function nodeLinks(text: string, visit: RoomVisit) {

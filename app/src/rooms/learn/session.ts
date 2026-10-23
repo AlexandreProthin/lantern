@@ -29,7 +29,7 @@ export class LearnSession {
     if (this.running) throw new Error('A generation is already running');
     const v = this.visit, node = nodeOf(v, id);
     if ((task === 'intro' && (id !== v.rootId || node.state !== 'open')) || (task === 'light' && node.state !== 'open')
-      || (['more', 'reply', 'check'].includes(task) && !['lit', 'understood'].includes(node.state))) throw new Error('Action unavailable for this state');
+      || (['more', 'reply', 'check', 'rewrite'].includes(task) && !['lit', 'understood'].includes(node.state))) throw new Error('Action unavailable for this state');
     if (task === 'light' && id === v.rootId) task = 'intro';
     if (task === 'reply' && !retry) {
       if (!message?.trim()) throw new Error('Message is empty');
@@ -39,10 +39,12 @@ export class LearnSession {
     const check = checkOverride ?? pendingCheck(v, id);
     const config = cloneJson({ tone: toneOf(v), model: v.model, effort: v.effort });
     // CE-31: on an endpoint model the map also fits the model's context size.
-    const prompts = fitPrompt(budgetTokens => taskPrompt(v, task, id, { budgetTokens }), this.budgetTokens, contextSizeOf(config.model));
+    // TP-14: for a rewrite, `message` is the learner's optional note on what should change.
+    const note = task === 'rewrite' ? message : undefined;
+    const prompts = fitPrompt(budgetTokens => taskPrompt(v, task, id, { budgetTokens, note }), this.budgetTokens, contextSizeOf(config.model));
     const generationId = newId(), startedAt = now(), started = performance.now();
     const controller = new AbortController(); this.running = { nodeId: id, task, text: '', controller }; this.notice = null; this.render();
-    const retryCall = () => this.run(task, id, undefined, task === 'reply', check);
+    const retryCall = () => this.run(task, id, note, task === 'reply', check);
     let record: Generation;
     let rawStream = '';
     try {
@@ -58,6 +60,8 @@ export class LearnSession {
       const next = cloneJson(this.visit), target = nodeOf(next, id);
       const author = { kind: 'model' as const, model: result.model, effort: config.effort, generationId };
       if (task === 'intro' || task === 'light') { target.content = parsed.text; target.author = author; setState(next, id, 'lit'); }
+      // DM-16: a rewrite keeps the text it replaces as the one previous version; the new text is the model's own.
+      if (task === 'rewrite') { target.previous = target.content; target.content = parsed.text; target.author = author; delete target.edited; }
       if (task === 'reply' || task === 'check') target.dialogue.push({ role: 'model', text: parsed.text, at: now(), author });
       if (parsed.understood) setState(next, id, 'understood', 'demonstrated');
       let count = 0;

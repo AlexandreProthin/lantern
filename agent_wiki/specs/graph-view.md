@@ -132,10 +132,10 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
 - **GV-55** *Node menu (v0.1.1 F1).* Right-click on a node (or the context-menu key / Shift+F10 on
   the focused node) MUST focus it and open a menu beside it with **the same actions, in the same
   order and with the same enabled state, as the end of the node panel** (one shared definition):
-  open node: *Light it up*, *Dismiss*, *Delete*; lit or understood node: *More options*, *Add my
-  own node*, *Delete*; dismissed node: *Restore*, *Delete*; the root never offers *Delete*
-  ([learn-room](/specs/learn-room.md) LR-10 to LR-23). *Add my own node* and *Delete* open the
-  panel's own form and confirmation dialog for that node (the panel is uncollapsed if needed).
+  open node: *Light it up*, *Dismiss*, *Delete*; lit or understood node: *More options*, *Rewrite
+  explanation*, *Add my own node*, *Delete*; dismissed node: *Restore*, *Delete*; the root never offers *Delete*
+  ([learn-room](/specs/learn-room.md) LR-10 to LR-23). *Rewrite explanation*, *Add my own node* and *Delete* open
+  the panel's own form and confirmation dialog for that node (the panel is uncollapsed if needed).
   The menu follows the node while the view pans; Esc, a press outside it or choosing an action
   closes it and returns focus to the node; arrow keys move between items.
 - **GV-57** *Search (v0.1.3).* A **search** button (magnifier, tooltip *Search · Ctrl+F*) sits left of

@@ -86,7 +86,7 @@ test('WG-9..11/RS-19: the direction opens with Shift+Enter, is validated, stored
   await direction.focus();await direction.press('Enter');
   await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
   const stored=()=>page.evaluate(()=>JSON.parse(localStorage.getItem(Object.keys(localStorage).find(k=>k.startsWith('lantern.subject.'))!)!).rooms.learn);
-  expect((await stored()).data.direction).toBe('Start from one grain,\nthen clouds.');await expect.poll(async()=>(await stored()).log[0]?.promptVersion).toBe('learn-2');
+  expect((await stored()).data.direction).toBe('Start from one grain,\nthen clouds.');await expect.poll(async()=>(await stored()).log[0]?.promptVersion).toBe('learn-3');
   // RS-19: edited in the subject menu, applied on blur; emptying it removes the direction.
   await page.locator('header .subject-field .title').click();
   const menuDirection=page.locator('.subject-menu textarea.direction');

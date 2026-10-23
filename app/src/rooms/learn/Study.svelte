@@ -8,7 +8,7 @@
   let { session, revision, visible, settings, navigate, preferencesChanged, library }: SpaceProps = $props();
   const learn = $derived(session as LearnSession | null);
   let panelRequest = $state<PanelRequest | null>(null), linkPreview = $state<string | null>(null);
-  /** GV-55: the node menu hands *Add my own node* and *Delete* to the panel. */
+  /** GV-55: the node menu hands *Rewrite explanation*, *Add my own node* and *Delete* to the panel. */
   function openInPanel(kind: PanelRequest['kind'], nodeId: string) {
     if (settings.ui.studyCollapsed === 'panel') { settings.ui.studyCollapsed = 'none'; preferencesChanged(); }
     panelRequest = { kind, nodeId, seq: (panelRequest?.seq ?? 0) + 1 };

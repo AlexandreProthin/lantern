@@ -2,12 +2,15 @@
 
 From `app/`, run `npm run eval -- --model haiku --effort low --runs 3`.
 The installed CLI is found at `~/.local/bin/claude.exe`; override with `LANTERN_CLAUDE`.
-This consumes subscription usage. It runs 24 reproducible EN/FR, small/large cases
-per run in batches of three, through the approved isolated CLI flags. Raw replies,
+This consumes subscription usage. It runs 38 reproducible EN/FR, small/large cases
+per run in batches of three, through the approved isolated CLI flags. `--only <regex>` runs
+the cases whose id matches, for a look at one task; the gate is for the full set. Raw replies,
 usage and timings stay in git-ignored `evals/results/`.
 
 The gate is 95% for each run, not an aggregate. Checks cover options count/grammar,
-existing-title deduplication, links, task-specific blocks and check-only understanding.
+existing-title deduplication, links, task-specific blocks and check-only understanding,
+and for rewrites (`learn-3`): no copied sentence, no mention of the rewrite, the note followed,
+the correction kept and a short introduction on the root.
 Language checks are lexical smoke checks; review prose for language and teaching
 quality before release. Synthetic map directions test scale and title avoidance;
 they do not claim to represent a real 300-node learner subject.

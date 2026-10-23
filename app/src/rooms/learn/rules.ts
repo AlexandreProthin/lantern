@@ -8,7 +8,7 @@ export type NodeState = 'open' | 'lit' | 'understood' | 'dismissed';
 export type UnderstoodBy = 'demonstrated' | 'self' | null;
 export const kinds: NodeKind[] = ['subject', 'axis', 'deeper', 'application', 'adjacent', 'exercise', 'question', 'own'];
 export const states: NodeState[] = ['open', 'lit', 'understood', 'dismissed'];
-export const tasks = ['intro', 'light', 'reply', 'check', 'more'] as const;
+export const tasks = ['intro', 'light', 'reply', 'check', 'more', 'rewrite'] as const;
 export interface LearnData { tone: Tone; direction?: string }
 
 /** Valid visits always carry a tone (validateLearn); the cast is the only place that reads `data`. */

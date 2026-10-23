@@ -11,6 +11,7 @@ export class FakeProvider implements InferenceProvider {
     const isCheck = req.prompt.includes('TASK: test');
     const text = this.response ?? (req.prompt.includes('TASK: suggest') || req.prompt.includes('TASK: propose') ? tag
       : isCheck ? 'What would change if this mechanism stopped working? Explain why.'
+      : req.prompt.includes('TASK: rewrite') ? 'Seen from another side, this mechanism shows up in what we can measure. Picture it step by step.'
       : req.prompt.includes('TASK: reply') ? `Your reasoning identifies the key mechanism.${req.prompt.includes('PENDING CHECK: yes') ? '<understood/>' : ''}`
       : `This subject connects a mechanism to what we can observe. Explore one direction at a time.\n\n${tag}`);
     const wait = () => new Promise<void>((resolve, reject) => {

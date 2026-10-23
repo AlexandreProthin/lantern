@@ -56,7 +56,7 @@ components are a requirement, not a nicety.
 
 ## Later (not in v0.1.0)
 
-Merge (Ctrl+click, several parents) and **regenerate** (*More options* covers the options case),
+Merge (Ctrl+click, several parents) (regenerating an explanation has landed as *Rewrite explanation*, [learn-room](/specs/learn-room.md) LR-45),
 parallel generation, Anthropic API, local and other providers (with a security focus when they
 come), search, export (for example the graph as an OKF bundle), undo and history, spaced review,
 learner profile, bring-your-own material, the Think, Explore and Interview rooms, an app-level home, one subject in several rooms with an *Open in Learn* handoff (q-r5-cross-room),

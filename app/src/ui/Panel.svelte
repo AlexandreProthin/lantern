@@ -78,7 +78,8 @@
   $effect(() => {
     const r = request; if (!r || r.seq <= handledRequest || r.nodeId !== node.id) return;
     handledRequest = r.seq;
-    untrack(() => { if (r.kind === 'delete') deleting = r.nodeId; else { adding = true; tick().then(() => scroller?.querySelector<HTMLInputElement>('form input')?.focus()); } });
+    // Other kinds (Learn's rewrite) are the room's own forms.
+    untrack(() => { if (r.kind === 'delete') deleting = r.nodeId; else if (r.kind === 'own') { adding = true; tick().then(() => scroller?.querySelector<HTMLInputElement>('form input')?.focus()); } });
   });
   function act(id: string) {
     if (id === 'own') adding = !adding;
