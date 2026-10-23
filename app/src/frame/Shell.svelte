@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, untrack } from 'svelte';
   import { invoke } from './ipc';
-  import { backend, native as isNative } from './host';
+  import { backend, native as isNative, remote } from './host';
   import { strings } from '../ui/strings';
   // RS-53: header mark is the ember favicon of the accepted identity release; only its flame takes the room accent (see style).
   // Inlined as markup: an image URL would be a data: URI, which the app CSP blocks.
@@ -9,6 +9,7 @@
   import { providerMode } from './provider-mode';
   import { DesktopProvider, HeldProvider, ObservedProvider, ProviderError, type InferenceProvider } from './provider';
   import { RoutingProvider } from './routing';
+  import { trace, TracedProvider } from './debug/trace.svelte';
   import { endpointsOf } from './endpoints';
   import { endpointNameOf, modelChoices } from '../ui/model-choices.svelte';
   import { FakeEndpointTransport, fakeEndpointOptions } from './fake-endpoint';
@@ -29,6 +30,7 @@
   import { UpdateController } from './updates.svelte';
   import { shouldCheckAtLaunch, shouldShowNotice } from './updates';
   import SettingsPanel from './SettingsPanel.svelte';
+  import DebugConsole from './debug/DebugConsole.svelte';
   import Backdrop from './Backdrop.svelte';
   import TopBar from './TopBar.svelte';
   import FieldPanel from './FieldPanel.svelte';
@@ -66,7 +68,11 @@
   // CE-22: every picker and model label follows the stored endpoints.
   $effect(() => { modelChoices.endpoints = endpointsOf(settings.provider); modelChoices.codex = settings.provider.codex === true; });
   const reportEndpoint = (id: string, value: Completion | ProviderError) => { endpointHealth = { ...endpointHealth, [id]: value }; };
-  const routed = (claude: InferenceProvider, transport: ConstructorParameters<typeof RoutingProvider>[1]) => new RoutingProvider(claude, transport, routing, reportEndpoint);
+  // DC-20: the trace wraps the outermost provider, so no call skips it.
+  const routed = (claude: InferenceProvider, transport: ConstructorParameters<typeof RoutingProvider>[1]) => new TracedProvider(new RoutingProvider(claude, transport, routing, reportEndpoint));
+  // DC-3, DC-4: desktop app and dev browser build only; never a remote device or the demo.
+  const debugAllowed = !remote && !import.meta.env.VITE_DEMO && (native || import.meta.env.DEV);
+  $effect(() => { trace.setEnabled(debugAllowed && settings.developer.debug === true); });
   const desktopBridge = fake ? null : new DesktopProvider();
   const desktopProvider = desktopBridge ? routed(new ObservedProvider(desktopBridge, value => health=value), desktopBridge) : null;
   const fakeEndpoint = fakeEndpointOptions(new URLSearchParams(location.search), import.meta.env.DEV ? strings.errorKinds : {});
@@ -414,6 +420,7 @@
   rename={title=>renameSubject(session!.subject.id,title)} changed={appliesNext=>{session!.touch();if(appliesNext)toast=strings.appliesNext;}}
   openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/key}{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
+{#if trace.enabled}<DebugConsole {settings} changed={preferencesChanged} />{/if}
 {#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} desktop={native} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} thinking={amberThinking} working={amberWorking} lean={amberLean} greeting={amberGreeting} waiting={amberWaiting} greeted={()=>amberGreeting=null} {openRelease} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {endpointHealth} {fakeEndpoint} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}

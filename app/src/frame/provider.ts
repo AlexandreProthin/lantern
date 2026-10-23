@@ -1,6 +1,7 @@
 import { invoke, Channel } from './ipc';
 import type { Effort, Usage } from '../core/model';
 import type { WireEndpoint } from './endpoints';
+import type { TraceTag } from './debug/trace.svelte';
 export type ErrorKind = 'not-installed' | 'not-logged-in' | 'usage-limit' | 'model-unknown' | 'network' | 'process-crashed' | 'protocol' | 'cancelled'
   /** CE-40: endpoints only. */
   | 'unreachable' | 'key-rejected' | 'context-too-long';
@@ -12,7 +13,9 @@ export interface Completion { text: string; model: string; usage: Usage; duratio
   /** CE-27: the name the server answered with, when it differs from the model asked for (endpoints only). */
   servedModel?: string }
 /** IP-1: `web` allows WebSearch and WebFetch only; absent means no tool at all. */
-export interface Request { requestId: string; system: string; prompt: string; model?: string; effort?: Effort; web?: boolean; cancel: AbortSignal }
+export interface Request { requestId: string; system: string; prompt: string; model?: string; effort?: Effort; web?: boolean; cancel: AbortSignal;
+  /** DC-21: who asked and how the prompt was built; read only by the debug trace, never sent to a provider. */
+  trace?: TraceTag }
 /** IP-13: the search query for WebSearch, the page's host for WebFetch. */
 export interface ToolUse { name: string; detail: string }
 export class ProviderError extends Error {
