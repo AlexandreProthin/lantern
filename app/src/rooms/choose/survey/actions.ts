@@ -4,6 +4,7 @@ import type { MenuAction } from '../../../ui/graph/types';
 import { kindOf, statusOf } from '../rules';
 import type { ChooseSession } from '../session';
 import { t } from './strings';
+import { trace } from '../../../frame/debug/trace.svelte';
 
 export type ActionId = 'light' | 'explain' | 'find' | 'more' | 'check' | 'own' | 'dismiss' | 'restore' | 'delete'
   | 'shortlist' | 'remove' | 'reject' | 'unreject' | 'choose' | 'unchoose' | 'bought' | 'must' | 'nice' | 'irrelevant';
@@ -45,7 +46,7 @@ export function nodeActions(visit: RoomVisit, node: GraphNode, running: { nodeId
 const tasks: Record<string, 'light' | 'find' | 'more' | 'check'> = { light: 'light', explain: 'light', find: 'find', more: 'more', check: 'check' };
 /** Runs an action that needs no form. `reject` needs a reason, `own` and `delete` a form or dialog: the caller handles them. */
 export function runAction(session: ChooseSession, id: ActionId, nodeId: string): void {
-  if (id in tasks) { session.run(tasks[id], nodeId).catch(e => console.warn(String(e))); return; }
+  if (id in tasks) { session.run(tasks[id], nodeId).catch(e => { console.warn(String(e)); trace.warn('choose', String(e)); }); return; }
   if (isRank(id)) return session.rank(nodeId, id);
   switch (id) {
     case 'dismiss': return session.dismiss(nodeId);

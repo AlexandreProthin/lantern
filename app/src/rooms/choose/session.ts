@@ -13,6 +13,9 @@ import type { Slot } from './context';
 import { taskPrompt } from './prompts';
 import { fitPrompt } from '../../frame/context-fit';
 import { contextSizeOf } from '../../ui/model-choices.svelte';
+import { trace } from '../../frame/debug/trace.svelte';
+/** DC-30: how each task reads as a user action. */
+const ACTION_LABELS: Record<Task, string> = { intro: 'Introduce subject', light: 'Light node', find: 'Find products', more: 'More options', reply: 'Send reply', fill: 'Fill Compare', check: 'Check', recommend: 'Recommend' };
 
 /** One call in flight: the main lane (LR-40) or the research lane (CP-41). `progress` is the last tool use (IP-13). */
 export interface Running { nodeId: string; task: Task; text: string; web: boolean; progress: ToolUse | null; controller: AbortController }
@@ -46,9 +49,15 @@ export class ChooseSession {
   filling(): Set<string> { return new Set(this.research?.slots.map(slotKey) ?? []); }
   touch(): void { this.commit(); }
   initialize(): Promise<void> { return this.run('intro', this.visit.rootId); }
-  cancel(): void { this.running?.controller.abort(); }
+  cancel(): void {
+    if (this.running && !this.running.controller.signal.aborted) trace.action('choose', 'Cancel generation', { task: this.running.task, nodeId: this.running.nodeId });
+    this.running?.controller.abort();
+  }
   /** CP-40: Cancel in the research line stops the running fill and drops the queue. */
-  cancelResearch(): void { this.queue = []; this.research?.controller.abort(); this.render(); }
+  cancelResearch(): void {
+    if (this.research || this.queue.length) trace.action('choose', 'Cancel research', { running: this.research?.task, queued: this.queue.length });
+    this.queue = []; this.research?.controller.abort(); this.render();
+  }
   private commit(): void { normalize(this.visit); this.changed(); this.render(); }
   /** CP-10: web only for research tasks, and only when the room's *Use the web* is on. */
   webFor(task: Task): boolean { return RESEARCH.includes(task) && this.useWeb(); }
@@ -79,6 +88,7 @@ export class ChooseSession {
     if (requested === 'fill') throw new Error('Fills run in the research lane');
     const v = this.visit, node = nodeOf(v, id), task = this.resolve(requested, node);
     if (!this.allowed(task, node, v, o)) throw new Error('Action unavailable for this state');
+    trace.action('choose', ACTION_LABELS[task], { nodeId: id, ...(task !== requested ? { requested } : {}), ...(o.retry ? { retry: true } : {}), ...(o.turn !== undefined ? { turn: o.turn } : {}), ...(o.cell ? { cell: o.cell } : {}), ...(task === 'reply' && o.message ? { chars: o.message.trim().length } : {}) });
     if (task === 'reply' && !o.retry) {
       node.dialogue.push({ role: 'user', text: o.message!.trim(), at: now(), author: { kind: 'user', by: this.displayName } });
       this.commit();
@@ -115,7 +125,12 @@ export class ChooseSession {
     const focusId = group.key.startsWith('c:') ? group.key.slice(2) : slots[0].productId, controller = new AbortController();
     const lane: Research = { nodeId: focusId, task: 'fill', text: '', web: this.webFor('fill'), progress: null, controller, slots };
     this.research = lane; this.render();
-    await this.call(lane, () => this.research === lane, (result, next, gid) => this.applyCells(next, inTarget(liveCells(next, parseReply(result.text, 'fill', { today: this.today(), web: lane.web }).cells), slots), gid), () => { this.queueFill(slots); return Promise.resolve(); }, { target: slots });
+    trace.event('choose', 'Fill Compare cells', { slots: slots.length, queued: this.queue.length });
+    await this.call(lane, () => this.research === lane, (result, next, gid) => {
+      const parsed = parseReply(result.text, 'fill', { today: this.today(), web: lane.web }), kept = inTarget(liveCells(next, parsed.cells), slots);
+      trace.parsed(gid, { cells: kept, cellsValid: parsed.cellsValid, ...(parsed.cells.length > kept.length ? { rejectedCells: parsed.cells.length - kept.length } : {}) });
+      this.applyCells(next, kept, gid);
+    }, () => { this.queueFill(slots); return Promise.resolve(); }, { target: slots });
     this.research = null; this.commit(); void this.pump();
   }
 
@@ -130,7 +145,8 @@ export class ChooseSession {
       durationMs: r.durationMs || Math.round(performance.now() - started), usage: r.usage ?? zeroUsage(), ...(r.costUsd !== undefined ? { costUsd: r.costUsd } : {}),
       ...(r.toolCalls && Object.keys(r.toolCalls).length ? { toolCalls: r.toolCalls } : {}), ...(r.servedModel ? { servedModel: r.servedModel } : {}), outcome, data: { tone, web: lane.web } });
     try {
-      const result = await this.provider.stream({ requestId: generationId, system: prompts.system, prompt: prompts.prompt, model: v.model, effort: v.effort, web: lane.web, cancel: lane.controller.signal },
+      const result = await this.provider.stream({ requestId: generationId, system: prompts.system, prompt: prompts.prompt, model: v.model, effort: v.effort, web: lane.web, cancel: lane.controller.signal,
+        trace: { origin: `choose·${prompts.template}`, subjectId: this.subject.id, nodeId: id, promptVersion: prompts.promptVersion, layers: prompts.layers, stats: { ...prompts.stats, task: lane.task, ...(extra.target ? { targetCells: extra.target.length } : {}) } } },
         chunk => { raw += chunk; if (current() && !lane.controller.signal.aborted) { lane.text = visibleText(raw); this.render(); } },
         // IP-13, CP-32: a tool use closes the text before it; the answer is what follows the last one.
         tool => { raw = ''; if (current()) { lane.text = ''; lane.progress = tool; this.render(); } });
@@ -150,6 +166,9 @@ export class ChooseSession {
   private apply(next: RoomVisit, task: Task, id: string, result: Completion, o: RunOptions, web: boolean, generationId: string): void {
     const target = nodeOf(next, id), kind = kindOf(target);
     const parsed = parseReply(result.text, task, { today: this.today(), web, focusKind: kind });
+    trace.parsed(generationId, { visibleChars: parsed.text.length, visible: parsed.text.slice(0, 200), options: parsed.options, optionsValid: parsed.optionsValid,
+      products: parsed.products.map(p => p.title), productsValid: parsed.productsValid, cells: parsed.cells.length, cellsValid: parsed.cellsValid, facts: parsed.facts.length, factsValid: parsed.factsValid,
+      need: parsed.need, branch: parsed.branch, recommend: parsed.recommend, ...(parsed.emptyError ? { rejected: 'no usable text' } : {}) });
     if (parsed.emptyError) throw new ProviderError('protocol', 'The model returned no usable text', result.model, result.usage, result.durationMs, result.toolCalls);
     const by = { kind: 'model' as const, model: result.model, effort: next.effort, generationId };
     const grow = (options: { title: string; hook: string; kind: NodeKind }[], parentId: string) => {
@@ -202,34 +221,37 @@ export class ChooseSession {
   }
 
   // User actions (CR-21 to CR-24, CR-51, CP-30.4). Each one saves; shortlisting and ranking queue fills (CP-40).
-  shortlist(id: string): void { setState(this.visit, id, 'shortlisted'); this.commit(); this.queueFill(fillTarget(this.visit, id)); }
-  unshortlist(id: string): void { setState(this.visit, id, 'candidate'); this.commit(); }
-  rank(id: string, state: 'must' | 'nice' | 'irrelevant'): void { setState(this.visit, id, state); this.commit(); if (state !== 'irrelevant') this.queueRow(id); }
-  fillCompare(): void { this.queueFill(fillTarget(this.visit, this.visit.rootId)); }
-  answer(id: string, text: string): void { answerNeed(this.visit, id, text, this.displayName); this.commit(); }
+  shortlist(id: string): void { trace.action('choose', 'Shortlist', { nodeId: id }); setState(this.visit, id, 'shortlisted'); this.commit(); this.queueFill(fillTarget(this.visit, id)); }
+  unshortlist(id: string): void { trace.action('choose', 'Remove from shortlist', { nodeId: id }); setState(this.visit, id, 'candidate'); this.commit(); }
+  rank(id: string, state: 'must' | 'nice' | 'irrelevant'): void { trace.action('choose', 'Rank criterion', { nodeId: id, state }); setState(this.visit, id, state); this.commit(); if (state !== 'irrelevant') this.queueRow(id); }
+  fillCompare(): void { trace.action('choose', 'Fill Compare'); this.queueFill(fillTarget(this.visit, this.visit.rootId)); }
+  answer(id: string, text: string): void { trace.action('choose', 'Answer need', { nodeId: id, chars: text.length }); answerNeed(this.visit, id, text, this.displayName); this.commit(); }
   addOfferedNeed(): void {
     const offer = this.needOffer; if (!offer) return;
+    trace.action('choose', 'Add offered need', { nodeId: offer.nodeId });
     const need = addChooseChild(this.visit, this.visit.rootId, { title: offer.question, kind: 'need', createdBy: 'user', author: { kind: 'user', by: this.displayName } });
     answerNeed(this.visit, need.id, offer.answer, this.displayName); this.needOffer = null; this.commit();
   }
-  ignoreOfferedNeed(): void { this.needOffer = null; this.render(); }
-  setNeedsNote(text: string): void { setNeedsNote(this.visit, text); this.commit(); }
-  reject(id: string, reason: string): void { rejectProduct(this.visit, id, reason); this.commit(); }
-  restore(id: string): void { restoreProduct(this.visit, id); this.commit(); }
-  choose(id: string): void { chooseProduct(this.visit, id); this.commit(); }
-  unchoose(id: string): void { unchooseProduct(this.visit, id); this.commit(); }
-  bought(): void { markBought(this.visit); this.commit(); }
-  dismiss(id: string): void { setState(this.visit, id, 'dismissed'); this.commit(); }
-  undismiss(id: string): void { setState(this.visit, id, 'open'); this.commit(); }
+  ignoreOfferedNeed(): void { trace.action('choose', 'Ignore offered need'); this.needOffer = null; this.render(); }
+  setNeedsNote(text: string): void { trace.action('choose', 'Edit needs note', { chars: text.length }); setNeedsNote(this.visit, text); this.commit(); }
+  reject(id: string, reason: string): void { trace.action('choose', 'Reject product', { nodeId: id }); rejectProduct(this.visit, id, reason); this.commit(); }
+  restore(id: string): void { trace.action('choose', 'Restore product', { nodeId: id }); restoreProduct(this.visit, id); this.commit(); }
+  choose(id: string): void { trace.action('choose', 'Choose product', { nodeId: id }); chooseProduct(this.visit, id); this.commit(); }
+  unchoose(id: string): void { trace.action('choose', 'Unchoose product', { nodeId: id }); unchooseProduct(this.visit, id); this.commit(); }
+  bought(): void { trace.action('choose', 'Mark bought'); markBought(this.visit); this.commit(); }
+  dismiss(id: string): void { trace.action('choose', 'Dismiss', { nodeId: id }); setState(this.visit, id, 'dismissed'); this.commit(); }
+  undismiss(id: string): void { trace.action('choose', 'Restore', { nodeId: id }); setState(this.visit, id, 'open'); this.commit(); }
   /** CR-51, DM-16: the user's value goes beside the room's, which stays. */
   saveCell(slot: Slot, value: string): void {
     value = value.trim(); if (!value || [...value].length > 160) throw new Error('Invalid value');
+    trace.action('choose', 'Edit Compare value', { cell: slot });
     const product = nodeOf(this.visit, slot.productId), cell = cells(product)[slot.criterionId] ?? { value: null, sources: [], generationId: '', at: now() };
     product.data = { ...product.data, cells: { ...cells(product), [slot.criterionId]: { ...cell, user: { value, at: now(), by: this.displayName } } } };
     this.commit();
   }
   revertCell(slot: Slot): void {
     const product = nodeOf(this.visit, slot.productId), cell = cells(product)[slot.criterionId]; if (!cell?.user) return;
+    trace.action('choose', 'Revert Compare value', { cell: slot });
     const { user: _, ...room } = cell;
     product.data = { ...product.data, cells: { ...cells(product), [slot.criterionId]: room } }; this.commit();
   }

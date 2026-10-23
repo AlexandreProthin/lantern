@@ -19,7 +19,9 @@ export type StreamPart = { kind: 'text'; text: string } | { kind: 'tool'; name: 
 export type CallStatus = 'running' | 'ok' | 'cancelled' | 'error';
 interface Base { id: number; at: number; origin: string }
 export interface CallEntry extends Base {
-  kind: 'call'; requestId: string; model?: string; effort?: string; web: boolean;
+  kind: 'call'; requestId: string;
+  /** DC-21.2: `requestedModel` as asked; `model` becomes the resolved one when the call ends. */
+  requestedModel?: string; model?: string; effort?: string; web: boolean;
   system: string; prompt: string; tag?: TraceTag;
   stream: StreamPart[]; status: CallStatus;
   completion?: Completion; error?: { kind: string; details: string };
@@ -74,7 +76,7 @@ export class TraceStore {
     const tag = request.trace;
     const missing = (tag?.layers ?? []).filter(l => l.text && !request.prompt.includes(l.text) && !request.system.includes(l.text)).map(l => l.name);
     const entry: CallEntry = { id: this.next++, at: Date.now(), kind: 'call', origin: tag?.origin ?? 'unknown', requestId: request.requestId,
-      model: request.model, effort: request.effort, web: !!request.web, system: request.system, prompt: request.prompt,
+      requestedModel: request.model, model: request.model, effort: request.effort, web: !!request.web, system: request.system, prompt: request.prompt,
       ...(tag ? { tag: { ...tag, layers: tag.layers?.map(l => ({ ...l })) } } : {}), stream: [], status: 'running', missingLayers: missing };
     this.push(entry);
     const live = this.entries.at(-1) as CallEntry; // the reactive proxy

@@ -5,6 +5,7 @@ pub mod library;
 mod commands;
 mod updates;
 mod local_feed;
+mod debug_log;
 pub mod network;
 
 pub fn run() {
@@ -22,7 +23,8 @@ pub fn run() {
             commands::load_settings, commands::save_settings, commands::open_external,
             commands::pick_library, commands::validate_library, commands::switch_library, commands::reveal_library, commands::save_window_state, commands::snap_layouts,
             updates::check_update, updates::install_update, updates::release_update,
-            network::network_status, network::network_set, network::network_pair, network::network_forget_devices])
+            network::network_status, network::network_set, network::network_pair, network::network_forget_devices,
+            debug_log::debug_log_write])
         .setup(|app| { network::launch(app.handle())?; Ok(()) })
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             use tauri::Manager;

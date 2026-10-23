@@ -10,6 +10,9 @@ import type { Task } from './protocol';
 import { taskPrompt } from './prompts';
 import { fitPrompt } from '../../frame/context-fit';
 import { contextSizeOf } from '../../ui/model-choices.svelte';
+import { trace } from '../../frame/debug/trace.svelte';
+/** DC-30: how each task reads as a user action. */
+const ACTION_LABELS: Record<Exclude<Task, 'suggest'>, string> = { intro: 'Introduce subject', light: 'Light node', more: 'More options', reply: 'Send reply', check: 'Test me', rewrite: 'Rewrite explanation' };
 export interface Running { nodeId: string; task: Task; text: string; controller: AbortController }
 export interface SessionNotice { nodeId: string; kind: 'directions' | 'error'; count?: number; error?: ProviderError; retry: () => Promise<void> }
 /** LR-1..67: Learn policy. Core operations know nothing of generation or prompts. */
@@ -24,13 +27,17 @@ export class LearnSession {
   busy(id: string): boolean { return this.running?.nodeId === id; }
   touch(): void { this.changed(); this.render(); }
   initialize(): Promise<void> { return this.run('intro', this.visit.rootId); }
-  cancel(): void { this.running?.controller.abort(); }
+  cancel(): void {
+    if (this.running && !this.running.controller.signal.aborted) trace.action('learn', 'Cancel generation', { task: this.running.task, nodeId: this.running.nodeId });
+    this.running?.controller.abort();
+  }
   async run(task: Exclude<Task, 'suggest'>, id: string, message?: string, retry = false, checkOverride?: boolean): Promise<void> {
     if (this.running) throw new Error('A generation is already running');
     const v = this.visit, node = nodeOf(v, id);
     if ((task === 'intro' && (id !== v.rootId || node.state !== 'open')) || (task === 'light' && node.state !== 'open')
       || (['more', 'reply', 'check', 'rewrite'].includes(task) && !['lit', 'understood'].includes(node.state))) throw new Error('Action unavailable for this state');
     if (task === 'light' && id === v.rootId) task = 'intro';
+    trace.action('learn', ACTION_LABELS[task], { nodeId: id, ...(retry ? { retry } : {}), ...(task === 'reply' && message ? { chars: message.trim().length } : {}), ...(task === 'rewrite' && message ? { noteChars: message.length } : {}) });
     if (task === 'reply' && !retry) {
       if (!message?.trim()) throw new Error('Message is empty');
       node.dialogue.push({ role: 'user', text: message.trim(), at: now(), author: { kind: 'user', by: this.displayName } });
@@ -48,13 +55,17 @@ export class LearnSession {
     let record: Generation;
     let rawStream = '';
     try {
-      const result = await this.provider.stream({ requestId: generationId, ...prompts, model: config.model, effort: config.effort, cancel: controller.signal }, chunk => {
+      const result = await this.provider.stream({ requestId: generationId, system: prompts.system, prompt: prompts.prompt, model: config.model, effort: config.effort, cancel: controller.signal,
+        trace: { origin: `learn·${task}`, subjectId: this.subject.id, nodeId: id, promptVersion: prompts.promptVersion, layers: prompts.layers, stats: { ...prompts.stats, pendingCheck: check } } }, chunk => {
         rawStream += chunk;
         if (this.running?.controller === controller && !controller.signal.aborted) { this.running.text = visibleText(rawStream); this.render(); }
       });
       if (controller.signal.aborted || !Object.hasOwn(this.visit.nodes, id)) throw new ProviderError('cancelled', '', result.model, result.usage, result.durationMs);
       if (result.outcome !== 'ok') throw new ProviderError(result.outcome === 'cancelled' ? 'cancelled' : 'process-crashed', '', result.model, result.usage, result.durationMs);
       const parsed = parseReply(result.text, task, check);
+      const report = { visibleChars: parsed.text.length, visible: parsed.text.slice(0, 200), options: parsed.options, optionsValid: parsed.optionsValid,
+        branch: parsed.branch, understood: parsed.understood, ...(parsed.emptyError ? { rejected: 'no usable text' } : {}) };
+      trace.parsed(generationId, report);
       if (parsed.emptyError) throw new ProviderError('protocol', 'The tutor returned no usable text', result.model, result.usage, result.durationMs);
       // Apply against the graph now, not a stale snapshot. One swap includes all mutations and the log.
       const next = cloneJson(this.visit), target = nodeOf(next, id);
@@ -64,13 +75,15 @@ export class LearnSession {
       if (task === 'rewrite') { target.previous = target.content; target.content = parsed.text; target.author = author; delete target.edited; }
       if (task === 'reply' || task === 'check') target.dialogue.push({ role: 'model', text: parsed.text, at: now(), author });
       if (parsed.understood) setState(next, id, 'understood', 'demonstrated');
-      let count = 0;
+      let count = 0; const duplicates: string[] = [];
       for (const opt of parsed.options) {
         if (count === 3) break;
-        if (Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(opt.title))) continue;
+        if (Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(opt.title))) { duplicates.push(opt.title); continue; }
         addLearnChild(next, id, { ...opt, kind: task === 'intro' ? 'axis' : opt.kind ?? 'deeper', createdBy: 'model' }); count++;
       }
-      if (parsed.branch && !Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(parsed.branch!.title))) addLearnChild(next, id, { ...parsed.branch, kind: 'question', createdBy: 'model' });
+      const branchKept = !!parsed.branch && !Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(parsed.branch!.title));
+      if (branchKept) addLearnChild(next, id, { ...parsed.branch!, kind: 'question', createdBy: 'model' });
+      trace.parsed(generationId, { ...report, keptOptions: count, ...(duplicates.length ? { rejectedDuplicates: duplicates } : {}), ...(parsed.branch && !branchKept ? { rejectedBranch: 'already in the map' } : {}) });
       record = { id: generationId, nodeId: id, task, effort: config.effort, data: { tone: config.tone }, model: result.model, promptVersion: prompts.promptVersion, startedAt,
         durationMs: result.durationMs, usage: result.usage, ...(result.costUsd !== undefined ? { costUsd: result.costUsd } : {}), ...(result.servedModel ? { servedModel: result.servedModel } : {}), outcome: 'ok' };
       next.log.push(record); this.subject.rooms.learn = next;

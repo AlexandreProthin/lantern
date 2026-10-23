@@ -3,6 +3,7 @@ import { setState } from './rules';
 import { strings } from '../../ui/strings';
 import type { LearnSession } from './session';
 import type { MenuAction, PanelRequest as SharedPanelRequest } from '../../ui/graph/types';
+import { trace } from '../../frame/debug/trace.svelte';
 
 export type NodeActionId = 'light' | 'restore' | 'more' | 'rewrite' | 'own' | 'dismiss' | 'delete';
 export interface NodeAction extends MenuAction { id: NodeActionId }
@@ -28,6 +29,7 @@ export function nodeActions(visit: RoomVisit, node: GraphNode, running: { nodeId
 /** Runs the actions that need no form; `rewrite`, `own` and `delete` belong to the panel's forms and dialog. */
 export function runNodeAction(session: LearnSession, id: Exclude<NodeActionId, 'rewrite' | 'own' | 'delete'>, nodeId: string): void {
   if (id === 'light' || id === 'more') { void session.run(id, nodeId); return; }
+  trace.action('learn', id === 'dismiss' ? 'Dismiss' : 'Restore', { nodeId });
   setState(session.visit, nodeId, id === 'dismiss' ? 'dismissed' : 'open');
   session.touch();
 }

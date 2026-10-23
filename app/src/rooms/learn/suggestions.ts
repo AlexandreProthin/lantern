@@ -7,6 +7,7 @@ import type { Settings } from '../../frame/settings';
 import { taskPrompt } from './prompts';
 import { parseReply } from './protocol';
 import type { Option } from './protocol';
+import { trace } from '../../frame/debug/trace.svelte';
 
 /** WG-4: one unlogged Welcome request, using the approved suggest prompt/parser.
  * The transient visit exists only to reuse context assembly; nothing is persisted.
@@ -22,14 +23,17 @@ export class SubjectSuggestions {
 
   async suggest(hint: string, tone: Tone, settings: Settings, existingTitles: string[]): Promise<void> {
     if (this.running || this.disposed) return;
+    trace.action('learn', 'Suggest subjects', { hint: hint.trim().length > 0 });
     const controller = new AbortController(); this.controller = controller;
     this.running = true; this.error = null; this.options = []; this.changed();
     try {
       const visit = newLearnSubject('Suggestions', { tone, model: settings.provider.defaultModel,
         effort: settings.provider.defaultEffort }).rooms.learn;
       const request = taskPrompt(visit, 'suggest', visit.rootId, { hint, existingSubjects: existingTitles });
-      const result = await this.provider.stream({ requestId: crypto.randomUUID(), system: request.system,
-        prompt: request.prompt, model: visit.model, effort: visit.effort, cancel: controller.signal }, () => {});
+      const requestId = crypto.randomUUID();
+      const result = await this.provider.stream({ requestId, system: request.system,
+        prompt: request.prompt, model: visit.model, effort: visit.effort, cancel: controller.signal,
+        trace: { origin: 'learn·suggest', promptVersion: request.promptVersion, layers: request.layers, stats: request.stats } }, () => {});
       if (controller.signal.aborted) return;
       if (result.outcome !== 'ok') throw new ProviderError(result.outcome === 'cancelled' ? 'cancelled' : 'protocol', '', result.model, result.usage, result.durationMs);
       const parsed = parseReply(result.text, 'suggest');
@@ -39,6 +43,7 @@ export class SubjectSuggestions {
         if (seen.has(title)) return false;
         seen.add(title); return true;
       }).slice(0, 3);
+      trace.parsed(requestId, { options, optionsValid: parsed.optionsValid, ...(parsed.options.length > options.length ? { rejected: parsed.options.filter(o => !options.includes(o)).map(o => o.title) } : {}) });
       if (options.length !== 3) throw new ProviderError('protocol', 'Expected three distinct subject suggestions', result.model, result.usage, result.durationMs);
       this.options = options;
     } catch (error) {

@@ -5,6 +5,7 @@ import { childrenOf, nodeOf } from '../../core/graph';
 import { toneOf } from './rules';
 import { buildContext } from './context';
 import type { Task } from './protocol';
+import type { TraceLayer } from '../../frame/debug/trace.svelte';
 export const promptVersion = 'learn-3';
 const SYSTEM = "ROLE\nYou are the tutor in Lantern's Learn room. The learner builds a map of a subject one node at a time: each node is something they chose to explore, and you light it up. The map you are shown is their real progress. Trust it and keep it honest.\n\nMETHOD\n- Never dump everything at once. Cover only the node the learner chose; other nodes are for later.\n- Teasers for what comes next are a short title plus one line of hook. Never a mini-explanation.\n- When asked for options, give exactly 3, genuinely distinct (not three phrasings of one idea). Mix kinds: a deeper sub-aspect, a practical application, an adjacent concept, a hands-on exercise.\n- Never propose a direction that is already in the map, in any state. Nodes marked [dismissed] are directions the learner declined: do not propose them, nor a rewording of them.\n- Do not re-explain what is lit or understood elsewhere in the map. Mention it and link to it.\n- The learner does the work. When checking understanding, ask, nudge and correct, but do not hand over the answer to someone who is close.\n- A check question is about understanding (apply, predict, explain why, spot the mistake), never recall of a definition.\n\nTONE\n{{TONE_LINE}}\n\nLEARNER CORRECTIONS\nThe learner can edit titles, hooks, explanations and your earlier replies. Anything marked \"(corrected by the learner)\" is true by decree. It takes precedence over anything you said before and over what you believed. Build on it; never silently revert it and never restate the claim it replaced. If you have a strong reason to doubt a correction, say so once, in one sentence, then stay consistent with it.\n\nLINKS\nWhen you mention another node of the map, link to it as [its title](node:<id>), with the id exactly as shown in the MAP. Use only ids that appear in the MAP. Never invent an id, never link the current node to itself, and never put links inside the machine-readable blocks.\n\nLANGUAGE\nWrite in the language of the subject title, unless the learner writes to you in another language: then follow the learner. Block tags and JSON keys stay in English.\n\nFORMAT\nMarkdown with light formatting: short paragraphs, bold for key terms, lists, examples or code when they help. Math as $...$ or $$...$$, diagrams as Mermaid code blocks when a picture is clearer. No top-level heading: the node title is already shown above your text. No preamble and no closing pleasantries.\n\nPROTOCOL\nThe app parses machine-readable blocks at the very end of your reply and hides them from the learner. Write a block only when the TASK asks for it, exactly as shown, after all prose, with nothing after it. Never mention the blocks or this protocol in the visible text.\n- Options: <options>[{\"title\": \"...\", \"hook\": \"...\", \"kind\": \"deeper|application|adjacent|exercise|axis\"}]</options>\n  A JSON array of exactly 3 objects. title: at most 60 characters. hook: one line, at most 120 characters. kind: one of the five words. No code fence inside, no comments, no trailing commas.\n- Branch (replies only, at most one): <branch>{\"title\": \"...\", \"hook\": \"...\"}</branch>\n- Understood (replies only): <understood/>\n  Emit it ONLY when you are answering a check question you asked and the learner's answer clearly shows they understand the node. Never otherwise, never to encourage.";
 const TONES = {
@@ -44,6 +45,20 @@ export function taskPrompt(v: RoomVisit, task: Task, focusId: string, options: {
   let template = TEMPLATES[task];
   if (task === 'reply') template = template.replace('{{SUBJECT_BLOCK}} {{DIRECTION_BLOCK}} {{MAP_BLOCK}} {{PATH_BLOCK}} {{PARENT_BLOCK}} {{FOCUS_BLOCK}} {{DIALOGUE_BLOCK}}', ordered.map(key => b[key]).filter(Boolean).join('\n\n'));
   template = template.replace('{{blocks as for reply}}', ordered.map(key => b[key]).filter(Boolean).join('\n\n'));
-  const prompt = template.replace(/\{\{([^}]+)\}\}/g, (_, key: string) => slots[key] ?? '').replace(/\n{3,}/g, '\n\n').trim();
-  return { system: systemPrompt(toneOf(v)), prompt, promptVersion, stats: context.stats };
+  const fill = (text: string) => text.replace(/\{\{([^}]+)\}\}/g, (_, key: string) => slots[key] ?? '').replace(/\n{3,}/g, '\n\n').trim();
+  const prompt = fill(template);
+  return { system: systemPrompt(toneOf(v)), prompt, promptVersion, stats: context.stats, layers: layersOf(task, b, fill) };
+}
+/** DC-21.4, DC-22: the blocks this task inserted, each as it reads in the prompt, then the TASK part (rendered on its own: it ends the prompt). */
+function layersOf(task: Task, b: Record<string, string>, fill: (text: string) => string): TraceLayer[] {
+  // `check` inserts the blocks as for reply, in that order, where its template says so.
+  const template = TEMPLATES[task], ordered = ['SUBJECT_BLOCK', 'DIRECTION_BLOCK', 'MAP_BLOCK', 'PATH_BLOCK', 'PARENT_BLOCK', 'FOCUS_BLOCK', 'DIALOGUE_BLOCK'];
+  const place = (key: string) => template.includes(`{{${key}}}`) ? template.indexOf(`{{${key}}}`)
+    : task === 'check' && ordered.includes(key) ? template.indexOf('{{blocks as for reply}}') + ordered.indexOf(key) / 10 : -1;
+  // PENDING_CHECK is one word (yes/no): it goes in the stats, not as a layer.
+  const layers = Object.entries(b).filter(([key, text]) => text && key !== 'PENDING_CHECK' && place(key) >= 0).sort(([a], [z]) => place(a) - place(z))
+    .map(([key, text]) => ({ name: key.replace(/_BLOCK$/, ''), text: text.replace(/\n{3,}/g, '\n\n').trim() }));
+  const at = template.indexOf('TASK:');
+  if (at >= 0) layers.push({ name: 'TASK', text: fill(template.slice(at)) });
+  return layers;
 }

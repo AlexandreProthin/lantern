@@ -13,6 +13,7 @@
   import type { ActionId } from './actions';
   import { kindNames, stateNames, t } from './strings';
   import ProductFacts from './ProductFacts.svelte';
+  import { trace } from '../../../frame/debug/trace.svelte';
 
   let { session, revision, showTokens = true, request = null, preview, rejecting, setRejecting }: {
     session: ChooseSession; revision: number; showTokens?: boolean; request?: { kind: 'own' | 'delete'; nodeId: string; seq: number } | null;
@@ -66,9 +67,9 @@
   {#if node.state === 'dismissed'}
     <p>{t.dismissedNotice}</p><button disabled={(ctx.running as { nodeId: string } | null)?.nodeId === node.id} onclick={() => ctx.perform(() => session.undismiss(node.id))}>{t.restore}</button>
   {:else if kindOf(node) === 'subject'}
-    <p>{t.notStarted}</p><button class="primary" disabled={!!ctx.running} onclick={() => void session.run('light', node.id).catch(e => console.warn(String(e)))}>{t.lightSubject}</button>
+    <p>{t.notStarted}</p><button class="primary" disabled={!!ctx.running} onclick={() => void session.run('light', node.id).catch(e => { console.warn(String(e)); trace.warn('choose', String(e)); })}>{t.lightSubject}</button>
   {:else if node.kind === 'concept' || node.kind === 'own'}
-    <p>{t.darkNode}</p><button class="primary" disabled={!!ctx.running} onclick={() => void session.run('light', node.id).catch(e => console.warn(String(e)))}>{t.lightSubject}</button>
+    <p>{t.darkNode}</p><button class="primary" disabled={!!ctx.running} onclick={() => void session.run('light', node.id).catch(e => { console.warn(String(e)); trace.warn('choose', String(e)); })}>{t.lightSubject}</button>
   {:else if node.kind === 'family'}
     <p>{t.noProducts}</p>
   {:else if node.kind === 'need' || node.kind === 'criterion'}

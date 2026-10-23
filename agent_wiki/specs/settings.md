@@ -27,6 +27,10 @@ the settings below only supply their **defaults**.
 | Learn room | `learn.contextBudget` | integer (advanced) | 12000 | 2000–100000 tokens | next generation (the map part only; the CLI's own ~13k baseline is extra) |
 | General | `updates.checkAtLaunch` | boolean | true | — | next launch; off means no update request unless *Check for updates* is pressed ([updates](/specs/updates.md) UP-3) |
 | Developer (hidden) | `developer.updateFolder` | absolute path | empty | empty, or an existing folder | replaces GitHub as the update source ([updates](/specs/updates.md) UP-60 to UP-66) |
+| Developer (hidden) | `developer.debug` | boolean | false | — | immediate; shows the debug console and starts tracing ([debug-console](/specs/debug-console.md) DC-1 to DC-4). *Added 2026-10-23.* |
+| Developer (hidden) | `developer.logFolder` | absolute path | empty | empty, or an existing folder | where *Save* and *Record* write (DC-40 to DC-44). *Added 2026-10-23.* |
+| Developer (hidden) | `developer.record` | boolean | false | — | immediate; appends each completed entry to this launch's log file (DC-42). *Added 2026-10-23.* |
+| Developer (hidden) | `developer.consoleHeight` / `developer.consoleCollapsed` | integer px / boolean | 280 / false | 120–2000 / — | immediate; the console's height and collapsed state (DC-11). *Added 2026-10-23.* |
 | Appearance | `appearance.reduceMotion` | enum | `system` | `system`/`on` | immediate; `system` follows the OS; any other stored value falls back to `system` (GV-100) *(Amended 2026-10-18: `off` is not kept.)* |
 | Appearance | `appearance.backdrop` | boolean | true | — | immediate; off removes the ambient backdrop and its glass ([rooms-spaces](/specs/rooms-spaces.md) RS-34) |
 | Companion | `companion.show` | boolean | true | — | immediate; off removes Amber everywhere; its features keep their own entry points ([companion](/specs/companion.md) CO-1, CO-2) |

@@ -1,6 +1,7 @@
 <script lang="ts">
   // CR-11, CR-14: Survey, the graph and reading panel as Study, with the counter rail in place of the divider and the decision board in place of the graph.
   import { untrack } from 'svelte';
+  import { trace } from '../../frame/debug/trace.svelte';
   import type { SpaceProps } from '../../frame/room';
   import StudySplit from '../../ui/StudySplit.svelte';
   import type { ChooseSession } from './session';
@@ -33,7 +34,7 @@
     if (!choose || choose.running) return;
     choose.setFocus(choose.visit.rootId);
     if (settings.ui.studyCollapsed === 'panel') { settings.ui.studyCollapsed = 'none'; preferencesChanged(); }
-    void choose.run('recommend', choose.visit.rootId).catch(e => console.warn(String(e)));
+    void choose.run('recommend', choose.visit.rootId).catch(e => { console.warn(String(e)); trace.warn('choose', String(e)); });
   }
   // Esc closes the board before anything else reads it.
   function key(e: KeyboardEvent) {

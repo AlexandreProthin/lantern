@@ -1,6 +1,7 @@
 // UP-20..UP-32: one controller shared by the launch notice and Settings → General.
 import { Channel, invoke } from './ipc';
 import { strings } from '../ui/strings';
+import { trace } from './debug/trace.svelte';
 export type UpdatePhase = 'idle' | 'checking' | 'up-to-date' | 'available' | 'unconfigured' | 'failed' | 'downloading' | 'installing';
 type Checked = { status: 'up-to-date' | 'unconfigured' } | { status: 'available'; version: string; current: string; notes: string | null };
 export class UpdateController {
@@ -17,13 +18,17 @@ export class UpdateController {
   async check(launch: boolean, folder = ''): Promise<boolean> {
     if (this.phase === 'checking' || this.phase === 'downloading' || this.phase === 'installing') return false;
     this.phase = 'checking'; this.message = '';
+    // DC-31: the folder is a path, so only whether there is one is traced.
+    trace.event('frame', 'Update check', { launch, localFolder: !!folder });
     try {
       const result = await invoke<Checked>('check_update', { folder: folder || null });
+      trace.event('frame', `Update check: ${result.status}`, result.status === 'available' ? { version: result.version, current: result.current } : undefined);
       if (result.status === 'available') { this.version = result.version; this.notes = result.notes; this.fromLaunch = launch; this.phase = 'available'; }
       else this.phase = result.status === 'unconfigured' ? 'unconfigured' : 'up-to-date';
       return result.status !== 'unconfigured';
     } catch (e) {
       const reason = String(e) as keyof typeof strings.updateFolderErrors;
+      trace.warn('frame', 'Update check failed', { reason: String(e) });
       this.phase = 'failed'; this.message = strings.updateFolderErrors[reason] ?? strings.updateUnreachable; return false;
     }
   }
@@ -36,6 +41,7 @@ export class UpdateController {
   async install(flush: () => Promise<void>): Promise<void> {
     if (this.phase !== 'available') return;
     this.phase = 'downloading'; this.percent = null; this.message = '';
+    trace.event('frame', 'Update install started', { version: this.version });
     try {
       await flush();
       let total = 0, downloaded = 0;
@@ -46,6 +52,6 @@ export class UpdateController {
         this.percent = total > 0 ? Math.min(100, Math.round(downloaded / total * 100)) : null;
       };
       await invoke('install_update', { progress });
-    } catch (e) { this.phase = 'failed'; this.message = strings.updateInstallFailed(String(e)); }
+    } catch (e) { this.phase = 'failed'; this.message = strings.updateInstallFailed(String(e)); trace.error('frame', 'Update install failed', { error: String(e) }); }
   }
 }
