@@ -9,6 +9,16 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T00:30:00Z }
 
 Entries move out of here into a versioned plan when the user schedules them. Newest first.
 
+# Learn prompts tuned for Haiku 5.5
+
+- **Added:** 2026-10-23. The user accepted `learn-3` on the rewrite cases alone ([tutor-protocol](/specs/tutor-protocol.md) TP-14).
+- **Gap:** on the full Learn eval set, Haiku 5.5 scores 35, 37 and 35 out of 38, below PQ-33's 95%
+  ([platform-quality](/specs/platform-quality.md)). The misses are in tasks `learn-3` left alone:
+  intro and light without exactly three options, and a clear check answer not marked understood.
+  `learn-2` was gated on Haiku 4.5, where those all pass.
+- **Work:** a prompt pass (`learn-4`) on the options block and on marking a check answer understood.
+  Gate: three full runs at PQ-33's bar on Haiku 5.5, with no loss on Haiku 4.5.
+
 # Lantern on the network: the later pieces
 
 - **Added:** 2026-10-22, from the [serve over the network plan](serve-over-network.md).
