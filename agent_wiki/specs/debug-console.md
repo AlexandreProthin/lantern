@@ -3,7 +3,7 @@ type: Spec
 title: Debug console
 description: A hidden developer mode that docks a terminal-style console at the bottom of every screen, tracing each model call (system prompt, context blocks, prompt, tool uses, reply, usage), the user actions that started it and app events, with save to a Markdown log and live recording.
 tags: [developer, debug, trace, prompts, observability]
-status: draft
+status: stable
 generated: { by: claude-code/opus-5.5, at: 2026-10-23T15:00:00Z }
 ---
 
