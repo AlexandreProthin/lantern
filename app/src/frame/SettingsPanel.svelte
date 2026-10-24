@@ -17,6 +17,7 @@
   import { browserAmberLog, desktopAmberLog, type AmberTotals } from './amber/log';
   import { tokens } from './library-format';
   import { splitModels } from './token-split';
+  import { pickLogFolder } from './debug/recorder';
   let { settings, defaults, rooms, provider, health=null, initialSection='general', changed, close, switchLibrary, updater, checkUpdates, installUpdate, generating=false, readonly=false, endpointHealth={}, fakeEndpoint={} }: {
     settings:Settings; defaults:Settings; rooms:readonly RoomDefinition[]; provider:InferenceProvider; health?:Completion|ProviderError|null;
     updater:UpdateController; checkUpdates:()=>Promise<void>; installUpdate:()=>Promise<void>;
@@ -46,7 +47,7 @@
   }
   async function test() {
     if(testing)return;testing=true;details='';abort=new AbortController();
-    try {await detect();const result=await provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'opus',effort:'low',cancel:abort.signal},()=>{});status=`${strings.signedIn} · ${result.model} · ${Math.round(result.durationMs/1000)} s`;errorKind='';}
+    try {await detect();const result=await provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'opus',effort:'low',cancel:abort.signal,trace:{origin:'frame·test'}},()=>{});status=`${strings.signedIn} · ${result.model} · ${Math.round(result.durationMs/1000)} s`;errorKind='';}
     catch(e){if(e instanceof ProviderError){errorKind=e.kind;status=strings.errorKinds[e.kind];details=e.details;}else details=String(e);}finally{testing=false;}
   }
   async function choose(path?:string) {
@@ -70,7 +71,12 @@
   }
   // UP-60: five clicks on the version line reveal Developer; it stays while a folder is set.
   let versionClicks:number[]=[], revealed=$state(false);
-  const developerShown=$derived(revealed||!!settings.developer.updateFolder);
+  // DC-1, DC-3: the debug switch keeps Developer shown; desktop app and dev browser build only, never a remote device or the demo.
+  const debugAllowed=!remote&&!import.meta.env.VITE_DEMO&&(native||import.meta.env.DEV);
+  const developerShown=$derived(revealed||!!settings.developer.updateFolder||(debugAllowed&&settings.developer.debug===true));
+  async function pickDebugFolder() {
+    try {const selected=await pickLogFolder(settings.developer.logFolder||undefined);if(selected){settings.developer.logFolder=selected;validation='';changed();}}catch(e){validation=String(e);}
+  }
   function versionClick() {versionClicks=[...versionClicks.slice(-(REVEAL_CLICKS-1)),Date.now()];if(revealsDeveloper(versionClicks)){revealed=true;section='developer';}}
   async function pickFolder() {
     try {const selected=await invoke<string|null>('pick_library',{title:strings.updateFolder,start:settings.developer.updateFolder||null});if(selected){settings.developer.updateFolder=selected;validation='';changed();}}catch(e){validation=String(e);}
@@ -117,6 +123,13 @@
     {:else if section==='network'}
       <NetworkSettings />
     {:else if section==='developer'}
+      {#if debugAllowed}
+        <label><input type="checkbox" role="switch" checked={settings.developer.debug} onchange={e=>{settings.developer.debug=e.currentTarget.checked;changed();}} />{strings.debugMode}</label>
+        <p>{strings.debugModeHint}</p>
+        <label>{strings.logFolder}<input value={settings.developer.logFolder} readonly spellcheck="false" /></label>
+        <div class="actions"><button disabled={!native} onclick={pickDebugFolder}>{strings.debug.browse}</button><button aria-label={strings.debug.clearLogFolder} disabled={!settings.developer.logFolder} onclick={()=>{settings.developer.logFolder='';settings.developer.record=false;changed();}}>{strings.clearFolder}</button></div>
+        <p>{strings.logFolderHint}</p>
+      {/if}
       <label>{strings.updateFolder}<input value={settings.developer.updateFolder} readonly spellcheck="false" /></label>
       <div class="actions"><button disabled={!native} onclick={pickFolder}>{strings.changeLibrary}</button><button disabled={!settings.developer.updateFolder} onclick={()=>{settings.developer.updateFolder='';changed();}}>{strings.clearFolder}</button></div>
       <p>{strings.updateFolderHint}</p>

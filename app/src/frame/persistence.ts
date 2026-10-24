@@ -1,6 +1,7 @@
 import { invoke } from './ipc';
 import { parseSubject, cloneJson } from '../core/model';
 import type { Subject } from '../core/model';
+import { trace } from './debug/trace.svelte';
 export interface Stamp { size: number; modifiedNs: string; hash: string }
 export interface Loaded { subject: Subject; stamp: Stamp; readOnly: boolean }
 export type SaveResult = { kind: 'saved'; stamp: Stamp } | { kind: 'reloaded'; loaded: Loaded }
@@ -35,7 +36,7 @@ export class SubjectPersistence {
     const checked = parseSubject(subject); this.validate(checked);
     this.pending = cloneJson(checked); this.revision++;
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => { this.flush().catch(this.onError); }, this.delay);
+    this.timer = setTimeout(() => { this.flush().catch(error => { trace.error('frame', 'Subject save failed', { subjectId: subject.id, error: String(error) }); this.onError(error); }); }, this.delay);
   }
   async flush(): Promise<void> {
     clearTimeout(this.timer);
@@ -55,6 +56,10 @@ export class SubjectPersistence {
         }
         this.pending = undefined; this.loaded = result.loaded;
       }
+      // DC-31: saves and conflicts; the conflict copy's path stays out of the trace.
+      if (result.kind === 'saved') trace.event('frame', 'Subject saved', { subjectId: snapshot.id });
+      else if (result.kind === 'conflict') trace.warn('frame', 'Subject save conflict: a copy was kept and the file reloaded', { subjectId: snapshot.id });
+      else trace.event('frame', 'Subject reloaded from disk', { subjectId: snapshot.id });
       this.onResult(result);
     })();
     try { await this.running; } finally { this.running = undefined; }
@@ -65,7 +70,7 @@ export class SubjectPersistence {
     if (!this.loaded) return;
     const next = await this.storage.load(this.library, this.loaded.subject.id);
     if (next.stamp.hash !== this.loaded.stamp.hash) {
-      this.loaded = next; this.onResult({ kind: 'reloaded', loaded: next });
+      this.loaded = next; trace.event('frame', 'Subject changed on disk, reloaded', { subjectId: next.subject.id }); this.onResult({ kind: 'reloaded', loaded: next });
     } else this.loaded = next;
   }
   async close(): Promise<void> { await this.flush(); this.closed = true; clearTimeout(this.timer); }

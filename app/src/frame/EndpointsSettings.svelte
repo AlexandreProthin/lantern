@@ -8,6 +8,7 @@
   import { type Completion, type ErrorKind, type InferenceProvider, ProviderError } from './provider';
   import { strings } from '../ui/strings';
   import { errorMessage } from '../ui/error-message';
+  import { trace } from './debug/trace.svelte';
   /** CE-20 to CE-24, CE-30, CE-52, CE-70 to CE-81: the Endpoints list under Claude Code's section. Nothing calls a server until a button is pressed (IP-41). */
   let { settings, changed, provider, health = {}, fakeOptions = {}, disabled = false, keys }: {
     settings: Settings; changed: () => void; provider: InferenceProvider; health?: Record<string, Completion | ProviderError>; fakeOptions?: FakeEndpointOptions; disabled?: boolean; keys?: KeyAdmin
@@ -86,7 +87,8 @@
   async function test(e: EndpointConfig) {
     const model = chosen[e.id] ?? e.models.find(m => m.pinned)?.id; if (!model) return;
     busy = e.id; note(e.id, strings.testing);
-    try { const r = await provider.stream({ requestId: crypto.randomUUID(), system: 'Be terse.', prompt: 'Say only: ready.', model: `${e.id}:${model}`, effort: 'low', cancel: new AbortController().signal }, () => {});
+    trace.action('frame', 'Test endpoint', { endpoint: e.id, model });
+    try { const r = await provider.stream({ requestId: crypto.randomUUID(), system: 'Be terse.', prompt: 'Say only: ready.', model: `${e.id}:${model}`, effort: 'low', cancel: new AbortController().signal, trace: { origin: 'frame·test' } }, () => {});
       note(e.id, served(strings.endpointReady(`${e.name} · ${model}`, Math.round(r.durationMs / 1000)), r));
     } catch (err) { failed(e.id, err); } finally { busy = ''; }
   }

@@ -1,6 +1,7 @@
 <script lang="ts">
   // Choose's graph: the shared graph (ui/graph) with the recipe's node look (CR-20, CR-21), legend, menu and accessible names.
   import type { ChooseSession } from '../session';
+  import { trace } from '../../../frame/debug/trace.svelte';
   import Graph from '../../../ui/graph/Graph.svelte';
   import type { GraphRoomView, GraphSession, MenuAction } from '../../../ui/graph/types';
   import type { GraphNode } from '../../../core/model';
@@ -43,7 +44,7 @@
     runMenuAction(action: MenuAction, nodeId) {
       if (action.toPanel) openInPanel(action.id as 'own' | 'delete', nodeId);
       else if (action.id === 'reject') reject(nodeId);
-      else try { runAction(session, action.id as ActionId, nodeId); } catch (e) { console.warn(String(e)); }
+      else try { runAction(session, action.id as ActionId, nodeId); } catch (e) { console.warn(String(e)); trace.warn('choose', String(e)); }
     },
     enter(nodeId) {
       const n = session.visit.nodes[nodeId];

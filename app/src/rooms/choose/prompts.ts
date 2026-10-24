@@ -5,6 +5,7 @@ import { toneOf } from './rules';
 import type { Task } from './rules';
 import { buildContext } from './context';
 import type { ContextOptions } from './context';
+import type { TraceLayer } from '../../frame/debug/trace.svelte';
 export const promptVersion = 'choose-1';
 const SYSTEM = `ROLE
 You help the user choose something they know little about, usually a product to buy. They explore a map one node at a time; a board beside it collects their needs, the criteria they ranked, the products they shortlisted and their pick. You explain just enough to decide, find real products, compare them on the user's criteria, and recommend when asked. The decision is theirs.
@@ -100,6 +101,12 @@ export function taskPrompt(v: RoomVisit, task: Task, focusId: string, options: C
   const slots: Record<string, string> = { ...context.blocks, TITLE: one(n.title), HOOK: n.hook ? ` (${one(n.hook)})` : '', KIND: kind, CHECKED: checked,
     OWN: kind === 'own' ? 'The user wrote this node themselves: read the title and hook as their own words for what they want to understand or decide.' : '',
     FIND_WHAT: kind === 'family' ? `Explain the family "${one(n.title)}" in a short text (what it offers and what it gives up, for this user), then find products in it.` : "Find products that fit this user's needs and criteria. Write one line per product found." };
-  const prompt = TEMPLATES[name].replace(/\{\{([^}]+)\}\}/g, (_, key: string) => slots[key] ?? '').replace(/\n{3,}/g, '\n\n').trim();
-  return { system: systemPrompt(toneOf(v), options.web), prompt, promptVersion, stats: context.stats };
+  const fill = (text: string) => text.replace(/\{\{([^}]+)\}\}/g, (_, key: string) => slots[key] ?? '').replace(/\n{3,}/g, '\n\n').trim();
+  const template = TEMPLATES[name], prompt = fill(template);
+  // DC-21.4, DC-22: the blocks this template inserted, each as it reads in the prompt, then the TASK part (rendered on its own: it ends the prompt).
+  const layers: TraceLayer[] = Object.entries(context.blocks).filter(([key, text]) => text && template.includes(`{{${key}}}`))
+    .sort(([a], [z]) => template.indexOf(`{{${a}}}`) - template.indexOf(`{{${z}}}`))
+    .map(([key, text]) => ({ name: key.replace(/_BLOCK$/, ''), text: text.replace(/\n{3,}/g, '\n\n').trim() }));
+  const at = template.indexOf('TASK:'); if (at >= 0) layers.push({ name: 'TASK', text: fill(template.slice(at)) });
+  return { system: systemPrompt(toneOf(v), options.web), prompt, promptVersion, stats: context.stats, layers, template: name };
 }

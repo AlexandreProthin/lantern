@@ -1,4 +1,5 @@
 import type { AmberCategory } from './log';
+import type { TraceLayer } from '../debug/trace.svelte';
 /** Internal prompt version, recorded in every log line (prompts-internal-versioned). */
 export const promptVersion = 'amber-1';
 
@@ -54,12 +55,15 @@ export function helpBlock(help: AmberHelp): string {
 }
 
 /** One call per question (CO-42): the guides and help as system, context, the chat so far and the question as prompt. */
-export function amberRequest(help: AmberHelp, context: AmberContext, earlier: readonly AmberTurn[], question: string, selection?: string): { system: string; prompt: string } {
+export function amberRequest(help: AmberHelp, context: AmberContext, earlier: readonly AmberTurn[], question: string, selection?: string): { system: string; prompt: string; layers: TraceLayer[] } {
   const where = `WHERE THE USER IS: the ${context.room} room, ${context.space} space.`;
   const subject = context.subject
     ? `SUBJECT CONTEXT\nSubject: "${context.subject.title}"${context.subject.focus ? `\nFocused node: "${context.subject.focus.title}"\n${context.subject.focus.explanation.trim() ? `Its explanation:\n${clip(context.subject.focus.explanation.trim(), FOCUS_CLIP)}` : 'Its explanation: (not written yet)'}` : ''}`
     : 'SUBJECT CONTEXT\n(no subject is open)';
   const chat = earlier.length ? `EARLIER IN THIS CHAT\n${earlier.map(t => `USER: ${t.selection ? `[SELECTED TEXT: "${t.selection}"] ` : ''}${t.question}\nAMBER: ${t.answer}`).join('\n')}` : '';
   const ask = `${selection ? `SELECTED TEXT: "${clip(selection, 500)}"\n` : ''}USER'S MESSAGE: ${question}\n\n${REMINDER}`;
-  return { system: `${AMBER_SYSTEM}\n\n${helpBlock(help)}`, prompt: [where, subject, chat, ask].filter(Boolean).join('\n\n') };
+  const helpText = helpBlock(help);
+  // DC-21.4: the named parts, as they read in the system (HELP) and the prompt (the rest).
+  const layers = [{ name: 'HELP', text: helpText }, { name: 'WHERE', text: where }, { name: 'SUBJECT', text: subject }, { name: 'CHAT', text: chat }, { name: 'MESSAGE', text: ask }].filter(l => l.text);
+  return { system: `${AMBER_SYSTEM}\n\n${helpText}`, prompt: [where, subject, chat, ask].filter(Boolean).join('\n\n'), layers };
 }

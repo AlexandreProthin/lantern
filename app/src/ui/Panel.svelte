@@ -11,6 +11,7 @@
   import { childrenOf, pathTo, deleteSubtree, editLabel, revertText, subtreeIds } from '../core/graph';
   import type { GraphNode, Turn } from '../core/model';
   import type { PanelRequest, PanelRoomView, PanelSession, PanelSnippets } from './panel-types';
+  import { trace } from '../frame/debug/trace.svelte';
   let { session, room, placeholder, notice: noticeBody, footer, body, after, revision, showTokens = true, request = null, preview }: PanelSnippets & { session: PanelSession; room: PanelRoomView; revision: number; showTokens?: boolean; request?: PanelRequest | null; preview?: (id: string | null) => void } = $props();
   const visit = $derived.by(() => { revision; return session.visit; });
   const node = $derived(visit.nodes[visit.focusId]);
@@ -41,6 +42,8 @@
     // CE-27: a different name the server answered with is shown beside the model asked for.
     return [modelLabel(author.model), generation?.servedModel ? strings.servedAs(generation.servedModel) : '', isEndpointModel(author.model) && !isCodexModel(author.model) ? '' : generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
   }
+  /** DC-30: the room this panel belongs to, from its class (`learn-panel`, `choose-panel`). */
+  const area = $derived(room.className.split('-')[0]);
   function perform(fn: () => void) { try { fn(); localError = ''; session.touch(); } catch (e) { localError = String(e); } }
   function beginEdit(field: string, target: GraphNode | Turn = node) {
     if (readOnly) return;
@@ -49,6 +52,7 @@
   }
   function saveEdit() {
     const field = editors[node.id], draft = editDrafts[node.id];
+    trace.action(area, field === 'labels' ? 'Edit title and hook' : field === 'content' ? 'Edit explanation' : 'Edit reply', { nodeId: node.id, field });
     perform(() => {
       if (field === 'labels') { editLabel(node, 'title', draft.title, session.displayName); editLabel(node, 'hook', draft.hook, session.displayName); }
       else room.editText(field === 'content' ? node : node.dialogue[Number(field.split(':')[1])], draft.text, session.displayName);
@@ -61,10 +65,12 @@
   }
   function send() { const message = drafts[node.id]?.trim(); if (!message || running) return; drafts[node.id] = ''; void session.run('reply', node.id, message); }
   function addOwn() {
+    trace.action(area, 'Add own node', { parentId: node.id });
     perform(() => { room.addChild(visit, node.id, { title: ownTitle, hook: ownHook, by: session.displayName }); adding = false; ownTitle = ownHook = ''; });
   }
   async function remove() {
     if (!deleting) return;
+    trace.action(area, 'Delete node', { nodeId: deleting, nodes: deleteIds.length });
     if (running && deleteIds.includes(running.nodeId)) {
       session.cancel(); while (session.running) await new Promise(resolve => setTimeout(resolve, 10));
     }
@@ -159,7 +165,7 @@
     {#if busy && room.tasks.spawn.includes(running!.task)}<div class="skeletons" aria-hidden="true"><div></div><div></div><div></div></div>{/if}
     {#if kids.some(n => room.setAside(n))}
       <details><summary>{strings.dismissedCount(kids.filter(n => room.setAside(n)).length)}</summary>
-        {#each kids.filter(n => room.setAside(n)) as child (child.id)}<div><button onclick={() => session.setFocus(child.id)}>{child.title}</button><button disabled={busy} onclick={() => perform(() => room.restore(visit,child.id))}>{strings.restore}</button></div>{/each}
+        {#each kids.filter(n => room.setAside(n)) as child (child.id)}<div><button onclick={() => session.setFocus(child.id)}>{child.title}</button><button disabled={busy} onclick={() => { trace.action(area, 'Restore', { nodeId: child.id }); perform(() => room.restore(visit,child.id)); }}>{strings.restore}</button></div>{/each}
       </details>
     {/if}
     <div class="actions">

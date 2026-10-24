@@ -210,4 +210,26 @@ export const strings = {
   demoNoAnswer: '*In the demo, answers are not read.* In Lantern, the tutor would say what is right in your answer, correct what is not, and mark the node understood once you have shown it. Choose *I get it* if you are sure.',
   demoNoQuestion: '*This web demo has no live tutor, so free questions get no answer.* In Lantern, the tutor answers here, in the context of this node and the map around it.',
   demoAmber: 'In this web demo I cannot answer free questions: that needs Lantern on your computer. My tips and the guide still work, so click me.'
+  // DC-1..DC-44: the debug console (developer mode).
+  , debugMode: 'Debug mode', debugModeHint: 'Docks a console at the bottom of every screen that traces each model call (system prompt, context, prompt, reply, usage), user actions and app events.',
+  debugConsole: 'Debug console', logFolder: 'Log folder', logFolderHint: 'Save and Record write Markdown logs here.',
+  debug: {
+    save: 'Save', record: 'Record', folder: 'Folder', clear: 'Clear', filter: 'Filter', copy: 'Copy', expandAll: 'Expand all', collapseAll: 'Collapse all', follow: 'Follow',
+    browse: 'Browse…', clearLogFolder: 'Clear log folder', changeFolder: 'Change…', revealFolder: 'Reveal in Explorer', noFolder: 'No log folder yet',
+    saveTitle: 'Save all entries to a Markdown file in the log folder', recordTitle: 'Append each finished entry to a log file', recording: (file: string) => `Recording to ${file}`,
+    clearTitle: 'Clear the console', filterTitle: 'Filter entries', copyTitle: 'Copy the selected entry as Markdown', copied: 'Copied',
+    followTitle: 'Follow the newest entry', collapse: 'Collapse the console', expand: 'Expand the console', resize: 'Resize the console',
+    matching: (shown: number, total: number) => `${shown} / ${total}`, dropped: (n: number) => `${n} older ${n === 1 ? 'entry' : 'entries'} dropped`,
+    saved: (path: string) => `Saved ${path}`, saveFailed: (error: string) => `Save failed: ${error}`, copyFailed: 'Copy failed',
+    empty: 'No entries yet. Model calls, actions and events appear here.', noMatch: 'No entry matches the filter.', earlier: (n: number) => `Show ${n} earlier`,
+    kinds: { call: 'call', action: 'action', event: 'event', warn: 'warn', error: 'error' } as Record<string, string>,
+    kindsLabel: 'Kinds', originsLabel: 'Origins', allOrigins: 'All origins', search: 'Search', searchPlaceholder: 'Search summaries and texts…', resetFilter: 'Reset filter',
+    status: { running: 'running', ok: 'ok', cancelled: 'cancelled', error: 'error' } as Record<string, string>,
+    web: 'web', showAll: (n: number) => `show all (+${n} ${n === 1 ? 'line' : 'lines'})`, showLess: 'show less',
+    missingLayers: (names: string) => `Context blocks not found in the prompt: ${names}`,
+    sections: { origin: 'Origin', request: 'Request', system: 'System prompt', context: 'Context', prompt: 'Prompt', stream: 'Stream', parsed: 'Parsed', result: 'Result' },
+    fields: { origin: 'origin', subject: 'subject', node: 'node', requested: 'model requested', resolved: 'model resolved', served: 'model served', effort: 'effort', resolvedEffort: 'effort resolved', web: 'web', requestId: 'request id', promptVersion: 'prompt version',
+      outcome: 'outcome', errorKind: 'error kind', errorDetails: 'error details', input: 'input', output: 'output', thinking: 'thinking', cacheRead: 'cache read', cacheWrite: 'cache write', estimated: 'estimated', cost: 'cost', toolCalls: 'tool calls', duration: 'duration', stats: 'statistics' },
+    yes: 'yes', no: 'no', none: '(none)', chars: (n: number) => `${n} chars`, tokens: (n: number) => `≈${n} tok`, details: 'Details', noReply: '(no reply yet)'
+  }
 };

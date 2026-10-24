@@ -6,6 +6,7 @@
   import { strings } from '../ui/strings';
   import { errorMessage } from '../ui/error-message';
   import { displayModel } from '../core/models';
+  import { trace } from './debug/trace.svelte';
   /**
    * CE-58: the Codex entry under Claude Code's, as SE-40 to SE-47 are for Claude Code: turned on here, then found or not,
    * its version, signed in or not, and *Test* on Codex's default model. Nothing runs until Codex is turned on (IP-41).
@@ -30,12 +31,13 @@
   }
   $effect(() => { if (on && found === null) void detect().catch(e => details = String(e)); });
   $effect(() => () => abort?.abort());
-  function toggle(e: Event) { settings.provider.codex = (e.currentTarget as HTMLInputElement).checked; changed(); }
+  function toggle(e: Event) { trace.action('frame', 'Setting changed', { setting: 'provider.codex' }); settings.provider.codex = (e.currentTarget as HTMLInputElement).checked; changed(); }
   async function test() {
     if (testing) return; testing = true; details = ''; abort = new AbortController();
+    trace.action('frame', 'Test Codex', { model: 'codex:default' });
     try {
       await detect(); if (found?.kind === 'not-installed') return;
-      const result = await provider.stream({ requestId: crypto.randomUUID(), system: 'Be terse.', prompt: 'Say only: ready.', model: 'codex:default', effort: 'low', cancel: abort.signal }, () => {});
+      const result = await provider.stream({ requestId: crypto.randomUUID(), system: 'Be terse.', prompt: 'Say only: ready.', model: 'codex:default', effort: 'low', cancel: abort.signal, trace: { origin: 'frame·test' } }, () => {});
       kind = ''; status = strings.endpointReady(displayModel(result.model), Math.round(result.durationMs / 1000));
     } catch (e) { if (e instanceof ProviderError) { if (e.kind !== 'cancelled') { kind = e.kind; status = errorMessage(e); details = e.details; } } else details = String(e); }
     finally { testing = false; }

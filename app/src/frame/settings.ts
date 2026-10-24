@@ -10,7 +10,8 @@ export interface Settings {
     codex?: boolean; [key: string]: unknown };
   appearance: { reduceMotion: 'system' | 'on'; backdrop: boolean; showTokenStats: boolean; [key: string]: unknown };
   updates: { checkAtLaunch: boolean; [key: string]: unknown };
-  developer: { updateFolder: string; [key: string]: unknown };
+  /** DC-1, DC-11, DC-40, DC-42: the debug console. */
+  developer: { updateFolder: string; debug: boolean; logFolder: string; record: boolean; consoleHeight: number; consoleCollapsed: boolean; [key: string]: unknown };
   /** SE-11, CO-1, CO-46: Amber on or off, and its model (effort is always low). */
   companion: { show: boolean; model: string; [key: string]: unknown };
   ui: { studySplitPercent: number; studyCollapsed: 'none' | 'graph' | 'panel'; legendCollapsed: boolean; lastRoom: string; graphLayout: 'free' | 'tree'; textLinks: boolean; lastUpdateCheck: number; dismissedUpdate: string; [key: string]: unknown };
@@ -19,7 +20,7 @@ export interface Settings {
 export function defaultSettings(library = '', name = '', rooms: readonly RoomSettingsSpec[] = []): Settings {
   return { ...Object.fromEntries(rooms.map(room => [room.id, { ...room.settings.defaults }])), format: 'lantern-settings/1', library: { path: library }, user: { displayName: name }, provider: { defaultModel: 'opus', defaultEffort: 'medium' },
     appearance: { reduceMotion: 'system', backdrop: true, showTokenStats: true },
-    updates: { checkAtLaunch: true }, developer: { updateFolder: '' }, companion: { show: true, model: 'claude-haiku-5-5' },
+    updates: { checkAtLaunch: true }, developer: { updateFolder: '', debug: false, logFolder: '', record: false, consoleHeight: 280, consoleCollapsed: false }, companion: { show: true, model: 'claude-haiku-5-5' },
     ui: { studySplitPercent: 44, studyCollapsed: 'none', legendCollapsed: false, lastRoom: rooms[0]?.id ?? '', graphLayout: 'free', textLinks: true, lastUpdateCheck: 0, dismissedUpdate: '' } };
 }
 export function validateSettings(input: unknown, defaults = defaultSettings(), rooms: readonly RoomSettingsSpec[] = []): Settings {
@@ -56,6 +57,12 @@ export function validateSettings(input: unknown, defaults = defaultSettings(), r
   if (typeof u.textLinks !== 'boolean') u.textLinks = true;
   if (typeof up.checkAtLaunch !== 'boolean') up.checkAtLaunch = true;
   if (typeof out.developer.updateFolder !== 'string' || out.developer.updateFolder.length > 1000) out.developer.updateFolder = '';
+  const d = out.developer;
+  if (typeof d.debug !== 'boolean') d.debug = false;
+  if (typeof d.record !== 'boolean') d.record = false;
+  if (typeof d.consoleCollapsed !== 'boolean') d.consoleCollapsed = false;
+  if (typeof d.logFolder !== 'string' || d.logFolder.length > 1000) d.logFolder = '';
+  if (typeof d.consoleHeight !== 'number' || !Number.isFinite(d.consoleHeight) || d.consoleHeight < 120 || d.consoleHeight > 2000) d.consoleHeight = 280;
   if (typeof u.lastUpdateCheck !== 'number' || !Number.isFinite(u.lastUpdateCheck) || u.lastUpdateCheck < 0) u.lastUpdateCheck = 0;
   if (typeof u.dismissedUpdate !== 'string' || u.dismissedUpdate.length > 40) u.dismissedUpdate = '';
   // RS-10: an unknown room id falls back to the first registered room.

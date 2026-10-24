@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, untrack } from 'svelte';
   import { invoke } from './ipc';
-  import { backend, native as isNative } from './host';
+  import { backend, native as isNative, remote } from './host';
   import { strings } from '../ui/strings';
   // RS-53: header mark is the ember favicon of the accepted identity release; only its flame takes the room accent (see style).
   // Inlined as markup: an image URL would be a data: URI, which the app CSP blocks.
@@ -9,6 +9,7 @@
   import { providerMode } from './provider-mode';
   import { DesktopProvider, HeldProvider, ObservedProvider, ProviderError, type InferenceProvider } from './provider';
   import { RoutingProvider } from './routing';
+  import { trace, TracedProvider } from './debug/trace.svelte';
   import { endpointsOf } from './endpoints';
   import { endpointNameOf, modelChoices } from '../ui/model-choices.svelte';
   import { FakeEndpointTransport, fakeEndpointOptions } from './fake-endpoint';
@@ -29,6 +30,7 @@
   import { UpdateController } from './updates.svelte';
   import { shouldCheckAtLaunch, shouldShowNotice } from './updates';
   import SettingsPanel from './SettingsPanel.svelte';
+  import DebugConsole from './debug/DebugConsole.svelte';
   import Backdrop from './Backdrop.svelte';
   import TopBar from './TopBar.svelte';
   import FieldPanel from './FieldPanel.svelte';
@@ -56,7 +58,7 @@
   /** RS-4: the registered rooms; RS-10: the current one (settings.ui.lastRoom). */
   let rooms = $state<readonly RoomDefinition[]>(baseRooms), roomId = $state(baseRooms[0].id);
   const room = $derived(rooms.find(r => r.id === roomId) ?? rooms[0]);
-  $effect(() => { document.title = windowTitle(room); if (native) void applyRoomChrome(room, lanternMark).catch(e => console.warn('window chrome', e)); });
+  $effect(() => { document.title = windowTitle(room); if (native) void applyRoomChrome(room, lanternMark).catch(e => { console.warn('window chrome', e); trace.warn('frame', 'Window chrome not applied', { error: String(e) }); }); });
   const fakeDelay = Number(new URLSearchParams(location.search).get('delay') ?? 12);
   const fakeWait = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('wait') ?? 0) : 0;
   const fakeKind = import.meta.env.DEV&&fakeError&&Object.hasOwn(strings.errorKinds,fakeError)?fakeError as ErrorKind:undefined;
@@ -65,8 +67,20 @@
   const routing = () => ({ endpoints: endpointsOf(settings.provider), defaultModel: settings.provider.defaultModel });
   // CE-22: every picker and model label follows the stored endpoints.
   $effect(() => { modelChoices.endpoints = endpointsOf(settings.provider); modelChoices.codex = settings.provider.codex === true; });
-  const reportEndpoint = (id: string, value: Completion | ProviderError) => { endpointHealth = { ...endpointHealth, [id]: value }; };
-  const routed = (claude: InferenceProvider, transport: ConstructorParameters<typeof RoutingProvider>[1]) => new RoutingProvider(claude, transport, routing, reportEndpoint);
+  // DC-31: provider health, traced when a status changes (Claude Code's `health` and each endpoint's).
+  const healthOf = (value: Completion | ProviderError | null | undefined) => !value ? 'unknown' : value instanceof ProviderError ? value.kind : 'ok';
+  let tracedHealth = 'unknown';
+  $effect(() => { const next = healthOf(health); if (next !== tracedHealth) { untrack(() => trace.event('frame', `Provider health: ${next}`, { provider: 'claude', was: tracedHealth })); tracedHealth = next; } });
+  const reportEndpoint = (id: string, value: Completion | ProviderError) => {
+    const was = healthOf(endpointHealth[id]), next = healthOf(value);
+    if (next !== was) trace.event('frame', `Endpoint health: ${next}`, { endpoint: id, was });
+    endpointHealth = { ...endpointHealth, [id]: value };
+  };
+  // DC-20: the trace wraps the outermost provider, so no call skips it.
+  const routed = (claude: InferenceProvider, transport: ConstructorParameters<typeof RoutingProvider>[1]) => new TracedProvider(new RoutingProvider(claude, transport, routing, reportEndpoint));
+  // DC-3, DC-4: desktop app and dev browser build only; never a remote device or the demo.
+  const debugAllowed = !remote && !import.meta.env.VITE_DEMO && (native || import.meta.env.DEV);
+  $effect(() => { trace.setEnabled(debugAllowed && settings.developer.debug === true); });
   const desktopBridge = fake ? null : new DesktopProvider();
   const desktopProvider = desktopBridge ? routed(new ObservedProvider(desktopBridge, value => health=value), desktopBridge) : null;
   const fakeEndpoint = fakeEndpointOptions(new URLSearchParams(location.search), import.meta.env.DEV ? strings.errorKinds : {});
@@ -90,7 +104,7 @@
   // SE-50, CO-15, CO-21: Amber's spots and seen tips, in the app state file.
   const amberStore = desktop ? desktopAmberStore : browserAmberStore;
   let amberState = $state<AmberState>(emptyAmberState()), amber = $state<ReturnType<typeof Amber>>();
-  const amberWriter = new DebouncedWriter<AmberState>(value => amberStore.save(value), e => console.warn('Amber state', e));
+  const amberWriter = new DebouncedWriter<AmberState>(value => amberStore.save(value), e => { console.warn('Amber state', e); trace.warn('amber', 'Amber state not saved', { error: String(e) }); });
   function saveAmberState(next: AmberState) { amberState = next; amberWriter.schedule(next); }
   /** CO-41: Ctrl+J and the capsule's Ask open the bubble with Amber on, the box with Amber off. */
   function openAsk() { if (settings.companion.show && amber) void amber.open(true); else if (askOpen) askBox?.focus(); else askOpen = true; }
@@ -160,7 +174,8 @@
   const openByRoom: Record<string, string | null> = {};
   const writer = new DebouncedWriter(async value => {
     if (desktop) await invoke('save_settings',{ document:value }); else localStorage.setItem('lantern.settings',JSON.stringify(value));
-  }, error => saveError = String(error));
+    trace.event('frame', 'Settings saved');
+  }, error => { saveError = String(error); trace.error('frame', 'Settings not saved', { error: String(error) }); });
   const summary = $derived.by(() => { revision; return session ? room.statsSummary(session.subject) : null; });
   /** RS-15: the palette's subjects follow the catalogue, which signals through `revision`. */
   const paletteSubjects = $derived.by(() => { revision; return catalogue.opened; });
@@ -184,12 +199,30 @@
     await updater.install(async()=>{for(const entry of owned.values())await entry.persistence.flush();await writer.flush();await amberWriter.flush();await windowMemory?.flush();});}
   function dismissUpdate(){settings.ui.dismissedUpdate=updater.version;void updater.release();preferencesChanged();}
   async function checkReady(){if(anyRunning||checkingReady)return;checkingReady=true;readyController=new AbortController();
-    try{if(desktop)await invoke('provider_status');readyPending=provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'opus',effort:'low',cancel:readyController.signal},()=>{});await readyPending;}
-    catch(e){if(!(e instanceof ProviderError))banner=String(e);}finally{checkingReady=false;readyPending=undefined;}
+    trace.action('frame','Check the provider again');
+    try{if(desktop)await invoke('provider_status');readyPending=provider.stream({requestId:crypto.randomUUID(),system:'Be terse.',prompt:'Say only: ready.',model:'opus',effort:'low',cancel:readyController.signal,trace:{origin:'frame·health'}},()=>{});await readyPending;}
+    catch(e){if(!(e instanceof ProviderError)){banner=String(e);trace.error('frame','Provider check failed',{error:String(e)});}}finally{checkingReady=false;readyPending=undefined;}
+  }
+  /** DC-30: the settings as last seen, flattened to `section.name` → JSON, so a change is traced by name only (never a path or key value). */
+  let seenSettings: Record<string, string> | null = null;
+  function settingNames(value: object): Record<string, string> {
+    const out: Record<string, string> = {};
+    for (const [section, inner] of Object.entries(value)) {
+      if (inner && typeof inner === 'object' && !Array.isArray(inner)) for (const [name, v] of Object.entries(inner)) out[`${section}.${name}`] = JSON.stringify(v) ?? '';
+      else out[section] = JSON.stringify(inner) ?? '';
+    }
+    return out;
+  }
+  function traceSettingChanges() {
+    const now = settingNames($state.snapshot(settings)), before = seenSettings; seenSettings = now;
+    if (!before) return;
+    const changed = [...new Set([...Object.keys(now), ...Object.keys(before)])].filter(name => now[name] !== before[name]);
+    if (changed.length) trace.action('frame', 'Settings change', { settings: changed });
   }
   function preferencesChanged() {
     if (settingsReadOnly) return;
     settings = validateSettings(settings,defaults,rooms);
+    untrack(traceSettingChanges);
     writer.schedule(settings);
     document.documentElement.dataset.reduceMotion = settings.appearance.reduceMotion === 'on' ? 'on' : 'system';
     document.documentElement.dataset.backdrop = settings.appearance.backdrop ? 'on' : 'off';
@@ -199,11 +232,13 @@
   async function navigate(next: string) {
     if (next === room.defaultSpace && !session && recentIds[0]) await open(recentIds[0]);
     if (next === room.defaultSpace && !session) return;
+    if (next !== space) trace.action(room.id, 'Open space', { space: next });
     space = next; panelOpen = false;
     if (next !== room.defaultSpace) { readonlyFile=null; await refreshCatalogue(); }
   }
   async function open(id: string) {
     if (deleting.has(id)) return;
+    trace.action(room.id, 'Open subject', { subjectId: id });
     try {
       let entry = owned.get(id);
       if (!entry) {
@@ -216,7 +251,7 @@
       const recents = desktop ? (await invoke<{ recents:string[] }>('record_open',{id,at})).recents : browserRecordOpen(id,at).recents;
       // ST-6: the stored list is shared; each room uses its own subjects from it.
       recentIds=recents.filter(r => r===id || catalogue.summaries.some(s => s.id===r));
-    } catch (e) { banner=String(e); }
+    } catch (e) { banner=String(e); trace.error(room.id, 'Subject not opened', { subjectId: id, error: String(e) }); }
   }
   /** DM-66: each known room checks its own values; a visit to an unknown room is kept as it is. */
   const validateRooms = (subject: Subject) => { for (const r of rooms) if (subject.rooms[r.id]) r.validate(subject.rooms[r.id]); };
@@ -240,6 +275,7 @@
   async function createSubject(title: string, tone: Tone, model: string, direction = '') {
     if (!libraryAvailable || (cliProblem && !isEndpointModel(model))) throw new Error(strings.cliNotReady);
     if (!isValidModel(model)) throw new Error(strings.invalidModel);
+    trace.action(room.id, 'Create subject', { model, tone: typeof tone === 'string' ? tone : 'custom', direction: direction.trim().length > 0 });
     const subject=room.newSubject(checkedTitle(title),tone,settings,checkedDirection(direction));
     subject.rooms[room.id].model=model;
     const saved=await storage.save(library,subject,null,true);
@@ -258,10 +294,11 @@
       const state = desktop ? await invoke<LibraryState>('read_state') : browserLibraryState();
       catalogue.replace(summaries,state); subjectCount=summaries.length;
       recentIds=catalogue.recent.map(s=>s.id); libraryAvailable=true;
-    } catch(e) {libraryAvailable=false;catalogue.replace([],{recents:[],lastOpenedAt:{}});subjectCount=0;banner=strings.libraryUnavailable+' '+String(e);}
+    } catch(e) {libraryAvailable=false;catalogue.replace([],{recents:[],lastOpenedAt:{}});subjectCount=0;banner=strings.libraryUnavailable+' '+String(e);trace.error('frame','Library unavailable',{error:String(e)});}
   }
   async function renameSubject(id: string, title: string) {
     title=checkedTitle(title); if(deleting.has(id))return;
+    trace.action(room.id, 'Rename subject', { subjectId: id });
     let entry=owned.get(id);
     if (!entry) { const loaded=await storage.load(library,id); if(loaded.readOnly)throw new Error(strings.readOnly); entry=own(loaded);owned.set(id,entry); }
     await entry.persistence.refresh();
@@ -269,6 +306,7 @@
   }
   async function removeSubject(id: string) {
     if(deleting.has(id))return;deleting.add(id);
+    trace.action(room.id, 'Delete subject', { subjectId: id });
     const entry=owned.get(id);
     try {
       entry?.session.cancel();
@@ -307,6 +345,8 @@
   }
   async function switchLibrary(destination: string, mode: string) {
     if (anyRunning) throw new Error(strings.finishGeneration);
+    // DC-30, DC-31: the library's paths stay out of the trace.
+    trace.action('frame', 'Switch library', { mode });
     switchingLibrary=true;
     try {
       for (const entry of owned.values()) await entry.persistence.flush(); await writer.flush();
@@ -315,8 +355,9 @@
       owned.clear(); for (const r in openByRoom) openByRoom[r]=null; session=null; readonlyFile=null; recentIds=[]; library=result.path; settings.library.path=result.path;
       space='welcome'; banner='';thumbnailCache.clear();await refreshCatalogue();
       toast=strings.libraryChanged(result.path)+(result.collisions.length ? ' '+strings.collisionsRenamed(result.collisions.length) : '');
+      trace.event('frame', 'Library switched', { mode, collisions: result.collisions.length });
       revision++;
-    } finally {switchingLibrary=false;}
+    } catch (e) { trace.error('frame', 'Library not switched', { mode, error: String(e) }); throw e; } finally {switchingLibrary=false;}
   }
   async function flushClose(): Promise<void> {
     readyController?.abort();if(readyPending)await readyPending.catch(()=>{});
@@ -328,6 +369,7 @@
   async function switchRoom(id: string) {
     roomMenu=false;
     if (id===room.id || !rooms.some(r => r.id===id)) return;
+    trace.action('frame', 'Open room', { room: id });
     openByRoom[room.id]=session?.subject.id ?? null;
     document.documentElement.dataset.roomFade='on';
     roomId=id; settings.ui.lastRoom=id; preferencesChanged();
@@ -359,7 +401,7 @@
     void (async()=> {
       try {
         rooms=await roomsWithDevSample();
-        void amberStore.load().then(value => amberState = value).catch(e => console.warn('Amber state', e)).finally(() => amberLoaded = true);
+        void amberStore.load().then(value => amberState = value).catch(e => { console.warn('Amber state', e); trace.warn('amber', 'Amber state not read', { error: String(e) }); }).finally(() => amberLoaded = true);
         if(desktop) {
           const loaded=await invoke<{document:unknown;readOnly:boolean;recovered:boolean;transferRecovered?:boolean;defaultLibrary:string;defaultName:string}>('load_settings');
           defaults=defaultSettings(loaded.defaultLibrary,loaded.defaultName,rooms);
@@ -393,7 +435,7 @@
           if(query.has('resume') && recentIds[0]) await open(recentIds[0]); else await createSubject(query.get('subject')||'Ocean tides',room.defaultTone(settings),settings.provider.defaultModel);
         }
         refresh=setInterval(()=> { if(!switchingLibrary) for(const [id,entry] of owned) if(!deleting.has(id)&&!entry.session.running) entry.persistence.refresh().catch(e=>saveError=String(e)); },1000);
-      }catch(e){banner=String(e);}finally{loading=false;}
+      }catch(e){banner=String(e);trace.error('frame','Launch did not finish',{error:String(e)});}finally{loading=false;}
     })();
     const beforeUnload=()=> { for(const entry of owned.values()) {entry.session.cancel();void entry.persistence.flush();}void writer.flush(); };
     window.addEventListener('beforeunload',beforeUnload);
@@ -414,6 +456,7 @@
   rename={title=>renameSubject(session!.subject.id,title)} changed={appliesNext=>{session!.touch();if(appliesNext)toast=strings.appliesNext;}}
   openSubject={id=>{panelOpen=false;void open(id);}} switchRoom={id=>{panelOpen=false;void switchRoom(id);}} openSettings={()=>{panelOpen=false;settingsSection='general';settingsOpen=true;}} />{/key}{/if}
 <div class="spaces">{#if loading}<p>{strings.loading}</p>{:else if readonlyFile}<pre>{JSON.stringify(readonlyFile,null,2)}</pre>{:else}{#key room.id}{#each room.spaces as item (item.id)}{@const Component=item.component}<Component {session} {revision} visible={space===item.id} {settings} {navigate} {preferencesChanged} library={librarySpaces} />{/each}{/key}{/if}</div>
+{#if trace.enabled}<DebugConsole {settings} changed={preferencesChanged} />{/if}
 {#if !loading && settings.companion.show}<Amber bind:this={amber} {room} {space} desktop={native} {amberState} saveState={saveAmberState} chat={amberChat} revision={amberRevision} thinking={amberThinking} working={amberWorking} lean={amberLean} greeting={amberGreeting} waiting={amberWaiting} greeted={()=>amberGreeting=null} {openRelease} hide={hideAmber} openSettings={()=>{settingsSection='provider';settingsOpen=true;}} />{/if}
 {#if settingsOpen}<SettingsPanel {settings} {defaults} {rooms} {health} {endpointHealth} {fakeEndpoint} {switchLibrary} {updater} checkUpdates={()=>checkUpdates(false)} {installUpdate} initialSection={settingsSection} generating={anyRunning} provider={provider} changed={preferencesChanged} close={()=>settingsOpen=false} readonly={settingsReadOnly} />{/if}
 {#if selectionAsk}{#key selectionAsk}<SelectionCard detail={selectionAsk.detail} chat={selectionAsk.chat} revision={selectionRevision} close={closeSelectionAsk} openSettings={()=>{closeSelectionAsk();settingsSection='provider';settingsOpen=true;}} />{/key}{/if}

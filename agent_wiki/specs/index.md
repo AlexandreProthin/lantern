@@ -28,3 +28,4 @@ Stable specs from the spec workshop, rounds 1–3 (2026-10-01/02), agreed with t
 * [Companion](companion.md) - Amber, the identity's little lantern in the app: placement and moving, tips, guide, Ask Amber, gestures, calm; optional (workshop rounds 8–9, agreed 2026-10-16).
 * [Custom endpoints](custom-endpoints.md) - One OpenAI-compatible provider for local servers, then cloud APIs with keys; the Claude Code path unchanged (rounds 10–11, agreed 2026-10-17).
 * [Serve over the network](network-serving.md) - A Settings toggle serving Lantern over HTTPS on the LAN: self-signed certificate, QR pairing, use-not-administer rights, phone layout (decided 2026-10-22).
+* [Debug console](debug-console.md) - A hidden developer mode docking a terminal-style console at the bottom of every screen: each model call's system prompt, context blocks, prompt, tools and reply, the user actions and app events, saved or recorded to Markdown (decided 2026-10-23).
