@@ -3,7 +3,7 @@ import { cloneJson, newId, normalizeTitle, now } from '../../core/model';
 import type { Generation, GraphNode, RoomVisit, Subject } from '../../core/model';
 import { ProviderError, zeroUsage } from '../../frame/provider';
 import type { Completion, InferenceProvider, ToolUse } from '../../frame/provider';
-import { addChooseChild, answerNeed, cells, chooseProduct, kindOf, markBought, normalize, rejectProduct, restoreProduct, setNeedsNote, setState,
+import { addChooseChild, answerNeed, cells, growingFrom, chooseProduct, kindOf, markBought, normalize, rejectProduct, restoreProduct, setNeedsNote, setState,
   toneOf, unchooseProduct } from './rules';
 import type { Cell, NodeKind, Task } from './rules';
 import { fresh, inTarget, liveCells, parseReply, placeProducts, recommendedProduct, visibleText } from './protocol';
@@ -197,7 +197,7 @@ export class ChooseSession {
       target.dialogue.push({ role: 'model', text: parsed.text, at: now(), author: by });
       if (task === 'reply') {
         if (parsed.need) this.needOffer = { nodeId: id, ...parsed.need };
-        if (parsed.branch && !Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(parsed.branch!.title))) addChooseChild(next, id, { ...parsed.branch, createdBy: 'model' });
+        if (parsed.branch && !Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(parsed.branch!.title))) addChooseChild(next, growingFrom(next, id), { ...parsed.branch, createdBy: 'model' });
       }
       if (task === 'check') {
         // CP-13: a check refreshes the room's facts or cells, never the user's values; a cell check keeps only that cell.

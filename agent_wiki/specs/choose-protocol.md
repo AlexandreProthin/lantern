@@ -180,7 +180,9 @@ Slots as TP-12: each template ends with its required ending; blocks are those of
 
 - **CP-30** Applying blocks (LR-1 atomic, LR-43 checked at application):
   1. `<options>` and `<branch>` follow LR-60 to LR-62 (count, duplicates, dismissed); an unknown
-     `kind` takes `concept`.
+     `kind` takes `concept`. A `<branch>` on a node that cannot grow (a need, criterion, product or
+     unlit node) goes under its nearest ancestor that can, the subject at worst; the reply is never
+     lost over it.
   2. `<products>`: a product whose title matches a node is dropped (LR-62). `family` naming an
      existing family id attaches the product under it; a new title creates an `open` family under
      the subject first; on a family, products go under it whatever `family` says. New products are

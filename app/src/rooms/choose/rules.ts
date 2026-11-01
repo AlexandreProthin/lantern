@@ -178,10 +178,14 @@ export function setPriceCriterion(v: RoomVisit, id: string): void {
   const n = nodeOf(v, id); if (n.kind !== 'criterion') throw new Error('Not a criterion');
   for (const c of nodesOfKind(v, 'criterion')) setData(c, 'measure', c.id === id ? 'price' : undefined);
 }
+const canGrow = (v: RoomVisit, n: GraphNode) => n.state === 'lit' || n.kind === 'family' || n.id === v.rootId;
+/** CP-30.1: the node itself, else its nearest ancestor that can grow; the subject at worst. */
+export function growingFrom(v: RoomVisit, id: string): string {
+  for (let n = nodeOf(v, id); ; n = nodeOf(v, n.parents[0])) if (canGrow(v, n) || !n.parents[0]) return n.id;
+}
 /** Children grow from the subject, a lit node or a family; they start in their kind's first state. */
 export function addChooseChild(v: RoomVisit, parentId: string, input: { title: string; hook?: string; kind: NodeKind; createdBy: Role; author?: Author }): GraphNode {
-  const parent = nodeOf(v, parentId);
-  if (input.kind === 'subject' || !(parent.state === 'lit' || parent.kind === 'family' || parentId === v.rootId)) throw new Error('Parent cannot grow');
+  if (input.kind === 'subject' || !canGrow(v, nodeOf(v, parentId))) throw new Error('Parent cannot grow');
   return addChild(v, parentId, { ...input, state: firstState(input.kind) });
 }
 export function newChooseSubject(title: string, settings: { tone: Tone; model: string; effort: Effort; locale: Locale; needsNote?: string }, by = ''): Subject {

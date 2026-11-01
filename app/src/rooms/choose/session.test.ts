@@ -93,6 +93,18 @@ test('CP-30.4/CP-30.5/CR-24: a need offered in a reply, a recommendation, then c
   expect(() => validateChoose(session.visit)).not.toThrow();
 });
 
+test('CP-30.1: a branch offered in a reply on an answered need grows from the nearest node that can grow', async () => {
+  const { session, provider } = setup();
+  await session.initialize();
+  const need = kids(session, 'need')[0]; session.answer(need.id, 'at home, fixed shared IP');
+  provider.response = 'Yes, it works.\n\n<branch>{"title":"Shared IP port ranges","hook":"what reaches you","kind":"concept"}</branch>';
+  await session.run('reply', need.id, { message: 'is it ok' });
+  expect(session.notice).toBeNull();
+  expect(session.visit.nodes[need.id].dialogue.at(-1)).toMatchObject({ role: 'model', text: 'Yes, it works.' });
+  expect(kids(session, 'concept').find(n => n.title === 'Shared IP port ranges')?.parents[0]).toBe(need.parents[0]);
+  expect(() => validateChoose(session.visit)).not.toThrow();
+});
+
 test('LR-3/DM-32: a failed call is logged with its web flag and offers a retry', async () => {
   const { session, provider } = setup();
   await session.initialize(); provider.failNext = 'network';

@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import { cloneJson } from '../../core/model';
 import type { RoomVisit } from '../../core/model';
-import { addChooseChild, answerNeed, cellStatus, chooseProduct, chosenOf, markBought, newChooseSubject, pruneCells, rejectProduct,
+import { addChooseChild, answerNeed, growingFrom, cellStatus, chooseProduct, chosenOf, markBought, newChooseSubject, pruneCells, rejectProduct,
   normalize, restoreProduct, setNeedsNote, setPriceCriterion, setState, statusOf, unchooseProduct, validateChoose } from './rules';
 import type { Cell } from './rules';
 import { board, headerStats } from './stats';
@@ -38,6 +38,7 @@ test('CR-21/CR-23: states per kind, ranking any time, dismissal only from open',
   expect(() => setState(v, product, 'dismissed')).toThrow();
   const concept = add('concept', 'Heated bed'); setState(v, concept, 'dismissed'); setState(v, concept, 'open'); setState(v, concept, 'lit');
   expect(() => addChooseChild(v, need, { title: 'Child', kind: 'concept', createdBy: 'model' })).toThrow();
+  expect(growingFrom(v, need)).toBe(v.rootId); expect(growingFrom(v, concept)).toBe(concept);
   expect(() => validateChoose(v)).not.toThrow();
 });
 
