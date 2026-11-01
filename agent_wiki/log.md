@@ -2,7 +2,7 @@
 
 ## 2026-11-01
 
-* **v0.6.0 tagged** (minor: network serving, resumable generations, Codex CLI provider, debug console, Amber's speech bubble since v0.5.0). Fix included: a reply's `<branch>` on a node that cannot grow (an answered need) threw *Parent cannot grow* and lost the reply; it now goes under the nearest ancestor that can grow ([choose protocol](/specs/choose-protocol.md) CP-30.1). Checks: 54 Vitest files, 85 Rust, svelte-check 0/0. Next: the user builds and signs the installer and uploads it with `latest.json` to the GitHub release.
+* **v0.6.0 released** (signed installer and `latest.json` on the GitHub release; the update feed serves 0.6.0) (minor: network serving, resumable generations, Codex CLI provider, debug console, Amber's speech bubble since v0.5.0). Fix included: a reply's `<branch>` on a node that cannot grow (an answered need) threw *Parent cannot grow* and lost the reply; it now goes under the nearest ancestor that can grow ([choose protocol](/specs/choose-protocol.md) CP-30.1). Checks: 54 Vitest files, 85 Rust, svelte-check 0/0.
 
 ## 2026-10-23
 
