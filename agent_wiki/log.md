@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-11-01
+
+* **v0.6.0 tagged** (minor: network serving, resumable generations, Codex CLI provider, debug console, Amber's speech bubble since v0.5.0). Fix included: a reply's `<branch>` on a node that cannot grow (an answered need) threw *Parent cannot grow* and lost the reply; it now goes under the nearest ancestor that can grow ([choose protocol](/specs/choose-protocol.md) CP-30.1). Checks: 54 Vitest files, 85 Rust, svelte-check 0/0. Next: the user builds and signs the installer and uploads it with `latest.json` to the GitHub release.
+
 ## 2026-10-23
 
 * **Debug console, built** (branch `claude/debug-console`, on the user's request): *Developer → Debug mode* docks a terminal-style console at the bottom of every screen. Every model call is traced at the outermost provider: its origin, the exact system prompt and prompt, the context blocks (Learn, Choose, suggestions and Amber pass them, each checked against the prompt), the stream with tool uses, what the caller parsed, and usage. User actions and app events are traced too. *Save* and *Record* write Markdown to a chosen log folder through `debug_log_write`, which a remote device cannot call. New spec [debug-console](/specs/debug-console.md) (DC-1..44, draft) and [settings](/specs/settings.md) rows. Moving prompt text into `.md` files was dropped by the user. 258 Vitest, 4 Rust and 113 Playwright tests passed; one phone zoom test failed once under load and passed on re-run. Tried by the user in a preview installer on 2026-10-24, then merged.
