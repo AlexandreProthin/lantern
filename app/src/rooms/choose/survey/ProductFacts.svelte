@@ -36,9 +36,10 @@
 </section>
 <style>
   h2 { font-size:13px; color:var(--ink-mute); font-weight:500; margin:20px 0 10px; }
-  dl { margin:0; display:grid; gap:12px; } .fact { display:grid; gap:4px; }
-  dt { font-size:11px; color:var(--ink-mute); } dd { margin:0; display:grid; gap:3px; }
-  .value { font-size:15px; }
+  dl { margin:0; display:grid; gap:14px; } .fact { display:grid; gap:6px; }
+  .fact + .fact { border-top:1px solid var(--line); padding-top:14px; }
+  dt { font-size:15px; font-weight:600; color:var(--ink); } dd { margin:0; display:grid; gap:3px; }
+  .value { font-size:14px; }
   .src { font-size:11px; color:var(--ink-mute); display:flex; gap:6px; flex-wrap:wrap; align-items:baseline; }
   .tag { font-weight:500; font-size:10px; border:1px solid var(--line); border-radius:6px; padding:0 5px; color:var(--ink); }
   .src[data-kind='opinion'] .tag, .src[data-kind='model'] .tag { color:var(--ink-mute); }
