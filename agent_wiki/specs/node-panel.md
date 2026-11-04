@@ -119,7 +119,7 @@ corrections as truth.
 - **NP-44** *Previous version*: an edited explanation or tutor turn shows, in its meta line, **edited by <name> ·
   Previous version**. The link opens a compare view of **Previous | Current** rendered side by
   side (stacked below 520 px) with **Revert to previous** and **Keep current**. Revert restores the
-  model text, removes `edited` and clears `previous`. Undo of other kinds is Later.
+  model text, removes `edited` and clears `previous`. *(Amended 2026-11-04.)* Ctrl+Z undoes any change for the session ([rooms-spaces](/specs/rooms-spaces.md) RS-60); revert stays the way back to the model's text across restarts.
 - **NP-45** While a section is in edit mode, a generation that would replace it (re-light) is
   disabled; leaving the node with unsaved edit text asks nothing and keeps the draft for the
   session (as the composer draft).

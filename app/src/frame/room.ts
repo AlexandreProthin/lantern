@@ -7,6 +7,8 @@ import type { LibrarySpaces } from './library-spaces';
 export interface RoomSession {
   subject: Subject; running: { nodeId: string; task: string } | null;
   setFocus(id: string): void; cancel(): void; touch(): void; initialize(): Promise<void>;
+  /** RS-64: the frame swapped the visit for an earlier or later one; drop what the session holds about the old one. */
+  restored?(): void;
 }
 export interface SpaceProps {
   session: RoomSession | null; revision: number; visible: boolean; settings: Settings;

@@ -254,6 +254,17 @@ Space navigation is not necessarily tabs; it must be intuitive.
 - **RS-43** A subject file that fails to parse MUST appear in the Gallery as a card marked
   *Cannot be read* with only *Reveal in Explorer* ([subject-storage](/specs/subject-storage.md)).
 
+# Undo
+
+*Added 2026-11-04 on the user's request (branch `claude/undo`). The frame owns it (`app/src/frame/undo.ts`), so a room's actions need no code of their own for it.*
+
+- **RS-60** **Ctrl+Z** undoes the last change to the open subject; **Ctrl+Y** or **Ctrl+Shift+Z** redoes it. A step is whatever one save changed, so it covers the user's actions and the results of generations alike. A new change ends what could be redone. The undone state is saved like any other change.
+- **RS-61** A step restores the visit's `nodes` and `data`. It MUST NOT touch the generation `log`, whose tokens were really spent (DM-64), nor the subject's model and effort. Focus returns to where it was at that step, or to the root if that node is gone; a save that changes only these is not a step. A message and its reply are two steps, because they are two saves. Undo removes entries from Choose's `history` (CP-2): the change it recorded no longer happened.
+- **RS-62** Steps live in memory for the session, at most 50 per subject, and are never written to the subject file.
+- **RS-63** When the subject is reloaded from disk (changed outside this session, or a save conflict, ST-24), its steps are forgotten, so an undo can never overwrite that newer version.
+- **RS-64** Undo also drops what the session holds about the old state: the notice with its retry and, in Choose, the need on offer and the *Choose <product>* button of a recommendation.
+- **RS-65** The keys do nothing special in a text field, which keeps its own undo, nor while Settings, the shortcuts or a dialog are open, nor on Welcome and Gallery. While a generation runs, undo refuses and says why. Choose's research lane does not block it: a fill is checked against the graph when it lands (CP-41). A short message confirms each undo and redo.
+
 # Window
 
 - **RS-50** Minimum window size 1024×640 px; the layout MUST NOT overflow horizontally at 1024.

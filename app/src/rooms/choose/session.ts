@@ -48,6 +48,8 @@ export class ChooseSession {
   /** CP-41: cells the research lane is filling now, shown striped. */
   filling(): Set<string> { return new Set(this.research?.slots.map(slotKey) ?? []); }
   touch(): void { this.commit(); }
+  /** RS-64: the notice, the need on offer and the *Choose <product>* button belong to the state before the undo. */
+  restored(): void { this.notice = null; this.needOffer = null; this.recommendation = null; }
   initialize(): Promise<void> { return this.run('intro', this.visit.rootId); }
   cancel(): void {
     if (this.running && !this.running.controller.signal.aborted) trace.action('choose', 'Cancel generation', { task: this.running.task, nodeId: this.running.nodeId });

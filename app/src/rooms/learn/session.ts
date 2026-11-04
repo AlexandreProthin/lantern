@@ -26,6 +26,8 @@ export class LearnSession {
   setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.changed(); this.render(); }
   busy(id: string): boolean { return this.running?.nodeId === id; }
   touch(): void { this.changed(); this.render(); }
+  /** RS-64: a notice's retry belongs to the state before the undo. */
+  restored(): void { this.notice = null; }
   initialize(): Promise<void> { return this.run('intro', this.visit.rootId); }
   cancel(): void {
     if (this.running && !this.running.controller.signal.aborted) trace.action('learn', 'Cancel generation', { task: this.running.task, nodeId: this.running.nodeId });

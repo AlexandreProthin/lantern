@@ -27,6 +27,7 @@
   import type { Subject, Tone } from '../core/model';
   import { defaultSettings, validateSettings } from './settings';
   import { DebouncedWriter } from './debounced-writer';
+  import { UndoHistory } from './undo';
   import { UpdateController } from './updates.svelte';
   import { shouldCheckAtLaunch, shouldShowNotice } from './updates';
   import SettingsPanel from './SettingsPanel.svelte';
@@ -169,7 +170,7 @@
   const catalogue = new Catalogue(() => revision++);
   const thumbnailCache = new Map<string, {stamp:string;value:Promise<ThumbnailGraph>}>();
   const deleting = new Set<string>();
-  const owned = new Map<string, { session: RoomSession; persistence: SubjectPersistence; room: string }>();
+  const owned = new Map<string, { session: RoomSession; persistence: SubjectPersistence; room: string; history: UndoHistory }>();
   /** RS-12: each room keeps its own open subject for the session. */
   const openByRoom: Record<string, string | null> = {};
   const writer = new DebouncedWriter(async value => {
@@ -257,11 +258,12 @@
   const validateRooms = (subject: Subject) => { for (const r of rooms) if (subject.rooms[r.id]) r.validate(subject.rooms[r.id]); };
   function own(loaded: Loaded) {
     validateRooms(loaded.subject);
-    let controller: RoomSession;
+    let controller: RoomSession, history: UndoHistory;
     const persistence = new SubjectPersistence(storage,library,loaded,result => {
       if (result.kind !== 'saved') {
         const recovered = $state(result.loaded.subject);
         controller.subject=recovered;
+        history.reset(recovered.rooms[owner.id]); // RS-63
         if (result.kind === 'conflict') { toast=strings.conflict; conflictPath=result.conflictPath; } else toast=strings.diskReloaded;
         revision++;
       }
@@ -269,8 +271,26 @@
     }, error=>saveError=String(error), 300, validateRooms);
     const reactiveSubject = $state(loaded.subject);
     const owner = room;
-    controller=owner.prompts.createSession(reactiveSubject,providerFor(owner),()=> { persistence.schedule(controller.subject); revision++; },()=>revision++,settings);
-    return {session:controller,persistence,room:owner.id};
+    history = new UndoHistory(reactiveSubject.rooms[owner.id]);
+    controller=owner.prompts.createSession(reactiveSubject,providerFor(owner),()=> { persistence.schedule(controller.subject); history.observe(controller.subject.rooms[owner.id]); revision++; },()=>revision++,settings);
+    return {session:controller,persistence,room:owner.id,history};
+  }
+  /** A short message that clears itself, unless something else has taken its place. */
+  let flashTimer: ReturnType<typeof setTimeout> | undefined;
+  function flash(message: string) { toast=message; clearTimeout(flashTimer); flashTimer=setTimeout(()=>{ if(toast===message) toast=''; },3000); }
+  /** RS-60, RS-65: Ctrl+Z and Ctrl+Y on the open subject's graph. A text field keeps its own undo. */
+  function undoKey(e: KeyboardEvent, redo: boolean) {
+    const target=e.target;
+    if(target instanceof HTMLInputElement||target instanceof HTMLTextAreaElement||target instanceof HTMLSelectElement||(target instanceof HTMLElement&&target.isContentEditable)) return;
+    if(settingsOpen||shortcutsOpen||document.querySelector('dialog[open]')||!session||space==='welcome'||space==='gallery') return;
+    const entry=owned.get(session.subject.id); if(!entry) return;
+    e.preventDefault();
+    if(session.running){flash(strings.finishGeneration);return;}
+    const visit=session.subject.rooms[entry.room], next=redo?entry.history.redo(visit):entry.history.undo(visit);
+    if(!next){flash(redo?strings.nothingToRedo:strings.nothingToUndo);return;}
+    trace.action(entry.room,redo?'Redo':'Undo');
+    session.subject.rooms[entry.room]=next; session.restored?.(); session.touch();
+    flash(redo?strings.redone:strings.undone);
   }
   async function createSubject(title: string, tone: Tone, model: string, direction = '') {
     if (!libraryAvailable || (cliProblem && !isEndpointModel(model))) throw new Error(strings.cliNotReady);
@@ -391,6 +411,9 @@
     else if(e.ctrlKey && e.key===',') {e.preventDefault(); settingsSection='general';settingsOpen=true;}
     // CO-41, GV-76: Ctrl+J anywhere, any focus: Amber's bubble with its field focused, or the box with Amber off.
     else if(e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase()==='j') {e.preventDefault(); openAsk();}
+    // RS-65, GV-76: Ctrl+Z undoes; Ctrl+Y or Ctrl+Shift+Z redoes.
+    else if(e.ctrlKey && !e.altKey && e.key.toLowerCase()==='z') undoKey(e,e.shiftKey);
+    else if(e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase()==='y') undoKey(e,true);
     else if(e.key==='Escape') {
       if(document.querySelector('dialog[open]')) return;
       if(settingsOpen) settingsOpen=false; else if(shortcutsOpen) shortcutsOpen=false; else if(roomMenu) roomMenu=false; else if(panelOpen) panelOpen=false; else if(space===room.defaultSpace)session?.cancel();

@@ -201,6 +201,7 @@ Active when the graph has focus (Tab reaches the focused node; the graph is one 
 | Ctrl+1 / Ctrl+2 / Ctrl+3 | anywhere, any focus | Welcome / Study / Gallery; Ctrl+2 with no subject open opens the most recent one |
 | Alt+A / Alt+N / Alt+D | with a text selection | *Ask about this* / *Make it a node* / *Ask Amber* (the selection popover; Alt+D from 2026-10-16, NP-54) |
 | Ctrl+J | anywhere, any focus | Ask Amber: opens Amber's bubble with its field focused, or the Ask box when Amber is off ([companion](/specs/companion.md) CO-41) |
+| Ctrl+Z / Ctrl+Y (or Ctrl+Shift+Z) | an open subject's spaces, outside a text field | Undo / redo a change to the subject ([rooms-spaces](/specs/rooms-spaces.md) RS-60, from 2026-11-04) |
 | ? | anywhere outside a text field | Show or hide the shortcuts |
 | Ctrl+Shift+1 / Ctrl+Shift+2 | anywhere, any focus | Learn / Choose room, on its Welcome (RS-23, from v0.2.0) |
 | Ctrl+K | anywhere, any focus | Open or close the field's panel: this subject's settings and the palette ([rooms-spaces](/specs/rooms-spaces.md) RS-15, from 2026-10-17) |
