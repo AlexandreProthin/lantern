@@ -32,7 +32,7 @@ puts in `data` and which values it allows (DM-66).
 | `locale` | required: `{country, currency}`, ISO 3166 alpha-2 and ISO 4217, from Settings → Choose room when the subject is created; changed in the subject menu for future calls only, like tone *(round 7, q-r7-locale)* |
 | `status` | required: `exploring`, `decided` or `bought` (CR-24) |
 | `pick` | optional, the last chosen product: `{productId, title, price?, source?, at}`, `price` the value of its *Price* fact and `source` `{kind, name, read}` its first source that is not sponsored (CR-41); written when a product is chosen and refreshed from that product before every save, kept after un-choosing so the Gallery can show it struck (CR-24) *(B4, agreed by the user 2026-10-15.)* |
-| `history` | required, append-only: `[{status, at, productId?, title?, unchosen?}]` (`title` the product's title at the time), one entry per status change, un-choosing included (`status: "exploring"`, `unchosen: true`, the product's id) |
+| `history` | required, append-only: `[{status, at, productId?, title?, unchosen?}]` (`title` the product's title at the time), one entry per status change, un-choosing included (`status: "exploring"`, `unchosen: true`, the product's id); Ctrl+Z takes an entry back with the change it recorded ([rooms-spaces](/specs/rooms-spaces.md) RS-61, 2026-11-04) |
 
 - **CP-3** **Node `data`**, by kind:
 

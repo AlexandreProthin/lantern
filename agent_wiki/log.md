@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-11-04
+
+* **Undo and redo** (branch `claude/undo`, on the user's request): Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z on an open subject, in both rooms, for the session. The frame compares each saved state in `app/src/frame/undo.ts`, so rooms' actions are unchanged; the generation log stays, so tokens spent still count ([rooms-spaces](/specs/rooms-spaces.md) RS-60..65, [graph-view](/specs/graph-view.md) GV-76, [node-panel](/specs/node-panel.md) NP-44, [choose-protocol](/specs/choose-protocol.md) CP-2, [product-scope](/specs/product-scope.md)). Redo was added beyond the request, so that a stray Ctrl+Z cannot lose a paid generation. Discussed the same day and left open by the user: Amber acting on the whole graph; nothing specified.
+
 ## 2026-11-01
 
 * **v0.6.0 released** (signed installer and `latest.json` on the GitHub release; the update feed serves 0.6.0) (minor: network serving, resumable generations, Codex CLI provider, debug console, Amber's speech bubble since v0.5.0). Fix included: a reply's `<branch>` on a node that cannot grow (an answered need) threw *Parent cannot grow* and lost the reply; it now goes under the nearest ancestor that can grow ([choose protocol](/specs/choose-protocol.md) CP-30.1). Checks: 54 Vitest files, 85 Rust, svelte-check 0/0.

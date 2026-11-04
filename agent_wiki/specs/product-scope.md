@@ -58,7 +58,7 @@ components are a requirement, not a nicety.
 
 Merge (Ctrl+click, several parents) (regenerating an explanation has landed as *Rewrite explanation*, [learn-room](/specs/learn-room.md) LR-45),
 parallel generation, Anthropic API, local and other providers (with a security focus when they
-come), search, export (for example the graph as an OKF bundle), undo and history, spaced review,
+come), search, export (for example the graph as an OKF bundle), a history kept across restarts (undo for the session has landed, [rooms-spaces](/specs/rooms-spaces.md) RS-60), spaced review,
 learner profile, bring-your-own material, the Think, Explore and Interview rooms, an app-level home, one subject in several rooms with an *Open in Learn* handoff (q-r5-cross-room),
 auto-update UI, light theme, French UI. *Lantern opens the Claude Code sign-in for you* is also Later: v0.1.0 only shows step-by-step instructions ([decision](/decisions/cli-signin-instructions-only.md)). Options-first protocol, a cheaper model for cheap tasks
 and summary calls are also later ([decision](/decisions/latency-masked-not-reduced.md)). Never:
