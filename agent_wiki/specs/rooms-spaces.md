@@ -227,7 +227,7 @@ Space navigation is not necessarily tabs; it must be intuitive.
   **understood: demonstrated**, **understood: self-declared**, **dismissed**; the **branch** kind
   glyph (question diamond); and the **text-link line** (faint dotted) with its on/off toggle
   ([graph-view](/specs/graph-view.md) GV-41). Each row draws the real node glyph at 14 px, not an
-  approximation.
+  approximation. *(Amended 2026-11-12.)* Learn adds **dead end**, the end cap of GV-26.
 - **RS-37** The legend MUST NOT intercept pan/drag on the graph outside its own box. Keyboard:
   the chip is focusable, Enter toggles it.
 

@@ -179,7 +179,9 @@ are computed from the room visit of the room (`learn`) and never stored
   **total** (also called **nodes**) = all nodes except `dismissed`; **lit** = nodes in `lit` **or
   `understood`** state; **understood** = nodes in `understood`, split by `understoodBy` into
   *demonstrated* and *self*; **dark** = the `open` nodes, which equals total − lit. Progress is
-  understood / total, 0 when total is 0.
+  understood / total, 0 when total is 0. *(Amended 2026-11-12.)* The counts take every node of the file, including the
+  nodes of a prepared subject the learner cannot see yet ([graph-view](/specs/graph-view.md) GV-121): a fresh 200-node course
+  reads *1 lit · 199 dark*, and progress is measured against the whole course. Collapse changes no count.
 - **WG-31** *(Amended 2026-10-17, [custom-endpoints](/specs/custom-endpoints.md) Once a local token has been spent, the stats hover and the Gallery show Claude and local tokens on separate lines; cloud endpoints count with Claude. Until then the figures look as before, CE-53.)* **Tokens spent** = the sum over every record of the generation log, whatever its
   outcome (ok, cancelled, error), of `usage.input + usage.output`. `usage.output` already
   includes thinking tokens, and `cacheRead` / `cacheWrite` are not counted, since they are
@@ -209,7 +211,8 @@ are computed from the room visit of the room (`learn`) and never stored
   (depth columns, leaves on rows; the same algorithm as the live tree layout, without physics),
   scaled to fit a 16:9 box, drawn as an inline SVG: nodes as circles filled by state using the
   room tokens (open dotted outline, lit glow, understood solid, dismissed omitted), edges as
-  `--path-muted` lines.
+  `--path-muted` lines. *(Amended 2026-11-12.)* Only nodes shown by progress are drawn ([graph-view](/specs/graph-view.md) GV-120);
+  collapse is ignored.
 - **WG-41** At most **60** nodes are drawn: the root, then breadth-first by depth and creation
   order; when more exist, a final *+n* label is drawn in the corner. Glow is a single drop-shadow
   at card level, not per node. No animation.

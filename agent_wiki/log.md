@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-11-12
+
+* **Prepared subjects, spec amendments** (branch `claude/prepared-subjects`, waiting for the user's review; no code yet): [decision](/decisions/prepared-subjects-replay.md) and [plan](/plans/prepared-subjects.md). Replay of prepared nodes with no call and no record, visibility by the parent's state, *Replay from the start* with *Restore progress*, dead ends ([learn-room](/specs/learn-room.md) LR-39, LR-39a, LR-51a, LR-90 to LR-115); collapse and the end cap ([graph-view](/specs/graph-view.md) GV-26, GV-58, GV-92a, GV-120 to GV-136); collapsible `<details>` blocks and replay display ([node-panel](/specs/node-panel.md) NP-64, NP-75 to NP-78); authored files ([domain-model](/specs/domain-model.md) DM-17a, DM-70 to DM-77); scale ([context-assembly](/specs/context-assembly.md) CA-60 to CA-63); TP-36, TP-44, SE-50, WG-30, WG-40, RS-36.
+
 ## 2026-11-04
 
 * **Undo and redo** (branch `claude/undo`, on the user's request): Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z on an open subject, in both rooms, for the session. The frame compares each saved state in `app/src/frame/undo.ts`, so rooms' actions are unchanged; the generation log stays, so tokens spent still count ([rooms-spaces](/specs/rooms-spaces.md) RS-60..65, [graph-view](/specs/graph-view.md) GV-76, [node-panel](/specs/node-panel.md) NP-44, [choose-protocol](/specs/choose-protocol.md) CP-2, [product-scope](/specs/product-scope.md)). Redo was added beyond the request, so that a stray Ctrl+Z cannot lose a paid generation. Discussed the same day and left open by the user: Amber acting on the whole graph; nothing specified.
