@@ -43,3 +43,7 @@ export function replayText(text: string, show: (visible: string) => void,
   timer = setTimeout(tick, durationMs / steps);
   return { finished, skip: () => end('skipped') };
 }
+
+/** GV-100: the OS preference or the app's Appearance override (`data-reduce-motion` on the root). False outside a browser. */
+export const motionReduced = (): boolean => typeof matchMedia === 'function' && typeof document !== 'undefined'
+  && (matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.reduceMotion === 'on');

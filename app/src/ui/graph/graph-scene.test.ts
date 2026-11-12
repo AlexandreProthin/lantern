@@ -22,3 +22,19 @@ test('GV-93/97/101: cancellation shrinks; reduced motion removes immediately; re
   expect(Object.values(scene.update(v, null, 101, true)).filter(n => n.pending)).toHaveLength(0);
   expect(Object.values(scene.update(v, run(v.rootId, 'reply'), 102, false)).filter(n => n.pending)).toHaveLength(0);
 });
+test('GV-92a: a replay grows one slot per stored child, and children that become drawn arrive in them, whoever wrote them', () => {
+  const v = newLearnSubject('Tides').rooms.learn, scene = new GraphScene(options);
+  v.nodes[v.rootId].state = 'lit';
+  const a = addChild(v, v.rootId, { title: 'Moon', kind: 'axis', state: 'open', createdBy: 'model' });
+  const a1 = addChild(v, a.id, { title: 'Bulges', kind: 'deeper', state: 'open', createdBy: 'model' });
+  const a2 = addChild(v, a.id, { title: 'Mine', kind: 'own', state: 'open', createdBy: 'user' });
+  const drawn = (ids: string[]) => ({ ...v, nodes: Object.fromEntries(ids.map(id => [id, v.nodes[id]])) });
+  scene.update(drawn([v.rootId, a.id]), null, 0, false);
+  const replay = { nodeId: a.id, task: 'light', controller: new AbortController(), replay: true, reveal: 2 };
+  expect(Object.values(scene.update(drawn([v.rootId, a.id]), replay, 1, false)).filter(n => n.pending)).toHaveLength(2);
+  a.state = 'lit';
+  scene.update(drawn([v.rootId, a.id, a1.id, a2.id]), null, 2, false);
+  expect(scene.transfers.map(t => t.to)).toEqual([a1.id, a2.id]);
+  const none = { ...replay, controller: new AbortController(), reveal: 0 };
+  expect(Object.values(scene.update(drawn([v.rootId, a.id, a1.id, a2.id]), none, 3, false)).filter(n => n.pending)).toHaveLength(0);
+});

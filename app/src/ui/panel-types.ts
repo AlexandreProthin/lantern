@@ -3,7 +3,8 @@ import type { GraphNode, Turn, RoomVisit } from '../core/model';
 import type { MenuAction } from './graph/types';
 export type { PanelRequest } from './graph/types';
 /** A room's running generation, as the panel shows it. */
-export interface PanelRunning { nodeId: string; task: string; text: string }
+/** `replay`: stored text streaming with no call (LR-91); `cancel()` then skips to the end (LR-93). */
+export interface PanelRunning { nodeId: string; task: string; text: string; replay?: boolean }
 export interface PanelNotice { nodeId: string; kind: string }
 /** What the panel reads and drives of a room's session. */
 export interface PanelSession {
@@ -33,6 +34,8 @@ export interface PanelRoomView {
   /** A child that is set aside (listed under *dismissed*), and how to bring it back. */
   setAside: (child: GraphNode) => boolean;
   restore: (visit: RoomVisit, id: string) => void;
+  /** GV-120, NP-71: a node shows its children only when this holds (Learn: lit or understood). Default: every node is shown. */
+  opens?: (node: GraphNode) => boolean;
   editText: (target: GraphNode | Turn, text: string, by: string) => void;
   addChild: (visit: RoomVisit, parentId: string, own: { title: string; hook: string; by: string }) => void;
   actions: (visit: RoomVisit, node: GraphNode, running: PanelRunning | null) => MenuAction[];

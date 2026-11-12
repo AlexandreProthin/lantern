@@ -9,6 +9,7 @@
   import { isCodexModel, isEndpointModel } from '../core/models';
   import { endpointNameOf } from './model-choices.svelte';
   import { childrenOf, pathTo, deleteSubtree, editLabel, revertText, subtreeIds } from '../core/graph';
+  import { shownIds } from '../core/visibility';
   import type { GraphNode, Turn } from '../core/model';
   import type { PanelRequest, PanelRoomView, PanelSession, PanelSnippets } from './panel-types';
   import { trace } from '../frame/debug/trace.svelte';
@@ -22,6 +23,9 @@
   const busy = $derived(running?.nodeId === node.id);
   const readOnly = $derived(room.frozen(node, busy));
   const lit = $derived(room.conversable(node));
+  // NP-71: a link to a node the learner cannot see yet is plain text (GV-120).
+  const shown = $derived(room.opens ? shownIds(visit, room.opens) : null);
+  const linkable = $derived(shown ? (id: string) => shown.has(id) : undefined);
   const drafts = $state<Record<string, string>>({});
   const editors = $state<Record<string, string>>({});
   const editDrafts = $state<Record<string, { title: string; hook: string; text: string }>>({});
@@ -40,7 +44,8 @@
     const author = target.author, generation = visit.log.find(g => g.id === author.generationId);
     // IP-3, CE-52: an endpoint model ignores effort, so the line does not show one; Codex keeps it (CE-58).
     // CE-27: a different name the server answered with is shown beside the model asked for.
-    return [modelLabel(author.model), generation?.servedModel ? strings.servedAs(generation.servedModel) : '', isEndpointModel(author.model) && !isCodexModel(author.model) ? '' : generation?.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
+    // DM-17a: prepared text names its model and effort but has no record, so no tokens.
+    return [modelLabel(author.model), generation?.servedModel ? strings.servedAs(generation.servedModel) : '', isEndpointModel(author.model) && !isCodexModel(author.model) ? '' : generation?.effort ?? author.effort, ...(showTokens && generation ? [`${compact(generation.usage.input)} in / ${compact(generation.usage.output)} out`, durationLabel(generation.durationMs)] : []), target.edited ? strings.editedBy(target.edited.by) : ''].filter(Boolean).join(' · ');
   }
   /** DC-30: the room this panel belongs to, from its class (`learn-panel`, `choose-panel`). */
   const area = $derived(room.className.split('-')[0]);
@@ -143,15 +148,19 @@
     {#if busy && room.tasks.stream.includes(running!.task)}
       <!-- CE-41: a local model can take a minute before its first words. -->
       {#if !running!.text && endpointNameOf(visit.model)}<p class="loading-model" role="status">{strings.loadingModel(endpointNameOf(visit.model)!)}</p>
-      {:else}<Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} {preview} />{/if}
-      <button onclick={() => session.cancel()}>{strings.cancel}</button>
+      {:else if running!.replay}
+        <!-- NP-64: a click on the replaying text puts the whole text in place. -->
+        <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+        <div class="replay" onclick={() => session.cancel()}><Markdown text={running!.text || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>
+      {:else}<Markdown text={running!.text || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} />{/if}
+      <button onclick={() => session.cancel()}>{running!.replay ? strings.showAll : strings.cancel}</button>
     {:else if room.dormant(node)}
       {@render placeholder(node, { running, perform })}
     {:else if editors[node.id] === 'content'}
       <textarea class="markdown-edit" aria-label={strings.editExplanation} bind:value={editDrafts[node.id].text} onkeydown={editKey} rows="12"></textarea>
       <button onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button>
     {:else}
-      <Markdown text={node.content} {visit} focus={id => session.setFocus(id)} {preview} />
+      <Markdown text={node.content} {visit} {linkable} focus={id => session.setFocus(id)} {preview} />
       <button class="quiet" disabled={readOnly} onclick={() => beginEdit('content')}>{strings.editExplanation}</button>
       {#if node.edited}<small>{strings.editedBy(node.edited.by)}</small>{/if}
       {#if node.previous !== undefined}<button class="quiet" onclick={() => compare = node}>{strings.previousVersion}</button>{/if}
@@ -170,7 +179,7 @@
     {/if}
     <div class="actions">
       <!-- The room's inline actions (Learn: Light it up, Restore) are shown with its placeholder above. -->
-      {#each room.actions(visit, node, running).filter(a => !room.inlineActions?.includes(a.id)) as action (action.id)}<button disabled={action.disabled} onclick={() => act(action.id)}>{action.label}</button>{/each}
+      {#each room.actions(visit, node, running).filter(a => !room.inlineActions?.includes(a.id)) as action (action.id)}<button disabled={action.disabled} title={action.title} onclick={() => act(action.id)}>{action.label}</button>{/each}
     </div>
     {#if adding}<form onsubmit={e => { e.preventDefault(); addOwn(); }}><input aria-label={strings.title} bind:value={ownTitle} placeholder={strings.title} maxlength="120" required /><input aria-label={strings.hook} bind:value={ownHook} placeholder={strings.hook} maxlength="200" /><button type="submit">{strings.add}</button><button type="button" onclick={() => adding = false}>{strings.cancel}</button></form>{/if}
     {#if localError}<p class="error" role="alert">{localError}</p>{/if}
@@ -181,22 +190,22 @@
       <section><h2>{strings.dialogue}</h2>{#each node.dialogue as turn, i (i)}
         <div class="turn {turn.role}" title={provenance(turn)}>
           {#if editors[node.id] === `turn:${i}`}<textarea class="markdown-edit" aria-label={strings.edit} bind:value={editDrafts[node.id].text} onkeydown={editKey}></textarea><button onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button>
-          {:else}<Markdown text={turn.text} {visit} focus={id => session.setFocus(id)} {preview} />{#if turn.role === 'model'}<button class="quiet" disabled={busy} onclick={() => beginEdit(`turn:${i}`,turn)}>{strings.edit}</button>{/if}{#if turn.edited}<small>{strings.editedBy(turn.edited.by)}</small>{/if}{#if turn.previous !== undefined}<button class="quiet" onclick={() => compare = turn}>{strings.previousVersion}</button>{/if}{/if}
+          {:else}<Markdown text={turn.text} {visit} {linkable} focus={id => session.setFocus(id)} {preview} />{#if turn.role === 'model'}<button class="quiet" disabled={busy} onclick={() => beginEdit(`turn:${i}`,turn)}>{strings.edit}</button>{/if}{#if turn.edited}<small>{strings.editedBy(turn.edited.by)}</small>{/if}{#if turn.previous !== undefined}<button class="quiet" onclick={() => compare = turn}>{strings.previousVersion}</button>{/if}{/if}
         </div>{/each}
-        {#if busy && room.tasks.dialogue.includes(running!.task)}<div class="turn model"><Markdown text={running!.text || '…'} {visit} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>{/if}
+        {#if busy && room.tasks.dialogue.includes(running!.task)}<div class="turn model"><Markdown text={running!.text || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>{/if}
       </section>
     {/if}
     {#if after}{@render after(node, { running, busy, perform })}{/if}
   </div>
   {#if busy&&!nearBottom}<button class="jump-latest" onclick={()=>{scroller.scrollTop=scroller.scrollHeight;nearBottom=true;}}>{strings.jumpLatest}</button>{/if}
   {#if lit}<footer><textarea bind:this={composer} aria-label={strings.composer} value={drafts[node.id] ?? ''} oninput={e => drafts[node.id] = e.currentTarget.value} placeholder={strings.composer} rows="2" disabled={busy} onkeydown={e => { if(e.ctrlKey && e.key === 'Enter') { e.preventDefault(); send(); } }}></textarea>
-    <div class="actions">{#if busy}<button onclick={() => session.cancel()}>{strings.cancel}</button>{:else}<button class="primary" disabled={!!running || !drafts[node.id]?.trim()} onclick={send}>{strings.send}</button>{/if}
+    <div class="actions">{#if busy}<button onclick={() => session.cancel()}>{running!.replay ? strings.showAll : strings.cancel}</button>{:else}<button class="primary" disabled={!!running || !drafts[node.id]?.trim()} onclick={send}>{strings.send}</button>{/if}
     {@render footer(node, { running, busy, perform })}</div>
   </footer>{/if}
 </aside>
 {#if selection}<div class="selection" style:left={`${selectionX}px`} style:top={`${selectionY}px`}><button disabled={!!running} title="Alt+A" onclick={() => askSelection()}>{strings.askSelection}</button><button disabled={busy || !lit} title="Alt+N" onclick={makeSelection}>{strings.nodeSelection}</button><button title="Alt+D" onclick={amberSelection}>{strings.askAmber}</button></div>{/if}
 <dialog bind:this={deleteDialog} oncancel={() => deleting = null}><h2>{strings.deleteNode}</h2>{#if deleting}<p>{strings.deleteDescription(visit.nodes[deleting].title,deleteIds.length)}</p>{#if room.deleteNote?.(visit, deleteIds)}<p>{room.deleteNote(visit, deleteIds)}</p>{/if}{#if running && deleteIds.includes(running.nodeId)}<p>{strings.generationCancelled}</p>{/if}{/if}<p>{strings.deleteHistory}</p><button onclick={() => { deleting = null; deleteDialog.close(); }}>{strings.cancel}</button><button onclick={remove}>{strings.delete}</button></dialog>
-<dialog bind:this={compareDialog} oncancel={() => compare = null}><div class="compare">{#if compare}<section><h2>{strings.previous}</h2><Markdown text={compare.previous!} {visit} focus={id => session.setFocus(id)} {preview} /></section><section><h2>{strings.current}</h2><Markdown text={'text' in compare ? compare.text : compare.content} {visit} focus={id => session.setFocus(id)} {preview} /></section>{/if}</div><button disabled={busy} onclick={() => { perform(() => revertText(compare!)); compare = null; compareDialog.close(); }}>{strings.revert}</button><button onclick={() => { compare = null; compareDialog.close(); }}>{strings.keepCurrent}</button></dialog>
+<dialog bind:this={compareDialog} oncancel={() => compare = null}><div class="compare">{#if compare}<section><h2>{strings.previous}</h2><Markdown text={compare.previous!} {visit} {linkable} focus={id => session.setFocus(id)} {preview} /></section><section><h2>{strings.current}</h2><Markdown text={'text' in compare ? compare.text : compare.content} {visit} {linkable} focus={id => session.setFocus(id)} {preview} /></section>{/if}</div><button disabled={busy} onclick={() => { perform(() => revertText(compare!)); compare = null; compareDialog.close(); }}>{strings.revert}</button><button onclick={() => { compare = null; compareDialog.close(); }}>{strings.keepCurrent}</button></dialog>
 <style>
   .panel { display:flex; flex-direction:column; height:100%; min-width:0; background:var(--glass); backdrop-filter:var(--glass-blur); overflow:hidden; }
   .state-chip { border:1px solid var(--line);border-radius:8px;padding:2px 6px; }
@@ -211,6 +220,7 @@
   .markdown-edit { width:100%; box-sizing:border-box; font-family:monospace; max-height:50vh; } .error { color:var(--error-ink); }.notice { padding:12px; border:1px solid var(--line); border-radius:8px; }
   dialog { color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:10px; max-width:min(800px,85vw); } dialog::backdrop { background:var(--code); opacity:.75; }.compare { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   form { display:grid; gap:8px; }.selection { position:fixed; z-index:10; background:var(--surface-2); border:1px solid var(--line); padding:4px; border-radius:8px; }
+  .replay { cursor:pointer; }
   .skeletons div { margin:8px 0; height:40px; background:var(--surface-2); border-radius:6px; opacity:.6; }
   @media(max-width:520px) { .compare { grid-template-columns:1fr; } }
 </style>

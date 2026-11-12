@@ -110,6 +110,23 @@ fn companion_state_keeps_other_keys_and_refuses_bad_or_newer_state() {
     assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[]})).is_err());
 }
 #[test]
+fn collapsed_nodes_are_kept_per_subject_with_the_other_keys_and_go_with_an_empty_list() {
+    let config=tempfile::tempdir().unwrap();
+    record_open(config.path(),"tides-k3f9","2026-11-12T12:00:00Z").unwrap();
+    save_collapsed(config.path(),"tides-k3f9",&["a1b2c3d4".into(),"m3-l2".into()]).unwrap();
+    save_collapsed(config.path(),"llm-course",&["root".into()]).unwrap();
+    let state=read_state(config.path()).unwrap();
+    assert_eq!(state.extra["collapsed"]["tides-k3f9"],json!(["a1b2c3d4","m3-l2"]));assert_eq!(state.recents,vec!["tides-k3f9".to_string()]);
+    save_collapsed(config.path(),"tides-k3f9",&[]).unwrap();
+    let state=read_state(config.path()).unwrap();
+    assert!(state.extra["collapsed"].get("tides-k3f9").is_none());assert_eq!(state.extra["collapsed"]["llm-course"],json!(["root"]));
+    save_collapsed(config.path(),"llm-course",&[]).unwrap();
+    assert!(read_state(config.path()).unwrap().extra.get("collapsed").is_none());
+    assert!(save_collapsed(config.path(),"../escape",&["a".into()]).is_err());
+    assert!(save_collapsed(config.path(),"tides-k3f9",&["".into()]).is_err());
+    assert!(save_collapsed(config.path(),"tides-k3f9",&["bad\u{7}id".into()]).is_err());
+}
+#[test]
 fn amber_log_appends_lines_and_sums_tokens_skipping_bad_lines() {
     let config=tempfile::tempdir().unwrap();
     assert_eq!(amber_log_totals(config.path()).unwrap(),json!({"input":0,"output":0,"calls":0}));

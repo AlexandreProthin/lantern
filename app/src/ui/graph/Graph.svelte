@@ -30,6 +30,9 @@
   import { searchNodes, stepMatch } from './graph-search';
   import { backdropLight, backdropPan } from '../../frame/backdrop-signals';
   import type { GraphRoomView, GraphSession, GraphSnippets, MenuAction } from './types';
+  import { childMap, collapsedAncestors, drawnIds, hiddenCounts, nearestShown, shownIds } from '../../core/visibility';
+  import { collapseStore } from '../../frame/collapse-store';
+  import type { RoomVisit } from '../../core/model';
 
   let { session, room, glyph, legend, revision, settings, preferencesChanged, visible = true, library, linkPreview = null }: GraphSnippets & { library?: LibrarySpaces; linkPreview?: string | null; session: GraphSession; room: GraphRoomView; revision: number; settings: Settings; preferencesChanged: () => void; visible?: boolean } = $props();
 
@@ -44,6 +47,59 @@
   const DISC = 44;
 
   const simNodes = new Map<string, SimNode>();
+
+  // ---- Visibility and collapse (GV-120..136) -----------------------------------------------
+  // Shown: the room's progress rule. Drawn: shown, with no collapsed ancestor. The scene, layouts and keys see drawn nodes.
+  let collapsedIds = $state<string[]>([]);
+  const collapsed = $derived(new Set(collapsedIds));
+  const projection = $derived.by(() => {
+    revision;
+    const v = session.visit, children = childMap(v), shown = shownIds(v, room.opens, children), drawn = drawnIds(v, shown, collapsed, children);
+    return { children, shown, drawn, hidden: hiddenCounts(v, shown, drawn, collapsed, children) };
+  });
+  /** The visit as the graph draws it. */
+  function drawnVisit(): RoomVisit {
+    const v = session.visit, drawn = projection.drawn;
+    return { ...v, nodes: Object.fromEntries(Object.entries(v.nodes).filter(([id]) => drawn.has(id))) };
+  }
+  function setCollapsed(ids: string[]) {
+    collapsedIds = ids;
+    void collapseStore.save(session.subject.id, ids).catch(() => {});
+  }
+  /** GV-136: the subject's folds come back from the app state; ids gone from the subject are dropped. */
+  $effect(() => {
+    const subject = session.subject.id;
+    untrack(() => {
+      collapsedIds = [];
+      void collapseStore.load(subject).then(ids => {
+        if (session.subject.id !== subject) return;
+        const kept = ids.filter(id => Object.hasOwn(session.visit.nodes, id));
+        if (kept.length !== ids.length) setCollapsed(kept); else collapsedIds = kept;
+      }).catch(() => {});
+    });
+  });
+  /** A node with shown children can fold. */
+  const foldable = (id: string) => (projection.children.get(id) ?? []).some(child => projection.shown.has(child));
+  /** GV-132: on the root, fold every level, so each opens one at a time. */
+  function collapseAll() { setCollapsed([...projection.shown].filter(foldable)); }
+  function expandAll() { setCollapsed([]); }
+  function foldNode(id: string, fold: boolean) {
+    if (id === session.visit.rootId) { if (fold) collapseAll(); else expandAll(); return; }
+    setCollapsed(fold ? [...collapsedIds.filter(c => c !== id), id] : collapsedIds.filter(c => c !== id));
+  }
+  // GV-122: the focus is always shown. GV-134: focusing a node, or a generation starting on one, unfolds the way to it.
+  $effect(() => {
+    revision; collapsedIds;
+    untrack(() => {
+      const v = session.visit, { shown } = projection;
+      if (!Object.hasOwn(v.nodes, v.focusId)) return;
+      if (!shown.has(v.focusId)) { session.setFocus(nearestShown(v, shown, v.focusId)); return; }
+      const open = new Set(collapsedAncestors(v, collapsed, v.focusId));
+      const running = session.running;
+      if (running && collapsed.has(running.nodeId) && room.scene.spawnTasks.includes(running.task)) open.add(running.nodeId);
+      if (open.size) setCollapsed(collapsedIds.filter(id => !open.has(id)));
+    });
+  });
   const scene = new GraphScene(untrack(() => room.scene));
   let sceneNodes: Record<string, SceneNode> = {};
   let cleanupTimer: ReturnType<typeof setTimeout> | undefined;
@@ -146,7 +202,8 @@
   // Keep the simulation in step with the subject's nodes. New nodes spawn next to their parent.
   $effect(() => {
     revision; transientRevision; settings.appearance.reduceMotion;
-    sceneNodes = untrack(() => scene.update(session.visit, session.running, performance.now(), motionReduced()));
+    projection;
+    sceneNodes = untrack(() => scene.update(drawnVisit(), session.running, performance.now(), motionReduced()));
     untrack(()=>{if(session.running&&room.scene.spawnTasks.includes(session.running.task))announcement=strings.lightingNode(session.visit.nodes[session.running.nodeId]?.title??'');
       else if(scene.completedCount!==null)announcement=strings.optionsReady(scene.completedCount);});
     clearTimeout(cleanupTimer);
@@ -242,6 +299,16 @@
   let menu = $state<string | null>(null), menuEl = $state<HTMLDivElement>(), menuHeight = $state(0);
   const menuNode = $derived(menu ? view.nodes.find(n => n.id === menu && !n.pending) : undefined);
   const menuActions = $derived.by(() => { revision; const node = menu ? session.visit.nodes[menu] : undefined; return node ? room.menuActions(session.visit, node, session.running) : []; });
+  /** GV-55, GV-130..132: the view's own items, after the shared list; not in the panel. */
+  const viewActions = $derived.by((): MenuAction[] => {
+    if (!menu || !session.visit.nodes[menu]) return [];
+    if (menu === session.visit.rootId) return [
+      ...([...projection.shown].some(id => foldable(id) && !collapsed.has(id)) ? [{ id: 'collapse', label: strings.collapseAll, disabled: false }] : []),
+      ...(collapsedIds.length ? [{ id: 'expand', label: strings.expandAll, disabled: false }] : [])];
+    if (collapsed.has(menu)) return [{ id: 'expand', label: strings.expandNodes, disabled: false }];
+    return foldable(menu) ? [{ id: 'collapse', label: strings.collapseNodes, disabled: false }] : [];
+  });
+  function chooseViewAction(action: MenuAction) { const id = menu!; closeMenu(true); foldNode(id, action.id === 'collapse'); }
   // Anchored to the node, so it follows the pan that focusing starts.
   const menuAt = $derived(menuNode ? {
     x: Math.max(8, Math.min(width - 200, transform.x + width / 2 + menuNode.x * transform.k + 18)),
@@ -322,7 +389,8 @@
 
   let searchOpen = $state(false), searchText = $state(''), searchQuery = $state(''), searchPicked = $state(false), searchField = $state<HTMLInputElement>();
   let searchTimer: ReturnType<typeof setTimeout> | undefined;
-  const matches = $derived.by(() => { revision; return searchNodes(session.visit, searchQuery); });
+  const searchOptions = $derived({ shown: projection.shown, sealed: room.sealed });
+  const matches = $derived.by(() => { revision; return searchNodes(session.visit, searchQuery, searchOptions); });
   const matchSet = $derived(new Set(matches));
   const searching = $derived(searchOpen && !!searchQuery.trim());
   const matchAt = $derived(searchPicked ? matches.indexOf(session.visit.focusId) : -1);
@@ -336,7 +404,7 @@
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeSearch(); }
     else if (e.key === 'Enter') {
       e.preventDefault(); clearTimeout(searchTimer); searchQuery = searchText;
-      const id = stepMatch(searchNodes(session.visit, searchText), session.visit.focusId, e.shiftKey ? -1 : 1);
+      const id = stepMatch(searchNodes(session.visit, searchText, searchOptions), session.visit.focusId, e.shiftKey ? -1 : 1);
       if (id) { session.setFocus(id); searchPicked = true; }
     }
   }
@@ -652,7 +720,10 @@
   }); });
   $effect(() => { if (!visible) { spawn.stop();sim.stop();cancelAnimationFrame(settlingFrame);stopTravel();stopPan(); } else if (sim.alpha() > sim.alphaMin() && !motionReduced()) {if(halfRate)halfStep();else sim.restart();} });
   function onNodeKey(e: KeyboardEvent) {
-    const target = keyboardTarget(session.visit, session.visit.focusId, e.key);
+    // GV-70: moves go over drawn nodes; Right on a folded node unfolds it and goes to its first shown child.
+    const focus = session.visit.focusId;
+    let target = keyboardTarget(drawnVisit(), focus, e.key);
+    if (e.key === 'ArrowRight' && collapsed.has(focus)) { foldNode(focus, false); target = (projection.children.get(focus) ?? []).find(id => projection.shown.has(id)) ?? focus; }
     if (['Home','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
       e.preventDefault(); session.setFocus(target); afterUpdate().then(() => host.querySelector<HTMLButtonElement>(`[data-id="${target}"]`)?.focus());
     } else if (e.key === 'Enter') {
@@ -719,14 +790,14 @@
         data-growing={!n.pending&&scene.key(n.id)===n.id&&Date.parse(n.createdAt)>openedAt ? 'true' : undefined}
         style="left: {n.x}px; top: {n.y}px;--slot:{n.slot ?? 0};--back-x:{n.backX}px;--back-y:{n.backY}px"
         aria-pressed={focused}
-        aria-label="{title(n.title)} · {n.kind} · {n.state}{room.labelExtra?.(n) ?? ''}{busy ? ' · '+strings.preparing : ''}"
+        aria-label="{title(n.title)} · {n.kind} · {n.state}{room.labelExtra?.(n) ?? ''}{projection.hidden.get(n.id) ? ' · '+strings.hiddenCount(projection.hidden.get(n.id)!) : ''}{busy ? ' · '+strings.preparing : ''}"
         title="{title(n.title)} · {n.state}{room.tooltipExtra?.(n) ?? ''}"
         onclick={() => { if (pressedMenu) { pressedMenu = false; return; } session.setFocus(n.id); }}
         oncontextmenu={(e) => { if (n.pending) return; if (menu === n.id) { e.preventDefault(); return; } openMenu(e, n.id); }}
         onpointerdown={(e) => pressStart(e, n.id, !!n.pending)} onpointermove={pressMove} onpointerup={pressEnd} onpointercancel={pressEnd}
         aria-haspopup="menu"
       >
-        <span class="disc">{@render glyph(n)}</span>
+        <span class="disc">{@render glyph(n)}{#if !n.pending && projection.hidden.get(n.id)}<span class="folded" aria-hidden="true">+{projection.hidden.get(n.id)}</span>{/if}</span>
         <span class="name">{n.pending ? '' : title(n.title)}</span>
       </button>
     {/each}
@@ -735,12 +806,23 @@
   {#if menu && menuAt}
     <div class="node-menu" role="menu" tabindex="-1" aria-label={strings.nodeActions(title(session.visit.nodes[menu]?.title ?? ''))} bind:this={menuEl} bind:offsetHeight={menuHeight}
       style="left:{menuAt.x}px;top:{menuAt.y}px" onkeydown={menuKey}>
-      {#each menuActions as action (action.id)}<button role="menuitem" disabled={action.disabled} onclick={() => chooseAction(action)}>{action.label}</button>{/each}
+      {#each menuActions as action (action.id)}<button role="menuitem" disabled={action.disabled} title={action.title} onclick={() => chooseAction(action)}>{action.label}</button>{/each}
+      {#if viewActions.length}<hr />{#each viewActions as action (action.id)}<button role="menuitem" class="view-action" onclick={() => chooseViewAction(action)}>{action.label}</button>{/each}{/if}
     </div>
   {/if}
   {#if Object.keys(session.visit.nodes).length > 800}<div class="large-notice" role="status">{strings.largeGraph}</div>{/if}
 
   <nav class="controls layout-controls">
+    <!-- GV-58: fold or unfold the whole graph, as the root's menu does. -->
+    {#if collapsedIds.length}
+      <button class="fold-all" onclick={expandAll} aria-label={strings.expandAll} title={strings.expandAll}>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4-3 4 3M4 10l4 3 4-3" /></svg>
+      </button>
+    {:else}
+      <button class="fold-all" onclick={collapseAll} disabled={![...projection.shown].some(foldable)} aria-label={strings.collapseAll} title={strings.collapseAll}>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 3 4 3 4-3M4 13l4-3 4 3" /></svg>
+      </button>
+    {/if}
     {#if searchOpen}
       <div class="search" role="search">
         <input bind:this={searchField} value={searchText} aria-label={strings.searchNodes} placeholder={strings.searchNodes} spellcheck="false"
@@ -870,6 +952,7 @@
     outline: none;
   }
   .disc {
+    position: relative;
     display: grid;
     place-items: center;
     width: 44px;
@@ -928,6 +1011,9 @@
   .graph[data-reduced='true'] .node .disc, .graph[data-reduced='true'] .node .name { animation:none; }
 
   .node-menu { position:absolute; z-index:4; display:flex; flex-direction:column; min-width:170px; padding:4px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.35); }
+  .node-menu hr { border:0; border-top:1px solid var(--line); margin:4px 2px; }
+  /* GV-133: how many shown nodes a fold hides; text, so it reads without colour. */
+  .folded { position:absolute; left:calc(100% + 3px); top:-6px; font-size:10px; line-height:14px; padding:0 4px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink-mute); white-space:nowrap; pointer-events:none; }
   .node-menu button { text-align:left; border:0; background:none; padding:7px 10px; font-size:13px; border-radius:5px; }
   .node-menu button:hover:not(:disabled), .node-menu button:focus-visible { background:var(--surface-2); outline:none; color:var(--accent); }
   .zoom-controls { position:absolute; right:20px; bottom:20px; display:flex; gap:8px; z-index:2; }

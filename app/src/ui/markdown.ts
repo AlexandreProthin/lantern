@@ -14,23 +14,26 @@ md.renderer.rules.image = (tokens, index) => {
   const token = tokens[index], source = token.attrGet('src') ?? '', alt = token.content;
   return /^https?:/i.test(source) ? `<a href="${escape(source)}" target="_blank" rel="noopener noreferrer">${escape(alt || source)}</a>` : escape(alt);
 };
-md.renderer.rules.link_open = (tokens, index, _, env: { visit: RoomVisit }) => {
+/** NP-71: a node link is a link when the node exists and, for a room with a progress rule, is shown (GV-120). */
+type Env = { visit: RoomVisit; linkable?: (id: string) => boolean };
+const linkTarget = (env: Env, id: string) => Object.hasOwn(env.visit.nodes, id) && (env.linkable?.(id) ?? true);
+md.renderer.rules.link_open = (tokens, index, _, env: Env) => {
   const target = tokens[index].attrGet('href') ?? '';
   if (target.startsWith('node:')) {
     const id = target.slice(5);
-    if (Object.hasOwn(env.visit.nodes, id)) return `<button type="button" class="node-link" data-node-id="${escape(id)}">`;
+    if (linkTarget(env, id)) return `<button type="button" class="node-link" data-node-id="${escape(id)}">`;
     return '<span>';
   }
   return /^(https?:|mailto:)/i.test(target) ? `<a href="${escape(target)}" target="_blank" rel="noopener noreferrer">` : '<span>';
 };
-md.renderer.rules.link_close = (tokens, index, _, env: { visit: RoomVisit }) => {
+md.renderer.rules.link_close = (tokens, index, _, env: Env) => {
   // Inline tokens nest formatting inside labels; locate the corresponding opener.
   let depth = 1;
   for (let i = index - 1; i >= 0; i--) {
     if (tokens[i].type === 'link_close') depth++;
     if (tokens[i].type === 'link_open' && --depth === 0) {
       const target = tokens[i].attrGet('href') ?? '';
-      if (target.startsWith('node:')) return Object.hasOwn(env.visit.nodes, target.slice(5)) ? '</button>' : '</span>';
+      if (target.startsWith('node:')) return linkTarget(env, target.slice(5)) ? '</button>' : '</span>';
       return /^(https?:|mailto:)/i.test(target) ? '</a>' : '</span>';
     }
   }
@@ -115,11 +118,11 @@ md.renderer.rules.lantern_details_close = () => '</details>\n';
 md.renderer.rules.lantern_summary_open = () => '<summary>';
 md.renderer.rules.lantern_summary_close = () => '</summary>\n';
 /** The renderer's HTML before sanitising; exported for tests. */
-export const markdownHtml = (text: string, visit: RoomVisit): string => md.render(text, { visit });
-export function renderMarkdown(text: string, visit: RoomVisit): string {
+export const markdownHtml = (text: string, visit: RoomVisit, linkable?: (id: string) => boolean): string => md.render(text, { visit, linkable } satisfies Env);
+export function renderMarkdown(text: string, visit: RoomVisit, linkable?: (id: string) => boolean): string {
   // Inline styles originate only in trusted KaTeX output (raw Markdown HTML is escaped,
   // KaTeX trust is false). Retain its geometry; removing styles breaks fractions/matrices.
-  return DOMPurify.sanitize(markdownHtml(text, visit), { FORBID_TAGS: ['style', 'iframe', 'script'], ADD_ATTR: ['data-node-id', 'data-copy', 'data-mermaid'] });
+  return DOMPurify.sanitize(markdownHtml(text, visit, linkable), { FORBID_TAGS: ['style', 'iframe', 'script'], ADD_ATTR: ['data-node-id', 'data-copy', 'data-mermaid'] });
 }
 function safeCss(css: string): string {
   // Backslashes go first so a CSS escape cannot spell `url` or `@import` past the checks.

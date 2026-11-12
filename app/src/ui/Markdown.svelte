@@ -10,9 +10,9 @@
   import { invoke } from '../frame/ipc';
   import { native } from '../frame/host';
   import 'katex/dist/katex.min.css';
-  let { text, visit, streaming = false, focus, preview }: { text: string; visit: RoomVisit; streaming?: boolean; focus: (id: string) => void; preview?: (id: string | null) => void } = $props();
+  let { text, visit, streaming = false, focus, preview, linkable }: { text: string; visit: RoomVisit; streaming?: boolean; focus: (id: string) => void; preview?: (id: string | null) => void; linkable?: (id: string) => boolean } = $props();
   let root: HTMLElement;
-  const html = $derived(renderMarkdown(text, visit));
+  const html = $derived(renderMarkdown(text, visit, linkable));
   $effect(() => { html; if (!streaming && root) tick().then(() => { restoreDetails(); return renderDiagrams(root); }); });
   // NP-77: a collapsible block stays open or closed for the session while the text is unchanged,
   // even when the rendering is redone (a save elsewhere, a node link becoming valid).

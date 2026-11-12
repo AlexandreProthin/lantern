@@ -2,13 +2,13 @@ import type { GraphNode, RoomVisit } from '../../core/model';
 
 import { graphMotion } from './graphMotion';
 export interface SceneNode extends GraphNode { pending?: 'waiting' | 'shrinking'; slot?: number }
-/** The part of a room's running generation the scene needs. */
-export interface SceneRunning { nodeId: string; task: string; controller: AbortController }
+/** The part of a room's running generation the scene needs. `replay` (LR-91, GV-92a): `reveal` stored children grow, no waiting. */
+export interface SceneRunning { nodeId: string; task: string; controller: AbortController; replay?: boolean; reveal?: number }
 /** The room's choices: which tasks grow pending children (GV-90), and the ghost node's kind and state. */
 export interface SceneOptions { spawnTasks: readonly string[]; ghost: { kind: string; state: string } }
 /** GV-90..96: ephemeral bodies and stable DOM keys; never enters the subject model. */
 export class GraphScene {
-  private active: { controller: AbortController; parent: string; before: Set<string>; slots: SceneNode[] } | null = null;
+  private active: { controller: AbortController; parent: string; before: Set<string>; slots: SceneNode[]; replay: boolean } | null = null;
   private shrinking: { node: SceneNode; expires: number }[] = [];
   private aliases = new Map<string, string>();
   constructor(private options: SceneOptions) {}
@@ -20,7 +20,9 @@ export class GraphScene {
     this.transfers = [];
     this.completedCount=null;
     if (this.active && this.active.controller !== running?.controller) {
-      const arrived = Object.values(visit.nodes).filter(n => n.createdBy === 'model' && n.parents[0] === this.active!.parent && !this.active!.before.has(n.id));
+      // GV-92a: a node arrives when it is drawn, so a replay's stored children (any author, old dates) arrive too.
+      const arrived = Object.values(visit.nodes).filter(n => (this.active!.replay || n.createdBy === 'model') && n.parents[0] === this.active!.parent && !this.active!.before.has(n.id))
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
       this.completedCount=arrived.length;
       this.active.slots.forEach((slot, index) => {
         const node = arrived[index];
@@ -31,8 +33,8 @@ export class GraphScene {
     }
     if (running && !this.active && this.options.spawnTasks.includes(running.task)) {
       const parent = visit.nodes[running.nodeId];
-      if (parent) this.active = { controller: running.controller, parent: parent.id, before: new Set(Object.keys(visit.nodes)),
-        slots: Array.from({ length: graphMotion.SPAWN_COUNT }, (_, slot) => ({ ...parent,
+      if (parent) this.active = { controller: running.controller, parent: parent.id, before: new Set(Object.keys(visit.nodes)), replay: !!running.replay,
+        slots: Array.from({ length: running.replay ? running.reveal ?? 0 : graphMotion.SPAWN_COUNT }, (_, slot) => ({ ...parent,
           id: `pending-${crypto.randomUUID()}`, parents: [parent.id], title: '', hook: '', content: '', dialogue: [],
           kind: this.options.ghost.kind, state: this.options.ghost.state, data: undefined, pending: 'waiting', slot })) };
     }

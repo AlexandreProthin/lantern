@@ -183,6 +183,7 @@ fn blocking(app: &AppHandle, command: &str, args: Value, settings: Value) -> Res
         "record_open" => to(commands::record_open(app.clone(), arg(&args, "id")?, arg(&args, "at")?, lock())),
         "read_state" => to(commands::read_state(app.clone(), lock())),
         "save_companion_state" => to(commands::save_companion_state(app.clone(), arg(&args, "companion")?, lock())),
+        "save_collapsed" => to(commands::save_collapsed(app.clone(), arg(&args, "id")?, arg(&args, "nodes")?, lock())),
         "append_amber_log" => to(commands::append_amber_log(app.clone(), arg(&args, "record")?, lock())),
         "amber_log_totals" => to(commands::amber_log_totals(app.clone(), lock())),
         "delete_subject" => to(commands::delete_subject(app.clone(), arg(&args, "library")?, arg(&args, "id")?, lock())),

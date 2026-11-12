@@ -1,11 +1,14 @@
-import type { GraphNode, RoomVisit } from './model';
+import type { GraphNode } from './model';
 
+/** What these functions read of a visit: also a thumbnail's projection (WG-40). */
+type TreeNode = Pick<GraphNode, 'id' | 'parents' | 'createdAt'>;
+export interface Tree<N extends TreeNode = TreeNode> { rootId: string; nodes: Record<string, N> }
 /** GV-120: the room's rule for "this node shows its children" (Learn: lit or understood). */
-export type Opens = (node: GraphNode) => boolean;
+export type Opens<N = GraphNode> = (node: N) => boolean;
 
 /** Children ids per parent id, in creation order (GV-13). One pass, for the functions below. */
-export function childMap(v: RoomVisit): Map<string, string[]> {
-  const children = new Map<string, GraphNode[]>();
+export function childMap(v: Tree): Map<string, string[]> {
+  const children = new Map<string, TreeNode[]>();
   for (const n of Object.values(v.nodes)) if (n.parents[0]) {
     const list = children.get(n.parents[0]); if (list) list.push(n); else children.set(n.parents[0], [n]);
   }
@@ -13,7 +16,7 @@ export function childMap(v: RoomVisit): Map<string, string[]> {
 }
 
 /** GV-120: a node is shown when its parent is shown and opens its children; the root always is. No rule shows everything. */
-export function shownIds(v: RoomVisit, opens?: Opens, children = childMap(v)): Set<string> {
+export function shownIds<N extends TreeNode>(v: Tree<N>, opens?: Opens<N>, children = childMap(v)): Set<string> {
   if (!opens) return new Set(Object.keys(v.nodes));
   const shown = new Set<string>(), queue = Object.hasOwn(v.nodes, v.rootId) ? [v.rootId] : [];
   for (let i = 0; i < queue.length; i++) {
@@ -24,7 +27,7 @@ export function shownIds(v: RoomVisit, opens?: Opens, children = childMap(v)): S
 }
 
 /** GV-131: shown nodes with no collapsed ancestor. */
-export function drawnIds(v: RoomVisit, shown: Set<string>, collapsed: ReadonlySet<string>, children = childMap(v)): Set<string> {
+export function drawnIds(v: Tree, shown: Set<string>, collapsed: ReadonlySet<string>, children = childMap(v)): Set<string> {
   const drawn = new Set<string>(), queue = shown.has(v.rootId) ? [v.rootId] : [];
   for (let i = 0; i < queue.length; i++) {
     const id = queue[i]; drawn.add(id);
@@ -34,7 +37,7 @@ export function drawnIds(v: RoomVisit, shown: Set<string>, collapsed: ReadonlySe
 }
 
 /** GV-133: for each collapsed drawn node, how many shown descendants it hides. */
-export function hiddenCounts(v: RoomVisit, shown: Set<string>, drawn: Set<string>, collapsed: ReadonlySet<string>, children = childMap(v)): Map<string, number> {
+export function hiddenCounts(v: Tree, shown: Set<string>, drawn: Set<string>, collapsed: ReadonlySet<string>, children = childMap(v)): Map<string, number> {
   const counts = new Map<string, number>();
   for (const id of collapsed) {
     if (!drawn.has(id)) continue;
@@ -46,14 +49,14 @@ export function hiddenCounts(v: RoomVisit, shown: Set<string>, drawn: Set<string
 }
 
 /** GV-122: the node itself when shown, else its nearest shown ancestor (the root at worst). */
-export function nearestShown(v: RoomVisit, shown: Set<string>, id: string): string {
+export function nearestShown(v: Tree, shown: Set<string>, id: string): string {
   const seen = new Set<string>();
   while (Object.hasOwn(v.nodes, id) && !shown.has(id) && !seen.has(id)) { seen.add(id); id = v.nodes[id].parents[0] ?? v.rootId; }
   return shown.has(id) ? id : v.rootId;
 }
 
 /** GV-134: the collapsed ancestors that hide a node (to expand when it is focused). */
-export function collapsedAncestors(v: RoomVisit, collapsed: ReadonlySet<string>, id: string): string[] {
+export function collapsedAncestors(v: Tree, collapsed: ReadonlySet<string>, id: string): string[] {
   const found: string[] = [], seen = new Set<string>();
   let parent = v.nodes[id]?.parents[0];
   while (parent && Object.hasOwn(v.nodes, parent) && !seen.has(parent)) {

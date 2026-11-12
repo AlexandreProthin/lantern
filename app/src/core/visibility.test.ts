@@ -8,7 +8,7 @@ import { replayText, REPLAY_STREAM_MS } from './replay';
 const opens = (n: GraphNode) => n.state === 'lit' || n.state === 'understood';
 /** root(lit) > a(lit) > a1(open, prepared) > a1x(open); root > b(open) > b1(open); root > c(dismissed) > c1(open). */
 function course(): { v: RoomVisit; ids: Record<string, string> } {
-  const v = createSubject('Course', 'learn', { model: 'opus', effort: 'medium', root: { kind: 'subject', state: 'lit' } }).rooms.learn;
+  const v = createSubject('Course', 'learn', { model: 'opus', effort: 'medium', data: {}, root: { kind: 'subject', state: 'lit' } }).rooms.learn;
   const add = (parent: string, title: string, state: string) => addChild(v, parent, { title, kind: 'axis', state, createdBy: 'model' }).id;
   const ids: Record<string, string> = { root: v.rootId };
   ids.a = add(v.rootId, 'A', 'lit'); ids.a1 = add(ids.a, 'A1', 'open'); ids.a1x = add(ids.a1, 'A1x', 'open');
