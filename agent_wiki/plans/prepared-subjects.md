@@ -37,7 +37,7 @@ Each step ends green (Vitest, `cargo test`, svelte-check) and can land alone.
 
 # Result
 
-- Vitest 58 files, 298 tests; Rust 86; svelte-check 0/0; Playwright 121 (4 new in `tests/prepared.spec.ts`; the GV-55
+- Vitest 58 files, 300 tests; Rust 86; svelte-check 0/0; Playwright 121 (4 new in `tests/prepared.spec.ts`; the GV-55
   menu test now lists the dead-end toggle and *Collapse all*). `phone.spec.ts` wheel zoom timed out once under the full
   suite's load and passes alone (3 of 3).
 - A 200-node course of 9 modules (titles about 40 characters, hooks about 80) keeps the full map form under the 12k

@@ -3,6 +3,7 @@ import { addChild } from '../../core/graph';
 import { cloneJson, parseSubject } from '../../core/model';
 import type { RoomVisit } from '../../core/model';
 import { shownIds } from '../../core/visibility';
+import { buildContext } from './context';
 import { FakeProvider } from './fake-provider';
 import { LearnSession } from './session';
 import { nodeActions, runNodeAction } from './actions';
@@ -163,5 +164,32 @@ describe('Replay from the start and Restore progress (LR-110..115)', () => {
     expect(() => resetProgress(fresh, 'x')).toThrow('Nothing');
     v().data = { ...v().data, progressSnapshot: { at: 'x', nodes: { n: { state: 'understood' } } } };
     expect(() => validateLearn(v())).toThrow('saved progress');
+  });
+});
+
+describe('a 200-node course (CA-60, CA-61, GV-113)', () => {
+  /** 9 modules of about 21 lessons: titles about 40 characters, hooks about 80. */
+  function bigCourse() {
+    const s = newLearnSubject('A course on large language models'), v = s.rooms.learn;
+    Object.assign(v.nodes[v.rootId], { state: 'lit', content: 'Welcome.', author: authored() });
+    const pad = (text: string, length: number) => (text + ' ' + 'x'.repeat(length)).slice(0, length);
+    let lessons = 0;
+    for (let m = 0; m < 9; m++) {
+      const module = addChild(v, v.rootId, { title: pad(`Module ${m + 1}: tokens, embeddings and`, 40), hook: pad(`What module ${m + 1} covers and why it matters`, 80), kind: 'axis', state: 'open', createdBy: 'model' });
+      for (let l = 0; l < 22 && lessons < 190; l++, lessons++) addChild(v, module.id, { title: pad(`Lesson ${m + 1}.${l + 1} on a mechanism`, 40), hook: pad(`The idea of lesson ${m + 1}.${l + 1} in one line`, 80), kind: 'deeper', state: 'open', createdBy: 'model' });
+    }
+    return v;
+  }
+  it('keeps the full map within the default budget, every title present', () => {
+    const v = bigCourse(), ids = Object.keys(v.nodes);
+    expect(ids.length).toBe(200);
+    const { blocks, stats } = buildContext(v, 'more', v.rootId);
+    expect(stats.form).toBe('full'); expect(stats.mapTokens).toBeLessThan(12_000); expect(stats.mapTokens).toBeGreaterThan(8_000);
+    for (const id of ids) expect(blocks.MAP_BLOCK).toContain(`- ${id} [`);
+  });
+  it('computes what to draw in well under a frame', () => {
+    const v = bigCourse(), started = performance.now();
+    for (let i = 0; i < 10; i++) shownIds(v, opensChildren);
+    expect((performance.now() - started) / 10).toBeLessThan(5);
   });
 });
