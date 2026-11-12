@@ -21,5 +21,5 @@ below except the roadmap, the backlog and the network plan has landed and is `de
 * [Custom endpoints plan, cloud version](custom-endpoints-cloud.md) - API keys in Windows Credential Manager, the NVIDIA preset, consent, cloud tokens with Claude, real use on NVIDIA; then one release for local and cloud.
 * [Serve over the network plan](serve-over-network.md) - A Settings toggle serving Lantern over HTTPS on the LAN: QR pairing, use-not-administer rights, self-signed certificate, phone layout. Built 2026-10-23; waits for the user's try on a phone.
 * [Codex CLI provider](codex-cli.md) - Codex as a second CLI provider (CE-58), built from OpenAI's docs without a plan to test with; what a first real run must check.
-* [Prepared subjects plan](prepared-subjects.md) - Replay of prepared Learn content, visibility by progress, reset and restore, dead ends, collapse, collapsible solutions. Draft, waiting for review.
+* [Prepared subjects plan](prepared-subjects.md) - Replay of prepared Learn content, visibility by progress, reset and restore, dead ends, collapse, collapsible solutions. Landed 2026-11-12.
 * [Backlog](backlog.md) - Agreed future work with no version yet: custom endpoints' later pieces, local models for Amber, more rooms, export, a cheaper model for cheap tasks.

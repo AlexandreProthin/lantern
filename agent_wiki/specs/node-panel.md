@@ -52,7 +52,8 @@ One scroll area holds everything except the composer, which is pinned at the bot
 - **NP-10** The **actions** row holds *More options*, *Rewrite explanation* and *Add my own node* (NP-31, NP-35, NP-32) and an
   overflow menu (*⋯*) with *Dismiss* (open nodes only) and *Delete* (NP-100). *(Amended 2026-11-12.)* The overflow menu also holds
   *Mark as dead end* / *Not a dead end* ([learn-room](/specs/learn-room.md) LR-102); on a dead end *More options* is disabled with
-  the tooltip *Marked as a dead end*. On an **open** node the overflow holds the toggle too, beside *Dismiss*.
+  the tooltip *Marked as a dead end*. On an **open** node the overflow holds the toggle too, beside *Dismiss*. (The panel shows these
+  actions as one row of buttons; the toggle sits before *Delete*.)
 - **NP-11** The **dialogue** section (*Dialogue*) lists turns in order: learner turns right-indented
   on `--surface-2`, tutor turns with a 2 px `--accent` left border; each **tutor** turn can be edited
   (NP-42) and shows its author on hover (*tutor: Sonnet 5.5 · medium*, *you: Alex*).

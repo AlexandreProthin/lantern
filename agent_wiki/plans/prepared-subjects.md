@@ -3,13 +3,16 @@ type: Plan
 title: Prepared subjects plan
 description: Replay of prepared Learn content, visibility by progress, Replay from the start with Restore progress, dead ends, collapsible branches and collapsible solution blocks.
 tags: [plan, learn-room, replay, graph, markdown]
-status: draft
+status: deprecated
 stale_after: 2027-02-28T00:00:00Z
 generated: { by: claude-code/opus-5.5, at: 2026-11-12T12:00:00Z }
 ---
 
-Written 2026-11-12 on branch `claude/prepared-subjects`. Waits for the user's review of the spec
-amendments before any code. Why: [decision](/decisions/prepared-subjects-replay.md). Contracts:
+*Landed 2026-11-12* (merged from `claude/prepared-subjects`): see [the component](/components/prepared-subjects.md). Steps 1 to 9 were built as
+planned; step 10 ran in the browser build and in tests, not on the desktop app with the real provider (below).
+
+Written 2026-11-12 on branch `claude/prepared-subjects`, after the user's review of the spec
+amendments. Why: [decision](/decisions/prepared-subjects-replay.md). Contracts:
 [learn-room](/specs/learn-room.md) LR-39, LR-39a, LR-51a, LR-90 to LR-115;
 [graph-view](/specs/graph-view.md) GV-26, GV-58, GV-92a, GV-120 to GV-136; [node-panel](/specs/node-panel.md)
 NP-4, NP-10, NP-64, NP-71, NP-75 to NP-78; [domain-model](/specs/domain-model.md) DM-17a, DM-65, DM-70 to
@@ -31,6 +34,18 @@ Each step ends green (Vitest, `cargo test`, svelte-check) and can land alone.
 | 8 | **Replay from the start.** Subject menu entries, confirm dialog with counts and the snapshot date, *Restore progress*, focus to the root. | `rooms/learn/SubjectMenu.svelte` | component or session test; undo of each |
 | 9 | **Provenance.** NP-4 fallback when no record matches (author's effort, no tokens). | `ui/Panel.svelte` | unit on the provenance line |
 | 10 | **Real check.** A 200-node generated fixture (titles, hooks, `<details>`, links ahead, a dead end) opened in the dev app: first view, replays, chained `more` on the real provider once, reset/restore, collapse across a restart, pan/zoom at 60 fps, map form and `mapTokens` in the debug console. Then wiki: component pages, log. | `app/` fixtures, wiki | Playwright scenario for replay and reset in the browser build |
+
+# Result
+
+- Vitest 58 files, 298 tests; Rust 86; svelte-check 0/0; Playwright 121 (4 new in `tests/prepared.spec.ts`; the GV-55
+  menu test now lists the dead-end toggle and *Collapse all*). `phone.spec.ts` wheel zoom timed out once under the full
+  suite's load and passes alone (3 of 3).
+- A 200-node course of 9 modules (titles about 40 characters, hooks about 80) keeps the full map form under the 12k
+  budget (between 8k and 12k tokens), and computes what to draw in under 5 ms.
+- The idle-machine 500-node pan test (GV-110, `LANTERN_PERF=1`) gives a 33.4 ms median on this machine, the same on
+  `master`: the machine, not this change.
+- Not done: a run on the desktop app with a real model for the chained `more` (step 10). The browser build's fake
+  provider covers the same code path.
 
 # What the authoring thread needs
 

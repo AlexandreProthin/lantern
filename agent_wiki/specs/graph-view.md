@@ -361,6 +361,7 @@ view.
   starting on a collapsed node expands it so its children are seen arriving.
 - **GV-135** Collapse is a **view** state. It is not a change to the subject: no save, no undo step
   (RS-61), no effect on progress, counts or the tutor's map.
+- **GV-137** *(At implementation, 2026-11-12.)* Collapse lives in the shared graph, so Choose's survey graph has it too; Choose sets no progress rule, so all its nodes are shown (GV-120).
 - **GV-136** It is **persisted app-side**, per subject, in the app state file
   ([settings](/specs/settings.md) SE-50: `collapsed`, subject id → collapsed node ids), not in the subject
   file. Why: the file holds content and progress and may be shared or synced; folds are one reader's

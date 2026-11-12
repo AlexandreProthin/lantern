@@ -2,6 +2,7 @@
 
 ## 2026-11-12
 
+* **Prepared subjects built** (branch `claude/prepared-subjects`, merged): replay with no call or record, the graph drawing only nodes whose parent is lit, dead ends, *Replay from the start* / *Restore progress*, collapse kept in `state.json` (new `save_collapsed` command, allowed to paired devices), `<details>` blocks. [Component](/components/prepared-subjects.md); the [plan](/plans/prepared-subjects.md) is landed. Amended at implementation: LR-17 (root *More options* gives axes), LR-95 (closing or deleting during a replay skips it), LR-112 (inline confirmation), GV-137 (Choose's graph has collapse), NP-10. Checks: Vitest 298, Rust 86, svelte-check 0/0, Playwright 121.
 * **Prepared subjects, spec amendments** (branch `claude/prepared-subjects`, waiting for the user's review; no code yet): [decision](/decisions/prepared-subjects-replay.md) and [plan](/plans/prepared-subjects.md). Replay of prepared nodes with no call and no record, visibility by the parent's state, *Replay from the start* with *Restore progress*, dead ends ([learn-room](/specs/learn-room.md) LR-39, LR-39a, LR-51a, LR-90 to LR-115); collapse and the end cap ([graph-view](/specs/graph-view.md) GV-26, GV-58, GV-92a, GV-120 to GV-136); collapsible `<details>` blocks and replay display ([node-panel](/specs/node-panel.md) NP-64, NP-75 to NP-78); authored files ([domain-model](/specs/domain-model.md) DM-17a, DM-70 to DM-77); scale ([context-assembly](/specs/context-assembly.md) CA-60 to CA-63); TP-36, TP-44, SE-50, WG-30, WG-40, RS-36.
 
 ## 2026-11-04
