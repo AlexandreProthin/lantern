@@ -1,11 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { treePositions } from '../../core/layout';
+  import { shownIds } from '../../core/visibility';
+  import { opensChildren } from './rules';
   import type { SubjectSummary } from '../../frame/catalogue';
   import type { LibrarySpaces, ThumbnailGraph } from '../../frame/library-spaces';
   import { strings } from '../../ui/strings';
   let { summary, library }: { summary: SubjectSummary; library: LibrarySpaces } = $props();
-  let host: HTMLDivElement, visible = $state(false), graph = $state<ThumbnailGraph | null>(null), failed = $state(false);
+  let host: HTMLDivElement, visible = $state(false), loaded = $state<ThumbnailGraph | null>(null), failed = $state(false);
+  // WG-40, GV-120: only the nodes shown by progress; a prepared course does not give itself away.
+  const graph = $derived.by(() => { if (!loaded) return null; const shown = shownIds(loaded, opensChildren); return { ...loaded, nodes: Object.fromEntries(Object.entries(loaded.nodes).filter(([id]) => shown.has(id))) }; });
   const points = $derived(graph && Object.keys(graph.nodes).length ? treePositions(graph, 40, 18) : new Map());
   const bounds = $derived.by(()=>{
     const ps=[...points.values()]; if(!ps.length)return '-80 -45 160 90';
@@ -13,7 +17,7 @@
     return `${(Math.min(...xs)+Math.max(...xs))/2-Math.max(width,height*16/9)/2} ${(Math.min(...ys)+Math.max(...ys))/2-Math.max(height,width*9/16)/2} ${Math.max(width,height*16/9)} ${Math.max(height,width*9/16)}`;
   });
   $effect(()=>{if(!visible)return; const snapshot=summary;let live=true;failed=false;
-    void library.thumbnail(snapshot).then(g=>{if(live)graph=g;}).catch(()=>{if(live){graph=null;failed=true;}});
+    void library.thumbnail(snapshot).then(g=>{if(live)loaded=g;}).catch(()=>{if(live){loaded=null;failed=true;}});
     return ()=>{live=false;};
   });
   onMount(()=>{const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){visible=true;observer.disconnect();}});observer.observe(host);return ()=>observer.disconnect();});

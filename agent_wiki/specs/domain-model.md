@@ -33,6 +33,7 @@ Library (a folder) → Subject → RoomVisit (one per room the subject visited) 
 - **DM-15** Only an `open` node MAY be dismissed. A dismissed node MUST be kept (faded) so the tutor never proposes it again, and MUST be restorable to `open`.
 - **DM-16** Only **model-written text** keeps a previous version: the explanation (`content`, with `previous` on the node) and each tutor dialogue turn (`previous` on the turn). The first user edit stores the model's original in `previous`; later edits do not overwrite it, so revert always returns to the model's text. It is kept once (not a history). Title and hook edits keep nothing. Undo is Later. *Rewrite (2026-10-23, [learn-room](/specs/learn-room.md) LR-45):* a rewrite puts the text it replaces (the explanation as shown, learner corrections included) in `previous`, replacing any earlier one; the new text is the model's (new `author`, `edited` removed). Revert brings back the replaced text.
 - **DM-17** A node MUST have `author` for its content: `{kind: "model", model, effort, generationId}` or `{kind: "user", by}`. When the user edits it, the node MUST gain `edited: {by, at}`; `by` is the display name ([settings](/specs/settings.md)).
+- **DM-17a** *(Added 2026-11-12, [prepared subjects](/decisions/prepared-subjects-replay.md).)* A `model` author's `generationId` MAY name no record of the log: text written outside Lantern (a prepared subject, DM-70) keeps the model that wrote it without a call to count. Validation already asks only for a non-empty string (TypeScript) or nothing (Rust), so no marker is needed; by convention such ids start with `authored-`, which no rule reads. Such text has no token figures (DM-31, [node-panel](/specs/node-panel.md) NP-4), and an authored tutor turn is never a pending check (LR-33 looks its record up).
 - **DM-18** `dialogue` MUST be a list of turns `{role: "learner" | "tutor", text, at, author}`. A tutor turn's `author` is `{kind: "model", model, generationId}`; a learner turn's is `{kind: "user", by}`. Only tutor turns are editable; a tutor turn edited by the user gains `edited: {by, at}` and `previous` (DM-16). **Learner turns are not editable** in v0.1.0.
 - **DM-19** Editing title, hook, explanation or a dialogue turn MUST NOT trigger a generation. The tutor treats edited text as the learner's corrections, which take precedence ([tutor-protocol](/specs/tutor-protocol.md)).
 - **DM-19a** Deleting a node MUST remove its whole subtree; the log keeps their records. The root MUST NOT be deletable; deleting a subject is done in Gallery.
@@ -99,6 +100,8 @@ field into a `data` object. Rules DM-1 to DM-55 still hold, read with the change
 | visit | `direction` | optional; at most 500 characters; absent or `""` is none (DM-41) |
 | node | `understoodBy` | `"demonstrated"` or `"self"`, present exactly when `state` is `understood` (DM-14); absent otherwise |
 | record | `tone` | required; the tone the call used (DM-30, LR-19) |
+| node | `deadEnd` | *(2026-11-12)* optional; only `true` is stored, absent means no. Blocks automatic and requested new directions on the node ([learn-room](/specs/learn-room.md) LR-100) |
+| visit | `progressSnapshot` | *(2026-11-12)* optional; `{at, nodes: {<id>: {state: "lit" \| "understood", understoodBy?}}}`, written by *Replay from the start* and removed by *Restore progress* (LR-110 to LR-115); `understoodBy` present exactly when `state` is `understood` |
 
   Learn's `kind`, `state` and `task` values are those of DM-12, DM-13 and DM-30.
 - **DM-66** **Validation is split.** The core (DM-60 to DM-64 and the invariants DM-50 to DM-55) is checked
@@ -114,6 +117,21 @@ field into a `data` object. Rules DM-1 to DM-55 still hold, read with the change
   and is dropped when null, and `createdBy` `learner`/`tutor` become `user`/`model`; each turn's
   `role` likewise; in each record `tone` moves to `data`. Every other field, unknown ones included,
   is copied unchanged. When and how it runs: [subject-storage](/specs/subject-storage.md) ST-32.
+
+# Prepared subjects (authored files)
+
+*(Added 2026-11-12, [decision](/decisions/prepared-subjects-replay.md).)* A Learn subject can be
+written outside Lantern and dropped into the library. It is a plain `lantern/2` file; these rules
+say what it needs to load and to behave as intended. Behaviour: [learn-room](/specs/learn-room.md) LR-90.
+
+- **DM-70** A node is **prepared** when its `state` is `open` and its `content` is not empty. There is no other marker. An open node MAY hold children (relaxes LR-39).
+- **DM-71** The file MUST be `subjects/<id>.json` where `<id>` is the subject's `id`, a valid lower-case id ([subject-storage](/specs/subject-storage.md) ST-2; anything else is ignored as foreign); `format` is `lantern/2`; `rooms` holds only `learn`; `log` MAY be empty; `data.tone` is required (DM-65); `focusId` names an existing node (the root is the natural choice).
+- **DM-72** Every node carries the core fields of DM-62. `kind` is one of DM-12's; `state` is `open` or `lit` (a file that ships `understood` must carry `data.understoodBy`). A node is shown only when its parent is `lit` or `understood` ([graph-view](/specs/graph-view.md) GV-120), so the file sets how much the learner sees first: a `lit` root shows the axes; an `open` root shows the root alone.
+- **DM-73** Any node with content needs an `author` (DM-62); authored text uses `{kind: "model", model, effort, generationId}` per DM-17a, `effort` one of `low`…`max`.
+- **DM-74** Sibling order is `createdAt`, then `id` (GV-13, CA-51): authored siblings need strictly increasing `createdAt` to keep their intended order.
+- **DM-75** Relations and solutions live in the text: `[label](node:<id>)` links (DM-21) and `<details>` blocks ([node-panel](/specs/node-panel.md) NP-75). A link to a node the learner cannot see yet renders as plain text (NP-71).
+- **DM-76** `data.deadEnd: true` (DM-65) marks a prepared leaf after which no directions should be proposed.
+- **DM-77** Sizes that keep the tutor fully informed: hooks under about 90 characters keep a 200-node map in the full form ([context-assembly](/specs/context-assembly.md) CA-60); explanations over 6,000 characters are clipped when sent with a later question (CA-30), so what comes last (often the solution) is what the tutor does not see.
 
 # Example (lantern/2)
 

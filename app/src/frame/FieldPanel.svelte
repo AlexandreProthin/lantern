@@ -69,7 +69,7 @@
       <h3>{strings.thisSubject}</h3>
       <label>{strings.title}<input aria-label={strings.title} aria-invalid={titleError ? 'true' : undefined} bind:value={titleDraft} maxlength="120" onkeydown={titleKey} oninput={() => titleError = ''} /></label>
       {#if titleError}<small class="error" role="alert">{titleError}</small>{/if}
-      <room.subjectMenu visit={session.subject.rooms[room.id]} {revision} {changed} />
+      <room.subjectMenu visit={session.subject.rooms[room.id]} {revision} {changed} {session} />
       <div class="field"><label for="subject-model">{strings.defaultModel}</label><ModelPicker id="subject-model" value={session.subject.rooms[room.id].model} label={strings.defaultModel} commit={model => { session!.subject.rooms[room.id].model = model; changed(true); }} /></div>
       <label>{strings.defaultEffort}<select value={session.subject.rooms[room.id].effort} onchange={e => { session!.subject.rooms[room.id].effort = e.currentTarget.value as typeof session.subject.rooms[string]['effort']; changed(true); }}>{#each ['low', 'medium', 'high', 'xhigh', 'max'] as effort}<option>{effort}</option>{/each}</select></label>
     </section>

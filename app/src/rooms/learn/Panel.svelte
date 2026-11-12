@@ -5,7 +5,7 @@
   import type { PanelNotice, PanelRoomView } from '../../ui/panel-types';
   import { strings } from '../../ui/strings';
   import { errorMessage } from '../../ui/error-message';
-  import { addLearnChild, editLearnText, setState, understoodBy } from './rules';
+  import { addLearnChild, editLearnText, opensChildren, setState, understoodBy } from './rules';
   import type { LearnSession, SessionNotice } from './session';
   import { nodeActions, runNodeAction, type NodeActionId, type PanelRequest } from './actions';
   let { session, revision, showTokens = true, request = null, preview }: { session: LearnSession; revision: number; showTokens?: boolean; request?: PanelRequest | null; preview?: (id: string | null) => void } = $props();
@@ -22,6 +22,7 @@
     optionTag: child => child.state === 'open' ? kindLabels[child.kind] : child.state,
     setAside: child => child.state === 'dismissed',
     restore: (visit, id) => setState(visit, id, 'open'),
+    opens: opensChildren,
     editText: (target, text, by) => editLearnText(target, text, by),
     addChild: (visit, parentId, own) => { addLearnChild(visit, parentId, { title: own.title, hook: own.hook, kind: 'own', createdBy: 'user', author: { kind: 'user', by: own.by } }); },
     actions: nodeActions,

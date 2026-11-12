@@ -34,7 +34,8 @@ One scroll area holds everything except the composer, which is pinned at the bot
   name from the resolved id, effort, input and output tokens of the generation that wrote the
   content (compact k/M, one decimal), duration (*24 s*, *1 min 12 s*). When the content was edited
   the line ends with *· edited by <name>*. Content the user wrote reads *written by <name>*.
-  Nodes with no content yet show no provenance. These are per-generation figures only; the subject totals and the lit / dark / understood counts are defined once, in [welcome-gallery](/specs/welcome-gallery.md) WG-30 and WG-31.
+  Nodes with no content yet show no provenance. *(Amended 2026-11-12, [domain-model](/specs/domain-model.md) DM-17a.)* When the
+  author's `generationId` has no record (prepared text), the line shows the author's model and effort and no tokens or duration. These are per-generation figures only; the subject totals and the lit / dark / understood counts are defined once, in [welcome-gallery](/specs/welcome-gallery.md) WG-30 and WG-31.
 - **NP-5** With **Show token stats** off, tokens and duration MUST be hidden and the **author
   stays**: *Sonnet 5.5 · medium · edited by Alex* ([welcome-gallery](/specs/welcome-gallery.md) WG-34).
 - **NP-6** **Title and hook** show as a heading (24 px, weight 600) and an italic muted line; both
@@ -49,7 +50,10 @@ One scroll area holds everything except the composer, which is pinned at the bot
 - **NP-9** The **dismissed fold** *Dismissed (n)* appears only when n > 0, collapsed by default; each
   row shows title and hook, a *Restore* button, and focuses the node on click.
 - **NP-10** The **actions** row holds *More options*, *Rewrite explanation* and *Add my own node* (NP-31, NP-35, NP-32) and an
-  overflow menu (*⋯*) with *Dismiss* (open nodes only) and *Delete* (NP-100).
+  overflow menu (*⋯*) with *Dismiss* (open nodes only) and *Delete* (NP-100). *(Amended 2026-11-12.)* The overflow menu also holds
+  *Mark as dead end* / *Not a dead end* ([learn-room](/specs/learn-room.md) LR-102); on a dead end *More options* is disabled with
+  the tooltip *Marked as a dead end*. On an **open** node the overflow holds the toggle too, beside *Dismiss*. (The panel shows these
+  actions as one row of buttons; the toggle sits before *Delete*.)
 - **NP-11** The **dialogue** section (*Dialogue*) lists turns in order: learner turns right-indented
   on `--surface-2`, tutor turns with a 2 px `--accent` left border; each **tutor** turn can be edited
   (NP-42) and shows its author on hover (*tutor: Sonnet 5.5 · medium*, *you: Alex*).
@@ -68,7 +72,7 @@ One scroll area holds everything except the composer, which is pinned at the bot
 
 | State | Content shown | Composer and buttons | Other actions |
 |---|---|---|---|
-| **open** | Title, hook, and the dark state: *This node is still dark.* with the primary button **Light it up**. No explanation, no dialogue. | **No composer.** | *Dismiss*, *Delete*. |
+| **open** | Title, hook, and the dark state: *This node is still dark.* with the primary button **Light it up**. No explanation, no dialogue. *(2026-11-12)* The same for a prepared node: nothing of its text or dialogue shows before it is lit. | **No composer.** | *Dismiss*, *Mark as dead end*, *Delete*. |
 | **lit** | Everything of NP-1. | Composer, Send, Test me, **I get it**. | *More options*, *Rewrite explanation*, *Add my own node*, *Delete*. |
 | **understood** | As lit; the meta chip reads *understood · demonstrated* or *· self-declared*. | Composer, Send, Test me, **Not sure anymore** (returns to lit, clears `understoodBy`). | As lit. |
 | **dismissed** | **Read-only**: title, hook, a notice *Dismissed. It will not be proposed again.* with **Restore**. No pencil icons. | No composer. | *Delete*. *Restore* returns the node to open. |
@@ -155,6 +159,11 @@ corrections as truth.
   *Jump to latest ↓* pill appears at the bottom until they return.
 - **NP-62** On subject creation the root node is lit with the `intro` task and its explanation streams
   into the panel as it arrives, with the root's children placeholders in the graph.
+- **NP-64** *(Added 2026-11-12, [learn-room](/specs/learn-room.md) LR-91 to LR-93.)* A **replay** streams the stored text
+  through NP-60 to NP-63 (cursor, follow, incomplete constructs) in about one second, with no wait first.
+  While it plays, *Cancel* reads **Show all**, and a click on the streaming text, *Show all* or Esc puts the
+  whole text in place at once. The dialogue the node already had is shown at once below it, not streamed.
+  Reduced motion: the text appears whole.
 - **NP-63** Incomplete constructs during streaming (an open `$$`, an open ``` ```mermaid ``` fence)
   MUST show as plain text or code until closed, then re-render; layout shift is limited to the
   growing block.
@@ -170,7 +179,9 @@ corrections as truth.
   copy button on hover); **tables**; and the usual headings, lists, emphasis (bold in `--focus`),
   block quotes and inline code.
 - **NP-71** Links: `[label](node:<id>)` MUST focus that node (and pan the graph, GV-34); an unknown id
-  renders as plain text, never as an error (DM-22). `http` and `https` (and `mailto`) links
+  renders as plain text, never as an error (DM-22). *(Amended 2026-11-12.)* So does a link to a node not shown yet
+  ([graph-view](/specs/graph-view.md) GV-120): it becomes a link once its parent is lit. A link to a node hidden only by a
+  collapse is a link, and following it expands the way (GV-134). `http` and `https` (and `mailto`) links
   MUST open in the system browser, never inside the app window; every other scheme is rendered as
   plain text.
 - **NP-72** Safety: the output MUST be sanitised (an allow-list sanitiser such as DOMPurify) after rendering;
@@ -180,6 +191,32 @@ corrections as truth.
   draws black, v0.1.1 B1), and only CSS that could reach outside the document is neutralised
   (`url()` other than a same-document `#fragment`, `@import`, `expression(`, CSS escapes). Remote images MUST NOT be loaded (alt text and a link are shown),
   (privacy).
+- **NP-75** *(Added 2026-11-12.)* **Collapsible blocks.** Explanations and dialogue turns MAY hold collapsible blocks,
+  meant for exercise solutions:
+
+  ```text
+  <details>
+  <summary>Solution</summary>
+
+  Markdown, $math$, code fences and mermaid, as anywhere else.
+
+  </details>
+  ```
+
+  The opening line is `<details>` or `<details open>` (lower case, spaces around allowed), optionally followed on the same
+  line by `<summary>…</summary>`; otherwise the next line MAY be the summary. The block ends at a line holding only
+  `</details>`. Blank lines inside are optional. Blocks nest. Without a summary the label is *Details*. The summary is inline
+  markdown (emphasis, code, math). Everything between is block markdown with every feature of NP-70 to NP-73.
+- **NP-76** Safety: this is a dedicated block rule of the renderer; markdown HTML stays **off** (NP-72 unchanged), so no
+  other tag renders and `List<T>` keeps its `<T>` (TP-32). The renderer emits `<details>`, `<summary>` and the `open`
+  attribute itself and copies no attribute from the text. The sanitiser keeps `details`, `summary` and `open` (DOMPurify's
+  defaults already allow them). An opening line with no closing `</details>` stays escaped text, also while streaming (NP-63).
+- **NP-77** Behaviour: closed by default unless written `open`. Open or closed is kept for the session while the node's text
+  is unchanged (a save elsewhere does not close it); it is not saved. A Mermaid diagram inside renders when the block is first
+  opened if it could not be measured closed. Text selection (NP-50) works inside; search (GV-57) matches inside closed blocks.
+- **NP-78** Look: the panel's tokens only. A 1 px `--line` border, 6 px radius, `--surface` background; the summary row in
+  `--ink-mute` with a chevron that turns when open, `--accent` on hover, the `--focus` ring on keyboard focus (the summary is
+  natively focusable; Enter and Space toggle); the content padded like a block quote.
 - **NP-73** Mermaid diagrams render only once their fence is closed and the stream has ended; they
   take the room tokens for colours; a syntax error shows the source with *Diagram could not be
   drawn*.

@@ -1,5 +1,7 @@
 import { nodeOf } from '../../core/graph';
-import { addLearnChild, setState, toneOf } from './rules';
+import { addLearnChild, isDeadEnd, isPrepared, setState, toneOf } from './rules';
+import { replayText, motionReduced, REPLAY_STREAM_MS } from '../../core/replay';
+import { childrenOf } from '../../core/graph';
 import { newId, normalizeTitle, now, cloneJson } from '../../core/model';
 import type { Generation, RoomVisit, Subject } from '../../core/model';
 import { ProviderError, zeroUsage } from '../../frame/provider';
@@ -13,7 +15,8 @@ import { contextSizeOf } from '../../ui/model-choices.svelte';
 import { trace } from '../../frame/debug/trace.svelte';
 /** DC-30: how each task reads as a user action. */
 const ACTION_LABELS: Record<Exclude<Task, 'suggest'>, string> = { intro: 'Introduce subject', light: 'Light node', more: 'More options', reply: 'Send reply', check: 'Test me', rewrite: 'Rewrite explanation' };
-export interface Running { nodeId: string; task: Task; text: string; controller: AbortController }
+/** `replay`: LR-91, stored text streaming with no call; the graph grows `reveal` children for it (GV-92a). */
+export interface Running { nodeId: string; task: Task; text: string; controller: AbortController; replay?: boolean; reveal?: number }
 export interface SessionNotice { nodeId: string; kind: 'directions' | 'error'; count?: number; error?: ProviderError; retry: () => Promise<void> }
 /** LR-1..67: Learn policy. Core operations know nothing of generation or prompts. */
 export class LearnSession {
@@ -29,13 +32,43 @@ export class LearnSession {
   /** RS-64: a notice's retry belongs to the state before the undo. */
   restored(): void { this.notice = null; }
   initialize(): Promise<void> { return this.run('intro', this.visit.rootId); }
+  private skipReplay: (() => void) | null = null;
+  /** LR-91: how long a replay streams; tests set 0. */
+  replayMs = REPLAY_STREAM_MS;
+  /** LR-93: a replay is skipped, never cancelled: Esc, *Show all* and closing all put the whole text in place. */
   cancel(): void {
+    if (this.running?.replay) { this.skip(); return; }
     if (this.running && !this.running.controller.signal.aborted) trace.action('learn', 'Cancel generation', { task: this.running.task, nodeId: this.running.nodeId });
     this.running?.controller.abort();
+  }
+  skip(): void { if (this.running?.replay && this.skipReplay) { trace.action('learn', 'Skip replay', { nodeId: this.running.nodeId }); this.skipReplay(); } }
+  /** LR-90..95: light a prepared node from its stored text; no provider, no prompt, no log record. Then maybe `more`. */
+  private async replay(id: string): Promise<void> {
+    const node = nodeOf(this.visit, id), children = childrenOf(this.visit, id).length;
+    trace.action('learn', 'Replay node', { nodeId: id, children });
+    const controller = new AbortController();
+    this.running = { nodeId: id, task: id === this.visit.rootId ? 'intro' : 'light', text: '', controller, replay: true, reveal: children };
+    this.notice = null; this.render();
+    const handle = replayText(node.content, text => {
+      if (this.running?.controller === controller) { this.running.text = text; this.render(); }
+    }, { reduced: motionReduced(), durationMs: this.replayMs });
+    this.skipReplay = handle.skip;
+    let lit = false;
+    try {
+      await handle.finished;
+      // LR-43: apply against the graph as it is now; a deleted or changed node takes nothing.
+      if (Object.hasOwn(this.visit.nodes, id) && this.visit.nodes[id].state === 'open') {
+        const next = cloneJson(this.visit); setState(next, id, 'lit'); this.subject.rooms.learn = next; lit = true;
+      }
+    } finally { this.running = null; this.skipReplay = null; this.changed(); this.render(); }
+    // LR-90, third row: a prepared leaf that is not a dead end asks for directions.
+    if (lit && !children && !isDeadEnd(this.visit.nodes[id])) await this.run('more', id);
   }
   async run(task: Exclude<Task, 'suggest'>, id: string, message?: string, retry = false, checkOverride?: boolean): Promise<void> {
     if (this.running) throw new Error('A generation is already running');
     const v = this.visit, node = nodeOf(v, id);
+    if ((task === 'intro' || task === 'light') && isPrepared(node)) return this.replay(id);
+    if (task === 'more' && isDeadEnd(node)) throw new Error('Marked as a dead end'); // LR-101
     if ((task === 'intro' && (id !== v.rootId || node.state !== 'open')) || (task === 'light' && node.state !== 'open')
       || (['more', 'reply', 'check', 'rewrite'].includes(task) && !['lit', 'understood'].includes(node.state))) throw new Error('Action unavailable for this state');
     if (task === 'light' && id === v.rootId) task = 'intro';
@@ -81,11 +114,13 @@ export class LearnSession {
       for (const opt of parsed.options) {
         if (count === 3) break;
         if (Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(opt.title))) { duplicates.push(opt.title); continue; }
-        addLearnChild(next, id, { ...opt, kind: task === 'intro' ? 'axis' : opt.kind ?? 'deeper', createdBy: 'model' }); count++;
+        // LR-17, LR-90: the root's children are axes, whether they came with the intro or later.
+        addLearnChild(next, id, { ...opt, kind: task === 'intro' || id === next.rootId ? 'axis' : opt.kind ?? 'deeper', createdBy: 'model' }); count++;
       }
-      const branchKept = !!parsed.branch && !Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(parsed.branch!.title));
+      // LR-51a: a dialogue on a dead end adds no node.
+      const deadEnd = isDeadEnd(target), branchKept = !!parsed.branch && !deadEnd && !Object.values(next.nodes).some(n => normalizeTitle(n.title) === normalizeTitle(parsed.branch!.title));
       if (branchKept) addLearnChild(next, id, { ...parsed.branch!, kind: 'question', createdBy: 'model' });
-      trace.parsed(generationId, { ...report, keptOptions: count, ...(duplicates.length ? { rejectedDuplicates: duplicates } : {}), ...(parsed.branch && !branchKept ? { rejectedBranch: 'already in the map' } : {}) });
+      trace.parsed(generationId, { ...report, keptOptions: count, ...(duplicates.length ? { rejectedDuplicates: duplicates } : {}), ...(parsed.branch && !branchKept ? { rejectedBranch: deadEnd ? 'dead end' : 'already in the map' } : {}) });
       record = { id: generationId, nodeId: id, task, effort: config.effort, data: { tone: config.tone }, model: result.model, promptVersion: prompts.promptVersion, startedAt,
         durationMs: result.durationMs, usage: result.usage, ...(result.costUsd !== undefined ? { costUsd: result.costUsd } : {}), ...(result.servedModel ? { servedModel: result.servedModel } : {}), outcome: 'ok' };
       next.log.push(record); this.subject.rooms.learn = next;

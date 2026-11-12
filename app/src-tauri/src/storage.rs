@@ -198,6 +198,18 @@ pub fn save_companion_state(config: &Path, companion: &Value) -> Result<()> {
     state.extra.insert("companion".into(), kept);
     write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)
 }
+/// GV-136: the graph's collapsed node ids per subject id, under `collapsed`; an empty list drops the subject's entry.
+/// A view state, not progress: it never goes in the subject file. Other keys of the file are kept.
+pub fn save_collapsed(config: &Path, id: &str, nodes: &[String]) -> Result<()> {
+    subject_path(Path::new("."), id)?;
+    if nodes.len() > 10_000 || nodes.iter().any(|n| n.is_empty() || n.chars().count() > 200 || n.chars().any(char::is_control)) { return Err("Invalid collapsed nodes".into()); }
+    let mut state=read_state(config)?;
+    if state.format!=state_format() { return Err("Newer app state is read-only".into()); }
+    let mut map=state.extra.remove("collapsed").and_then(|v| v.as_object().cloned()).unwrap_or_default();
+    if nodes.is_empty() { map.remove(id); } else { map.insert(id.into(), json!(nodes)); }
+    if !map.is_empty() { state.extra.insert("collapsed".into(), Value::Object(map)); }
+    write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)
+}
 /// CO-47: Amber's app-level call log, one JSON record per line, beside `state.json`.
 fn amber_log_path(config: &Path) -> PathBuf { config.join("amber-log.jsonl") }
 pub fn append_amber_log(config: &Path, record: &Value) -> Result<()> {
@@ -298,6 +310,8 @@ pub fn delete_subject(library: &Path, config: &Path, id: &str) -> Result<()> {
     if state.format != state_format() {return Err("Newer app state is read-only".into());}
     crate::paths::recycle_file(&path)?;
     state.last_opened_at.remove(id); state.recents.retain(|s| s != id);
+    // GV-136: a deleted subject's folds go with it.
+    if let Some(map)=state.extra.get_mut("collapsed").and_then(Value::as_object_mut) { map.remove(id); }
     write_json(&state_path(config), &serde_json::to_value(state).map_err(io)?)?;
     let mut cache = read_cache(config); cache.remove(&key);
     write_json(&config.join("summaries.json"), &serde_json::to_value(cache).map_err(io)?)

@@ -35,3 +35,13 @@ test('GV-57: tree order, depth first, and wrapping steps', () => {
   expect(stepMatch([moon.id, sun.id], v.rootId, -1)).toBe(sun.id);
   expect(stepMatch([], v.rootId, 1)).toBeUndefined();
 });
+
+test('GV-57, GV-121: only shown nodes are searched, and an open node by its title and hook only', () => {
+  const { v, moon, bulge } = subject();
+  bulge.content = 'A prepared secret about bulges.';
+  const sealed = (n: { state: string }) => n.state === 'open';
+  expect(searchNodes(v, 'secret', { sealed })).toEqual([]);
+  expect(searchNodes(v, 'bulge', { sealed })).toEqual([bulge.id]);
+  expect(searchNodes(v, 'bulge', { sealed, shown: new Set([v.rootId, moon.id]) })).toEqual([]);
+  expect(searchNodes(v, 'secret')).toEqual([bulge.id]);
+});

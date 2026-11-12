@@ -1,3 +1,4 @@
+import { browserForgetCollapsed } from './collapse-store';
 import type { Storage, Stamp, Loaded } from './persistence';
 import { convertV1, parseSubject, visitSummary } from '../core/model';
 import type { Subject } from '../core/model';
@@ -56,4 +57,5 @@ export function browserDelete(id: string): void {
   state.recents = state.recents.filter(s => s !== id); delete state.lastOpenedAt[id];
   localStorage.setItem('lantern.recents', JSON.stringify(state.recents));
   localStorage.setItem('lantern.lastOpenedAt', JSON.stringify(state.lastOpenedAt));
+  browserForgetCollapsed(id);
 }

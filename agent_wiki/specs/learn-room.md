@@ -32,15 +32,15 @@ the actions of Welcome and Study; Gallery actions (rename, delete subject, revea
 | Id | Action (trigger) | Preconditions | Task | The tutor must return | On success | On cancel / error |
 |---|---|---|---|---|---|---|
 | LR-10 | **Create a subject** (submit the Welcome field, or pick a suggestion then submit) | Title non-blank after trim, at most 120 chars; provider ready | `intro` | 2–4 sentence on-ramp, then `<options>` with exactly 3 `axis` entries | Subject file created with a root (`kind: subject`, `createdBy: learner`); Study opens on it; root becomes `lit` with the text; 3 open `axis` children; log record | Subject and an `open` root are kept and the learner stays in Study; the root shows *Light up* (the retry). Log `cancelled` / `error` |
-| LR-11 | **Light up** an open node (the *Light it up* button, or Enter on the node; clicking a node only focuses it, LR-80) | `state = open`; not busy; node is not the root of a subject that has never been lit (that is LR-10) | `light` (`intro` for the root) | Detailed explanation of this node only, then `<options>` with exactly 3 entries | `content` = visible text, author = model; state `lit`; 3 open children (kind from the block); log record | Node stays `open`, content empty, placeholders removed. Log `cancelled` / `error` |
-| LR-12 | **More options** (button in the panel) | `state` is `lit` or `understood`; not busy | `more` | Only an `<options>` block of 3 new directions; any prose before it is ignored | 3 new open children are added; existing children are never changed or replaced; no content change; log record | No change. Log `cancelled` / `error` |
+| LR-11 | **Light up** an open node (the *Light it up* button, or Enter on the node; clicking a node only focuses it, LR-80). *(Amended 2026-11-12.)* A **prepared** node (open with content, DM-70) is replayed instead, with no call (LR-90) | `state = open`; not busy; node is not the root of a subject that has never been lit (that is LR-10) | `light` (`intro` for the root) | Detailed explanation of this node only, then `<options>` with exactly 3 entries | `content` = visible text, author = model; state `lit`; 3 open children (kind from the block); log record | Node stays `open`, content empty, placeholders removed. Log `cancelled` / `error` |
+| LR-12 | **More options** (button in the panel) | `state` is `lit` or `understood`; not busy; *(2026-11-12)* not a dead end (LR-101) | `more` | Only an `<options>` block of 3 new directions; any prose before it is ignored | 3 new open children are added; existing children are never changed or replaced; no content change; log record | No change. Log `cancelled` / `error` |
 | LR-13 | **Ask** (send in the dialogue box, Ctrl+Enter) | `state` is `lit` or `understood`; text non-blank; not busy | `reply` | Concise markdown reply; optionally one `<branch>`; `<understood/>` only per LR-33 | The learner turn is appended immediately and kept whatever happens; a tutor turn is appended (author = model, generationId); branch adds an open child of kind `question` (branch rule); log record | Learner turn stays, no tutor turn, a *Try again* control answers it. Log `cancelled` / `error` |
 | LR-14 | **Test me** (button) | `state` is `lit` or `understood`; not busy | `check` | ONE understanding question, no answer, no blocks | A tutor turn is appended; its generation has task `check`, which is what marks a pending check (LR-33) | No turn added. Log `cancelled` / `error` |
 | LR-45 | **Rewrite explanation** (panel row or node menu; a short form asks *What should change?*, optional, then *Rewrite*) | `state` is `lit` or `understood`, the root included; no generation running | `rewrite` | A new explanation of this node only, prose, no block ([tutor-protocol](/specs/tutor-protocol.md) TP-14) | The new text streams in place of the old; on `ok` it becomes `content` (author = model), the replaced text becomes `previous` (DM-16) and *Previous version* compares or reverts; children, state and dialogue are unchanged; log record | The old text stays. Log `cancelled` / `error`; *Try again* sends the same note |
 | LR-15 | **Answer a check** (the learner's next message after a *Test me* question) | As LR-13 | `reply`, with `PENDING CHECK: yes` | Says what is right, corrects, nudges; MAY end with `<understood/>` | As LR-13; if `<understood/>` is present and valid: `state = understood`, `understoodBy = demonstrated` | As LR-13 |
 | LR-16 | **Suggest 3 subjects** (Welcome button) | Provider ready; no suggestion already running | `suggest` | Only `<options>` with 3 entries (title, hook; no kind) | 3 suggestion chips appear; picking one fills the subject field (it does not start the subject). No node changes | Chips stay empty; a quiet message. No subject exists yet, so the call is **not logged** in v0.1.0 whatever its outcome |
 
-- **LR-17** *Light up* on the root MUST send `intro` and force the kind of its children to `axis`; on any other node children use the kinds the tutor returned (fallback `deeper`).
+- **LR-17** *Light up* on the root MUST send `intro` and force the kind of its children to `axis`; on any other node children use the kinds the tutor returned (fallback `deeper`). *(Amended 2026-11-12.)* *More options* on the root also gives `axis` children, whether chained after a replay (LR-90) or asked.
 - **LR-18** While *Light up* or *More options* runs, 3 pending placeholders SHOULD grow from the parent (120 ms stagger, 500 ms ease-out, breathe at 0.5↔0.8 opacity over 2.4 s; on a parsed block each becomes the real node in place, surplus ones shrink back over 300 ms; on cancel or error all shrink over 300 ms; replies and checks add no placeholders, the node itself pulses softly; reduced motion: no growth, no breathing).
 - **LR-19** The settings in force when the call starts (tone, direction, model, effort) are the ones logged and used, even if the learner changes them while it runs.
 
@@ -84,9 +84,13 @@ the actions of Welcome and Study; Gallery actions (rename, delete subject, revea
 | `lit` | `understood` | Learner: *I get it* | `self` |
 | `understood` | `lit` | Learner: *Not sure anymore* | `null` |
 | `understood` | `understood` | Confirmed check on a `self` node | `demonstrated` |
+| `open` (prepared) | `lit` | *(2026-11-12)* Replay of a prepared node (LR-90) | `null` |
+| `lit` / `understood` | `open` | *(2026-11-12)* Learner: *Replay from the start*, every such node at once (LR-110) | `null` |
+| `open` / `lit` | `lit` / `understood` | *(2026-11-12)* Learner: *Restore progress*, back to the saved state (LR-113) | as saved |
 
-- **LR-38** Every other transition MUST be refused: no dismissing a `lit` or `understood` node, no un-lighting, no light-up of a `dismissed` node, no tutor-initiated `lit → open`.
-- **LR-39** `understoodBy` MUST be non-null exactly when `state = understood`. `open` and `dismissed` nodes are always leaves (children can only be added to `lit` or `understood` nodes).
+- **LR-38** Every other transition MUST be refused: no dismissing a `lit` or `understood` node, no un-lighting (except *Replay from the start*, LR-110), no light-up of a `dismissed` node, no tutor-initiated `lit → open`.
+- **LR-39** `understoodBy` MUST be non-null exactly when `state = understood`. ~~`open` and `dismissed` nodes are always leaves~~ *(Amended 2026-11-12, [decision](/decisions/prepared-subjects-replay.md).)* Children can only be **added** to `lit` or `understood` nodes (by generation and by the learner alike), but an `open` node MAY already hold content and children: a prepared node (DM-70), or one darkened by *Replay from the start*. Dismissing such a node keeps its subtree, hidden (GV-120).
+- **LR-39a** *(Added 2026-11-12.)* A `lit` or `understood` node's parent MUST be `lit` or `understood` (the root has none). Every action keeps this: only a shown node can be lit (GV-120), *Replay from the start* darkens all, *Restore progress* works from the root down (LR-113).
 
 # Concurrency
 
@@ -99,6 +103,7 @@ the actions of Welcome and Study; Gallery actions (rename, delete subject, revea
 
 - **LR-50** A `<branch>` in a `reply` creates one child of the current node, `kind: question`, `state: open`, `createdBy: tutor`. At most one per reply; any further blocks are ignored. Its title is checked like options (LR-62); a duplicate is dropped silently.
 - **LR-51** `<branch>` is honoured only in `reply` results; elsewhere it is ignored.
+- **LR-51a** *(Added 2026-11-12.)* On a dead-end node (LR-100) a `<branch>` is ignored too, so a dialogue there adds no node. The app drops it; the prompt does not change (TP-36).
 
 # Options rules
 
@@ -136,6 +141,49 @@ The tutor's behaviour, kept from `LEARN_SYSTEM` (the learning-session method):
 
 - **LR-80** Clicking an open child under *Where to go next* **focuses** it; it does not light it. Lighting needs *Light it up* or Enter on the node, which matches clicking a node in the graph ([node-panel](/specs/node-panel.md) NP-8).
 - **LR-81** Keys that drive these actions (Enter, Ctrl+Enter, Esc, Home) are listed once, in the canonical table of [graph-view](/specs/graph-view.md) GV-76.
+
+# Prepared nodes and replay
+
+*(Added 2026-11-12, [decision](/decisions/prepared-subjects-replay.md).)* A **prepared** node is
+`open` with non-empty `content` (DM-70): written ahead in the file, or darkened by *Replay from the
+start*. Which nodes the learner sees is [graph-view](/specs/graph-view.md) GV-120.
+
+- **LR-90** *Light up* (LR-11, either trigger, the root included) on an open node does:
+
+| The node | What happens | Model call | Log record |
+|---|---|---|---|
+| open, no content | `light` (`intro` on the root), as today | yes | yes |
+| prepared, with children | **replay**: the text streams, its children appear | no | no |
+| prepared, no children, not a dead end | replay, then **More options** (`more`, 3 directions; `axis` on the root, as LR-17) | `more` only | the `more` record |
+| prepared, no children, dead end (LR-100) | replay, then stop | no | no |
+
+  Dismissed children count as children (they come back faded, as they were).
+- **LR-91** A **replay** streams the node's stored `content` through the same display as a generation (NP-60, NP-64) in about `REPLAY_STREAM_MS` (1,000 ms) whatever its length, with **no wait** before the first words. Its children grow from the node with the spawn animation (GV-92a). It changes no text, author, `edited`, `previous` or `createdAt`.
+- **LR-92** On completion the node becomes `lit` in one atomic save (LR-1); its existing dialogue shows at once, not streamed. A replay writes **no log record**: it is not an LLM call (LR-3, TP-44), so tokens and generation counts stay those of real calls.
+- **LR-93** A replay is busy like a generation (LR-40 to LR-42) for its short duration. **Skip**: a click on the streaming text, the panel's **Show all** button (in place of *Cancel*) or **Esc** ends it at once, with the full text and the children in place. It is not cancelled: skipping is all a learner needs, and it costs nothing. Under reduced motion it is instant (no streaming, no growth).
+- **LR-94** When the replay chains into `more` (LR-90, third row), that call starts at once on the now lit node, with its placeholders, and is an ordinary generation: cancel, error, notice and log as LR-12. The replay's result stays whatever the call does.
+- **LR-95** ~~Closing the app or deleting the node during a replay writes nothing; the node stays open (LR-65).~~ *(Amended 2026-11-12, at implementation.)* Closing the app, deleting the subject or deleting the node during a replay **skips** it like Esc (the frame's cancel is a skip for a replay): the node is lit, then deleted if that was the action. A node deleted or changed by any other way meanwhile takes nothing (LR-43).
+- **LR-96** The replay streamer and its timing live in the shared core, room-neutral, so another room (Choose) can replay later; only Learn uses it now.
+
+# Dead ends
+
+*(Added 2026-11-12.)*
+
+- **LR-100** A node MAY be marked a **dead end**: `data.deadEnd: true` (DM-65). Absent means no.
+- **LR-101** On a dead end a replay never chains into `more` (LR-90), and **More options** is disabled with the tooltip *Marked as a dead end*, in the panel and the node menu. *Ask*, *Test me*, *Rewrite explanation* and *Add my own node* work as usual; a reply's `<branch>` is dropped (LR-51a).
+- **LR-102** **Mark as dead end** / **Not a dead end** toggles it. It is in the shared action list (GV-55), so the panel's overflow menu and the node menu both offer it, on open, lit and understood nodes, not on dismissed ones; disabled while that node is busy. No call, no state change; one undo step (RS-60). Unmarking proposes nothing by itself: *More options* is the way.
+- **LR-103** The graph marks dead ends with an end cap ([graph-view](/specs/graph-view.md) GV-26).
+
+# Replay from the start
+
+*(Added 2026-11-12.)* In the subject menu (Learn's part, RS-15), after Direction.
+
+- **LR-110** **Replay from the start…** turns every `lit` and `understood` node `open` (removing `understoodBy`), the root included, and moves focus to the root. Content, `previous`, `edited`, dialogue, dead-end marks and dismissed nodes are kept. Nothing is regenerated or logged. Every darkened node is now prepared, so it works on any existing subject with no conversion.
+- **LR-111** In the same save it stores the states it changes in `data.progressSnapshot` (DM-65): `at` and, per darkened node, its state and `understoodBy`. One save, so one undo step.
+- **LR-112** *(At implementation: an inline confirmation inside the menu, not a modal, so Esc closes only it.)* A confirm dialog comes first: *Start this subject again in the dark?* · *n lit nodes (k understood) go dark. Explanations, dialogue and dismissed nodes stay. Your progress is saved: **Restore progress** in this menu brings it back.* When a snapshot already exists a line adds *This replaces the progress saved on <date>.* Buttons **Cancel** (default, Esc) and **Replay from the start**. The action is disabled while a generation or replay runs, and when nothing is lit.
+- **LR-113** **Restore progress** (shown only while a snapshot exists; no confirm, Ctrl+Z undoes it) goes from the root down, in tree order: a node of the snapshot that still exists and is `open` or `lit` is raised to its saved state (with its `understoodBy`) **if its parent is `lit` or `understood` by then** (or it is the root). It never lowers a state. Nodes created, dismissed or deleted since stay as they are. Then the snapshot is removed. One save.
+- **LR-114** Lighting nodes after the reset is ordinary progress (replays, LR-90); the snapshot stays until restored or replaced.
+- **LR-115** The snapshot is room data in the subject file, so it survives restarts and travels with the file. The app-side collapse state is untouched (GV-136).
 
 # Edge cases
 

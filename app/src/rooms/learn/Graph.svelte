@@ -8,7 +8,7 @@
   import type { LibrarySpaces } from '../../frame/library-spaces';
   import { graphLinks } from './graph-links';
   import { nodeActions, runNodeAction, type NodeActionId, type PanelRequest } from './actions';
-  import { understoodBy } from './rules';
+  import { isDeadEnd, isPrepared, opensChildren, understoodBy } from './rules';
 
   let { session, revision, settings, preferencesChanged, navigate = () => {}, visible = true, openInPanel = () => {}, library, linkPreview = null }: { library?: LibrarySpaces; linkPreview?: string | null; session: LearnSession; revision: number; settings: Settings; preferencesChanged: () => void; navigate?: (space: string) => void; visible?: boolean; openInPanel?: (kind: PanelRequest['kind'], nodeId: string) => void } = $props();
 
@@ -16,8 +16,11 @@
     className: 'learn-graph',
     scene: { spawnTasks: ['intro', 'light', 'more'], ghost: { kind: 'deeper', state: 'open' } },
     links: graphLinks,
-    dataAttrs: n => ({ 'data-understood': understoodBy(n) ?? undefined }),
-    labelExtra: n => understoodBy(n) ? ' · ' + (understoodBy(n) === 'self' ? strings.understoodByYou : strings.demonstratedState) : '',
+    dataAttrs: n => ({ 'data-understood': understoodBy(n) ?? undefined, 'data-dead-end': isDeadEnd(n) ? 'true' : undefined }),
+    labelExtra: n => (understoodBy(n) ? ' · ' + (understoodBy(n) === 'self' ? strings.understoodByYou : strings.demonstratedState) : '') + (isDeadEnd(n) ? ' · ' + strings.deadEndState : ''),
+    // GV-120: a node shows once its parent is lit; GV-57: an open node's text (prepared or not) is not searched.
+    opens: opensChildren,
+    sealed: n => n.state === 'open' || isPrepared(n),
     quiet: n => n.state === 'dismissed',
     untitled: strings.untitledQuestion,
     menuActions: nodeActions,
@@ -30,7 +33,9 @@
     }
   };
 </script>
-{#snippet glyph(n: { state: string; kind: string; pending?: string })}
+{#snippet glyph(n: { state: string; kind: string; pending?: string; data?: Record<string, unknown> })}
+  <!-- GV-26: a dead end's end cap, a shape that reads without colour. -->
+  {#if !n.pending && n.data?.deadEnd === true}<span class="end-cap" aria-hidden="true"></span>{/if}
   <svg class="status" viewBox="0 0 18 18" aria-hidden="true" style:visibility={n.pending ? 'hidden' : 'visible'}>
     {#if n.state === 'understood'}
       <path d="m3 9 4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.5" />
@@ -48,6 +53,7 @@
   <span><i class="key self"></i>{strings.selfState}</span>
   <span><i class="key dismissed"></i>{strings.dismissedState}</span>
   <span><i class="key branch"></i>{strings.branchState}</span>
+  <span><i class="key dead-end"></i>{strings.deadEndState}</span>
 {/snippet}
 <Graph {session} {room} {glyph} {legend} {revision} {settings} {preferencesChanged} {visible} {library} {linkPreview} />
 <style>
@@ -58,6 +64,8 @@
   .key[data-state='understood'] { background:var(--node-understood); border-color:var(--node-understood); }
   .key.self { border:2px solid var(--node-understood); }
   .key.dismissed { opacity:.35; border-style:dotted; }
+  .key.dead-end { width:10px; height:2px; border:0; border-radius:1px; background:var(--ink-mute); transform:rotate(-45deg); margin:0 8px 0 2px; vertical-align:3px; }
+  .end-cap { position:absolute; right:-7px; bottom:1px; width:11px; height:2px; border-radius:1px; background:var(--ink-mute); transform:rotate(-45deg); pointer-events:none; }
   .key.branch { width:7px; height:7px; border-radius:0; transform:rotate(45deg); margin:0 8px 0 2px; }
   /* Node states (LR-*): the shared graph draws the disc, Learn colours it. */
   :global(.graph.learn-graph .node[data-state='open'] .disc) { border-style:dotted; }

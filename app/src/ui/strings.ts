@@ -55,6 +55,12 @@ export const strings = {
   lightingNode: (title: string) => `Lighting ${title}`, optionsReady: (count: number) => `${count} options ready`, largeGraph: 'Free layout is off for large graphs',
   askSelection: 'Ask about this', nodeSelection: 'Make it a node', copy: 'Copy code', copied: 'Copied',
   diagramFailed: 'Diagram could not be drawn', providerBusy: 'A generation is running',
+  markDeadEnd: 'Mark as dead end', unmarkDeadEnd: 'Not a dead end', deadEndHint: 'Marked as a dead end', deadEndState: 'dead end', showAll: 'Show all',
+  replayFromStart: 'Replay from the start…', replayConfirmTitle: 'Start this subject again in the dark?',
+  replayConfirmBody: (lit: number, understood: number) => `${lit} lit ${lit === 1 ? 'node' : 'nodes'}${understood ? ` (${understood} understood)` : ''} go dark. Explanations, dialogue and dismissed nodes stay. Your progress is saved: Restore progress in this menu brings it back.`,
+  replayReplaces: (date: string) => `This replaces the progress saved on ${date}.`, replayGo: 'Replay from the start', restoreProgress: 'Restore progress',
+  restoreProgressHint: (date: string) => `Bring back the progress saved on ${date}`, nothingLit: 'Nothing is lit yet', replayBusy: 'Wait for the running generation',
+  collapseNodes: 'Collapse sub-nodes', expandNodes: 'Expand sub-nodes', collapseAll: 'Collapse all', expandAll: 'Expand all', hiddenCount: (n: number) => `${n} hidden`,
   showTokens: 'Show token stats', backdrop: 'Backdrop: slow lights behind the spaces', displayName: 'Display name', appliesNext: 'Applies to your next message',
   errorKinds: {
     'not-installed': 'Claude Code is not installed.', 'not-logged-in': 'Claude Code is installed but not signed in.',

@@ -7,7 +7,7 @@ export interface GraphSession {
   setFocus(id: string): void; busy(id: string): boolean;
 }
 /** GV-55: one entry of the node menu and the panel's action row. `toPanel` entries open a form or dialog in the panel; `task` entries start a generation. */
-export interface MenuAction { id: string; label: string; disabled: boolean; toPanel?: boolean; task?: boolean }
+export interface MenuAction { id: string; label: string; disabled: boolean; toPanel?: boolean; task?: boolean; /** Tooltip, e.g. why it is disabled. */ title?: string }
 /** The node menu asks the panel to open its own form or dialog for a node. */
 export type PanelRequest = { kind: 'own' | 'delete' | 'rewrite'; nodeId: string; seq: number };
 /** The room's side of the graph (PS-5): the graph asks, the room answers. Optional members have the defaults named. */
@@ -28,6 +28,10 @@ export interface GraphRoomView {
   /** RS-34: a node that becomes this warms the backdrop. Default `state === 'lit'`. */
   lights?: (node: GraphNode) => boolean;
   untitled: string;
+  /** GV-120: a node shows its children only when this holds (Learn: lit or understood). Default: every node is shown. */
+  opens?: (node: GraphNode) => boolean;
+  /** GV-57: a node whose text is not shown yet (Learn: open); search matches its title and hook only. */
+  sealed?: (node: GraphNode) => boolean;
   menuActions: (visit: RoomVisit, node: GraphNode, running: SceneRunning | null) => MenuAction[];
   runMenuAction: (action: MenuAction, nodeId: string) => void;
   /** Enter on a node: true when the room handled it, else the panel takes focus. */

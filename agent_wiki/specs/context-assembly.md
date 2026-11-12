@@ -126,6 +126,28 @@ Stated plainly, so nobody expects more of the tutor than it sees.
 - A learner correction on a node that is not on the path and not the focus is visible only as an edited title or hook.
 - A map so large that path, neighbourhood and titles exceed the budget is still sent whole (CA-23); the budget is a target for the optional hooks, not a hard ceiling.
 
+# Prepared subjects at scale
+
+*(Added 2026-11-12, [decision](/decisions/prepared-subjects-replay.md).)* Nothing in the assembly changes; this
+section records what a 200-node prepared subject costs and what the tutor sees of it.
+
+- **CA-60** The map holds **every** node, shown or not ([graph-view](/specs/graph-view.md) GV-121): the tutor must not
+  propose a title the course already has (TP-3) and may link ahead. A prepared node is marked `[open]` like any dark node;
+  its text is never sent until it is the focus or the parent (CA-26, CA-30). A link the tutor writes to a node the learner
+  cannot see yet renders as plain text until it shows (NP-71).
+- **CA-61** *Budget check.* A full-form line is about 6 (indent) + 2 + 8 (id) + 8 (mark) + title + 3 + hook + 1
+  characters. With titles of about 40 and hooks of about 80 characters that is about 148 characters, 50 tokens by
+  CA-11, so **200 nodes ≈ 10k tokens**: the full form fits the default 12k budget. Hooks near the 120-character clip
+  (CA-24) push it to about 12.5k and the **reduced form** takes over (CA-21): every title stays, hooks go by distance.
+  Shorter ids (such as `m3-l2`) and hooks under about 90 characters keep the full form with room to spare
+  ([domain-model](/specs/domain-model.md) DM-77). A Claude Code call then carries about 13k of CLI baseline + 1.2k
+  system + 10k map + clips.
+- **CA-62** Clips still apply: a prepared explanation over 6,000 characters is cut when it is the focus of `more`, `reply`,
+  `check` or `rewrite`, and over 2,500 when it is the parent of a `light`. Solutions at the end of a long text are the
+  first thing lost.
+- **CA-63** A replay builds no context: it is not a call (LR-92). The `more` that may follow it (LR-90) builds the usual
+  `more` context with the replayed text as `FOCUS_BLOCK`.
+
 # Open
 
 - Whether the real input-token counts logged in past calls should later tune the `chars / 3` estimator (CA-11): an implementation-time question; v0.1.0 keeps `chars / 3`.

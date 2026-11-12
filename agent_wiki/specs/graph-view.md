@@ -60,11 +60,17 @@ in the RECIPE. All colours are the room tokens of [rooms-spaces](/specs/rooms-sp
 - **GV-22** The `question` kind keeps the PoC's diamond glyph for open/lit; other kinds use the
   circle glyph. Understood nodes show the check regardless of kind.
 - **GV-23** Each node MUST expose an accessible name *title · kind · state*, plus *· understood by
-  you* or *· demonstrated* for understood nodes, and *· preparing* while busy.
+  you* or *· demonstrated* for understood nodes, and *· preparing* while busy. *(Amended 2026-11-12.)* Also
+  *· dead end* (GV-26) and, on a collapsed node, *· n hidden* (GV-133).
 - **GV-24** An untitled node renders *Untitled question* (PoC behaviour). Long titles wrap with
   `overflow-wrap: anywhere` inside a 150 px column; a title is clipped after 3 lines with an
   ellipsis, the full text in the tooltip.
 - **GV-25** Hover on a non-open node sets the outline to `--focus` and underlines the title.
+- **GV-26** *(Added 2026-11-12, [learn-room](/specs/learn-room.md) LR-103.)* A **dead-end** node carries an
+  **end cap**: a short solid bar (about 10 × 2 px) set just outside the disc on its lower right, across
+  the direction a branch would leave, like the end of a road. It is drawn in `--ink-mute` in every state
+  (faded with a dismissed node), is a shape rather than a colour, so it reads without colour at 38 px
+  (GV-20), and the legend draws it (*Dead end*, [rooms-spaces](/specs/rooms-spaces.md) RS-36).
 
 # Selection and route
 
@@ -93,7 +99,7 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   `--path-muted` at 45 % opacity), under the nodes, slightly curved so it does not cover a tree
   edge. A link to a missing id draws nothing; duplicate links and links in both directions draw
   one line; links to the node's own parent or child draw nothing (the tree edge already shows
-  them).
+  them). *(Amended 2026-11-12.)* Both ends MUST be shown (GV-120, GV-131); a link to a hidden node draws nothing.
 - **GV-41** A toggle in the legend (*Text links*) shows or hides these lines. Default on;
   persisted app-wide.
 - **GV-42** Text links are **never part of the route**: they are not highlighted, carry no
@@ -138,6 +144,11 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   the panel's own form and confirmation dialog for that node (the panel is uncollapsed if needed).
   The menu follows the node while the view pans; Esc, a press outside it or choosing an action
   closes it and returns focus to the node; arrow keys move between items.
+  *(Amended 2026-11-12.)* The shared list gains *Mark as dead end* / *Not a dead end* on open, lit and
+  understood nodes, before *Delete* ([learn-room](/specs/learn-room.md) LR-102), and *More options* is
+  disabled on a dead end (LR-101). After the shared list and a separator, the menu alone (it is a view
+  action, not in the panel) offers *Collapse sub-nodes* or *Expand sub-nodes* (GV-130); on the root
+  they read *Collapse all* / *Expand all* (GV-132).
 - **GV-57** *Search (v0.1.3).* A **search** button (magnifier, tooltip *Search · Ctrl+F*) sits left of
   the layout toggle. It, or **Ctrl+F** anywhere in Study, opens a search field in its place (the text
   selected when it was already open). The query matches, as a substring ignoring case, accents and
@@ -150,6 +161,12 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   and the view pans (GV-34). Typing alone never moves the focus. **Esc** in the field, or its close
   button, clears the query, closes the field and returns focus to the focused node. The search is
   not saved and is cleared when another subject opens.
+  *(Amended 2026-11-12.)* Only nodes that can be shown (GV-120) are searched, and an **open** node matches by
+  title and hook only, so a search never reveals a prepared text before it is lit. A match hidden by a
+  collapse (GV-131) is counted; moving to it expands its ancestors.
+- **GV-58** *(Added 2026-11-12.)* A **collapse all / expand all** button sits left of the search button,
+  the same size. It reads *Expand all* when any node is collapsed, otherwise *Collapse all* (disabled
+  when nothing could collapse), and does what the root's menu items do (GV-132).
 - **GV-54** Every control MUST be at least 32 px, have a tooltip and an accessible name, and not
   overlap nodes' hit areas except where the overlay sits.
 
@@ -173,13 +190,14 @@ Active when the graph has focus (Tab reaches the focused node; the graph is one 
 - **GV-70** **Left** moves focus to the parent; **Right** to the first child (creation order);
   **Up** / **Down** to the previous / next sibling in creation order, without wrapping; at a
   boundary nothing happens. The root has no parent or siblings. This is the same in both
-  layouts.
+  layouts. *(Amended 2026-11-12.)* Moves go over shown nodes only (GV-120, GV-131); **Right** on a
+  collapsed node expands it and focuses its first child.
 - **GV-71** **Enter** on an *open* node lights it (starts the light-up; [node-panel](/specs/node-panel.md)
   NP-30) and moves focus to the panel; on any other state it moves focus to the panel (its
   composer when present). On a *dismissed* node Enter focuses the panel, where Restore is
   offered.
 - **GV-72** **Esc** closes the shortcuts overlay, a popover or a dialog first; then it cancels an edit in progress; otherwise it cancels the
-  running generation of the subject. It does nothing when none applies.
+  running generation of the subject. It does nothing when none applies. *(Amended 2026-11-12.)* During a replay it skips to the end instead ([learn-room](/specs/learn-room.md) LR-93).
 - **GV-73** **`?`** opens a shortcuts overlay listing all keys of the app; Esc or `?` closes it.
   *(Amended 2026-10-16, spec workshop round 9.)* It also shows *What can I do here?* for the current
   space, the same lines as Amber's guide ([companion](/specs/companion.md) CO-2, CO-22).
@@ -271,6 +289,12 @@ and nothing else in the code hard-codes them.
   before the settle/reveal/burst. Surplus
   placeholders shrink back into the parent over `SPAWN_SHRINK_MS`. If more nodes arrive than
   placeholders, the extra ones grow from the parent like a placeholder with no waiting.
+- **GV-92a** *(Added 2026-11-12, [learn-room](/specs/learn-room.md) LR-91.)* A **replay** uses the same
+  motion with as many placeholders as the children it reveals, grown at once with no waiting (no
+  breathing phase): each becomes its real child in place, with the settle burst and title reveal of
+  GV-92. A node *arrives* when it becomes shown, not when it is created, so stored children with old
+  `createdAt` grow like new ones. A skip (LR-93) lands every child at once. When the replay chains into
+  `more`, that call's own placeholders follow as in GV-90.
 - **GV-93** On **cancel** or **error**, all placeholders shrink back over `SPAWN_SHRINK_MS`.
 - **GV-94** These rules apply in **both layouts**. In free layout the placeholders MUST be real
   simulation bodies so the graph makes room; in tree layout the layout MUST reserve their slots
@@ -303,11 +327,56 @@ and nothing else in the code hard-codes them.
 - **GV-103** Information MUST NOT depend on motion: every state conveyed by animation (pending,
   busy) has a static equivalent.
 
+# Visibility and collapse
+
+*(Added 2026-11-12, [decision](/decisions/prepared-subjects-replay.md).)* Two filters decide which
+nodes the graph draws. The first is the room's and comes from progress; the second is the learner's
+view.
+
+- **GV-120** **Shown by progress.** A node is shown when its parent is `lit` or `understood`; the root is
+  always shown. Dismissed nodes under a lit parent are shown, faded. The rule is a room-neutral core
+  function taking the room's "this node opens its children" predicate (Learn: `lit` or `understood`);
+  a room without one shows everything (Choose today).
+- **GV-121** A node that is not shown by progress appears **nowhere** in Study: graph, keyboard moves,
+  search (GV-57), text-link lines (GV-40), node links in the panel (NP-71), the Gallery thumbnail
+  (WG-40). It still exists in the file and in the tutor's map ([context-assembly](/specs/context-assembly.md) CA-60),
+  in the counts (WG-30) and in the delete dialog's count (NP-100), which say what is really there.
+- **GV-122** The focused node MUST be shown. When a subject opens, or after *Replay from the start*, a
+  focus on a hidden node moves to its nearest shown ancestor.
+- **GV-130** **Collapse.** *Collapse sub-nodes* on a node hides all its descendants; *Expand sub-nodes*
+  shows them again (collapses inside the subtree are kept). Offered only on a node with shown
+  children. The node itself stays shown.
+- **GV-131** A node is **drawn** when it is shown by progress (GV-120) and no ancestor is collapsed.
+  Layouts treat hidden nodes as absent: the tree layout closes the gap; the free simulation drops
+  their bodies. Folding MAY animate (shrink into the node over `SPAWN_SHRINK_MS`, grow out over
+  `SPAWN_GROW_MS`); under reduced motion it is instant.
+- **GV-132** On the **root**, and with the GV-58 button: *Collapse all* collapses every node that has
+  shown children, so only the root stays drawn and each level then opens one at a time; *Expand all*
+  clears every collapse of the subject.
+- **GV-133** A collapsed node shows a small **+n** badge beside its disc, n being the descendants it
+  hides that are shown by progress (never a count of hidden prepared nodes). Text, so it reads without
+  colour; the accessible name adds *· n hidden*.
+- **GV-134** Collapse never hides where the learner is going: focusing a node (search, a node link,
+  keyboard, `setFocus` from any source) expands its collapsed ancestors; a generation or replay
+  starting on a collapsed node expands it so its children are seen arriving.
+- **GV-135** Collapse is a **view** state. It is not a change to the subject: no save, no undo step
+  (RS-61), no effect on progress, counts or the tutor's map.
+- **GV-137** *(At implementation, 2026-11-12.)* Collapse lives in the shared graph, so Choose's survey graph has it too; Choose sets no progress rule, so all its nodes are shown (GV-120).
+- **GV-136** It is **persisted app-side**, per subject, in the app state file
+  ([settings](/specs/settings.md) SE-50: `collapsed`, subject id → collapsed node ids), not in the subject
+  file. Why: the file holds content and progress and may be shared or synced; folds are one reader's
+  view (as the layout, GV-12) and writing them would make saves, undo steps and conflicts (ST-24) for
+  no content change. Ids that no longer exist are dropped on load; deleting a subject in Gallery drops
+  its entry.
+
 # Performance
 
 - **GV-110** A graph of **500 nodes** MUST pan and zoom at 60 fps on a typical laptop: pan and zoom
   change only the transform of the world layer, never per-node styles.
 - **GV-111** The force simulation MUST stop when settled and wake only on graph change.
+- **GV-113** *(Added 2026-11-12.)* Visibility and collapse are recomputed in one pass over the nodes
+  (linear) on each graph change, never per frame. A 200-node prepared subject is well inside the
+  GV-110 budget, and usually draws far fewer nodes than it holds.
 - **GV-112** If the physics cannot hold the budget (frame time over 20 ms for a second while
   settling), tunable fallbacks apply in order: simulate at half rate; hide titles under the GV-62
   threshold and skip glows; above **800 nodes** use the tree layout with a notice *Free layout
