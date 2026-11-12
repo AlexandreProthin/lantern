@@ -16,7 +16,7 @@ export interface SpaceProps {
   library: LibrarySpaces;
 }
 /** RS-15/RS-19: the room's own fields in the subject menu. `changed(true)` also says "applies to the next generation". */
-export interface SubjectMenuProps { visit: RoomVisit; revision: number; changed: (appliesNext: boolean) => void }
+export interface SubjectMenuProps { visit: RoomVisit; revision: number; changed: (appliesNext: boolean) => void; /** Its running generation, if any (Learn: LR-112). */ session?: RoomSession }
 /** CO-13: a bottom resting position, in a bottom corner of an element of the space, a little inside it. */
 export interface RestSpec { id: string; label: string; anchor: string; side: 'left' | 'right'; inset?: { x: number; y: number } }
 /** RS-3, CO-13, CO-22, CO-23: what Amber says about a room, and where it can rest in each space. */

@@ -121,7 +121,7 @@ test('GV-55: node menu offers the panel actions, runs them or hands them to the 
   // Open node: same actions as the panel, focus moves to the node and into the menu.
   const dark=page.locator('.graph .node[data-state="open"]').first();
   await dark.click({button:'right'});
-  expect(await items()).toEqual(['Light it up','Dismiss','Delete']);
+  expect(await items()).toEqual(['Light it up','Dismiss','Mark as dead end','Delete']);
   await expect(menu.getByRole('menuitem',{name:'Light it up'})).toBeFocused();
   await expect(panel.getByText('This node is still dark.')).toBeVisible();
   await page.keyboard.press('ArrowDown');await expect(menu.getByRole('menuitem',{name:'Dismiss'})).toBeFocused();
@@ -139,7 +139,8 @@ test('GV-55: node menu offers the panel actions, runs them or hands them to the 
   await page.getByRole('dialog').getByRole('button',{name:'Cancel',exact:true}).click();
   // Root: no Delete; Add my own node opens the panel form.
   await page.locator('.graph .node[data-state="lit"]').first().click({button:'right'});
-  expect(await items()).toEqual(['More options','Rewrite explanation','Add my own node']);
+  // GV-55 (2026-11-12): the dead-end toggle, then the view's own Collapse all after a separator.
+  expect(await items()).toEqual(['More options','Rewrite explanation','Add my own node','Mark as dead end','Collapse all']);
   await menu.getByRole('menuitem',{name:'Add my own node'}).click();
   await expect(panel.getByRole('textbox',{name:'Title',exact:true})).toBeFocused();
   // A press outside closes it.
