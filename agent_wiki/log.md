@@ -2,7 +2,7 @@
 
 ## 2026-11-13
 
-* **v0.7.0 tagged** (minor since v0.6.0: prepared subjects that replay without a model call, visibility by progress, dead ends, *Replay from the start* / *Restore progress*, collapsible branches kept in `state.json`, `<details>` solutions; undo and redo; larger fact sections on Choose products). Not checked before the tag: the chained *More options* after a replay on the desktop app with a real model. Checks: 58 Vitest files (300 tests), 86 Rust, svelte-check 0/0; Playwright 121 on the merged branch. Next: build and sign the installer, then upload it with `latest.json` to the GitHub release.
+* **v0.7.0 released** (signed installer and `latest.json` on the GitHub release; the update feed serves 0.7.0; the web demo redeployed from the tag) (minor since v0.6.0: prepared subjects that replay without a model call, visibility by progress, dead ends, *Replay from the start* / *Restore progress*, collapsible branches kept in `state.json`, `<details>` solutions; undo and redo; larger fact sections on Choose products). Not checked before the tag: the chained *More options* after a replay on the desktop app with a real model. Checks: 58 Vitest files (300 tests), 86 Rust, svelte-check 0/0; Playwright 121 on the merged branch.
 
 ## 2026-11-12
 
