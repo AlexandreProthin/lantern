@@ -11,7 +11,7 @@
 
 A desktop workspace for thinking with an AI, not just asking it things.
 
-![version](https://img.shields.io/badge/version-0.6.0-e8913a) ![platform](https://img.shields.io/badge/platform-Windows-2b3a55) ![Tauri 2](https://img.shields.io/badge/Tauri-2-24c8db) ![Svelte 5](https://img.shields.io/badge/Svelte-5-ff3e00)
+![version](https://img.shields.io/badge/version-0.7.0-e8913a) ![platform](https://img.shields.io/badge/platform-Windows-2b3a55) ![Tauri 2](https://img.shields.io/badge/Tauri-2-24c8db) ![Svelte 5](https://img.shields.io/badge/Svelte-5-ff3e00)
 
 **[Try the Learn room in your browser →](https://alexandreprothin.github.io/lantern/)**<br>
 <sub>A free web demo with prepared answers: no sign-in, nothing leaves your browser.</sub>
@@ -100,6 +100,7 @@ Built with **Tauri 2** (Rust) and **Svelte 5 + TypeScript**, the same stack as
 
 ## Releases
 
+- **v0.7.0** (2026-11-13): prepared subjects that replay without calling the model, dead ends, *Replay from the start* and *Restore progress*, collapsible branches and solutions, and undo and redo.
 - **v0.6.0** (2026-11-01): serve over the network to phones and other devices, generations that survive a dropped connection, a Codex CLI provider, a debug console, and Amber's speech bubble.
 - **v0.5.0** (2026-10-18): custom endpoints, local servers such as Ollama and NVIDIA's cloud, beside Claude Code.
 - **v0.4.0** (2026-10-17): Amber, the companion, and a new top bar.

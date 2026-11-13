@@ -1,5 +1,9 @@
 # Wiki Update Log
 
+## 2026-11-13
+
+* **v0.7.0 tagged** (minor since v0.6.0: prepared subjects that replay without a model call, visibility by progress, dead ends, *Replay from the start* / *Restore progress*, collapsible branches kept in `state.json`, `<details>` solutions; undo and redo; larger fact sections on Choose products). Not checked before the tag: the chained *More options* after a replay on the desktop app with a real model. Checks: 58 Vitest files (300 tests), 86 Rust, svelte-check 0/0; Playwright 121 on the merged branch. Next: build and sign the installer, then upload it with `latest.json` to the GitHub release.
+
 ## 2026-11-12
 
 * **Prepared subjects built** (branch `claude/prepared-subjects`, merged): replay with no call or record, the graph drawing only nodes whose parent is lit, dead ends, *Replay from the start* / *Restore progress*, collapse kept in `state.json` (new `save_collapsed` command, allowed to paired devices), `<details>` blocks. [Component](/components/prepared-subjects.md); the [plan](/plans/prepared-subjects.md) is landed. Amended at implementation: LR-17 (root *More options* gives axes), LR-95 (closing or deleting during a replay skips it), LR-112 (inline confirmation), GV-137 (Choose's graph has collapse), NP-10. Checks: Vitest 300, Rust 86, svelte-check 0/0, Playwright 121.
