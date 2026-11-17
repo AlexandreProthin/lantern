@@ -84,7 +84,8 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
     at the bottom right of the space, clear of the graph tools; it hangs only where the user puts it, its rope
     tied under the measured two-row header; its bubble fits the screen's width; a tap opens it; it is not
     drawn while the panel sheet covers the graph ([companion](/specs/companion.md) CO-10, CO-11, CO-12,
-    CO-15, CO-20).
+    CO-15, CO-20). Welcome's *Carry the lantern in* sits under the field, so the whole question shows
+    ([welcome-gallery](/specs/welcome-gallery.md) WG-10).
 - **NW-41** Touch: pan and pinch on the graph (d3-zoom), tap to open a node, a long press opens the node
   menu that a right-click opens on the desktop; graph controls are 40 px. No action depends on hover alone.
 - **NW-42** Inputs are 16 px or more (no zoom on focus in iOS Safari); the viewport is

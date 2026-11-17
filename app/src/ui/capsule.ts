@@ -8,13 +8,19 @@ export interface CapsuleParts {
 }
 const EASE = 'cubic-bezier(.2,.8,.2,1)', EXIT = 'cubic-bezier(.4,0,1,1)';
 export const CAPSULE_MS = { card: 380, subject: 260, slide: 240, close: 110 } as const;
+/** The gap between a stacked capsule and its button (Welcome.svelte keeps the same room under the capsule). */
+export const STACK_GAP = 10;
 
 export class Capsule {
   private shape: Shape | null = null;
   private shown = false;
   private natural = { w: 0, h: 0 };
   private timers: ReturnType<typeof setTimeout>[] = [];
-  constructor(private parts: CapsuleParts, private reduced: () => boolean) { this.measure(); }
+  /**
+   * `stacked`: on a phone (NW-40, WG-10 amended 2026-11-18) the focused capsule keeps its whole width for the subject
+   * and the button sits under it, right-aligned, instead of docking inside it and cutting the placeholder.
+   */
+  constructor(private parts: CapsuleParts, private reduced: () => boolean, private stacked: () => boolean = () => false) { this.measure(); }
 
   /** The button's natural size sizes the dock and the tail slot (--bw/--bh). */
   measure() {
@@ -87,6 +93,7 @@ export class Capsule {
   private target(shape: Shape) {
     const { cap, top } = this.parts, cs = getComputedStyle(cap), { w, h } = this.natural;
     const x = cap.offsetLeft + cap.offsetWidth - 1 - parseFloat(cs.paddingRight) - w;
+    if (shape === 'cap' && this.stacked()) return { x: cap.offsetLeft + cap.offsetWidth - w, y: cap.offsetTop + cap.offsetHeight + STACK_GAP };
     const y = shape === 'two' ? cap.offsetTop + cap.offsetHeight - 1 - parseFloat(cs.paddingBottom) - h : cap.offsetTop + top.offsetTop + (top.offsetHeight - h) / 2;
     return { x, y };
   }

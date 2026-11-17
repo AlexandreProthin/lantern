@@ -14,6 +14,7 @@
   import { errorMessage } from './error-message';
   import TonePicker from './TonePicker.svelte';
   import { WelcomeEmbers } from './embers';
+  import { phone } from './phone.svelte';
   import { demoPrefill } from '../demo/prefill';
   import type { WelcomeRoomView, WelcomeSnippets, WelcomeStarter } from './welcome-types';
   let { visible, settings, library, revision, navigate, room, visual, figure, card, extra }: Pick<SpaceProps, 'visible' | 'settings' | 'library' | 'revision' | 'navigate'> & WelcomeSnippets & { room: WelcomeRoomView } = $props();
@@ -55,7 +56,7 @@
     const media=matchMedia('(prefers-reduced-motion: reduce)');const update=()=>osReduced=media.matches;update();media.addEventListener('change',update);
     motion=new WelcomeEmbers(canvas,()=>visible&&!reduced&&!document.hidden);
     if(visible&&!arrived){motion.arrival(field);arrived=true;}
-    capsule=new Capsule({ask,cap,top,subj:field,dir:dirField,dock,lower,hair,btn:button,wrap,hint},()=>reduced);
+    capsule=new Capsule({ask,cap,top,subj:field,dir:dirField,dock,lower,hair,btn:button,wrap,hint},()=>reduced,()=>phone.current);
     capsule.apply(untrack(()=>shape),untrack(()=>focused),true);
     // The web demo offers its prepared new subject, ready to carry in.
     const prefill=import.meta.env.VITE_DEMO?demoPrefill():null;
@@ -165,7 +166,7 @@
   .slot{width:0;height:0}.cap:global(.focused) .slot{width:var(--bw);height:var(--bh)}
   .question{position:relative;flex:1;min-width:0}.question.arriving:after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--accent);transform-origin:left;animation:underline 650ms ease-out}
   /* B6: no focus box-shadow; its blurred rectangle showed the field's edges over the glow. */
-  .subj:focus,.dir:focus{outline:none}.subj::placeholder,.dir::placeholder{color:var(--ink-faint)}
+  .subj:focus,.dir:focus{outline:none;box-shadow:none}.subj::placeholder,.dir::placeholder{color:var(--ink-faint)}
   .primary{position:absolute;left:0;top:0;margin:0;white-space:nowrap;overflow:hidden;z-index:3;visibility:hidden;padding:12px 28px;border-radius:999px;font-size:14px;font-weight:600;background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent)}.primary:global(.show){visibility:visible}.primary:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 86%,var(--ink))}.primary:disabled{background:var(--surface-2);color:var(--ink-faint);border-color:var(--line);box-shadow:none;opacity:1}
   .example{margin:-8px 0 0;text-align:center;font-size:12px;color:var(--ink-faint);font-family:'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif}.example kbd{font:inherit;color:var(--ink-mute)}.hint{display:inline-block;transform-origin:0 0}
   .wrap:global(.capsule) .example{text-align:left;font-size:11px;padding-left:29px}.wrap:global(.capsule.two) .example{padding-left:25px}.why{margin:-6px 0 0;text-align:center;font-size:12px;color:var(--ink-mute)}.row{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6px}.pickers{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px}
@@ -175,7 +176,9 @@
   .starters{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 16px 6px 0}.shint{font-size:11px;color:var(--ink-faint);margin-right:2px}.starter{border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink-mute);padding:3px 10px;font-size:12px;animation:appear 200ms both;animation-delay:var(--delay)}.starter:hover{border-color:var(--accent);color:var(--accent)}
   button,input{transition:color 180ms ease-out,opacity 180ms ease-out,box-shadow 180ms ease-out,background 180ms ease-out}.embers{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
   @keyframes underline{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-  @media(max-width:719px){.subj{font-size:26px}.cap:global(.on) .subj{font-size:20px}.primary{padding:10px 16px;font-size:13px}.cap:global(.on){padding-left:18px}.cards{grid-template-columns:1fr}.wrap,.wrap.first{padding-top:10vh}}
+  @media(max-width:719px){.subj{font-size:26px}.cap:global(.on) .subj{font-size:20px}.primary{padding:10px 16px;font-size:13px}.cap:global(.on){padding-left:18px}.cards{grid-template-columns:1fr}.wrap,.wrap.first{padding-top:10vh}
+    /* NW-40, WG-10 (amended 2026-11-18): the focused field keeps its width; the button sits under it, right-aligned (capsule.ts STACK_GAP). */
+    .cap:global(.on.focused) .dock{width:0}.cap:global(.on.focused:not(.two)){margin-bottom:calc(var(--bh) + 10px)}.cap:global(.on) .subj{padding-right:12px}}
   @media(prefers-reduced-motion:reduce){*,*:before{animation:none!important;transition:none!important}.embers{display:none}}
   :global(html[data-reduce-motion='on']) *{animation:none!important;transition:none!important}
 </style>

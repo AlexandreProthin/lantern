@@ -167,4 +167,22 @@ for (const size of PHONES) test.describe(`a ${size.width} × ${size.height} phon
     expect((await amber.boundingBox())!.y + 4.2).toBeGreaterThanOrEqual(bottom - 1.5);
     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion') ?? '{}').spots)).toEqual({ 'learn/study:phone': expect.stringMatching(/^hang-\d/) });
   });
+
+  test('NW-40, WG-10: Welcome\'s field shows its whole question; its button sits under it, not inside it', async ({ page }) => {
+    await greeted(page);
+    await page.goto('/');
+    const field = page.locator('.welcome input.subj'), carry = page.getByRole('button', { name: 'Carry the lantern in' });
+    await expect(field).toBeFocused();
+    await expect(carry).toBeVisible();
+    const fits = () => field.evaluate((input: HTMLInputElement) => {
+      const cs = getComputedStyle(input), ctx = document.createElement('canvas').getContext('2d')!;
+      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      return ctx.measureText(input.placeholder).width <= input.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    });
+    await expect.poll(fits).toBe(true);
+    await expect.poll(async () => { const [f, c] = [(await field.boundingBox())!, (await carry.boundingBox())!]; return !overlap(f, c) && c.y >= f.y + f.height && c.x + c.width <= size.width; }).toBe(true);
+    await field.fill('Bread');
+    await expect(carry).toBeEnabled();
+    expect(await noSideScroll(page)).toBe(true);
+  });
 });
