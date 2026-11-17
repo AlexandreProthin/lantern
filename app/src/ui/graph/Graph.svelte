@@ -107,7 +107,9 @@
   let announcement=$state('');
   const openedAt=Date.now();
   let simLinks: SimLink[] = [];
-  let tick = $state(0);
+  /** `tick`: positions moved. `shape`: the set of nodes and edges changed. */
+  let tick = $state(0), shape = $state(0);
+  let laidSubject = '';
   let transform = $state<ZoomTransform>(zoomIdentity);
   let phoneLegend = $state(false);
   const legendShown = $derived(phone.current ? phoneLegend : !settings.ui.legendCollapsed);
@@ -123,16 +125,63 @@
       transform is relative to the corner, so a pinch, a wheel or the ± buttons zoom around the right point. */
   const toZoom=(t:ZoomTransform)=>zoomIdentity.translate(t.x+width/2,t.y+height/2).scale(t.k);
   function setView(t:ZoomTransform){select(host).call(zoomer.transform,toZoom(t));}
+  /** The view moved a moment ago (a gesture, a pan to the focus): see `.world.moving`. */
+  let viewMoving=$state(false),viewRest=0;
+  function viewMoved(){viewMoving=true;clearTimeout(viewRest);viewRest=window.setTimeout(()=>{viewMoving=false;},graphMotion.VIEW_REST_MS);}
   // A resize moves the centre: d3-zoom's copy follows, so the next gesture starts from what is shown.
   $effect(()=>{width;height;untrack(()=>{if(!zoomer||panFrame)return;setView(transform);});});
-  let halfRate=$state(false),settlingFrame=0,lastTick=0,slowSince=0;
-  function halfStep(){let skip=false;
-    function frame(){if(!visible||motionReduced())return;
-      skip=!skip;if(!skip){sim.tick();tick++;}
-      if(sim.alpha()>sim.alphaMin())settlingFrame=requestAnimationFrame(frame);else settlingFrame=0;
-    }
-    cancelAnimationFrame(settlingFrame);settlingFrame=requestAnimationFrame(frame);
+  // ---- The simulation's clock ------------------------------------------------------------
+  // The simulation steps by elapsed time (one step per 60th of a second, up to three a frame), so it settles as fast
+  // on a 120 Hz screen as on a slow one. Positions are written straight to the elements (`paint`), outside Svelte.
+  const STEP_MS=1000/60;
+  /** Frames stay slow for a while: the glow goes until the layout rests (GV-110). */
+  let degraded=$state(false),simFrame=0,lastStep=0,stepDebt=0,slowSince=0;
+  /** This map was slow to move once: it starts the next move already lightened, not after a slow second. */
+  let slowMap=false;
+  function stopSim(){cancelAnimationFrame(simFrame);simFrame=0;}
+  function runSim(){if(simFrame||!visible||motionReduced()||sim.alpha()<=sim.alphaMin())return;lastStep=0;stepDebt=STEP_MS;if(slowMap)degraded=true;simFrame=requestAnimationFrame(stepSim);}
+  function rested(){slowSince=0;if(degraded){degraded=false;paintRefs();}}
+  function stepSim(at:number){simFrame=0;
+    if(!visible||motionReduced())return;
+    const elapsed=lastStep?at-lastStep:0;
+    if(elapsed>graphMotion.FRAME_BUDGET_MS){if(!slowSince)slowSince=at;else if(at-slowSince>=graphMotion.SLOW_SETTLING_MS)degraded=slowMap=true;}else slowSince=0;
+    lastStep=at;stepDebt=Math.min(stepDebt+elapsed,STEP_MS*3);
+    let stepped=false;
+    while(stepDebt>=STEP_MS&&sim.alpha()>sim.alphaMin()){sim.tick();stepDebt-=STEP_MS;stepped=true;}
+    if(stepped)moved();
+    if(sim.alpha()>sim.alphaMin())simFrame=requestAnimationFrame(stepSim);else rested();
   }
+  /** Runs the layout to rest at once, with nothing drawn in between. */
+  function settleNow(){stopSim();for(let i=0;sim.alpha()>sim.alphaMin()&&i<graphMotion.SETTLE_TICKS;i++)sim.tick();degraded=false;moved();}
+
+  // ---- Positions, written to the elements ---------------------------------------------------
+  const nodeEls=new Map<string,HTMLElement>(),edgeEls=new Map<string,SVGPathElement>(),refEls=new Map<string,SVGPathElement>();
+  const px=(v:number|undefined)=>Math.round((v??0)*10)/10;
+  function placeNode(id:string,el:HTMLElement){const p=simNodes.get(id);if(!p)return;
+    el.style.left=`${px(p.x)}px`;el.style.top=`${px(p.y)}px`;
+    if(sceneNodes[id]?.pending==='shrinking'){const back=simNodes.get(sceneNodes[id].parents[0]);
+      el.style.setProperty('--back-x',`${px((back?.x??0)-(p.x??0))}px`);el.style.setProperty('--back-y',`${px((back?.y??0)-(p.y??0))}px`);}
+  }
+  function edgePath(l:SimLink){const x1=px(l.source.x),y1=px(l.source.y),x2=px(l.target.x),y2=px(l.target.y),mx=(x1+x2)/2;
+    return layout==='tree'?`M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`:`M${x1} ${y1} L${x2} ${y2}`;}
+  function placeEdge(id:string,el:SVGPathElement){const l=simLinks.find(l=>l.target.id===id);if(l)el.setAttribute('d',edgePath(l));}
+  function placeRef(link:{from:string;to:string},el:SVGPathElement){const a=simNodes.get(link.from),b=simNodes.get(link.to);if(a&&b)el.setAttribute('d',linkCurve(a,b));}
+  /** Text-link lines are the costly part of a big map in motion (hundreds of dotted curves): the slow-frame fallback leaves them out until the layout rests (GV-112). */
+  function paintRefs(){if(refEls.size)for(const link of references){const el=refEls.get(link.id);if(el)placeRef(link,el);}}
+  function paint(){
+    for(const [id,el] of nodeEls)placeNode(id,el);
+    for(const l of simLinks){const el=edgeEls.get(l.target.id);if(el)el.setAttribute('d',edgePath(l));}
+    if(!degraded)paintRefs();
+  }
+  /** Positions changed: draw them, and let what follows them (the menu, `settled`) know. */
+  function moved(){paint();tick++;}
+  /** Each element is placed as it mounts, and again when its node changes (a waiting disc becomes the node that arrived). */
+  function nodeRef(el:HTMLElement,id:string){nodeEls.set(id,el);placeNode(id,el);
+    return{update(next:string){if(nodeEls.get(id)===el)nodeEls.delete(id);id=next;nodeEls.set(id,el);placeNode(id,el);},destroy(){if(nodeEls.get(id)===el)nodeEls.delete(id);}};}
+  function edgeRef(el:SVGPathElement,id:string){edgeEls.set(id,el);placeEdge(id,el);
+    return{update(next:string){if(edgeEls.get(id)===el)edgeEls.delete(id);id=next;edgeEls.set(id,el);placeEdge(id,el);},destroy(){if(edgeEls.get(id)===el)edgeEls.delete(id);}};}
+  function refRef(el:SVGPathElement,link:{id:string;from:string;to:string}){refEls.set(link.id,el);placeRef(link,el);
+    return{update(next:{id:string;from:string;to:string}){if(refEls.get(link.id)===el)refEls.delete(link.id);link=next;refEls.set(link.id,el);placeRef(link,el);},destroy(){if(refEls.get(link.id)===el)refEls.delete(link.id);}};}
   function stopPan(){cancelAnimationFrame(panFrame);panFrame=0;}
   function moveView(target:ZoomTransform,duration:number) {
     if(!zoomer)return;stopPan();
@@ -149,14 +198,8 @@
     if(dx||dy)moveView(zoomIdentity.translate(transform.x+dx,transform.y+dy).scale(transform.k),graphMotion.FOCUS_PAN_MS);
   }
 
-  const sim = forceSimulation<SimNode>()
-    .alphaDecay(0.03)
-    .on('tick', () => {
-      const at=performance.now();
-      if(lastTick&&at-lastTick>graphMotion.FRAME_BUDGET_MS){if(!slowSince)slowSince=at;else if(at-slowSince>=graphMotion.SLOW_SETTLING_MS){sim.stop();halfRate=true;halfStep();}}
-      else slowSince=0;
-      lastTick=at;tick++;
-    });
+  // d3 starts its own timer on creation; this view steps the simulation itself (`stepSim`).
+  const sim = forceSimulation<SimNode>().alphaDecay(0.03).stop();
   const settled=$derived.by(()=>{tick;return sim.alpha()<=sim.alphaMin();});
 
   function childrenOf(id: string): string[] {
@@ -170,7 +213,12 @@
     return treePositions({ ...session.visit, nodes: sceneNodes });
   }
 
-  function applyLayout() {
+  /**
+   * `open`: a subject's first layout runs to rest before it is shown, so the map appears in place. `grow`: nodes
+   * came or went in a map already at rest, so it warms only a little and the rest of the map stays where it is.
+   * `layout`: a switch between Free and Tree, animated in full.
+   */
+  function applyLayout(kind: 'open' | 'grow' | 'layout' = 'layout', changed = 0) {
     const root = simNodes.get(session.visit.rootId);
     sim.nodes([...simNodes.values()]);
     if (layout === 'tree') {
@@ -194,9 +242,9 @@
         .force('x', forceX(0).strength(0.02))
         .force('y', forceY(0).strength(0.02));
     }
-    cancelAnimationFrame(settlingFrame);lastTick=0;slowSince=0;
-    if (motionReduced()) { sim.stop(); sim.alpha(1); for (let i=0;i<300;i++) sim.tick(); tick++; }
-    else if (visible) {sim.alpha(.9);if(halfRate)halfStep();else sim.restart();}
+    stopSim();slowSince=0;
+    if (kind === 'open' || motionReduced()) { sim.alpha(1); settleNow(); if (kind === 'open') needsFit = true; }
+    else { sim.alpha(kind === 'grow' ? Math.max(sim.alpha(), changed > graphMotion.GROW_MANY ? graphMotion.GROW_ALPHA_MANY : graphMotion.GROW_ALPHA) : .9); moved(); runSim(); }
   }
 
   // Keep the simulation in step with the subject's nodes. New nodes spawn next to their parent.
@@ -219,30 +267,39 @@
       const body = simNodes.get(transfer.from);
       if (body) { simNodes.delete(transfer.from); body.id = transfer.to; simNodes.set(transfer.to, body); changed = true; }
     }
+    // A subject's first nodes all arrive together: the whole layout is new (`open`).
+    const subjectId = untrack(() => session.subject.id), opening = subjectId !== laidSubject;
+    if (opening) { laidSubject = subjectId; simNodes.clear(); slowMap = false; }
+    let count = 0;
     for (const n of nodes) {
       if (simNodes.has(n.id)) continue;
-      const p = n.parents[0] ? simNodes.get(n.parents[0]) : undefined;
-      const a = Math.atan2(initialPosition(n.id).y, initialPosition(n.id).x);
-      simNodes.set(n.id, { id: n.id, x: (p?.x ?? 0) + Math.cos(a) * 30, y: (p?.y ?? 0) + Math.sin(a) * 30 });
-      changed = true;
+      // GV-14: a new node starts beyond its parent, on the side away from the grandparent, so the map it joins barely moves.
+      const p = n.parents[0] ? simNodes.get(n.parents[0]) : undefined, g = p ? simNodes.get(sceneNodes[n.parents[0]]?.parents[0]) : undefined;
+      const spread = Math.atan2(initialPosition(n.id).y, initialPosition(n.id).x);
+      const outward = !opening && p && g && (p.x !== g.x || p.y !== g.y);
+      const a = outward ? Math.atan2((p.y ?? 0) - (g.y ?? 0), (p.x ?? 0) - (g.x ?? 0)) + spread / 2.4 : spread, d = outward ? 70 : 30;
+      simNodes.set(n.id, { id: n.id, x: (p?.x ?? 0) + Math.cos(a) * d, y: (p?.y ?? 0) + Math.sin(a) * d });
+      changed = true; count++;
     }
     for (const id of [...simNodes.keys()]) {
       if (!sceneNodes[id]) {
         simNodes.delete(id);
-        changed = true;
+        changed = true; count++;
       }
     }
-    untrack(() => tick++);
+    untrack(() => shape++);
     if (!changed) return;
     simLinks = nodes
       .filter((n) => n.parents[0] && simNodes.has(n.parents[0]))
       .map((n) => ({ source: simNodes.get(n.parents[0]!)!, target: simNodes.get(n.id)! }));
-    untrack(applyLayout);
+    untrack(() => applyLayout(opening ? 'open' : 'grow', count));
   });
 
+  let laidLayout: Layout | undefined;
   $effect(() => {
     const l = layout;
-    untrack(applyLayout);
+    // The first run is the opening itself (the effect above); only a real switch re-lays the map.
+    untrack(() => { if (laidLayout !== undefined && laidLayout !== l) applyLayout('layout'); laidLayout = l; });
   });
 
   /** The focused node and its ancestors up to the subject. */
@@ -261,34 +318,14 @@
     return room.links?.(session.visit) ?? [];
   });
 
+  /** What is drawn, without positions: those are written by `paint`, so a tick re-renders nothing here. */
   const view = $derived.by(() => {
-    tick; revision;
+    shape; revision;
     const nodes = sceneNodes;
-    const tree = layout === 'tree';
     return {
-      references: references.flatMap(link => {
-        const a = simNodes.get(link.from), b = simNodes.get(link.to);
-        const x1=a?.x??0,y1=a?.y??0,x2=b?.x??0,y2=b?.y??0;
-        return a && b ? [{ id:link.id, d: `M${x1} ${y1} Q${(x1+x2)/2-(y2-y1)*.08} ${(y1+y2)/2+(x2-x1)*.08} ${x2} ${y2}` }] : [];
-      }),
-      edges: simLinks.map((l) => {
-        const x1 = l.source.x ?? 0,
-          y1 = l.source.y ?? 0,
-          x2 = l.target.x ?? 0,
-          y2 = l.target.y ?? 0;
-        const mx = (x1 + x2) / 2;
-        return {
-          id: l.target.id,
-          pending: nodes[l.target.id]?.pending === 'waiting',
-          d: tree ? `M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}` : `M${x1} ${y1} L${x2} ${y2}`,
-          onRoute: route.has(l.target.id)
-        };
-      }),
-      nodes: [...simNodes.values()]
-        .filter((sn) => nodes[sn.id])
-        .map((sn) => ({ ...nodes[sn.id], x: sn.x ?? 0, y: sn.y ?? 0,
-          backX: (simNodes.get(nodes[sn.id].parents[0])?.x ?? 0) - (sn.x ?? 0),
-          backY: (simNodes.get(nodes[sn.id].parents[0])?.y ?? 0) - (sn.y ?? 0) }))
+      references: references.filter(link => simNodes.has(link.from) && simNodes.has(link.to)),
+      edges: simLinks.map((l) => ({ id: l.target.id, pending: nodes[l.target.id]?.pending === 'waiting', onRoute: route.has(l.target.id) })),
+      nodes: [...simNodes.values()].filter((sn) => nodes[sn.id]).map((sn) => nodes[sn.id])
     };
   });
 
@@ -310,9 +347,9 @@
   });
   function chooseViewAction(action: MenuAction) { const id = menu!; closeMenu(true); foldNode(id, action.id === 'collapse'); }
   // Anchored to the node, so it follows the pan that focusing starts.
-  const menuAt = $derived(menuNode ? {
-    x: Math.max(8, Math.min(width - 200, transform.x + width / 2 + menuNode.x * transform.k + 18)),
-    y: Math.max(8, Math.min(height - menuHeight - 8, transform.y + height / 2 + menuNode.y * transform.k - 12)) } : null);
+  const menuAt = $derived.by(() => { tick; const at = menuNode ? simNodes.get(menuNode.id) : undefined; return at ? {
+    x: Math.max(8, Math.min(width - 200, transform.x + width / 2 + (at.x ?? 0) * transform.k + 18)),
+    y: Math.max(8, Math.min(height - menuHeight - 8, transform.y + height / 2 + (at.y ?? 0) * transform.k - 12)) } : null; });
   $effect(() => { if (menu && (!menuNode || !visible)) untrack(() => closeMenu(false)); });
   /** NW-41: a touch held still for half a second opens the node menu, as a right click does; the tap that ends it does not also select. */
   let press: { timer: ReturnType<typeof setTimeout>; x: number; y: number } | null = null, pressedMenu = false;
@@ -434,8 +471,12 @@
     if(id===shownSubject)return;
     viewMemory.set(shownSubject,{transform});shownSubject=id;resetSearch();
     const memory=viewMemory.get(id);prevFocus=session.visit.focusId;lastRoute=route;stopTravel();stopPan();
-    afterUpdate().then(()=>{if(!zoomer)return;if(memory)setView(memory.transform);else setTimeout(reset,500);});
+    // The new subject is laid out at rest already (`open`): its remembered view comes back, or it is fitted at once.
+    afterUpdate().then(()=>{if(!zoomer)return;if(memory){needsFit=false;setView(memory.transform);}else needsFit=true;});
   });});
+  /** A subject shown for the first time is fitted as soon as the view has a size, with no travel. */
+  let needsFit=$state(false),mounted=$state(false);
+  $effect(()=>{width;height;if(needsFit&&visible&&mounted)untrack(()=>{if(host.clientWidth<100||host.clientHeight<100)return;needsFit=false;reset(false);});});
 
   $effect(() => {
     revision;
@@ -448,12 +489,22 @@
   });
 
 
-  function reset() {
+  /** The legend and the file row sit over the map's bottom edge; the fit keeps the map above them (RS-35). */
+  let cornerHeight = $state(0);
+  function reset(animate = true) {
+    // The element's own size: the bound `width` and `height` arrive a frame after mount.
+    const width = host?.clientWidth ?? 0, height = host?.clientHeight ?? 0;
     const positions = [...simNodes.values()]; if (!positions.length || !zoomer || width < 100 || height < 100) return;
     const minX = Math.min(...positions.map(n => (n.x ?? 0)-75)), maxX = Math.max(...positions.map(n => (n.x ?? 0)+75));
     const minY = Math.min(...positions.map(n => (n.y ?? 0)-30)), maxY = Math.max(...positions.map(n => (n.y ?? 0)+95));
-    const scale = Math.max(.1, Math.min(1, (width-96)/(maxX-minX), (height-96)/(maxY-minY)));
-    moveView(zoomIdentity.translate(-(minX+maxX)/2*scale, -(minY+maxY)/2*scale).scale(scale),graphMotion.RECENTER_MS);
+    const below = Math.min(cornerHeight, height / 3);
+    let scale = Math.max(.1, Math.min(1, (width-96)/(maxX-minX), (height-96-below)/(maxY-minY)));
+    let x = (minX+maxX)/2, y = (minY+maxY)/2;
+    // NW-40: a phone never fits a map so small that no title can be read; it shows the part around the focused node.
+    const focus = simNodes.get(session.visit.focusId);
+    if (phone.current && scale < graphMotion.hideTitlesBelow && focus) { scale = graphMotion.hideTitlesBelow; x = focus.x ?? 0; y = focus.y ?? 0; }
+    const target = zoomIdentity.translate(-x*scale, -y*scale - below/2).scale(scale);
+    if (animate) moveView(target,graphMotion.RECENTER_MS); else { stopPan(); setView(target); }
   }
 
   // ---- Motion: a light dot travels outward along newly highlighted edges -------------
@@ -715,10 +766,10 @@
     });
   });
   $effect(() => { settings.appearance.reduceMotion;untrack(()=>{
-    stopPan();if(motionReduced()){spawn.stop();stopTravel();sim.stop();cancelAnimationFrame(settlingFrame);for(let i=0;sim.alpha()>sim.alphaMin()&&i<300;i++)sim.tick();tick++;}
-    else if(visible&&sim.alpha()>sim.alphaMin()){if(halfRate)halfStep();else sim.restart();}
+    stopPan();if(motionReduced()){spawn.stop();stopTravel();settleNow();}
+    else runSim();
   }); });
-  $effect(() => { if (!visible) { spawn.stop();sim.stop();cancelAnimationFrame(settlingFrame);stopTravel();stopPan(); } else if (sim.alpha() > sim.alphaMin() && !motionReduced()) {if(halfRate)halfStep();else sim.restart();} });
+  $effect(() => { if (!visible) { spawn.stop();stopSim();stopTravel();stopPan(); } else untrack(runSim); });
   function onNodeKey(e: KeyboardEvent) {
     // GV-70: moves go over drawn nodes; Right on a folded node unfolds it and goes to its first shown child.
     const focus = session.visit.focusId;
@@ -734,17 +785,16 @@
     zoomer = zoom<HTMLDivElement, unknown>()
       .scaleExtent([0.1, 3])
       .on('start',e=>{if(e.sourceEvent)stopPan();})
-      .on('zoom', (e) => { const t = zoomIdentity.translate(e.transform.x - width / 2, e.transform.y - height / 2).scale(e.transform.k); backdropPan(t.x - transform.x, t.y - transform.y, t.k / transform.k); transform = t; });
+      .on('zoom', (e) => { const t = zoomIdentity.translate(e.transform.x - width / 2, e.transform.y - height / 2).scale(e.transform.k); backdropPan(t.x - transform.x, t.y - transform.y, t.k / transform.k); transform = t; viewMoved(); });
     select(host).call(zoomer).on('dblclick.zoom', null);
     setView(transform);
-    const onMotion = () => { if (motionReduced()) { spawn.stop();stopTravel(); } applyLayout(); };
-    const initialFit = setTimeout(reset, 500);
+    const onMotion = () => { if (motionReduced()) { spawn.stop();stopTravel();settleNow(); } else runSim(); };
+    needsFit = true; mounted = true;
     const onVisibility = () => { if(document.hidden) { spawn.stop();stopTravel(); } };
     reducedMotion.addEventListener('change', onMotion);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
-      clearTimeout(initialFit); clearTimeout(cleanupTimer);stopPan();cancelAnimationFrame(settlingFrame);
-      sim.stop();
+      clearTimeout(cleanupTimer);stopPan();stopSim();
       spawn.stop();
       stopTravel();
       reducedMotion.removeEventListener('change', onMotion);
@@ -754,18 +804,19 @@
 </script>
 
 <svelte:window onpointerdowncapture={menuOutside} onkeydown={windowKey} />
-<div class="graph {room.className}" class:degraded={halfRate} data-settled={settled} data-reduced={motionReduced()} bind:this={host} bind:clientWidth={width} bind:clientHeight={height}
+<div class="graph {room.className}" class:degraded data-settled={settled} data-reduced={motionReduced()} bind:this={host} bind:clientWidth={width} bind:clientHeight={height}
   style="--grow:{graphMotion.SPAWN_GROW_MS}ms;--stagger:{graphMotion.SPAWN_STAGGER_MS}ms;--breathe:{graphMotion.PENDING_BREATHE_PERIOD_MS}ms;--shrink:{graphMotion.SPAWN_SHRINK_MS}ms;--reveal:{graphMotion.SPAWN_REVEAL_MS}ms;--pulse:{graphMotion.BUSY_PULSE_PERIOD_MS}ms;--opacity-low:{graphMotion.PENDING_BREATHE_OPACITY[0]};--opacity-high:{graphMotion.PENDING_BREATHE_OPACITY[1]}">
   <div
     class="world"
     class:tiny={transform.k < graphMotion.hideTitlesBelow}
-    style="transform: translate3d({transform.x + width / 2}px, {transform.y + height / 2}px, 0) scale({transform.k})"
+    class:moving={viewMoving}
+    style="transform: translate3d({transform.x + width / 2}px, {transform.y + height / 2}px, 0) scale({transform.k});--inv:{transform.k < graphMotion.hideTitlesBelow ? Math.round(100 / transform.k) / 100 : 1}"
   >
     <!-- Edges sit under the nodes: the opaque circles cut the lines at their rims. -->
     <svg class="edges" bind:this={edgesSvg} aria-hidden="true">
-      {#if settings.ui.textLinks}{#each view.references as e (e.id)}<path class="reference" d={e.d} />{/each}{/if}
+      {#if settings.ui.textLinks}<g class="references">{#each view.references as e (e.id)}<path class="reference" use:refRef={e} />{/each}</g>{/if}
       {#each view.edges as e (e.id)}
-        <path data-edge={e.id} d={e.d} pathLength="1" class:route={e.onRoute}
+        <path data-edge={e.id} use:edgeRef={e.id} pathLength="1" class:route={e.onRoute}
           data-spawn-pending={e.pending ? 'true' : undefined} />
       {/each}
     </svg>
@@ -788,7 +839,8 @@
         data-pending={n.pending}
         {...room.dataAttrs?.(n)}
         data-growing={!n.pending&&scene.key(n.id)===n.id&&Date.parse(n.createdAt)>openedAt ? 'true' : undefined}
-        style="left: {n.x}px; top: {n.y}px;--slot:{n.slot ?? 0};--back-x:{n.backX}px;--back-y:{n.backY}px"
+        use:nodeRef={n.id}
+        style:--slot={n.slot ?? 0}
         aria-pressed={focused}
         aria-label="{title(n.title)} · {n.kind} · {n.state}{room.labelExtra?.(n) ?? ''}{projection.hidden.get(n.id) ? ' · '+strings.hiddenCount(projection.hidden.get(n.id)!) : ''}{busy ? ' · '+strings.preparing : ''}"
         title="{title(n.title)} · {n.state}{room.tooltipExtra?.(n) ?? ''}"
@@ -838,8 +890,8 @@
     <button
       onclick={() => { settings.ui.graphLayout = layout === 'force' ? 'tree' : 'free'; preferencesChanged(); }}
       aria-pressed={layout==='tree'}
-      aria-label={layout === 'force' ? 'Tree layout' : 'Free layout'}
-      title={layout === 'force' ? 'Tree layout' : 'Free layout'}
+      aria-label={layout === 'force' ? strings.treeLayout : strings.freeLayout}
+      title={layout === 'force' ? strings.treeLayout : strings.freeLayout}
     >
       {#if layout === 'force'}
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true">
@@ -857,16 +909,16 @@
 
   <nav class="zoom-controls">
     <button onclick={() => select(host).call(zoomer.scaleBy, 1/1.2)} aria-label={strings.zoomOut} title={strings.zoomOut}>−</button>
-    <button onclick={reset} aria-label={strings.recenter} title={strings.recenter}>⌖</button>
+    <button onclick={() => reset()} aria-label={strings.recenter} title={strings.recenter}>⌖</button>
     <button onclick={() => select(host).call(zoomer.scaleBy, 1.2)} aria-label={strings.zoomIn} title={strings.zoomIn}>+</button>
   </nav>
-  <div class="corner">
+  <div class="corner" bind:offsetHeight={cornerHeight}>
   <div class="file-row">
     <!-- NW-31: the subject's file is on the computer running Lantern, out of a paired device's reach. -->
     {#if !remote}<button class="open-file" title={strings.openFileHint} onclick={openFile} oncontextmenu={copyFilePath}>{strings.openFile}</button>{/if}
     {#if fileNote}<span class="file-note" role="status">{fileNote}</span>{/if}
   </div>
-  <div class="legend">
+  <div class="legend" class:shown={legendShown}>
     <!-- NW-40: on a phone the legend starts folded each time, whatever the desktop keeps. -->
     <button aria-expanded={legendShown} onclick={() => { if (phone.current) phoneLegend = !phoneLegend; else { settings.ui.legendCollapsed = !settings.ui.legendCollapsed; preferencesChanged(); } }}>{strings.legend}</button>
     {#if legendShown}
@@ -896,8 +948,14 @@
     left: 0;
     top: 0;
     transform-origin: 0 0;
-    will-change:transform;
+    /* No `will-change` at rest: it keeps the layer at its first resolution, and titles blur when zoomed in. */
   }
+  /* While the view moves the layer is kept as drawn (no raster per step); it is drawn again, sharp, once the view rests.
+     Kept all the time, it would be drawn at full size even on a small fitted map, which slows every growth. */
+  .world.moving { will-change: transform; }
+  /* The inverse of the zoom, for the one title kept readable on a small map. It does not inherit: a zoom step
+     restyles the nodes that ask for it (`--inv: inherit`), not every element of the map (GV-110). */
+  @property --inv { syntax: '<number>'; inherits: false; initial-value: 1; }
   .edges {
     position: absolute;
     left: 0;
@@ -915,13 +973,19 @@
   .edges path.route {
     stroke: var(--accent);
   }
-  .edges path.reference { stroke-dasharray:1 5; opacity:.45; }
+  /* One opacity for the group, not one per line: hundreds of translucent paths are hundreds of offscreen passes. */
+  .edges .references { opacity:.45; animation:reveal var(--reveal) ease-out; }
+  .edges path.reference { stroke-dasharray:1 5; }
+  .degraded .edges .references { display:none; }
   .edges :global(.link-preview) { pointer-events:none; }
   .edges :global(.link-preview .preview-curve) { stroke:var(--node-lit); stroke-dasharray:1 5; opacity:.5; }
   .edges :global(.link-preview circle) { fill:var(--node-lit); filter:drop-shadow(0 0 4px var(--glow-near)); }
   .edges path[data-spawn-pending] { stroke-dasharray:1; stroke-dashoffset:1; }
   .graph[data-reduced='true'] .edges path[data-spawn-pending] { stroke-dashoffset:0; }
   .tiny .name { visibility:hidden; }
+  /* A fitted map is often too small for titles: the focused node and the one under the pointer keep theirs, at reading size. */
+  .tiny .node[aria-pressed='true'], .tiny .node:hover { z-index:1; --inv:inherit; }
+  .tiny .node[aria-pressed='true'] .name, .tiny .node:hover:not(:disabled) .name { --inv:inherit; visibility:visible; transform:scale(var(--inv)); transform-origin:50% 0; text-shadow:0 0 6px var(--bg),0 0 2px var(--bg); }
   .degraded .node .disc { box-shadow:none; }
   .large-notice { position:absolute; top:60px; left:20px; color:var(--ink-mute); font-size:12px; }
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
@@ -931,6 +995,8 @@
 
   .node {
     position: absolute;
+    left: 0;
+    top: 0;
     width: 150px;
     padding: 8px;
     margin: 0;
@@ -1062,6 +1128,8 @@
     color: var(--ink-mute);
     pointer-events: auto; flex-wrap:wrap; align-items:center;
   }
+  /* RS-35: open, the legend has its own ground, so the map never shows through its rows. */
+  .legend.shown { padding:6px 10px 6px 0; border-radius:10px; background:var(--glass); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); box-shadow:0 0 0 1px var(--glass-line); }
   .legend button, .open-file { padding:3px 8px; font-size:12px; }
   .legend label { display:flex; align-items:center; gap:4px; }
   /* NW-41, NW-42: on a phone the controls take a finger, the search field does not zoom the page, and the corner clears the zoom buttons. */

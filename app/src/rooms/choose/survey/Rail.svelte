@@ -89,7 +89,7 @@
   .ctr:hover .tip { display:block; }
   .gap { flex:1; }
   .miss-n { font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); }
-  .rec { margin:0 8px 18px; font:600 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; border-radius:999px; padding:6px 0; background:transparent; border:1px solid var(--accent); color:var(--accent); }
+  .rec { margin:0 5px 18px; font:600 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; border-radius:999px; padding:6px 2px; white-space:nowrap; background:transparent; border:1px solid var(--accent); color:var(--accent); }
   .rec.on { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); box-shadow:0 0 24px 6px var(--glow-far); }
   .rec:hover:not(:disabled) { background:var(--accent); color:var(--accent-ink); }
   /* NW-40: on a phone the rail is a bar under the graph; its counters run in a row. */

@@ -6,7 +6,9 @@ import type { AmberContext, AmberHelp } from './prompt';
 export interface HelpRoom { name: string; spaces: readonly { id: string; label: string }[]; companion?: RoomCompanion }
 /** CO-43: the app's help, sent with every call: what the rooms are, the shortcut table, every guide line and every tip. */
 export function amberHelp(rooms: readonly HelpRoom[]): AmberHelp {
-  const shortcuts = strings.shortcutTable + (rooms.length > 1 ? '\n' + strings.roomShortcuts(rooms.map(r => r.name)) : '');
+  // The space keys differ by room (Choose has four spaces), so each room gets its own line.
+  const spaces = rooms.length > 1 ? rooms.map(r => `${strings.spaceShortcuts(r.spaces.map(s => s.label))} (in ${r.name})`).join('\n') : strings.spaceShortcuts(rooms[0]?.spaces.map(s => s.label) ?? []);
+  const shortcuts = strings.shortcutTable.replace('{spaces}', spaces) + (rooms.length > 1 ? '\n' + strings.roomShortcuts(rooms.map(r => r.name)) : '');
   return {
     about: strings.amberAbout(rooms.filter(r => r.companion).map(r => strings.amberRoomLine(r.name, r.companion!.about, r.spaces.map(s => s.label)))),
     shortcuts,

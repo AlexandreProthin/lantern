@@ -10,7 +10,16 @@
   let host: HTMLDivElement, visible = $state(false), loaded = $state<ThumbnailGraph | null>(null), failed = $state(false);
   // WG-40, GV-120: only the nodes shown by progress; a prepared course does not give itself away.
   const graph = $derived.by(() => { if (!loaded) return null; const shown = shownIds(loaded, opensChildren); return { ...loaded, nodes: Object.fromEntries(Object.entries(loaded.nodes).filter(([id]) => shown.has(id))) }; });
-  const points = $derived(graph && Object.keys(graph.nodes).length ? treePositions(graph, 40, 18) : new Map());
+  /** WG-40: the tree as in Study; a tree with too many rows for a 16:9 frame (a prepared course) is drawn around its root instead of as a thin column. */
+  const RADIAL_ROWS = 16;
+  const points = $derived.by(() => {
+    if (!graph || !Object.keys(graph.nodes).length) return new Map<string, { x: number; y: number }>();
+    const unit = treePositions(graph, 1, 1), ps = [...unit.values()];
+    const minX = Math.min(...ps.map(p => p.x)), depth = Math.max(...ps.map(p => p.x)) - minX, minY = Math.min(...ps.map(p => p.y)), rows = Math.max(...ps.map(p => p.y)) - minY + 1;
+    if (rows <= RADIAL_ROWS || !depth) return treePositions(graph, 40, 18);
+    const ring = Math.max(16, rows * 6 / (2 * Math.PI * depth * 1.25));
+    return new Map([...unit].map(([id, p]) => { const a = (p.y - minY) / rows * 2 * Math.PI - Math.PI / 2, r = (p.x - minX) * ring; return [id, { x: Math.cos(a) * r * 1.5, y: Math.sin(a) * r }]; }));
+  });
   const bounds = $derived.by(()=>{
     const ps=[...points.values()]; if(!ps.length)return '-80 -45 160 90';
     const xs=ps.map(p=>p.x),ys=ps.map(p=>p.y),width=Math.max(40,Math.max(...xs)-Math.min(...xs)+16),height=Math.max(22.5,Math.max(...ys)-Math.min(...ys)+16);

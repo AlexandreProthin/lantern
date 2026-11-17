@@ -188,5 +188,5 @@
   .prod.chosen .mute, .prod.chosen .faint { color:color-mix(in srgb, var(--accent-ink) 75%, var(--accent)); }
   .prod.chosen button:not(.link) { background:var(--accent-ink); color:var(--accent); border-color:var(--accent-ink); } .prod.chosen button.on { background:var(--bg); color:var(--focus); }
   .rej { margin-top:14px; font:400 12px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; color:var(--ink-faint); }
-  @media (max-width:760px) { .cols { grid-template-columns:1fr; } .cols .card + .card { border-left:0; padding-left:0; } .cols .card:first-child { padding-right:0; } .prod { grid-template-columns:1fr; gap:4px; } .sheet { padding:20px; } }
+  @media (max-width:719px) { .cols { grid-template-columns:1fr; } .cols .card + .card { border-left:0; padding-left:0; } .cols .card:first-child { padding-right:0; } .prod { grid-template-columns:1fr; gap:4px; } .sheet { padding:20px; } }
 </style>

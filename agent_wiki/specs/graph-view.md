@@ -32,7 +32,9 @@ are referenced here, not restated. The graph shows one room visit's tree
   (`createdAt`, then insertion order). A restored or added node keeps its original place.
 - **GV-14** Free layout MUST be reproducible: the initial position of a node is
   derived from a hash of its id around its parent (not `Math.random`), so reopening a subject
-  gives the same picture. Node positions are not stored in v0.1.0.
+  gives the same picture. Node positions are not stored in v0.1.0. *(Amended 2026-11-17.)* A node
+  added to an open map is seated outward from its grandparent, at the hash-derived offset, so a branch
+  grows away from the centre; opening a subject still uses the hash alone.
 - **GV-15** Free layout: the root is pinned at the origin; repulsion, collision radius and link
   distance are tunable constants (PoC values: charge −900, collide 62, link distance 130).
 
@@ -100,6 +102,8 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   edge. A link to a missing id draws nothing; duplicate links and links in both directions draw
   one line; links to the node's own parent or child draw nothing (the tree edge already shows
   them). *(Amended 2026-11-12.)* Both ends MUST be shown (GV-120, GV-131); a link to a hidden node draws nothing.
+  *(Amended 2026-11-17.)* While the GV-112 slow-frame fallback is on, the lines are left out until the
+  layout rests.
 - **GV-41** A toggle in the legend (*Text links*) shows or hides these lines. Default on;
   persisted app-wide.
 - **GV-42** Text links are **never part of the route**: they are not highlighted, carry no
@@ -378,9 +382,11 @@ view.
   (linear) on each graph change, never per frame. A 200-node prepared subject is well inside the
   GV-110 budget, and usually draws far fewer nodes than it holds.
 - **GV-112** If the physics cannot hold the budget (frame time over 20 ms for a second while
-  settling), tunable fallbacks apply in order: simulate at half rate; hide titles under the GV-62
-  threshold and skip glows; above **800 nodes** use the tree layout with a notice *Free layout
-  is off for large graphs*. Tree layout is always available.
+  settling), tunable fallbacks apply in order: hide titles under the GV-62
+  threshold, skip glows and leave out the text-link lines (GV-40); above **800 nodes** use the tree layout with a notice *Free layout
+  is off for large graphs*. Tree layout is always available. *(Amended 2026-11-17.)* The half-rate step
+  is gone: the simulation steps by elapsed time, and the fallback ends when the layout rests. On opening, the
+  free layout is run to rest before anything is drawn and the view is fitted at once.
 
 # Open
 

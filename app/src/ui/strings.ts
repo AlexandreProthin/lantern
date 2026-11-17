@@ -42,7 +42,7 @@ export const strings = {
   dismissedNotice: 'Dismissed. It will not be proposed again.', restore: 'Restore', dismiss: 'Dismiss',
   whereNext: 'Where to go next', axes: 'Axes to explore', dialogue: 'Dialogue',
   send: 'Send', check: 'Test me', understood: 'I get it', notSure: 'Not sure anymore', cancel: 'Cancel',
-  composer: 'Ask about this, or answer the tutor… (Ctrl+Enter to send)',
+  composer: 'Ask about this, or answer the tutor… (Ctrl+Enter to send)', composerPhone: 'Ask about this, or answer the tutor…',
   edit: 'Edit', save: 'Save', editExplanation: 'Edit explanation', editLabels: 'Edit title and hook',
   previousVersion: 'Previous version', revert: 'Revert to previous', keepCurrent: 'Keep current',
   previous: 'Previous', current: 'Current', ownNode: 'Add my own node', title: 'Title', hook: 'Hook', add: 'Add',
@@ -182,7 +182,7 @@ export const strings = {
     { id:'greet.4', text:'The light’s still on.' }, { id:'greet.5', text:'Ready when you are.' }, { id:'greet.6', text:'Back at it.' }
   ] as readonly { id:string; text:string }[],
   amberFirstLaunch:'Hello, I’m Amber. Click me for tips, or press Ctrl+J to ask me anything.',
-  amberUpdated:(version:string)=>`Lantern ${version} is here. What’s new:`, showAllNotes:'Show all', fullReleaseNotes:'Full release notes ›', releaseNotes:'Release notes',
+  amberUpdated:(version:string, notes=true)=>notes?`Lantern ${version} is here. What’s new:`:`Lantern ${version} is here.`, showAllNotes:'Show all', fullReleaseNotes:'Full release notes ›', releaseNotes:'Release notes',
   // CO-21: the frame's tips, shown in every room, as agreed 2026-10-17 (agent_wiki/plans/v0-4-0-amber-lines.md).
   amberTips:[
     { id:'frame.ask', text:'Press Ctrl+J anywhere to ask me something. I know the app, your subject, and a bit of everything else.' },
@@ -205,7 +205,10 @@ export const strings = {
   , transferRecovered:'An interrupted library transfer was recovered. Your subjects are safe.'
   , installInstructions: 'Install Claude Code from the setup page, then return to Lantern and choose Check again.', installClaude: 'Install Claude Code',
   signinInstructions: 'Start Claude Code once outside Lantern and follow its browser sign-in with your Claude account. Then return here and choose Check again.',
-  shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\nCtrl+1 / Ctrl+2 / Ctrl+3 — Welcome / Study / Gallery\nAlt+A / Alt+N / Alt+D with selected text — Ask / Make it a node / Ask Amber\n? — show or hide shortcuts\nCtrl+K — open or close the subject field’s panel\nCtrl+J — Ask Amber\nCtrl+Z / Ctrl+Y — undo / redo a change to the subject\nCtrl+, — Settings\nCtrl+F in Study — search nodes; Enter / Shift+Enter next / previous, Esc close'
+  /** GV-76, RS-23: the line for a room's spaces, in its own order; it replaces `{spaces}` in the table. */
+  spaceShortcuts: (names: readonly string[]) => `${names.map((_, i) => `Ctrl+${i + 1}`).join(' / ')} — ${names.join(' / ')}`,
+  shortcutsFor: (spaces: readonly string[]): string => strings.shortcutTable.replace('{spaces}', strings.spaceShortcuts(spaces)),
+  shortcutTable: 'Arrow keys — parent / first child / previous or next sibling\nHome — focus the root\nEnter on a graph node — light it, or focus the panel\nCtrl+Enter — send; save an edit\nEsc — close overlay, popover or dialog; cancel edit; cancel generation\n{spaces}\nAlt+A / Alt+N / Alt+D with selected text — Ask / Make it a node / Ask Amber\n? — show or hide shortcuts\nCtrl+K — open or close the subject field’s panel\nCtrl+J — Ask Amber\nCtrl+Z / Ctrl+Y — undo / redo a change to the subject\nCtrl+, — Settings\nCtrl+F in Study — search nodes; Enter / Shift+Enter next / previous, Esc close'
   // Web demo build only (VITE_DEMO): prepared answers, no inference.
   , demoBadge: 'Web demo', demoBadgeTitle: 'Prepared answers: no model runs and nothing leaves your browser.',
   demoReset: 'Reset', demoResetTitle: 'Start the demo again from the beginning', demoGetApp: 'Get Lantern',

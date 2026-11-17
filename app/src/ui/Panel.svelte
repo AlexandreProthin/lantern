@@ -5,6 +5,8 @@
   import Markdown from './Markdown.svelte';
   import { askAmber } from './ask-amber';
   import { strings } from './strings';
+  import { phone } from './phone.svelte';
+  import { withoutTitleHeading } from './markdown';
   import { modelLabel,durationLabel } from './format';
   import { isCodexModel, isEndpointModel } from '../core/models';
   import { endpointNameOf } from './model-choices.svelte';
@@ -16,6 +18,8 @@
   let { session, room, placeholder, notice: noticeBody, footer, body, after, revision, showTokens = true, request = null, preview }: PanelSnippets & { session: PanelSession; room: PanelRoomView; revision: number; showTokens?: boolean; request?: PanelRequest | null; preview?: (id: string | null) => void } = $props();
   const visit = $derived.by(() => { revision; return session.visit; });
   const node = $derived(visit.nodes[visit.focusId]);
+  /** The panel already shows the title: a text that opens with it as a heading is shown without that line (the stored text keeps it). */
+  const shownText = (text: string) => withoutTitleHeading(text, node.title);
   const path = $derived(pathTo(visit, node.id));
   const kids = $derived(childrenOf(visit, node.id));
   const running = $derived.by(() => { revision; return session.running ? { ...session.running } : null; });
@@ -151,8 +155,8 @@
       {:else if running!.replay}
         <!-- NP-64: a click on the replaying text puts the whole text in place. -->
         <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-        <div class="replay" onclick={() => session.cancel()}><Markdown text={running!.text || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>
-      {:else}<Markdown text={running!.text || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} />{/if}
+        <div class="replay" onclick={() => session.cancel()}><Markdown text={shownText(running!.text) || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>
+      {:else}<Markdown text={shownText(running!.text) || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} />{/if}
       <button onclick={() => session.cancel()}>{running!.replay ? strings.showAll : strings.cancel}</button>
     {:else if room.dormant(node)}
       {@render placeholder(node, { running, perform })}
@@ -160,7 +164,7 @@
       <textarea class="markdown-edit" aria-label={strings.editExplanation} bind:value={editDrafts[node.id].text} onkeydown={editKey} rows="12"></textarea>
       <button onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button>
     {:else}
-      <Markdown text={node.content} {visit} {linkable} focus={id => session.setFocus(id)} {preview} />
+      <Markdown text={shownText(node.content)} {visit} {linkable} focus={id => session.setFocus(id)} {preview} />
       <button class="quiet" disabled={readOnly} onclick={() => beginEdit('content')}>{strings.editExplanation}</button>
       {#if node.edited}<small>{strings.editedBy(node.edited.by)}</small>{/if}
       {#if node.previous !== undefined}<button class="quiet" onclick={() => compare = node}>{strings.previousVersion}</button>{/if}
@@ -198,7 +202,7 @@
     {#if after}{@render after(node, { running, busy, perform })}{/if}
   </div>
   {#if busy&&!nearBottom}<button class="jump-latest" onclick={()=>{scroller.scrollTop=scroller.scrollHeight;nearBottom=true;}}>{strings.jumpLatest}</button>{/if}
-  {#if lit}<footer><textarea bind:this={composer} aria-label={strings.composer} value={drafts[node.id] ?? ''} oninput={e => drafts[node.id] = e.currentTarget.value} placeholder={strings.composer} rows="2" disabled={busy} onkeydown={e => { if(e.ctrlKey && e.key === 'Enter') { e.preventDefault(); send(); } }}></textarea>
+  {#if lit}<footer><textarea bind:this={composer} aria-label={phone.current ? strings.composerPhone : strings.composer} value={drafts[node.id] ?? ''} oninput={e => drafts[node.id] = e.currentTarget.value} placeholder={phone.current ? strings.composerPhone : strings.composer} rows="2" disabled={busy} onkeydown={e => { if(e.ctrlKey && e.key === 'Enter') { e.preventDefault(); send(); } }}></textarea>
     <div class="actions">{#if busy}<button onclick={() => session.cancel()}>{running!.replay ? strings.showAll : strings.cancel}</button>{:else}<button class="primary" disabled={!!running || !drafts[node.id]?.trim()} onclick={send}>{strings.send}</button>{/if}
     {@render footer(node, { running, busy, perform })}</div>
   </footer>{/if}

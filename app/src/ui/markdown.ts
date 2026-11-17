@@ -117,6 +117,12 @@ md.renderer.rules.lantern_details_open = (tokens, i) => `<details class="md-deta
 md.renderer.rules.lantern_details_close = () => '</details>\n';
 md.renderer.rules.lantern_summary_open = () => '<summary>';
 md.renderer.rules.lantern_summary_close = () => '</summary>\n';
+/** A text that opens with a heading equal to `title` (models often repeat the node's title), without that heading. */
+export function withoutTitleHeading(text: string, title: string): string {
+  const heading = /^\s*#{1,6}[ \t]+(.+?)[ \t]*#*[ \t]*(?:\r?\n|$)/.exec(text);
+  const plain = (s: string) => s.replace(/[*_`]/g, '').trim().toLowerCase();
+  return heading && title.trim() && plain(heading[1]) === plain(title) ? text.slice(heading[0].length).replace(/^(?:[ \t]*\r?\n)+/, '') : text;
+}
 /** The renderer's HTML before sanitising; exported for tests. */
 export const markdownHtml = (text: string, visit: RoomVisit, linkable?: (id: string) => boolean): string => md.render(text, { visit, linkable } satisfies Env);
 export function renderMarkdown(text: string, visit: RoomVisit, linkable?: (id: string) => boolean): string {

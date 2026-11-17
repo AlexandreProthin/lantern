@@ -122,7 +122,7 @@
   let lastKey = '', lastSvg = '', drawnAt = -Infinity;
   const svg = $derived.by(() => {
     const key = poseKey(view.pose), now = performance.now();
-    if (key !== lastKey && (now - drawnAt >= 32 || motion.kind === 'still' && !act)) { lastKey = key; drawnAt = now; lastSvg = companionSvg(GESTURE.suspension, view.pose, uid, 'learn', true); }
+    if (key !== lastKey && (now - drawnAt >= 32 || motion.kind === 'still' && !act)) { lastKey = key; drawnAt = now; lastSvg = companionSvg(GESTURE.suspension, view.pose, uid, 'learn', true).replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"'); }
     return lastSvg;
   });
   let reduced = $state(reducedMotion());

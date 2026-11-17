@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { markdownHtml } from './markdown';
+import { markdownHtml, withoutTitleHeading } from './markdown';
 import { newLearnSubject } from '../rooms/learn/rules';
 
 const visit = newLearnSubject('Tides').rooms.learn;
@@ -45,5 +45,14 @@ describe('collapsible blocks (NP-75, NP-76)', () => {
 
   it('keeps an indented opening line as code', () => {
     expect(html('    <details>\n    x\n    </details>')).toContain('<pre><code>&lt;details&gt;');
+  });
+});
+
+describe('a text that opens with the node title', () => {
+  it('is shown without that heading, and only then', () => {
+    expect(withoutTitleHeading('# Slow start\n\nTCP begins small.', 'Slow start')).toBe('TCP begins small.');
+    expect(withoutTitleHeading('## **Slow start**\r\nText', 'slow start')).toBe('Text');
+    expect(withoutTitleHeading('# Another title\n\nText', 'Slow start')).toBe('# Another title\n\nText');
+    expect(withoutTitleHeading('Slow start is a phase.', 'Slow start')).toBe('Slow start is a phase.');
   });
 });

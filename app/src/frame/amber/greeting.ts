@@ -13,7 +13,7 @@ export type Greeting =
 /** UP-13: the release page of a version, where the notes are in full. */
 export const releasePage = (version: string) => `https://github.com/AlexandreProthin/lantern/releases/tag/v${version}`;
 
-export interface GreetingLines { first: string; updated: (version: string) => string; pool: readonly { id: string; text: string }[] }
+export interface GreetingLines { first: string; updated: (version: string, notes: boolean) => string; pool: readonly { id: string; text: string }[] }
 
 /**
  * `known`: the app has been used before (it has recents), so a state without a version is an update from a version
@@ -24,7 +24,7 @@ export function greeting(state: AmberState, version: string, known: boolean, lin
   if (!state.lastVersion && !known) return { greeting: { kind: 'first', text: lines.first }, next: said({}) };
   if (state.lastVersion !== version) {
     const notes = state.notes?.version === version && state.notes.text.trim() ? state.notes.text.trim() : undefined;
-    return { greeting: { kind: 'update', version, text: lines.updated(version), ...(notes ? { notes } : {}) }, next: said({}) };
+    return { greeting: { kind: 'update', version, text: lines.updated(version, !!notes), ...(notes ? { notes } : {}) }, next: said({}) };
   }
   const choices = lines.pool.filter(l => l.id !== state.lastGreeting), pick = (choices.length ? choices : lines.pool)[Math.floor(random() * (choices.length || lines.pool.length))];
   return { greeting: { kind: 'launch', id: pick.id, text: pick.text }, next: said({ lastGreeting: pick.id }) };

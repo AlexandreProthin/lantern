@@ -2,7 +2,7 @@ import { expect, test } from 'vitest';
 import { cutNotes, greeting, greetingMs, keepNotes, releasePage } from './greeting';
 import { emptyAmberState } from './state';
 
-const lines = { first: 'Hello, I’m Amber.', updated: (v: string) => `Lantern ${v} is here. What’s new:`, pool: [{ id: 'greet.1', text: 'Hello again.' }, { id: 'greet.2', text: 'Welcome back.' }] };
+const lines = { first: 'Hello, I’m Amber.', updated: (v: string, notes: boolean) => notes ? `Lantern ${v} is here. What’s new:` : `Lantern ${v} is here.`, pool: [{ id: 'greet.1', text: 'Hello again.' }, { id: 'greet.2', text: 'Welcome back.' }] };
 
 test('CO-30: the first launch after a fresh install has its own line, then launches pick from the pool, never twice in a row', () => {
   const first = greeting(emptyAmberState(), '0.4.0', false, lines);
@@ -21,7 +21,7 @@ test('CO-31: after an update, the line names the version and brings the notes ke
   expect(g.greeting).toEqual({ kind: 'update', version: '0.4.1', text: 'Lantern 0.4.1 is here. What’s new:', notes: 'Amber can sit down.' });
   expect(g.next.notes).toBeUndefined(); expect(g.next.lastVersion).toBe('0.4.1');
   // Notes for another version are not shown; an update from before Amber (known app, no version) is an update.
-  expect(greeting({ ...before, lastVersion: '0.4.0', notes: { version: '0.5.0', text: 'x' } }, '0.4.1', true, lines).greeting).toEqual({ kind: 'update', version: '0.4.1', text: 'Lantern 0.4.1 is here. What’s new:' });
+  expect(greeting({ ...before, lastVersion: '0.4.0', notes: { version: '0.5.0', text: 'x' } }, '0.4.1', true, lines).greeting).toEqual({ kind: 'update', version: '0.4.1', text: 'Lantern 0.4.1 is here.' });
   expect(greeting(emptyAmberState(), '0.4.0', true, lines).greeting.kind).toBe('update');
   expect(keepNotes(emptyAmberState(), '1.0.0', null)).toEqual(emptyAmberState());
   expect(releasePage('0.4.1')).toBe('https://github.com/AlexandreProthin/lantern/releases/tag/v0.4.1');
