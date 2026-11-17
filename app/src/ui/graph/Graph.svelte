@@ -27,6 +27,7 @@
   import { phone } from '../phone.svelte';
   import { GraphScene, type SceneNode } from './graph-scene';
   import { SpawnMotion } from './spawn-motion';
+  import { EmberCanvas, type Spark } from './ember-canvas';
   import { searchNodes, stepMatch } from './graph-search';
   import { backdropLight, backdropPan } from '../../frame/backdrop-signals';
   import type { GraphRoomView, GraphSession, GraphSnippets, MenuAction } from './types';
@@ -119,7 +120,11 @@
   let host: HTMLDivElement;
   let edgesSvg: SVGSVGElement;
   let zoomer: ZoomBehavior<HTMLDivElement, unknown>;
-  const spawn = new SpawnMotion(() => host, () => edgesSvg, () => !motionReduced() && visible && !document.hidden);
+  let embersCanvas = $state<HTMLCanvasElement>();
+  /** One canvas over the map for every light in motion; the drawn nodes' discs hide what passes under them. */
+  const lights = new EmberCanvas(() => embersCanvas, () => ({ x: transform.x + width / 2, y: transform.y + height / 2, k: transform.k, w: width, h: height }),
+    () => view.nodes.filter(n => !n.pending).flatMap(n => { const p = simNodes.get(n.id); return p ? [{ x: p.x ?? 0, y: p.y ?? 0, r: DISC / 2 }] : []; }));
+  const spawn = new SpawnMotion(() => host, () => edgesSvg, () => !motionReduced() && visible && !document.hidden, lights);
   let panFrame=0;
   /** `transform` is relative to the view's centre (the world is drawn at +width/2, +height/2); d3-zoom's own
       transform is relative to the corner, so a pinch, a wheel or the ± buttons zoom around the right point. */
@@ -377,8 +382,8 @@
 
   // ---- Link preview (GV-44) ---------------------------------------------------------------
 
-  let previewFrame = 0, previewLayer: SVGGElement | null = null;
-  function stopPreview() { cancelAnimationFrame(previewFrame); previewFrame = 0; previewLayer?.remove(); previewLayer = null; }
+  let previewFrame = 0, previewLayer: SVGGElement | object | null = null;
+  function stopPreview() { cancelAnimationFrame(previewFrame); previewFrame = 0; if (previewLayer instanceof SVGGElement) previewLayer.remove(); previewLayer = null; lights.clear('preview'); }
   $effect(() => { const to = linkPreview; untrack(() => { stopPreview(); if (to) playPreview(session.visit.focusId, to); }); });
   $effect(() => { if (!visible) untrack(stopPreview); });
   // Same curve and orientation (sorted ids) as the text-link line, so the light rides on it when shown.
@@ -393,11 +398,14 @@
     const [first, second] = [from, to].sort();
     const tree = toChild || toParent ? edgesSvg.querySelector<SVGPathElement>(`[data-edge="${toChild ? to : from}"]`) : null;
     if ((toChild || toParent) && !tree) return;
-    const layer = document.createElementNS(ns, 'g'); layer.setAttribute('class', 'link-preview'); layer.setAttribute('aria-hidden', 'true');
-    let path = tree;
-    if (!path) { path = document.createElementNS(ns, 'path'); path.setAttribute('class', 'preview-curve'); layer.append(path); }
-    const head = document.createElementNS(ns, 'circle'); head.setAttribute('r', '3'); layer.append(head);
-    edgesSvg.append(layer); previewLayer = layer;
+    // A text link gets a temporary dotted curve in the edges layer; the bead itself is drawn on the ember canvas.
+    let path = tree, layer: SVGGElement | object = {};
+    if (!path) {
+      const curve = document.createElementNS(ns, 'g'); curve.setAttribute('class', 'link-preview'); curve.setAttribute('aria-hidden', 'true');
+      path = document.createElementNS(ns, 'path'); path.setAttribute('class', 'preview-curve'); curve.append(path);
+      edgesSvg.append(curve); layer = curve;
+    }
+    previewLayer = layer;
     // A tree edge runs parent -> child; a text-link curve runs from the smaller id.
     const reverse = tree ? toParent : from !== first;
     const reshape = () => { const a = simNodes.get(first), b = simNodes.get(second); if (a && b && !tree) path!.setAttribute('d', linkCurve(a, b)); };
@@ -407,9 +415,9 @@
       if (!previewLayer || previewLayer !== layer) return;
       reshape();
       const t = Math.min(1, (now - start) / duration), eased = 1 - (1 - t) ** 2;
-      const p = pointAt(path!, reverse ? 1 - eased : eased);
-      head.setAttribute('cx', String(p.x)); head.setAttribute('cy', String(p.y));
-      layer.style.opacity = String(Math.min(1, t / .15, (1 - t) / .2 + .25));
+      const p = pointAt(path!, reverse ? 1 - eased : eased), alpha = Math.min(1, t / .15, (1 - t) / .2 + .25);
+      lights.set('preview', [{ kind: 'bead', x: p.x, y: p.y, alpha }]);
+      if (layer instanceof SVGGElement) layer.style.opacity = String(alpha);
       if (t < 1) previewFrame = requestAnimationFrame(step);
       else { pulseNode(to); stopPreview(); }
     };
@@ -509,13 +517,13 @@
   const motionReduced = () => reducedMotion.matches || settings.appearance.reduceMotion === 'on';
   const ns = 'http://www.w3.org/2000/svg';
   let travelFrame = 0;
-  let traveler: SVGGElement | null = null;
+  let traveler: object | null = null;
   const nodeGlows = new Set<Animation>();
 
   function stopTravel() {
     cancelAnimationFrame(travelFrame);
     travelFrame = 0;
-    traveler?.remove();
+    lights.clear('travel');
     traveler = null;
     nodeGlows.forEach((a) => a.cancel());
     nodeGlows.clear();
@@ -552,7 +560,7 @@
     duration: number;
   }
   interface Particle {
-    el: SVGGElement;
+    kind: 'dust' | 'mote';
     x: number;
     y: number;
     born: number;
@@ -611,16 +619,8 @@
       }
     }
 
-    const layer = document.createElementNS(ns, 'g');
-    layer.setAttribute('class', 'traveler');
-    layer.setAttribute('aria-hidden', 'true');
-    const dust = document.createElementNS(ns, 'g');
-    const head = document.createElementNS(ns, 'g');
-    head.innerHTML =
-      '<circle r="16" fill="var(--glow-far)"/><circle r="9" fill="var(--glow-near)"/><circle r="3" fill="var(--node-lit)"/>';
-    layer.append(dust, head);
+    const layer = {};
     traveler = layer;
-    edgesSvg.append(layer);
 
     let trail: Particle[] = [];
     let embers: Particle[] = [];
@@ -629,14 +629,7 @@
     let serial = 0;
     let glowIndex = 0;
     let burstIndex = 0;
-
-    function particle(small: boolean) {
-      const el = document.createElementNS(ns, 'g');
-      el.setAttribute('class', 'comet-dust');
-      el.innerHTML = `<circle r="3" fill="var(--glow-near)"/><circle r="${small ? 0.7 : 1.15}" fill="var(--node-lit)"/>`;
-      dust.append(el);
-      return el;
-    }
+    let head: Spark | null = null;
 
     function emitTrail(p: ReturnType<typeof pointAt>, elapsed: number) {
       if (trail.length >= comet.cap) return;
@@ -644,7 +637,7 @@
       // Deterministic, sparse scatter keeps repeated runs consistent.
       const motion = emberTrail(serial, p.tx, p.ty);
       trail.push({
-        el: particle(serial % 4 !== 0),
+        kind: serial % 4 !== 0 ? 'mote' : 'dust',
         x: p.x,
         y: p.y,
         born: elapsed,
@@ -664,7 +657,7 @@
         const motion = emberFan(i, BURST, heading);
         const angle = motion.angle;
         embers.push({
-          el: particle(i % 4 !== 0),
+          kind: i % 4 !== 0 ? 'mote' : 'dust',
           x: (sn.x ?? 0) + Math.cos(angle) * radius,
           y: (sn.y ?? 0) + Math.sin(angle) * radius,
           born: elapsed,
@@ -674,22 +667,13 @@
       }
     }
 
-    function paint(list: Particle[], elapsed: number) {
+    function paint(list: Particle[], elapsed: number, out: Spark[]) {
       return list.filter((p) => {
         const age = elapsed - p.born;
-        if (age >= p.life) {
-          p.el.remove();
-          return false;
-        }
+        if (age >= p.life) return false;
         const t = age / p.life;
-        p.el.setAttribute(
-          'transform',
-          `translate(${p.x + (p.vx * age) / 1000} ${p.y + (p.vy * age) / 1000}) scale(${1 - t * 0.65})`
-        );
-        p.el.setAttribute(
-          'opacity',
-          String(p.bright * Math.min(1, t / 0.15) * (1 - t) ** 1.8 * (0.85 + 0.15 * Math.sin(Math.PI * t * 4)))
-        );
+        out.push({ kind: p.kind, x: p.x + (p.vx * age) / 1000, y: p.y + (p.vy * age) / 1000, scale: 1 - t * 0.65,
+          alpha: p.bright * Math.min(1, t / 0.15) * (1 - t) ** 1.8 * (0.85 + 0.15 * Math.sin(Math.PI * t * 4)) });
         return true;
       });
     }
@@ -705,7 +689,7 @@
 
     function frame(now: number) {
       if (traveler !== layer) return;
-      if (motionReduced() || !visible || document.hidden || !layer.isConnected) return stopTravel();
+      if (motionReduced() || !visible || document.hidden || !edgesSvg?.isConnected) return stopTravel();
       if (started === null) started = now;
       const elapsed = now - started;
       while (glowIndex < glowCues.length && elapsed >= glowCues[glowIndex].at) pulseNode(glowCues[glowIndex++].id);
@@ -713,20 +697,24 @@
       const s = sample(elapsed);
       if (s) {
         const p = pointAt(s.seg.edge, s.t);
-        head.setAttribute('transform', `translate(${p.x} ${p.y})`);
+        head = { kind: 'comet', x: p.x, y: p.y, alpha: 1 };
         if (s.moving && elapsed - lastEmission >= comet.emitEvery) {
           emitTrail(p, elapsed);
           lastEmission = elapsed;
         }
-      } else head.setAttribute('opacity', '0');
-      trail = paint(trail, elapsed);
-      embers = paint(embers, elapsed);
+      } else head = null;
+      const sparks: Spark[] = [];
+      trail = paint(trail, elapsed, sparks);
+      embers = paint(embers, elapsed, sparks);
+      if (head) sparks.push(head);
+      lights.set('travel', sparks);
       // Let the arrival glow and remaining particles finish, then release everything.
       if (!s && !trail.length && !embers.length && !nodeGlows.size) return stopTravel();
       travelFrame = requestAnimationFrame(frame);
     }
     const first = pointAt(timeline[0].edge, 0);
-    head.setAttribute('transform', `translate(${first.x} ${first.y})`);
+    head = { kind: 'comet', x: first.x, y: first.y, alpha: 1 };
+    lights.set('travel', [head]);
     travelFrame = requestAnimationFrame(frame);
   }
 
@@ -848,6 +836,7 @@
       </button>
     {/each}
   </div>
+  <canvas class="embers" bind:this={embersCanvas} aria-hidden="true" hidden></canvas>
   <span class="sr-only" aria-live="polite">{announcement}</span>
   {#if menu && menuAt}
     <div class="node-menu" role="menu" tabindex="-1" aria-label={strings.nodeActions(title(session.visit.nodes[menu]?.title ?? ''))} bind:this={menuEl} bind:offsetHeight={menuHeight}
@@ -973,7 +962,9 @@
   .degraded .edges .references { display:none; }
   .edges :global(.link-preview) { pointer-events:none; }
   .edges :global(.link-preview .preview-curve) { stroke:var(--node-lit); stroke-dasharray:1 5; opacity:.5; }
-  .edges :global(.link-preview circle) { fill:var(--node-lit); filter:drop-shadow(0 0 4px var(--glow-near)); }
+  /* GV-90..92, GV-50: the lights in motion, over the map; the canvas is the view's size, never the world's. */
+  .embers { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .embers[hidden], .graph[data-reduced='true'] .embers { display:none; }
   .edges path[data-spawn-pending] { stroke-dasharray:1; stroke-dashoffset:1; }
   .graph[data-reduced='true'] .edges path[data-spawn-pending] { stroke-dashoffset:0; }
   .tiny .name { visibility:hidden; }
@@ -983,10 +974,6 @@
   .degraded .node .disc { box-shadow:none; }
   .large-notice { position:absolute; top:60px; left:20px; color:var(--ink-mute); font-size:12px; }
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
-  :global(.comet-dust) {
-    filter: drop-shadow(0 0 2px var(--glow-near));
-  }
-
   .node {
     position: absolute;
     left: 0;
@@ -1137,7 +1124,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .node .disc, .node .name { animation:none !important; }
-    :global(.traveler), :global(.link-preview) {
+    .embers, :global(.link-preview) {
       display: none;
     }
   }

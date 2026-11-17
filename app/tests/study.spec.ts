@@ -65,26 +65,26 @@ test('GV-90/91/92: sequential branch tips, breathing, completion particles and r
   await page.goto('/?study=1&subject=Branch%20motion&delay=200');
   const pending=page.locator('.node[data-pending="waiting"]');
   await expect(pending).toHaveCount(3);
-  await expect(page.locator('.spawn-tip')).toHaveCount(1);
+  await expect(page.locator('.graph canvas.embers[data-tip="1"]')).toHaveCount(1);
   await expect(pending.nth(0)).toHaveAttribute('data-spawn-phase','breathing');
   await expect(pending.nth(1)).toHaveAttribute('data-spawn-phase','growing');
   expect(await pending.nth(1).evaluate(el=>getComputedStyle(el).visibility)).toBe('hidden');
   await expect(page.locator('.node[data-pending="waiting"][data-spawn-phase="breathing"]')).toHaveCount(3);
-  await expect(page.locator('.spawn-tip')).toHaveCount(0);
+  await expect(page.locator('.graph canvas.embers[data-tip]')).toHaveCount(0);
   expect(await pending.first().locator('.disc').evaluate(el=>getComputedStyle(el).animationName)).toContain('breathe');
-  await expect.poll(()=>page.locator('.spawn-particle').count(),{intervals:[50],timeout:10000}).toBeGreaterThan(0);
+  await expect.poll(()=>page.locator('.graph canvas.embers[data-spark]').count(),{intervals:[50],timeout:10000}).toBeGreaterThan(0);
   await page.screenshot({path:'test-results/spawn-completion.png'});
-  await expect(page.locator('.spawn-light')).toHaveCount(0);
+  await expect(page.locator('.graph canvas.embers:is([data-tip],[data-spark])')).toHaveCount(0);
   await expect(page.locator('.node[data-pending]')).toHaveCount(0);
   // System reduction applies immediately, including to an in-flight growth sequence.
   await page.locator('.panel').getByRole('button',{name:'Mechanism 1',exact:false}).click();
   await page.locator('.panel').getByRole('button',{name:'Light it up',exact:true}).click();
-  await expect(page.locator('.spawn-tip')).toHaveCount(1);
+  await expect(page.locator('.graph canvas.embers[data-tip="1"]')).toHaveCount(1);
   await page.emulateMedia({reducedMotion:'reduce'});
-  await expect(page.locator('.spawn-light')).toHaveCount(0);
+  await expect(page.locator('.graph canvas.embers:is([data-tip],[data-spark])')).toHaveCount(0);
   await expect(pending.first()).toBeVisible();
   await expect(page.locator('.node[data-pending]')).toHaveCount(0);
-  await expect(page.locator('.spawn-particle')).toHaveCount(0);
+  await expect(page.locator('.graph canvas.embers[data-spark]')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
@@ -197,9 +197,12 @@ test('GV-44/56: hovering a node link previews the connection; Open reports in th
   await panel.getByRole('button',{name:'Save',exact:true}).click();
   // Child: the light rides the tree edge (no temporary curve), then goes away.
   await panel.locator('.node-link',{hasText:'the child'}).hover();
-  await expect(page.locator('.edges .link-preview circle')).toHaveCount(1);
+  await expect(page.locator('.graph canvas.embers[data-bead="1"]')).toHaveCount(1);
+  // The bead is drawn on the map's ember canvas (no SVG light, no filter).
+  expect(await page.locator('.graph canvas.embers').evaluate((c:HTMLCanvasElement)=>{const d=c.getContext('2d')!.getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=4)if(d[i])return true;return false;})).toBe(true);
   await expect(page.locator('.edges .link-preview .preview-curve')).toHaveCount(0);
   await expect(page.locator('.edges .link-preview')).toHaveCount(0,{timeout:3000});
+  await expect(page.locator('.graph canvas.embers[data-bead]')).toHaveCount(0);
   // Grandchild (not adjacent): a temporary curve; leaving the link stops it.
   await panel.locator('.node-link',{hasText:'further'}).hover();
   await expect(page.locator('.edges .link-preview .preview-curve')).toHaveCount(1);
@@ -296,4 +299,17 @@ test('ST-27: a focus not yet written is written when the page closes', async ({p
   await target.click();
   await page.goto('/?study=1&resume=1');
   await expect(page.locator('.graph .node[aria-pressed="true"]')).toHaveAttribute('data-id',id);
+});
+test('GV-114: the travelling light and its embers are drawn on one canvas, which goes when they end', async ({page}) => {
+  await page.goto('/?study=1&subject=Comet%20canvas');
+  await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  const embers=page.locator('.graph canvas.embers');
+  await expect(embers).toBeHidden({timeout:10000});
+  await page.locator('.graph .node[data-state="open"]').first().click();
+  await expect(page.locator('.graph canvas.embers[data-comet="1"]')).toHaveCount(1);
+  await expect.poll(()=>embers.getAttribute('data-mote'),{intervals:[16]}).not.toBeNull();
+  // No SVG light, no filtered group in the edges layer.
+  expect(await page.locator('.edges g').count()).toBeLessThanOrEqual(1);
+  await expect(embers).toBeHidden({timeout:5000});
+  expect(await embers.evaluate(c=>Object.keys((c as HTMLCanvasElement).dataset))).toEqual([]);
 });

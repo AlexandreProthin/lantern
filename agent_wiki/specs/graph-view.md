@@ -381,6 +381,14 @@ view.
 - **GV-113** *(Added 2026-11-12.)* Visibility and collapse are recomputed in one pass over the nodes
   (linear) on each graph change, never per frame. A 200-node prepared subject is well inside the
   GV-110 budget, and usually draws far fewer nodes than it holds.
+- **GV-114** *(Added 2026-11-17.)* The lights in motion (the travelling light and its embers of GV-32,
+  the branch tips and completion particles of GV-90 and GV-92, the link-preview light of GV-44) are drawn
+  on **one canvas** the size of the view, over the map, from small pictures made once per effect from the
+  room tokens: no SVG element or filter per light, and nothing in the edges layer changes per frame
+  (the preview's temporary curve and the growing branch's stroke excepted). The drawn nodes' discs are
+  cut out of it, so the lights still pass under them; they may pass over titles. The canvas is hidden
+  when nothing moves, and is resized only when the view is. The Welcome embers' canvas is likewise sized
+  only when the window is, and reads its colours once per run.
 - **GV-112** If the physics cannot hold the budget (frame time over 20 ms for a second while
   settling), tunable fallbacks apply in order: hide titles under the GV-62
   threshold, skip glows and leave out the text-link lines (GV-40); above **800 nodes** use the tree layout with a notice *Free layout
