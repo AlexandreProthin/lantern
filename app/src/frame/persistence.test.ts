@@ -38,3 +38,43 @@ test('ST-21: edits during an in-flight save are serialized behind its updated re
   expect(save).toHaveBeenCalledTimes(2); expect(save.mock.calls[1][2]).toEqual(stamp);
   expect(save.mock.calls[1][1].title).toBe('Updated'); await p.close();
 });
+test('ST-27: a focus-only change is not copied now, is coalesced, and is written on the last saved version', async () => {
+  vi.useFakeTimers();
+  const s = newLearnSubject('Tides'); const v = s.rooms.learn;
+  v.nodes.child = { ...v.nodes[v.rootId], id: 'child', parents: [v.rootId], title: 'Child' };
+  const save = vi.fn<Storage['save']>(async () => ({ kind: 'saved', stamp }));
+  const changed = vi.fn(async () => false);
+  const p = new SubjectPersistence({ save, load: vi.fn(), changed }, 'library', { subject: structuredClone(s), stamp, readOnly: false }, vi.fn(), vi.fn());
+  v.focusId = 'child'; p.focus(s); v.focusId = v.rootId; p.focus(s); v.focusId = 'child'; p.focus(s);
+  await vi.advanceTimersByTimeAsync(1999); expect(save).not.toHaveBeenCalled();
+  await vi.advanceTimersByTimeAsync(1); expect(save).toHaveBeenCalledOnce();
+  expect(save.mock.calls[0][1].rooms.learn.focusId).toBe('child');
+  // An unsaved, unchecked edit never rides on a focus-only write.
+  v.nodes.child.title = 'Edited without a save'; v.focusId = v.rootId; p.focus(s); await p.flush();
+  expect(save).toHaveBeenCalledTimes(2); expect(save.mock.calls[1][1].rooms.learn.nodes.child.title).toBe('Child');
+  expect(save.mock.calls[1][1].rooms.learn.focusId).toBe(v.rootId);
+  vi.useRealTimers();
+});
+test('ST-27: focus rides on a pending save; one write', async () => {
+  vi.useFakeTimers();
+  const s = newLearnSubject('Tides'); const v = s.rooms.learn; v.nodes.child = { ...v.nodes[v.rootId], id: 'child', parents: [v.rootId], title: 'Child' };
+  const save = vi.fn<Storage['save']>(async () => ({ kind: 'saved', stamp }));
+  const p = new SubjectPersistence({ save, load: vi.fn(), changed: async () => false }, 'library', { subject: structuredClone(s), stamp, readOnly: false }, vi.fn(), vi.fn());
+  v.nodes.child.title = 'Renamed'; p.schedule(s); v.focusId = 'child'; p.focus(s);
+  await vi.advanceTimersByTimeAsync(3000);
+  expect(save).toHaveBeenCalledOnce();
+  expect(save.mock.calls[0][1].rooms.learn.focusId).toBe('child'); expect(save.mock.calls[0][1].rooms.learn.nodes.child.title).toBe('Renamed');
+  vi.useRealTimers();
+});
+test('ST-25, ST-27: the poll reads the file only when its stamp changed; a focus-only change gives way to an outside edit', async () => {
+  const s = newLearnSubject('Tides'); s.rooms.learn.nodes.child = { ...s.rooms.learn.nodes[s.rooms.learn.rootId], id: 'child', parents: [s.rooms.learn.rootId], title: 'Child' };
+  const loaded: Loaded = { subject: structuredClone(s), stamp, readOnly: false };
+  const disk: Loaded = { subject: { ...structuredClone(s), title: 'External' }, stamp: { ...stamp, size: 2, hash: 'two' }, readOnly: false };
+  let outside = false; const load = vi.fn(async () => outside ? disk : loaded); const save = vi.fn<Storage['save']>(); const result = vi.fn();
+  const p = new SubjectPersistence({ load, save, changed: async () => outside }, 'library', loaded, result, vi.fn());
+  await p.refresh(); await p.refresh(); expect(load).not.toHaveBeenCalled();
+  s.rooms.learn.focusId = 'child'; p.focus(s); outside = true;
+  await p.flush();
+  expect(save).not.toHaveBeenCalled(); expect(load).toHaveBeenCalledOnce();
+  expect(result).toHaveBeenCalledWith({ kind: 'reloaded', loaded: disk });
+});

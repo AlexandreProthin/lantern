@@ -39,11 +39,11 @@ export class ChooseSession {
   notice: SessionNotice | null = null;
   needOffer: NeedOffer | null = null;
   recommendation: (Recommendation & { productId: string | null }) | null = null;
-  constructor(public subject: Subject, private provider: InferenceProvider, private changed: () => void, private render: () => void = changed,
+  constructor(public subject: Subject, private provider: InferenceProvider, private changed: (change?: 'focus') => void, private render: () => void = changed,
     public displayName = '', public budgetTokens = 12_000, public useWeb: () => boolean = () => true, public today: () => string = localToday) {}
   get visit(): RoomVisit { return this.subject.rooms.choose; }
   get focus() { return nodeOf(this.visit, this.visit.focusId); }
-  setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.commit(); }
+  setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.changed('focus'); this.render(); }
   busy(id: string): boolean { return this.running?.nodeId === id; }
   /** CP-41: cells the research lane is filling now, shown striped. */
   filling(): Set<string> { return new Set(this.research?.slots.map(slotKey) ?? []); }

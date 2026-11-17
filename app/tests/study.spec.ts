@@ -269,3 +269,31 @@ test('GV-57: Ctrl+F searches nodes, Enter steps through matches, Esc closes', as
   await expect(field).toBeFocused();
   expect(errors).toEqual([]);
 });
+test('ST-27: a focus click writes nothing at once; the focus is saved a little later and survives reopening', async ({page}) => {
+  await page.goto('/?study=1&subject=Focus%20save');
+  const panel=page.locator('.panel');
+  await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  const stored=()=>page.evaluate(()=>{const k=Object.keys(localStorage).find(k=>k.startsWith('lantern.subject.')&&!k.includes('.conflict-'))!;return localStorage.getItem(k)!;});
+  const focusOf=(text:string)=>JSON.parse(text).rooms.learn.focusId as string;
+  await expect.poll(stored).toContain('Mechanism 1');await page.waitForTimeout(600);
+  const before=await stored();
+  const target=page.locator('.graph .node[data-state="open"]').first(), id=(await target.getAttribute('data-id'))!;
+  await target.click();
+  await expect(page.locator('.graph .node[aria-pressed="true"]')).toHaveAttribute('data-id',id);
+  await page.waitForTimeout(600);
+  expect(await stored()).toBe(before);
+  await expect.poll(async()=>focusOf(await stored()),{timeout:5000}).toBe(id);
+  // Only the focus changed in the file.
+  const after=JSON.parse(await stored()),was=JSON.parse(before);was.rooms.learn.focusId=id;expect(after).toEqual(was);
+  await page.goto('/?study=1&resume=1');
+  await expect(page.locator('.graph .node[aria-pressed="true"]')).toHaveAttribute('data-id',id);
+});
+test('ST-27: a focus not yet written is written when the page closes', async ({page}) => {
+  await page.goto('/?study=1&subject=Focus%20close');
+  await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  await page.waitForTimeout(500);
+  const target=page.locator('.graph .node[data-state="open"]').last(), id=(await target.getAttribute('data-id'))!;
+  await target.click();
+  await page.goto('/?study=1&resume=1');
+  await expect(page.locator('.graph .node[aria-pressed="true"]')).toHaveAttribute('data-id',id);
+});

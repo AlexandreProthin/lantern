@@ -35,6 +35,7 @@ Content of the file: [domain-model](/specs/domain-model.md).
 - **ST-24** Before writing, the app MUST detect that the file on disk changed since Lantern last read or wrote it (mtime and size, or a hash; for example after a git pull or a sync). If so it MUST NOT overwrite silently; ST-25 and ST-26 say what happens.
 - **ST-25** If the file changed on disk and there are **no unsaved local changes**, the app MUST reload it silently and show a toast.
 - **ST-26** If **both sides changed**, the app MUST keep the disk version open, save the local version as `<id>.conflict-<timestamp>.json` next to it, and show a banner with *Open conflict copy*. Conflict copies MUST NOT be listed as subjects in Welcome or Gallery.
+- **ST-27** *(Added 2026-11-17.)* A change of focus alone is light. It MUST NOT parse, validate or copy the whole subject, nor make an undo step (RS-61). It is written with the next save if one is pending, otherwise on its own after about 2 s without another change, and in any case when the subject is closed, switched or the window closes; the written file is the last saved version with the new focus, so reopening keeps it. If the file changed outside meanwhile, a focus-only change gives way: the file is reloaded as in ST-25, never kept as a conflict copy. The check of ST-24/ST-25 on an open subject (about once a second) reads only the file's size and modification time, and reads the file only when they changed.
 
 ## Versioning
 

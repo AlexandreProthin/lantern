@@ -88,3 +88,14 @@ describe('UndoHistory', () => {
     expect(Object.keys(session.visit.nodes)).toHaveLength(grown);
   });
 });
+
+describe('UndoHistory.focused (ST-27)', () => {
+  it('moves the step\'s focus without making a step', () => {
+    const v = visit(); const h = new UndoHistory(v);
+    h.observe(titled(v, 'Two'));
+    v.nodes.child = { ...v.nodes[v.rootId], id: 'child', parents: [v.rootId] }; h.observe(v);
+    v.focusId = 'child'; h.focused(v);
+    const back = h.undo(v)!; expect(titleOf(back)).toBe('Two');
+    const again = h.redo(back)!; expect(again.focusId).toBe('child');
+  });
+});

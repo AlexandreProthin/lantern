@@ -22,11 +22,11 @@ export interface SessionNotice { nodeId: string; kind: 'directions' | 'error'; c
 export class LearnSession {
   running: Running | null = null;
   notice: SessionNotice | null = null;
-  constructor(public subject: Subject, private provider: InferenceProvider, private changed: () => void,
+  constructor(public subject: Subject, private provider: InferenceProvider, private changed: (change?: 'focus') => void,
     private render: () => void = changed, public displayName = '', public budgetTokens = 12_000) {}
   get visit(): RoomVisit { return this.subject.rooms.learn; }
   get focus() { return nodeOf(this.visit, this.visit.focusId); }
-  setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.changed(); this.render(); }
+  setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.changed('focus'); this.render(); }
   busy(id: string): boolean { return this.running?.nodeId === id; }
   touch(): void { this.changed(); this.render(); }
   /** RS-64: a notice's retry belongs to the state before the undo. */
