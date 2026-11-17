@@ -76,7 +76,8 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
   - the top bar takes two rows, the subject field spanning the second; shortcuts, stats and the drag
     strip are hidden, and safe areas are respected;
   - the graph fills the screen and the node panel is a sheet over it, opened by tapping a node or the
-    *Details* button in the bottom bar, and closed by *‹ Graph* or Esc;
+    *Details* button in the bottom bar, and closed by *Graph* (with a drawn back chevron, *amended 2026-11-17*,
+    [rooms-spaces](/specs/rooms-spaces.md) RS-38) or Esc;
   - the field panel, Settings (tabs in a row) and every dialog use the whole width; the graph legend
     starts folded; the Choose rail is a horizontal bar; the compare grid is one column.
 - **NW-41** Touch: pan and pinch on the graph (d3-zoom), tap to open a node, a long press opens the node

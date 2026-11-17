@@ -21,6 +21,8 @@
   import { graphMotion } from './graphMotion';
   import { travelDuration, emberFan, emberTrail } from '../embers';
   import { strings } from '../strings';
+  import Icon from '../Icon.svelte';
+  import { actionIcons } from '../icons';
   import type { Settings } from '../../frame/settings';
   import type { LibrarySpaces } from '../../frame/library-spaces';
   import { remote } from '../../frame/host';
@@ -856,10 +858,12 @@
   </div>
   <span class="sr-only" aria-live="polite">{announcement}</span>
   {#if menu && menuAt}
-    <div class="node-menu" role="menu" tabindex="-1" aria-label={strings.nodeActions(title(session.visit.nodes[menu]?.title ?? ''))} bind:this={menuEl} bind:offsetHeight={menuHeight}
+    <div class="node-menu menu-surface" role="menu" tabindex="-1" aria-label={strings.nodeActions(title(session.visit.nodes[menu]?.title ?? ''))} bind:this={menuEl} bind:offsetHeight={menuHeight}
       style="left:{menuAt.x}px;top:{menuAt.y}px" onkeydown={menuKey}>
-      {#each menuActions as action (action.id)}<button role="menuitem" disabled={action.disabled} title={action.title} onclick={() => chooseAction(action)}>{action.label}</button>{/each}
-      {#if viewActions.length}<hr />{#each viewActions as action (action.id)}<button role="menuitem" class="view-action" onclick={() => chooseViewAction(action)}>{action.label}</button>{/each}{/if}
+      <!-- GV-55: one drawn icon per action, the first action marked as the node's main one, Delete apart. -->
+      {#each menuActions.filter(a => a.id !== 'delete') as action, i (action.id)}<button role="menuitem" class:lead={i === 0} disabled={action.disabled} title={action.title} onclick={() => chooseAction(action)}>{#if actionIcons[action.id]}<Icon name={actionIcons[action.id]} />{:else}<span class="icon-slot"></span>{/if}{action.label}</button>{/each}
+      {#if viewActions.length}<hr />{#each viewActions as action (action.id)}<button role="menuitem" class="view-action" onclick={() => chooseViewAction(action)}><Icon name={actionIcons[action.id] ?? 'foldAll'} />{action.label}</button>{/each}{/if}
+      {#each menuActions.filter(a => a.id === 'delete') as action (action.id)}<hr /><button role="menuitem" class="danger" disabled={action.disabled} title={action.title} onclick={() => chooseAction(action)}><Icon name="trash" />{action.label}</button>{/each}
     </div>
   {/if}
   {#if Object.keys(session.visit.nodes).length > 800}<div class="large-notice" role="status">{strings.largeGraph}</div>{/if}
@@ -867,39 +871,33 @@
   <nav class="controls layout-controls">
     <!-- GV-58: fold or unfold the whole graph, as the root's menu does. -->
     {#if collapsedIds.length}
-      <button class="fold-all" onclick={expandAll} aria-label={strings.expandAll} title={strings.expandAll}>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4-3 4 3M4 10l4 3 4-3" /></svg>
-      </button>
+      <button class="fold-all icon-button" onclick={expandAll} aria-label={strings.expandAll} title={strings.expandAll}><Icon name="unfoldAll" size={14} /></button>
     {:else}
-      <button class="fold-all" onclick={collapseAll} disabled={![...projection.shown].some(foldable)} aria-label={strings.collapseAll} title={strings.collapseAll}>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 3 4 3 4-3M4 13l4-3 4 3" /></svg>
-      </button>
+      <button class="fold-all icon-button" onclick={collapseAll} disabled={![...projection.shown].some(foldable)} aria-label={strings.collapseAll} title={strings.collapseAll}><Icon name="foldAll" size={14} /></button>
     {/if}
     {#if searchOpen}
       <div class="search" role="search">
         <input bind:this={searchField} value={searchText} aria-label={strings.searchNodes} placeholder={strings.searchNodes} spellcheck="false"
           oninput={e => typeSearch(e.currentTarget.value)} onkeydown={searchKey} />
         {#if searchQuery.trim()}<span class="search-count" role="status">{matchCount}</span>{/if}
-        <button onclick={closeSearch} aria-label={strings.closeSearch} title={strings.closeSearch}>×</button>
+        <button class="icon-button bare" onclick={closeSearch} aria-label={strings.closeSearch} title={strings.closeSearch}><Icon name="close" size={14} /></button>
       </div>
     {:else}
-      <button onclick={openSearch} aria-label={strings.searchNodes} title={strings.searchHint}>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="m10.5 10.5 3.5 3.5" /></svg>
-      </button>
+      <button class="icon-button" onclick={openSearch} aria-label={strings.searchNodes} title={strings.searchHint}><Icon name="search" size={14} /></button>
     {/if}
-    <button
+    <button class="icon-button"
       onclick={() => { settings.ui.graphLayout = layout === 'force' ? 'tree' : 'free'; preferencesChanged(); }}
       aria-pressed={layout==='tree'}
       aria-label={layout === 'force' ? strings.treeLayout : strings.freeLayout}
       title={layout === 'force' ? strings.treeLayout : strings.freeLayout}
     >
       {#if layout === 'force'}
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true">
+        <svg class="icon" style="width:14px;height:14px" viewBox="0 0 16 16" aria-hidden="true">
           <circle cx="3" cy="8" r="1.6" /><circle cx="13" cy="3.5" r="1.6" /><circle cx="13" cy="12.5" r="1.6" />
           <path d="M4.6 8C8 8 8 3.5 11.4 3.5M4.6 8C8 8 8 12.5 11.4 12.5" />
         </svg>
       {:else}
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true">
+        <svg class="icon" style="width:14px;height:14px" viewBox="0 0 16 16" aria-hidden="true">
           <circle cx="8" cy="8" r="1.6" /><circle cx="3" cy="3.5" r="1.6" /><circle cx="13.5" cy="5" r="1.6" /><circle cx="5" cy="13" r="1.6" />
           <path d="m6.8 6.8-2.6-2.2M9.6 7.5l2.4-1.5M7 9.4l-1.2 2.2" />
         </svg>
@@ -908,22 +906,22 @@
   </nav>
 
   <nav class="zoom-controls">
-    <button onclick={() => select(host).call(zoomer.scaleBy, 1/1.2)} aria-label={strings.zoomOut} title={strings.zoomOut}>−</button>
-    <button onclick={() => reset()} aria-label={strings.recenter} title={strings.recenter}>⌖</button>
-    <button onclick={() => select(host).call(zoomer.scaleBy, 1.2)} aria-label={strings.zoomIn} title={strings.zoomIn}>+</button>
+    <button class="icon-button" onclick={() => select(host).call(zoomer.scaleBy, 1/1.2)} aria-label={strings.zoomOut} title={strings.zoomOut}><Icon name="minus" size={14} /></button>
+    <button class="icon-button" onclick={() => reset()} aria-label={strings.recenter} title={strings.recenter}><Icon name="recenter" size={14} /></button>
+    <button class="icon-button" onclick={() => select(host).call(zoomer.scaleBy, 1.2)} aria-label={strings.zoomIn} title={strings.zoomIn}><Icon name="plus" size={14} /></button>
   </nav>
   <div class="corner" bind:offsetHeight={cornerHeight}>
   <div class="file-row">
     <!-- NW-31: the subject's file is on the computer running Lantern, out of a paired device's reach. -->
-    {#if !remote}<button class="open-file" title={strings.openFileHint} onclick={openFile} oncontextmenu={copyFilePath}>{strings.openFile}</button>{/if}
+    {#if !remote}<button class="open-file legend-chip" title={strings.openFileHint} onclick={openFile} oncontextmenu={copyFilePath}>{strings.openFile}</button>{/if}
     {#if fileNote}<span class="file-note" role="status">{fileNote}</span>{/if}
   </div>
   <div class="legend" class:shown={legendShown}>
     <!-- NW-40: on a phone the legend starts folded each time, whatever the desktop keeps. -->
-    <button aria-expanded={legendShown} onclick={() => { if (phone.current) phoneLegend = !phoneLegend; else { settings.ui.legendCollapsed = !settings.ui.legendCollapsed; preferencesChanged(); } }}>{strings.legend}</button>
+    <button class="legend-chip" aria-expanded={legendShown} onclick={() => { if (phone.current) phoneLegend = !phoneLegend; else { settings.ui.legendCollapsed = !settings.ui.legendCollapsed; preferencesChanged(); } }}>{strings.legend}</button>
     {#if legendShown}
       {@render legend()}
-      <label><input type="checkbox" bind:checked={settings.ui.textLinks} onchange={preferencesChanged} />{strings.textLinks}</label>
+      <label class="text-links"><input type="checkbox" bind:checked={settings.ui.textLinks} onchange={preferencesChanged} />{strings.textLinks}</label>
     {/if}
   </div>
   </div>
@@ -1076,12 +1074,13 @@
   @keyframes busy-pulse { 50% { box-shadow:0 0 20px 5px var(--glow-near),0 0 46px 11px var(--glow-far); } }
   .graph[data-reduced='true'] .node .disc, .graph[data-reduced='true'] .node .name { animation:none; }
 
-  .node-menu { position:absolute; z-index:4; display:flex; flex-direction:column; min-width:170px; padding:4px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.35); }
-  .node-menu hr { border:0; border-top:1px solid var(--line); margin:4px 2px; }
+  /* GV-55: the menu's look is the app's (app.css .menu-surface): icon column, main action first, Delete apart. */
+  .node-menu { position:absolute; z-index:4; }
+  .node-menu .lead { font-weight:500; }
+  .node-menu .lead :global(.icon) { color:var(--accent); }
+  .icon-slot { width:16px; flex:none; }
   /* GV-133: how many shown nodes a fold hides; text, so it reads without colour. */
   .folded { position:absolute; left:calc(100% + 3px); top:-6px; font-size:10px; line-height:14px; padding:0 4px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink-mute); white-space:nowrap; pointer-events:none; }
-  .node-menu button { text-align:left; border:0; background:none; padding:7px 10px; font-size:13px; border-radius:5px; }
-  .node-menu button:hover:not(:disabled), .node-menu button:focus-visible { background:var(--surface-2); outline:none; color:var(--accent); }
   .zoom-controls { position:absolute; right:20px; bottom:20px; display:flex; gap:8px; z-index:2; }
   .controls {
     position: absolute;
@@ -1092,31 +1091,11 @@
     gap: 8px;
   }
   .layout-controls { left:auto; right:20px; }
-  .controls button {
-    background: var(--glass);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--line);
-    color: var(--ink-mute);
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-  }
-  .controls button:hover:not(:disabled) {
-    background: var(--surface-2);
-    border-color: var(--line);
-    color: var(--accent);
-  }
-  .search { display:flex; align-items:center; gap:8px; height:32px; padding:0 0 0 12px; background:var(--glass); backdrop-filter:var(--glass-blur); border:1px solid var(--line); border-radius:16px; }
-  .search input { width:200px; border:0; background:none; color:var(--ink); font-size:13px; outline:none; }
+  /* RS-38: the graph tools are the app's icon buttons (circles, solid surface). */
+  .search { display:flex; align-items:center; gap:6px; height:32px; box-sizing:border-box; padding:0 2px 0 12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-pill); }
+  .search input { width:200px; border:0; padding:0; background:none; color:var(--ink); font-size:13px; outline:none; box-shadow:none; }
   .search-count { font-size:12px; color:var(--ink-mute); white-space:nowrap; }
-  .search button { border:0; background:none; }
-  .controls svg {
-    width: 14px;
-    height: 14px;
-  }
+  .search .icon-button { width:26px; height:26px; }
 
   .corner { position:absolute; left:16px; bottom:12px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; max-width:calc(100% - 170px); }
   .file-row { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--ink-mute); }
@@ -1129,17 +1108,22 @@
     pointer-events: auto; flex-wrap:wrap; align-items:center;
   }
   /* RS-35: open, the legend has its own ground, so the map never shows through its rows. */
-  .legend.shown { padding:6px 10px 6px 0; border-radius:10px; background:var(--glass); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); box-shadow:0 0 0 1px var(--glass-line); }
-  .legend button, .open-file { padding:3px 8px; font-size:12px; }
+  .legend.shown { padding:6px 12px 6px 0; border-radius:var(--radius-surface); background:var(--surface); box-shadow:0 0 0 1px var(--line); }
+  /* RS-35: folded, the legend is one chip (a pill). */
+  .legend-chip { padding:3px 12px; font-size:12px; font-weight:400; color:var(--ink-mute); background:var(--surface); border-color:var(--line); border-radius:var(--radius-pill); }
+  .legend.shown .legend-chip { background:none; border-color:transparent; }
+  .open-file { align-self:flex-start; }
+  .legend .text-links { gap:6px; }
+  .legend .text-links input { width:14px; height:14px; }
   .legend label { display:flex; align-items:center; gap:4px; }
   /* NW-41, NW-42: on a phone the controls take a finger, the search field does not zoom the page, and the corner clears the zoom buttons. */
   @media (max-width: 719px) {
-    .controls { right:12px; top:12px; } .controls button, .zoom-controls button { width:40px; height:40px; }
+    .controls { right:12px; top:12px; } .controls > button, .zoom-controls button { width:40px; height:40px; }
     .zoom-controls { right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); }
     .search { height:40px; border-radius:20px; } .search input { width:min(46vw, 200px); font-size:16px; }
     .corner { left:12px; bottom:calc(12px + env(safe-area-inset-bottom)); max-width:calc(100% - 180px); }
-    .legend button, .open-file { padding:8px 12px; font-size:13px; }
-    .node-menu button { padding:12px 14px; font-size:15px; }
+    .legend-chip, .open-file { padding:8px 14px; font-size:13px; }
+    .node-menu > button { padding:12px 14px; font-size:15px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .node .disc, .node .name { animation:none !important; }
