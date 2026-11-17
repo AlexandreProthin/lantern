@@ -220,6 +220,11 @@ Space navigation is not necessarily tabs; it must be intuitive.
   input, draws at most 30 frames per second and stops while the window is hidden. In reduced
   motion (GV-100) it is one still frame with no pointer, pan or lit-node reaction. *Appearance →
   Backdrop* off ([settings](/specs/settings.md)) removes it: plain `--bg` and solid surfaces.
+  *(Amended 2026-11-17.)* At rest (nothing eases towards the pointer, a pan or a space's anchor, no
+  node lit, no room fading) it draws at 15 frames per second, and it asks for no frame between two
+  draws; any of those movements brings 30 back at once. A room fade reads the colours where it
+  starts and where it ends once, and eases between them itself, rather than reading the tokens on
+  every frame. A still frame is drawn again only when something it shows changed.
 
 # The legend
 

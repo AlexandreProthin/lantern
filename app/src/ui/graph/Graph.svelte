@@ -29,6 +29,8 @@
   import { phone } from '../phone.svelte';
   import { GraphScene, type SceneNode } from './graph-scene';
   import { SpawnMotion } from './spawn-motion';
+  import { seatForce } from './seat-force';
+  import { EmberCanvas, type Spark } from './ember-canvas';
   import { searchNodes, stepMatch } from './graph-search';
   import { backdropLight, backdropPan } from '../../frame/backdrop-signals';
   import type { GraphRoomView, GraphSession, GraphSnippets, MenuAction } from './types';
@@ -121,7 +123,11 @@
   let host: HTMLDivElement;
   let edgesSvg: SVGSVGElement;
   let zoomer: ZoomBehavior<HTMLDivElement, unknown>;
-  const spawn = new SpawnMotion(() => host, () => edgesSvg, () => !motionReduced() && visible && !document.hidden);
+  let embersCanvas = $state<HTMLCanvasElement>();
+  /** One canvas over the map for every light in motion; the drawn nodes' discs hide what passes under them. */
+  const lights = new EmberCanvas(() => embersCanvas, () => ({ x: transform.x + width / 2, y: transform.y + height / 2, k: transform.k, w: width, h: height }),
+    () => view.nodes.filter(n => !n.pending).flatMap(n => { const p = simNodes.get(n.id); return p ? [{ x: p.x ?? 0, y: p.y ?? 0, r: DISC / 2 }] : []; }));
+  const spawn = new SpawnMotion(() => host, () => edgesSvg, () => !motionReduced() && visible && !document.hidden, lights);
   let panFrame=0;
   /** `transform` is relative to the view's centre (the world is drawn at +width/2, +height/2); d3-zoom's own
       transform is relative to the corner, so a pinch, a wheel or the ± buttons zoom around the right point. */
@@ -142,7 +148,11 @@
   let slowMap=false;
   function stopSim(){cancelAnimationFrame(simFrame);simFrame=0;}
   function runSim(){if(simFrame||!visible||motionReduced()||sim.alpha()<=sim.alphaMin())return;lastStep=0;stepDebt=STEP_MS;if(slowMap)degraded=true;simFrame=requestAnimationFrame(stepSim);}
-  function rested(){slowSince=0;if(degraded){degraded=false;paintRefs();}}
+  function rested(){slowSince=0;release();if(degraded){degraded=false;paintRefs();}}
+  /** New nodes still finding their seats (GV-14); while `seatOnly`, only they are simulated and drawn again. */
+  const seating=new Set<string>();let seatOnly=false;
+  /** The layout rests: the next growth seats only its own nodes. */
+  function release(){seating.clear();seatOnly=false;}
   function stepSim(at:number){simFrame=0;
     if(!visible||motionReduced())return;
     const elapsed=lastStep?at-lastStep:0;
@@ -154,7 +164,7 @@
     if(sim.alpha()>sim.alphaMin())simFrame=requestAnimationFrame(stepSim);else rested();
   }
   /** Runs the layout to rest at once, with nothing drawn in between. */
-  function settleNow(){stopSim();for(let i=0;sim.alpha()>sim.alphaMin()&&i<graphMotion.SETTLE_TICKS;i++)sim.tick();degraded=false;moved();}
+  function settleNow(){stopSim();for(let i=0;sim.alpha()>sim.alphaMin()&&i<graphMotion.SETTLE_TICKS;i++)sim.tick();release();degraded=false;moved();}
 
   // ---- Positions, written to the elements ---------------------------------------------------
   const nodeEls=new Map<string,HTMLElement>(),edgeEls=new Map<string,SVGPathElement>(),refEls=new Map<string,SVGPathElement>();
@@ -171,6 +181,13 @@
   /** Text-link lines are the costly part of a big map in motion (hundreds of dotted curves): the slow-frame fallback leaves them out until the layout rests (GV-112). */
   function paintRefs(){if(refEls.size)for(const link of references){const el=refEls.get(link.id);if(el)placeRef(link,el);}}
   function paint(){
+    // Seating, the rest of the map has not moved: only the new nodes and their lines are written.
+    if(seatOnly){
+      for(const id of seating){const el=nodeEls.get(id);if(el)placeNode(id,el);}
+      for(const l of simLinks)if(seating.has(l.target.id)||seating.has(l.source.id)){const el=edgeEls.get(l.target.id);if(el)el.setAttribute('d',edgePath(l));}
+      if(!degraded&&refEls.size)for(const link of references)if(seating.has(link.from)||seating.has(link.to)){const el=refEls.get(link.id);if(el)placeRef(link,el);}
+      return;
+    }
     for(const [id,el] of nodeEls)placeNode(id,el);
     for(const l of simLinks){const el=edgeEls.get(l.target.id);if(el)el.setAttribute('d',edgePath(l));}
     if(!degraded)paintRefs();
@@ -204,12 +221,6 @@
   const sim = forceSimulation<SimNode>().alphaDecay(0.03).stop();
   const settled=$derived.by(()=>{tick;return sim.alpha()<=sim.alphaMin();});
 
-  function childrenOf(id: string): string[] {
-    return Object.values(session.visit.nodes)
-      .filter((n) => n.parents[0] === id)
-      .map((n) => n.id);
-  }
-
   /** The design's tree: depth columns, leaves on rows, parents centred on their children. */
   function treeTargets(): Map<string, { x: number; y: number }> {
     return treePositions({ ...session.visit, nodes: sceneNodes });
@@ -222,7 +233,27 @@
    */
   function applyLayout(kind: 'open' | 'grow' | 'layout' = 'layout', changed = 0) {
     const root = simNodes.get(session.visit.rootId);
-    sim.nodes([...simNodes.values()]);
+    // GV-14: a free map that grows (and is not in the middle of a full layout) moves only its new nodes: they find
+    // their seats among the others, which stay where they are. A first layout, a layout switch and the tree layout
+    // move every node.
+    const fullRun = !seatOnly && sim.alpha() > sim.alphaMin();
+    if (kind === 'grow' && layout === 'force' && !fullRun) {
+      for (const id of seating) if (!simNodes.has(id)) seating.delete(id);
+      stopSim(); slowSince = 0;
+      // Nodes only went (or a waiting node became the one that arrived, in place): nothing to settle.
+      if (!seating.size) { seatOnly = false; sim.alpha(0); moved(); return; }
+      seatOnly = false; moved();   // the whole map once (a node that shrinks back needs its way home)
+      seatOnly = true;
+      sim.nodes([...seating].map(id => simNodes.get(id)!)).alphaDecay(graphMotion.SEAT_DECAY)
+        .force('charge', null).force('collide', null).force('link', null).force('x', null).force('y', null)
+        .force('seat', seatForce(() => simNodes.values(), () => simLinks,
+          { charge: graphMotion.charge, collide: graphMotion.collide, linkDistance: graphMotion.linkDistance, linkStrength: .8, centre: .02 }));
+      sim.alpha(Math.max(sim.alpha(), changed > graphMotion.GROW_MANY ? graphMotion.GROW_ALPHA_MANY : graphMotion.GROW_ALPHA));
+      if (motionReduced()) settleNow(); else runSim();
+      return;
+    }
+    seatOnly = false; seating.clear();
+    sim.nodes([...simNodes.values()]).alphaDecay(0.03).force('seat', null);
     if (layout === 'tree') {
       const t = treeTargets();
       if (root) root.fx = root.fy = null;
@@ -267,7 +298,8 @@
     let changed = false;
     for (const transfer of scene.transfers) {
       const body = simNodes.get(transfer.from);
-      if (body) { simNodes.delete(transfer.from); body.id = transfer.to; simNodes.set(transfer.to, body); changed = true; }
+      if (body) { simNodes.delete(transfer.from); body.id = transfer.to; simNodes.set(transfer.to, body); changed = true;
+        if (seating.delete(transfer.from)) seating.add(transfer.to); }
     }
     // A subject's first nodes all arrive together: the whole layout is new (`open`).
     const subjectId = untrack(() => session.subject.id), opening = subjectId !== laidSubject;
@@ -281,6 +313,7 @@
       const outward = !opening && p && g && (p.x !== g.x || p.y !== g.y);
       const a = outward ? Math.atan2((p.y ?? 0) - (g.y ?? 0), (p.x ?? 0) - (g.x ?? 0)) + spread / 2.4 : spread, d = outward ? 70 : 30;
       simNodes.set(n.id, { id: n.id, x: (p?.x ?? 0) + Math.cos(a) * d, y: (p?.y ?? 0) + Math.sin(a) * d });
+      if (!opening) seating.add(n.id);
       changed = true; count++;
     }
     for (const id of [...simNodes.keys()]) {
@@ -385,8 +418,8 @@
 
   // ---- Link preview (GV-44) ---------------------------------------------------------------
 
-  let previewFrame = 0, previewLayer: SVGGElement | null = null;
-  function stopPreview() { cancelAnimationFrame(previewFrame); previewFrame = 0; previewLayer?.remove(); previewLayer = null; }
+  let previewFrame = 0, previewLayer: SVGGElement | object | null = null;
+  function stopPreview() { cancelAnimationFrame(previewFrame); previewFrame = 0; if (previewLayer instanceof SVGGElement) previewLayer.remove(); previewLayer = null; lights.clear('preview'); }
   $effect(() => { const to = linkPreview; untrack(() => { stopPreview(); if (to) playPreview(session.visit.focusId, to); }); });
   $effect(() => { if (!visible) untrack(stopPreview); });
   // Same curve and orientation (sorted ids) as the text-link line, so the light rides on it when shown.
@@ -401,11 +434,14 @@
     const [first, second] = [from, to].sort();
     const tree = toChild || toParent ? edgesSvg.querySelector<SVGPathElement>(`[data-edge="${toChild ? to : from}"]`) : null;
     if ((toChild || toParent) && !tree) return;
-    const layer = document.createElementNS(ns, 'g'); layer.setAttribute('class', 'link-preview'); layer.setAttribute('aria-hidden', 'true');
-    let path = tree;
-    if (!path) { path = document.createElementNS(ns, 'path'); path.setAttribute('class', 'preview-curve'); layer.append(path); }
-    const head = document.createElementNS(ns, 'circle'); head.setAttribute('r', '3'); layer.append(head);
-    edgesSvg.append(layer); previewLayer = layer;
+    // A text link gets a temporary dotted curve in the edges layer; the bead itself is drawn on the ember canvas.
+    let path = tree, layer: SVGGElement | object = {};
+    if (!path) {
+      const curve = document.createElementNS(ns, 'g'); curve.setAttribute('class', 'link-preview'); curve.setAttribute('aria-hidden', 'true');
+      path = document.createElementNS(ns, 'path'); path.setAttribute('class', 'preview-curve'); curve.append(path);
+      edgesSvg.append(curve); layer = curve;
+    }
+    previewLayer = layer;
     // A tree edge runs parent -> child; a text-link curve runs from the smaller id.
     const reverse = tree ? toParent : from !== first;
     const reshape = () => { const a = simNodes.get(first), b = simNodes.get(second); if (a && b && !tree) path!.setAttribute('d', linkCurve(a, b)); };
@@ -415,9 +451,9 @@
       if (!previewLayer || previewLayer !== layer) return;
       reshape();
       const t = Math.min(1, (now - start) / duration), eased = 1 - (1 - t) ** 2;
-      const p = pointAt(path!, reverse ? 1 - eased : eased);
-      head.setAttribute('cx', String(p.x)); head.setAttribute('cy', String(p.y));
-      layer.style.opacity = String(Math.min(1, t / .15, (1 - t) / .2 + .25));
+      const p = pointAt(path!, reverse ? 1 - eased : eased), alpha = Math.min(1, t / .15, (1 - t) / .2 + .25);
+      lights.set('preview', [{ kind: 'bead', x: p.x, y: p.y, alpha }]);
+      if (layer instanceof SVGGElement) layer.style.opacity = String(alpha);
       if (t < 1) previewFrame = requestAnimationFrame(step);
       else { pulseNode(to); stopPreview(); }
     };
@@ -428,7 +464,7 @@
 
   let searchOpen = $state(false), searchText = $state(''), searchQuery = $state(''), searchPicked = $state(false), searchField = $state<HTMLInputElement>();
   let searchTimer: ReturnType<typeof setTimeout> | undefined;
-  const searchOptions = $derived({ shown: projection.shown, sealed: room.sealed });
+  const searchOptions = $derived({ shown: projection.shown, sealed: room.sealed, children: projection.children });
   const matches = $derived.by(() => { revision; return searchNodes(session.visit, searchQuery, searchOptions); });
   const matchSet = $derived(new Set(matches));
   const searching = $derived(searchOpen && !!searchQuery.trim());
@@ -517,13 +553,13 @@
   const motionReduced = () => reducedMotion.matches || settings.appearance.reduceMotion === 'on';
   const ns = 'http://www.w3.org/2000/svg';
   let travelFrame = 0;
-  let traveler: SVGGElement | null = null;
+  let traveler: object | null = null;
   const nodeGlows = new Set<Animation>();
 
   function stopTravel() {
     cancelAnimationFrame(travelFrame);
     travelFrame = 0;
-    traveler?.remove();
+    lights.clear('travel');
     traveler = null;
     nodeGlows.forEach((a) => a.cancel());
     nodeGlows.clear();
@@ -560,7 +596,7 @@
     duration: number;
   }
   interface Particle {
-    el: SVGGElement;
+    kind: 'dust' | 'mote';
     x: number;
     y: number;
     born: number;
@@ -619,16 +655,8 @@
       }
     }
 
-    const layer = document.createElementNS(ns, 'g');
-    layer.setAttribute('class', 'traveler');
-    layer.setAttribute('aria-hidden', 'true');
-    const dust = document.createElementNS(ns, 'g');
-    const head = document.createElementNS(ns, 'g');
-    head.innerHTML =
-      '<circle r="16" fill="var(--glow-far)"/><circle r="9" fill="var(--glow-near)"/><circle r="3" fill="var(--node-lit)"/>';
-    layer.append(dust, head);
+    const layer = {};
     traveler = layer;
-    edgesSvg.append(layer);
 
     let trail: Particle[] = [];
     let embers: Particle[] = [];
@@ -637,14 +665,7 @@
     let serial = 0;
     let glowIndex = 0;
     let burstIndex = 0;
-
-    function particle(small: boolean) {
-      const el = document.createElementNS(ns, 'g');
-      el.setAttribute('class', 'comet-dust');
-      el.innerHTML = `<circle r="3" fill="var(--glow-near)"/><circle r="${small ? 0.7 : 1.15}" fill="var(--node-lit)"/>`;
-      dust.append(el);
-      return el;
-    }
+    let head: Spark | null = null;
 
     function emitTrail(p: ReturnType<typeof pointAt>, elapsed: number) {
       if (trail.length >= comet.cap) return;
@@ -652,7 +673,7 @@
       // Deterministic, sparse scatter keeps repeated runs consistent.
       const motion = emberTrail(serial, p.tx, p.ty);
       trail.push({
-        el: particle(serial % 4 !== 0),
+        kind: serial % 4 !== 0 ? 'mote' : 'dust',
         x: p.x,
         y: p.y,
         born: elapsed,
@@ -672,7 +693,7 @@
         const motion = emberFan(i, BURST, heading);
         const angle = motion.angle;
         embers.push({
-          el: particle(i % 4 !== 0),
+          kind: i % 4 !== 0 ? 'mote' : 'dust',
           x: (sn.x ?? 0) + Math.cos(angle) * radius,
           y: (sn.y ?? 0) + Math.sin(angle) * radius,
           born: elapsed,
@@ -682,22 +703,13 @@
       }
     }
 
-    function paint(list: Particle[], elapsed: number) {
+    function paint(list: Particle[], elapsed: number, out: Spark[]) {
       return list.filter((p) => {
         const age = elapsed - p.born;
-        if (age >= p.life) {
-          p.el.remove();
-          return false;
-        }
+        if (age >= p.life) return false;
         const t = age / p.life;
-        p.el.setAttribute(
-          'transform',
-          `translate(${p.x + (p.vx * age) / 1000} ${p.y + (p.vy * age) / 1000}) scale(${1 - t * 0.65})`
-        );
-        p.el.setAttribute(
-          'opacity',
-          String(p.bright * Math.min(1, t / 0.15) * (1 - t) ** 1.8 * (0.85 + 0.15 * Math.sin(Math.PI * t * 4)))
-        );
+        out.push({ kind: p.kind, x: p.x + (p.vx * age) / 1000, y: p.y + (p.vy * age) / 1000, scale: 1 - t * 0.65,
+          alpha: p.bright * Math.min(1, t / 0.15) * (1 - t) ** 1.8 * (0.85 + 0.15 * Math.sin(Math.PI * t * 4)) });
         return true;
       });
     }
@@ -713,7 +725,7 @@
 
     function frame(now: number) {
       if (traveler !== layer) return;
-      if (motionReduced() || !visible || document.hidden || !layer.isConnected) return stopTravel();
+      if (motionReduced() || !visible || document.hidden || !edgesSvg?.isConnected) return stopTravel();
       if (started === null) started = now;
       const elapsed = now - started;
       while (glowIndex < glowCues.length && elapsed >= glowCues[glowIndex].at) pulseNode(glowCues[glowIndex++].id);
@@ -721,20 +733,24 @@
       const s = sample(elapsed);
       if (s) {
         const p = pointAt(s.seg.edge, s.t);
-        head.setAttribute('transform', `translate(${p.x} ${p.y})`);
+        head = { kind: 'comet', x: p.x, y: p.y, alpha: 1 };
         if (s.moving && elapsed - lastEmission >= comet.emitEvery) {
           emitTrail(p, elapsed);
           lastEmission = elapsed;
         }
-      } else head.setAttribute('opacity', '0');
-      trail = paint(trail, elapsed);
-      embers = paint(embers, elapsed);
+      } else head = null;
+      const sparks: Spark[] = [];
+      trail = paint(trail, elapsed, sparks);
+      embers = paint(embers, elapsed, sparks);
+      if (head) sparks.push(head);
+      lights.set('travel', sparks);
       // Let the arrival glow and remaining particles finish, then release everything.
       if (!s && !trail.length && !embers.length && !nodeGlows.size) return stopTravel();
       travelFrame = requestAnimationFrame(frame);
     }
     const first = pointAt(timeline[0].edge, 0);
-    head.setAttribute('transform', `translate(${first.x} ${first.y})`);
+    head = { kind: 'comet', x: first.x, y: first.y, alpha: 1 };
+    lights.set('travel', [head]);
     travelFrame = requestAnimationFrame(frame);
   }
 
@@ -822,6 +838,8 @@
           data-spawn-pending={e.pending ? 'true' : undefined} />
       {/each}
     </svg>
+    <!-- The nodes in their own box: a zoom step restyles the world and this box, not every node (GV-110). -->
+    <div class="nodes">
     {#each view.nodes as n (scene.key(n.id))}
       {@const focused = n.id === session.visit.focusId}
       {@const busy = session.busy(n.id)}
@@ -834,6 +852,7 @@
         class:busy
         class:pulsing={busy}
         class:muted={!route.has(n.id)}
+        class:landmark={route.has(n.id) || n.parents[0] === session.visit.rootId}
         class:match={searching && matchSet.has(n.id)}
         class:unmatched={searching && !n.pending && !matchSet.has(n.id)}
         data-id={n.id}
@@ -855,7 +874,9 @@
         <span class="name">{n.pending ? '' : title(n.title)}</span>
       </button>
     {/each}
+    </div>
   </div>
+  <canvas class="embers" bind:this={embersCanvas} aria-hidden="true" hidden></canvas>
   <span class="sr-only" aria-live="polite">{announcement}</span>
   {#if menu && menuAt}
     <div class="node-menu menu-surface" role="menu" tabindex="-1" aria-label={strings.nodeActions(title(session.visit.nodes[menu]?.title ?? ''))} bind:this={menuEl} bind:offsetHeight={menuHeight}
@@ -951,8 +972,8 @@
   /* While the view moves the layer is kept as drawn (no raster per step); it is drawn again, sharp, once the view rests.
      Kept all the time, it would be drawn at full size even on a small fitted map, which slows every growth. */
   .world.moving { will-change: transform; }
-  /* The inverse of the zoom, for the one title kept readable on a small map. It does not inherit: a zoom step
-     restyles the nodes that ask for it (`--inv: inherit`), not every element of the map (GV-110). */
+  /* The inverse of the zoom, for the titles kept readable on a small map. It does not inherit: a zoom step
+     restyles the few nodes that ask for it (`--inv: inherit`), not every element of the map (GV-110). */
   @property --inv { syntax: '<number>'; inherits: false; initial-value: 1; }
   .edges {
     position: absolute;
@@ -977,20 +998,24 @@
   .degraded .edges .references { display:none; }
   .edges :global(.link-preview) { pointer-events:none; }
   .edges :global(.link-preview .preview-curve) { stroke:var(--node-lit); stroke-dasharray:1 5; opacity:.5; }
-  .edges :global(.link-preview circle) { fill:var(--node-lit); filter:drop-shadow(0 0 4px var(--glow-near)); }
+  /* GV-114: the lights in motion, over the map; the canvas is the view's size, never the world's. */
+  .embers { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .embers[hidden], .graph[data-reduced='true'] .embers { display:none; }
   .edges path[data-spawn-pending] { stroke-dasharray:1; stroke-dashoffset:1; }
   .graph[data-reduced='true'] .edges path[data-spawn-pending] { stroke-dashoffset:0; }
   .tiny .name { visibility:hidden; }
-  /* A fitted map is often too small for titles: the focused node and the one under the pointer keep theirs, at reading size. */
-  .tiny .node[aria-pressed='true'], .tiny .node:hover { z-index:1; --inv:inherit; }
-  .tiny .node[aria-pressed='true'] .name, .tiny .node:hover:not(:disabled) .name { --inv:inherit; visibility:visible; transform:scale(var(--inv)); transform-origin:50% 0; text-shadow:0 0 6px var(--bg),0 0 2px var(--bg); }
+  /* A fitted map is often too small for titles (GV-62): the focused node, the one under the pointer, the route to the
+     focus and the modules (the root's children) keep theirs, at reading size. Only these ask for `--inv`. */
+  .nodes { position:absolute; left:0; top:0; --inv:inherit; }
+  .tiny .node.landmark { --inv:inherit; }
+  .tiny .node[aria-pressed='true'], .tiny .node:hover { z-index:2; --inv:inherit; }
+  .tiny .node.landmark .name, .tiny .node[aria-pressed='true'] .name, .tiny .node:hover:not(:disabled) .name { --inv:inherit; visibility:visible; transform:scale(var(--inv)); transform-origin:50% 0; text-shadow:0 0 6px var(--bg),0 0 2px var(--bg); }
+  .tiny .node.landmark:not([aria-pressed='true']):not(:hover) { z-index:1; }
+  /* While the view moves, the edges are their own layer: the world's layer is not cut up anew on every step. */
+  .world.moving .edges { will-change: transform; }
   .degraded .node .disc { box-shadow:none; }
   .large-notice { position:absolute; top:60px; left:20px; color:var(--ink-mute); font-size:12px; }
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
-  :global(.comet-dust) {
-    filter: drop-shadow(0 0 2px var(--glow-near));
-  }
-
   .node {
     position: absolute;
     left: 0;
@@ -1127,7 +1152,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .node .disc, .node .name { animation:none !important; }
-    :global(.traveler), :global(.link-preview) {
+    .embers, :global(.link-preview) {
       display: none;
     }
   }

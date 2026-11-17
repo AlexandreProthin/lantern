@@ -5,6 +5,7 @@ import { CategoryGate } from './gate';
 import { amberRequest, promptVersion } from './prompt';
 import type { AmberContext, AmberHelp, AmberTurn } from './prompt';
 import { trace } from '../debug/trace.svelte';
+import { frameThrottle } from '../frame-throttle';
 
 export type AmberPhase = 'idle' | 'thinking' | 'streaming' | 'error';
 /** The question being answered or the last one that failed; done turns move to `turns`. */
@@ -21,6 +22,8 @@ export class AmberChat {
   private abort: AbortController | null = null;
   constructor(private provider: InferenceProvider, private log: AmberLog, private model: () => string,
     private help: () => AmberHelp, private context: () => AmberContext, private changed: () => void) {}
+  /** A streamed chunk is shown at most once a frame. */
+  private streamed = frameThrottle(() => this.changed());
 
   async ask(question: string, selection?: string): Promise<void> {
     question = question.trim(); if (!question || this.phase === 'thinking' || this.phase === 'streaming') return;
@@ -31,7 +34,7 @@ export class AmberChat {
     const { system, prompt, layers } = amberRequest(this.help(), this.context(), this.turns, question, selection);
     const show = (text: string) => {
       if (!text || this.pending !== pending) return;
-      pending.answer += text; if (this.phase === 'thinking') this.phase = 'streaming'; this.changed();
+      pending.answer += text; if (this.phase === 'thinking') this.phase = 'streaming'; this.streamed();
     };
     const record = (outcome: 'ok' | 'cancelled' | 'error', extra: { usage?: ReturnType<typeof zeroUsage>; durationMs?: number; costUsd?: number; model?: string; errorKind?: string; servedModel?: string }) => {
       if (gate.open && !gate.tagOk) { console.warn('Amber: missing or broken category tag, read as general', requestId); trace.warn('amber', 'Missing or broken category tag, read as general', { requestId }); }

@@ -84,3 +84,24 @@ test('RS-34: a room switch repaints the backdrop in the new room’s colours, bo
   await page.getByRole('menuitemradio', { name: 'Learn' }).click();
   await expect.poll(() => warmth(page)).toBeGreaterThan(0);
 });
+
+test('RS-34: at rest the backdrop draws at half its rate, and a moving pointer brings the full rate back', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { draws: number }, clear = CanvasRenderingContext2D.prototype.clearRect; w.draws = 0;
+    CanvasRenderingContext2D.prototype.clearRect = function (...args: Parameters<typeof clear>) {
+      if (this.canvas.parentElement?.dataset.testid === 'backdrop') w.draws++;
+      return clear.apply(this, args);
+    };
+  });
+  await page.goto('/');
+  await expect(page.locator('[data-testid=backdrop]')).toHaveCount(1);
+  const draws = () => page.evaluate(() => (window as unknown as { draws: number }).draws);
+  const perSecond = async (during?: () => Promise<void>) => {
+    const a = await draws(); if (during) await during(); else await page.waitForTimeout(1000); return await draws() - a;
+  };
+  // The lantern glides to the pointer for a few seconds; then only the slow orbits move.
+  await expect.poll(() => perSecond(), { timeout: 20000, intervals: [0] }).toBeLessThanOrEqual(17);
+  expect(await perSecond()).toBeGreaterThan(5);
+  const sweep = async () => { for (let i = 0; i < 20; i++) { await page.mouse.move(200 + i * 30, 300); await page.waitForTimeout(50); } };
+  expect(await perSecond(sweep)).toBeGreaterThan(20);
+});

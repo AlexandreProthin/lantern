@@ -17,6 +17,9 @@ pub fn default_library(app: AppHandle) -> Result<PathBuf, String> { app.path().d
 pub fn load_subject(library: PathBuf, id: String, lock: State<StorageLock>) -> Result<Loaded, String> {
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::load_subject(&library, &id)
 }
+/// ST-27: size and modification time only; the frame loads the file when they changed.
+#[tauri::command]
+pub fn subject_stamp(library: PathBuf, id: String) -> Result<storage::FileStamp, String> { storage::subject_stamp(&library, &id) }
 #[tauri::command]
 pub fn save_subject(library: PathBuf, subject: Value, expected: Option<Stamp>, dirty: bool, lock: State<StorageLock>) -> Result<SaveResult, String> {
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::save_subject(&library, &subject, expected.as_ref(), dirty)

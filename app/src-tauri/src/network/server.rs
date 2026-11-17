@@ -178,6 +178,7 @@ fn blocking(app: &AppHandle, command: &str, args: Value, settings: Value) -> Res
             to(commands::save_settings(app.clone(), document, lock()))
         }
         "load_subject" => to(commands::load_subject(arg(&args, "library")?, arg(&args, "id")?, lock())),
+        "subject_stamp" => to(commands::subject_stamp(arg(&args, "library")?, arg(&args, "id")?)),
         "save_subject" => to(commands::save_subject(arg(&args, "library")?, arg(&args, "subject")?, arg(&args, "expected")?, arg(&args, "dirty")?, lock())),
         "list_subjects" => to(commands::list_subjects(app.clone(), arg(&args, "library")?, lock())),
         "record_open" => to(commands::record_open(app.clone(), arg(&args, "id")?, arg(&args, "at")?, lock())),

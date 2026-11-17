@@ -6,6 +6,8 @@ import type { Settings } from './settings';
 import type { LibrarySpaces } from './library-spaces';
 import type { Context } from '../assets/identity/companion/lantern';
 import type { NudgeRule } from './amber/nudge';
+/** The session's save callback. `'focus'` (ST-27): only the focus moved, a light change saved later and coalesced. */
+export type Save = (change?: 'focus') => void;
 export interface RoomSession {
   subject: Subject; running: { nodeId: string; task: string } | null;
   setFocus(id: string): void; cancel(): void; touch(): void; initialize(): Promise<void>;
@@ -62,7 +64,7 @@ export interface RoomDefinition {
   settings: { defaults: Record<string, unknown>; validate: (stored: Record<string, unknown>) => Record<string, unknown> };
   /** The tone a new subject gets when no other is given (the DEV Study harness). */
   defaultTone: (settings: Settings) => Tone;
-  prompts: { version: string; createSession: (subject: Subject, provider: InferenceProvider, save: () => void, render: () => void, settings: Settings) => RoomSession };
+  prompts: { version: string; createSession: (subject: Subject, provider: InferenceProvider, save: Save, render: () => void, settings: Settings) => RoomSession };
   /** Settings that reach open sessions when they change (display name, context budget). */
   applySettings: (session: RoomSession, settings: Settings) => void;
   /** The browser build and Playwright tests talk to this instead of the CLI (IP-71). */

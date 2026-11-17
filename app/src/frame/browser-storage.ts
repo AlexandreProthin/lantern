@@ -22,6 +22,11 @@ export const browserStorage: Storage = {
     }
     const text = JSON.stringify(subject); if (dirty) localStorage.setItem(key(subject.id), text);
     return { kind: 'saved', stamp: stamp(text) };
+  },
+  /** ST-27: the stored text against the one last read or written; no parse. */
+  async changed(_, id, last) {
+    const raw = localStorage.getItem(key(id)); if (raw === null) throw new Error('Subject not found');
+    return raw !== last.hash;
   }
 };
 export function browserSubjects(): Subject[] {

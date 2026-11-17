@@ -70,13 +70,15 @@ test('GV-90/91/92: sequential branch tips, breathing, completion particles and r
   await page.addInitScript(()=>{
     const log:unknown[]=[];(window as any).__spawnLog=log;let last='';
     const reduce=matchMedia('(prefers-reduced-motion: reduce)');
-    const state=()=>({tips:document.querySelectorAll('.spawn-tip').length,lights:document.querySelectorAll('.spawn-light').length,
-      particles:document.querySelectorAll('.spawn-particle').length,
+    // GV-114: the tips, the travelling light and the sparks are drawn on the graph's ember canvas, which carries a count per kind.
+    const embers=()=>document.querySelector<HTMLCanvasElement>('.graph canvas.embers')?.dataset??{};
+    const state=()=>({tips:Number(embers().tip??0),lights:['tip','spark','comet','dust'].some(k=>k in embers())?1:0,
+      particles:Number(embers().spark??0),
       nodes:[...document.querySelectorAll<HTMLElement>('.node[data-pending="waiting"]')].map(n=>({id:n.dataset.id,phase:n.dataset.spawnPhase??null,
         visibility:getComputedStyle(n).visibility,animation:getComputedStyle(n.querySelector('.disc')!).animationName}))});
     const record=(reduceEvent:boolean)=>{const s=state(),key=JSON.stringify(s);
       if(reduceEvent||key!==last)log.push({...s,t:performance.now(),reduceEvent});last=key;};
-    new MutationObserver(()=>record(false)).observe(document,{subtree:true,childList:true,attributes:true,attributeFilter:['data-spawn-phase','data-pending']});
+    new MutationObserver(()=>record(false)).observe(document,{subtree:true,childList:true,attributes:true,attributeFilter:['data-spawn-phase','data-pending','data-tip','data-spark','data-comet','data-dust']});
     // Created before the app's own query, so this listener runs first (CSSOM View): it sees the motion as it was.
     reduce.addEventListener('change',()=>{if(reduce.matches)record(true);});
   });
@@ -100,19 +102,20 @@ test('GV-90/91/92: sequential branch tips, breathing, completion particles and r
     if(i)expect(t,`branch ${i}: ${trace}`).toBeGreaterThanOrEqual(arrived[i-1]);
   });
   // GV-91: once grown, all three breathe together and no tip is left.
-  const waiting=growth.find(allBreathing)!;
-  expect(waiting.tips).toBe(0);for(const n of waiting.nodes)expect(n.animation).toContain('breathe');
+  // The ember canvas clears the last tip on its next draw, a frame after the last phase changes (GV-114).
+  const waiting=growth.filter(allBreathing);
+  expect(waiting.at(-1)!.tips,trace).toBe(0);for(const n of waiting.at(-1)!.nodes)expect(n.animation).toContain('breathe');
   // GV-92: the response turns them into real nodes with a particle burst, then the effect layer goes away.
   // The fake reply streams in 15 chunks of 200 ms: allow a loaded machine more than the default 5 s for it.
   await expect(page.locator('.node[data-pending]')).toHaveCount(0,{timeout:10000});
   await expect.poll(async()=>(await log()).some(s=>s.particles>0)).toBe(true);
   await page.screenshot({path:'test-results/spawn-completion.png'});
-  await expect(page.locator('.spawn-light')).toHaveCount(0);
+  await expect(page.locator('.graph canvas.embers:is([data-tip],[data-spark])')).toHaveCount(0);
   // System reduction applies immediately, including to an in-flight growth sequence.
   await page.locator('.panel').getByRole('button',{name:'Mechanism 1',exact:false}).click();
   const mark=(await log()).length;
   await page.locator('.panel').getByRole('button',{name:'Light it up',exact:true}).click();
-  await page.waitForFunction(()=>document.querySelector('.spawn-tip'),undefined,{polling:'raf'});
+  await page.waitForFunction(()=>document.querySelector('.graph canvas.embers[data-tip]'),undefined,{polling:'raf'});
   await page.emulateMedia({reducedMotion:'reduce'});
   await expect.poll(async()=>(await log(mark)).some(s=>s.reduceEvent)).toBe(true);
   await expect(page.locator('.node[data-pending]')).toHaveCount(0,{timeout:10000});
@@ -124,7 +127,7 @@ test('GV-90/91/92: sequential branch tips, breathing, completion particles and r
     expect(s).toMatchObject({tips:0,lights:0,particles:0});
     for(const n of s.nodes)expect(n.visibility).toBe('visible');
   }
-  await expect(page.locator('.spawn-particle')).toHaveCount(0);
+  await expect(page.locator('.graph canvas.embers[data-spark]')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
@@ -237,9 +240,12 @@ test('GV-44/56: hovering a node link previews the connection; Open reports in th
   await panel.getByRole('button',{name:'Save',exact:true}).click();
   // Child: the light rides the tree edge (no temporary curve), then goes away.
   await panel.locator('.node-link',{hasText:'the child'}).hover();
-  await expect(page.locator('.edges .link-preview circle')).toHaveCount(1);
+  await expect(page.locator('.graph canvas.embers[data-bead="1"]')).toHaveCount(1);
+  // The bead is drawn on the map's ember canvas (no SVG light, no filter).
+  expect(await page.locator('.graph canvas.embers').evaluate((c:HTMLCanvasElement)=>{const d=c.getContext('2d')!.getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=4)if(d[i])return true;return false;})).toBe(true);
   await expect(page.locator('.edges .link-preview .preview-curve')).toHaveCount(0);
   await expect(page.locator('.edges .link-preview')).toHaveCount(0,{timeout:3000});
+  await expect(page.locator('.graph canvas.embers[data-bead]')).toHaveCount(0);
   // Grandchild (not adjacent): a temporary curve; leaving the link stops it.
   await panel.locator('.node-link',{hasText:'further'}).hover();
   await expect(page.locator('.edges .link-preview .preview-curve')).toHaveCount(1);
@@ -308,4 +314,45 @@ test('GV-57: Ctrl+F searches nodes, Enter steps through matches, Esc closes', as
   await page.getByRole('button',{name:'Search nodes',exact:true}).click();
   await expect(field).toBeFocused();
   expect(errors).toEqual([]);
+});
+test('ST-27: a focus click writes nothing at once; the focus is saved a little later and survives reopening', async ({page}) => {
+  await page.goto('/?study=1&subject=Focus%20save');
+  const panel=page.locator('.panel');
+  await expect(panel.getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  const stored=()=>page.evaluate(()=>{const k=Object.keys(localStorage).find(k=>k.startsWith('lantern.subject.')&&!k.includes('.conflict-'))!;return localStorage.getItem(k)!;});
+  const focusOf=(text:string)=>JSON.parse(text).rooms.learn.focusId as string;
+  await expect.poll(stored).toContain('Mechanism 1');await page.waitForTimeout(600);
+  const before=await stored();
+  const target=page.locator('.graph .node[data-state="open"]').first(), id=(await target.getAttribute('data-id'))!;
+  await target.click();
+  await expect(page.locator('.graph .node[aria-pressed="true"]')).toHaveAttribute('data-id',id);
+  await page.waitForTimeout(600);
+  expect(await stored()).toBe(before);
+  await expect.poll(async()=>focusOf(await stored()),{timeout:5000}).toBe(id);
+  // Only the focus changed in the file.
+  const after=JSON.parse(await stored()),was=JSON.parse(before);was.rooms.learn.focusId=id;expect(after).toEqual(was);
+  await page.goto('/?study=1&resume=1');
+  await expect(page.locator('.graph .node[aria-pressed="true"]')).toHaveAttribute('data-id',id);
+});
+test('ST-27: a focus not yet written is written when the page closes', async ({page}) => {
+  await page.goto('/?study=1&subject=Focus%20close');
+  await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  await page.waitForTimeout(500);
+  const target=page.locator('.graph .node[data-state="open"]').last(), id=(await target.getAttribute('data-id'))!;
+  await target.click();
+  await page.goto('/?study=1&resume=1');
+  await expect(page.locator('.graph .node[aria-pressed="true"]')).toHaveAttribute('data-id',id);
+});
+test('GV-114: the travelling light and its embers are drawn on one canvas, which goes when they end', async ({page}) => {
+  await page.goto('/?study=1&subject=Comet%20canvas');
+  await expect(page.locator('.panel').getByRole('button',{name:'Test me',exact:true})).toBeEnabled();
+  const embers=page.locator('.graph canvas.embers');
+  await expect(embers).toBeHidden({timeout:10000});
+  await page.locator('.graph .node[data-state="open"]').first().click();
+  await expect(page.locator('.graph canvas.embers[data-comet="1"]')).toHaveCount(1);
+  await expect.poll(()=>embers.getAttribute('data-mote'),{intervals:[16]}).not.toBeNull();
+  // No SVG light, no filtered group in the edges layer.
+  expect(await page.locator('.edges g').count()).toBeLessThanOrEqual(1);
+  await expect(embers).toBeHidden({timeout:5000});
+  expect(await embers.evaluate(c=>Object.keys((c as HTMLCanvasElement).dataset))).toEqual([]);
 });

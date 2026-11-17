@@ -14,6 +14,7 @@ import { taskPrompt } from './prompts';
 import { fitPrompt } from '../../frame/context-fit';
 import { contextSizeOf } from '../../ui/model-choices.svelte';
 import { trace } from '../../frame/debug/trace.svelte';
+import { frameThrottle } from '../../frame/frame-throttle';
 /** DC-30: how each task reads as a user action. */
 const ACTION_LABELS: Record<Task, string> = { intro: 'Introduce subject', light: 'Light node', find: 'Find products', more: 'More options', reply: 'Send reply', fill: 'Fill Compare', check: 'Check', recommend: 'Recommend' };
 
@@ -39,11 +40,13 @@ export class ChooseSession {
   notice: SessionNotice | null = null;
   needOffer: NeedOffer | null = null;
   recommendation: (Recommendation & { productId: string | null }) | null = null;
-  constructor(public subject: Subject, private provider: InferenceProvider, private changed: () => void, private render: () => void = changed,
+  constructor(public subject: Subject, private provider: InferenceProvider, private changed: (change?: 'focus') => void, private render: () => void = changed,
     public displayName = '', public budgetTokens = 12_000, public useWeb: () => boolean = () => true, public today: () => string = localToday) {}
   get visit(): RoomVisit { return this.subject.rooms.choose; }
+  /** A streamed chunk is drawn at most once a frame. */
+  private streamed = frameThrottle(() => this.render());
   get focus() { return nodeOf(this.visit, this.visit.focusId); }
-  setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.commit(); }
+  setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.changed('focus'); this.render(); }
   busy(id: string): boolean { return this.running?.nodeId === id; }
   /** CP-41: cells the research lane is filling now, shown striped. */
   filling(): Set<string> { return new Set(this.research?.slots.map(slotKey) ?? []); }
@@ -60,7 +63,9 @@ export class ChooseSession {
     if (this.research || this.queue.length) trace.action('choose', 'Cancel research', { running: this.research?.task, queued: this.queue.length });
     this.queue = []; this.research?.controller.abort(); this.render();
   }
-  private commit(): void { normalize(this.visit); this.changed(); this.render(); }
+  /** Counts the saved changes to the visit (not focus, not streamed text): views that read only the graph key off it and the visit. */
+  edits = 0;
+  private commit(): void { normalize(this.visit); this.edits++; this.changed(); this.render(); }
   /** CP-10: web only for research tasks, and only when the room's *Use the web* is on. */
   webFor(task: Task): boolean { return RESEARCH.includes(task) && this.useWeb(); }
 
@@ -149,7 +154,7 @@ export class ChooseSession {
     try {
       const result = await this.provider.stream({ requestId: generationId, system: prompts.system, prompt: prompts.prompt, model: v.model, effort: v.effort, web: lane.web, cancel: lane.controller.signal,
         trace: { origin: `choose·${prompts.template}`, subjectId: this.subject.id, nodeId: id, promptVersion: prompts.promptVersion, layers: prompts.layers, stats: { ...prompts.stats, task: lane.task, ...(extra.target ? { targetCells: extra.target.length } : {}) } } },
-        chunk => { raw += chunk; if (current() && !lane.controller.signal.aborted) { lane.text = visibleText(raw); this.render(); } },
+        chunk => { raw += chunk; if (current() && !lane.controller.signal.aborted) { lane.text = visibleText(raw); this.streamed(); } },
         // IP-13, CP-32: a tool use closes the text before it; the answer is what follows the last one.
         tool => { raw = ''; if (current()) { lane.text = ''; lane.progress = tool; this.render(); } });
       if (lane.controller.signal.aborted || !Object.hasOwn(this.visit.nodes, id)) throw new ProviderError('cancelled', '', result.model, result.usage, result.durationMs, result.toolCalls);

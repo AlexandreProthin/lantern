@@ -26,6 +26,8 @@ export class UndoHistory {
     this.future = [];
     this.current = { state, focusId: visit.focusId };
   }
+  /** ST-27, RS-61: only the focus moved; no step, and no copy of the graph to find that out. */
+  focused(visit: RoomVisit): void { this.current.focusId = visit.focusId; }
   /** The visit one step back, for the caller to swap in; null when there is none. */
   undo(visit: RoomVisit): RoomVisit | null { return this.move(visit, this.past, this.future); }
   redo(visit: RoomVisit): RoomVisit | null { return this.move(visit, this.future, this.past); }

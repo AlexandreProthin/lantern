@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import { newLearnSubject } from '../../rooms/learn/rules';
 import { addChild } from '../../core/graph';
 import { searchNodes, stepMatch } from './graph-search';
+import { childMap } from '../../core/visibility';
 
 function subject() {
   const v = newLearnSubject('Ocean tides').rooms.learn;
@@ -44,4 +45,16 @@ test('GV-57, GV-121: only shown nodes are searched, and an open node by its titl
   expect(searchNodes(v, 'bulge', { sealed })).toEqual([bulge.id]);
   expect(searchNodes(v, 'bulge', { sealed, shown: new Set([v.rootId, moon.id]) })).toEqual([]);
   expect(searchNodes(v, 'secret')).toEqual([bulge.id]);
+});
+
+test('GV-57: a big map is searched in one pass over a children map (no per-node scan)', () => {
+  const v = newLearnSubject('Chain').rooms.learn;
+  const root = v.nodes[v.rootId];
+  let parent = v.rootId;
+  for (let i = 0; i < 3000; i++) { const id = `n${i}`; v.nodes[id] = { ...root, id, parents: [parent], title: `Step ${i}`, createdAt: `2026-01-01T00:00:${String(i % 60).padStart(2, '0')}Z` }; parent = id; }
+  const started = performance.now();
+  expect(searchNodes(v, 'step 2999')).toEqual([parent]);
+  expect(performance.now() - started).toBeLessThan(500);
+  // The caller's map (the graph's projection) gives the same order.
+  expect(searchNodes(v, 'step 1', { children: childMap(v) })).toEqual(searchNodes(v, 'step 1'));
 });

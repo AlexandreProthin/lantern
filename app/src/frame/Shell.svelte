@@ -272,7 +272,11 @@
     const reactiveSubject = $state(loaded.subject);
     const owner = room;
     history = new UndoHistory(reactiveSubject.rooms[owner.id]);
-    controller=owner.prompts.createSession(reactiveSubject,providerFor(owner),()=> { persistence.schedule(controller.subject); history.observe(controller.subject.rooms[owner.id]); revision++; },()=>revision++,settings);
+    // ST-27: a focus-only change is light: no parse, copy or undo step now; it is written later, coalesced.
+    controller=owner.prompts.createSession(reactiveSubject,providerFor(owner),change=> {
+      if(change==='focus'){persistence.focus(controller.subject);history.focused(controller.subject.rooms[owner.id]);}
+      else {persistence.schedule(controller.subject);history.observe(controller.subject.rooms[owner.id]);}
+      revision++; },()=>revision++,settings);
     return {session:controller,persistence,room:owner.id,history};
   }
   /** A short message that clears itself, unless something else has taken its place. */

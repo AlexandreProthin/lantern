@@ -15,7 +15,7 @@ export const sampleRoom: RoomDefinition = {
   settings:{ defaults:{ note:'' }, validate:stored => ({ note:'', ...stored, ...(typeof stored.note === 'string' ? {} : { note:'' }) }) },
   defaultTone:() => 'curious',
   prompts:{ version:'sample-0', createSession:(subject, _provider, save, render): RoomSession => ({ subject, running:null,
-    setFocus(id) { subject.rooms.sample.focusId = id; save(); render(); }, cancel() {}, touch() { save(); render(); }, async initialize() {} }) },
+    setFocus(id) { subject.rooms.sample.focusId = id; save('focus'); render(); }, cancel() {}, touch() { save(); render(); }, async initialize() {} }) },
   applySettings() {}, fakeProvider:(delay, error) => new FakeProvider(delay, error),
   nodeKinds:{ subject:{ label:'subject', glyph:'○' } }, nodeStates:{ open:{ label:'open', glyph:'○' } }, legend:[],
   statsSummary:subject => ({ text:`${Object.keys(subject.rooms.sample.nodes).length} nodes`, tooltip:'' }),

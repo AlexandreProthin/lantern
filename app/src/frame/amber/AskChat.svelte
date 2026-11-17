@@ -10,6 +10,12 @@
   let field = $state<HTMLTextAreaElement>(), log = $state<HTMLElement>(), draft = $state('');
   const noVisit = { nodes: {} } as unknown as RoomVisit;
   const busy = $derived.by(() => { void revision; return chat.phase === 'thinking' || chat.phase === 'streaming'; });
+  // Per part, so a streamed chunk redraws the answer being written and nothing else: done turns keep their markup.
+  const phase = $derived.by(() => { void revision; return chat.phase; });
+  const turns = $derived.by(() => { void revision; return chat.turns; });
+  const pending = $derived.by(() => { void revision; const p = chat.pending; return p ? { question: p.question, selection: p.selection, error: p.error } : null; });
+  const answer = $derived.by(() => { void revision; return chat.pending?.answer ?? ''; });
+  const answerHtml = $derived(answer ? renderMarkdown(answer, noVisit) : '');
   export function focus() { field?.focus(); }
   $effect(() => { revision; void tick().then(() => { if (log) log.scrollTop = log.scrollHeight; }); });
   $effect(() => { if (autofocus) field?.focus(); });
@@ -20,26 +26,24 @@
   }
   const fixable = (kind: string) => ['not-installed', 'not-logged-in', 'model-unknown'].includes(kind);
 </script>
-{#key revision}
-{#if chat.turns.length || chat.pending}
+{#if turns.length || pending}
 <div class="log" bind:this={log} aria-live="polite">
-  {#each chat.turns as turn}
+  {#each turns as turn (turn)}
     <p class="you">{#if turn.selection}<q>{turn.selection}</q> {/if}{turn.question}</p>
     <div class="amber">{@html renderMarkdown(turn.answer, noVisit)}</div>
   {/each}
-  {#if chat.pending}
-    <p class="you">{#if chat.pending.selection}<q>{chat.pending.selection}</q> {/if}{chat.pending.question}</p>
-    {#if chat.phase === 'thinking'}<p class="thinking" role="status">{strings.amberThinking}</p>
-    {:else if chat.pending.answer}<div class="amber" data-testid="amber-streaming">{@html renderMarkdown(chat.pending.answer, noVisit)}</div>{/if}
-    {#if chat.pending.error}
-      <div class="error" role="alert"><strong>{strings.amberFailed}</strong><p>{errorMessage(chat.pending.error)}</p>
-        <details><summary>{strings.details}</summary><pre>{chat.pending.error.details}</pre></details>
-        <div class="actions"><button onclick={() => void chat.retry()}>{strings.retry}</button>{#if fixable(chat.pending.error.kind)}<button onclick={openSettings}>{strings.settings}</button>{/if}</div></div>
+  {#if pending}
+    <p class="you">{#if pending.selection}<q>{pending.selection}</q> {/if}{pending.question}</p>
+    {#if phase === 'thinking'}<p class="thinking" role="status">{strings.amberThinking}</p>
+    {:else if answer}<div class="amber" data-testid="amber-streaming">{@html answerHtml}</div>{/if}
+    {#if pending.error}
+      <div class="error" role="alert"><strong>{strings.amberFailed}</strong><p>{errorMessage(pending.error)}</p>
+        <details><summary>{strings.details}</summary><pre>{pending.error.details}</pre></details>
+        <div class="actions"><button onclick={() => void chat.retry()}>{strings.retry}</button>{#if fixable(pending.error.kind)}<button onclick={openSettings}>{strings.settings}</button>{/if}</div></div>
     {/if}
   {/if}
 </div>
 {/if}
-{/key}
 <textarea bind:this={field} bind:value={draft} rows="2" aria-label={strings.askAmber} placeholder={strings.askAmberPlaceholder} onkeydown={key}></textarea>
 <style>
   .log { overflow:auto; display:grid; gap:8px; min-height:0; font-size:14px; line-height:1.5; }

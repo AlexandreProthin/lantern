@@ -10,4 +10,6 @@ export const graphMotion = {
   // A subject's first layout runs to rest unseen, in at most this many steps. A map that grows warms to GROW_ALPHA
   // (GROW_ALPHA_MANY past GROW_MANY nodes at once, e.g. a branch unfolding) instead of 0.9, so the rest of it stays put.
   , SETTLE_TICKS:300, GROW_ALPHA:.3, GROW_MANY:6, GROW_ALPHA_MANY:.6
+  // Only the new nodes move while they find their seats (GV-14): they come to rest about twice as fast as a full layout.
+  , SEAT_DECAY:.06
 } as const;

@@ -13,6 +13,7 @@ import { taskPrompt } from './prompts';
 import { fitPrompt } from '../../frame/context-fit';
 import { contextSizeOf } from '../../ui/model-choices.svelte';
 import { trace } from '../../frame/debug/trace.svelte';
+import { frameThrottle } from '../../frame/frame-throttle';
 /** DC-30: how each task reads as a user action. */
 const ACTION_LABELS: Record<Exclude<Task, 'suggest'>, string> = { intro: 'Introduce subject', light: 'Light node', more: 'More options', reply: 'Send reply', check: 'Test me', rewrite: 'Rewrite explanation' };
 /** `replay`: LR-91, stored text streaming with no call; the graph grows `reveal` children for it (GV-92a). */
@@ -22,11 +23,13 @@ export interface SessionNotice { nodeId: string; kind: 'directions' | 'error'; c
 export class LearnSession {
   running: Running | null = null;
   notice: SessionNotice | null = null;
-  constructor(public subject: Subject, private provider: InferenceProvider, private changed: () => void,
+  constructor(public subject: Subject, private provider: InferenceProvider, private changed: (change?: 'focus') => void,
     private render: () => void = changed, public displayName = '', public budgetTokens = 12_000) {}
   get visit(): RoomVisit { return this.subject.rooms.learn; }
+  /** A streamed chunk is drawn at most once a frame; the text itself is always current. */
+  private streamed = frameThrottle(() => this.render());
   get focus() { return nodeOf(this.visit, this.visit.focusId); }
-  setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.changed(); this.render(); }
+  setFocus(id: string): void { nodeOf(this.visit, id); this.visit.focusId = id; this.notice = null; this.changed('focus'); this.render(); }
   busy(id: string): boolean { return this.running?.nodeId === id; }
   touch(): void { this.changed(); this.render(); }
   /** RS-64: a notice's retry belongs to the state before the undo. */
@@ -50,7 +53,7 @@ export class LearnSession {
     this.running = { nodeId: id, task: id === this.visit.rootId ? 'intro' : 'light', text: '', controller, replay: true, reveal: children };
     this.notice = null; this.render();
     const handle = replayText(node.content, text => {
-      if (this.running?.controller === controller) { this.running.text = text; this.render(); }
+      if (this.running?.controller === controller) { this.running.text = text; this.streamed(); }
     }, { reduced: motionReduced(), durationMs: this.replayMs });
     this.skipReplay = handle.skip;
     let lit = false;
@@ -93,7 +96,7 @@ export class LearnSession {
       const result = await this.provider.stream({ requestId: generationId, system: prompts.system, prompt: prompts.prompt, model: config.model, effort: config.effort, cancel: controller.signal,
         trace: { origin: `learn·${task}`, subjectId: this.subject.id, nodeId: id, promptVersion: prompts.promptVersion, layers: prompts.layers, stats: { ...prompts.stats, pendingCheck: check } } }, chunk => {
         rawStream += chunk;
-        if (this.running?.controller === controller && !controller.signal.aborted) { this.running.text = visibleText(rawStream); this.render(); }
+        if (this.running?.controller === controller && !controller.signal.aborted) { this.running.text = visibleText(rawStream); this.streamed(); }
       });
       if (controller.signal.aborted || !Object.hasOwn(this.visit.nodes, id)) throw new ProviderError('cancelled', '', result.model, result.usage, result.durationMs);
       if (result.outcome !== 'ok') throw new ProviderError(result.outcome === 'cancelled' ? 'cancelled' : 'process-crashed', '', result.model, result.usage, result.durationMs);
