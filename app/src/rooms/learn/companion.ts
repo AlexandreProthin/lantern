@@ -1,7 +1,11 @@
 import type { RoomCompanion } from '../../frame/room';
+import { strings } from '../../ui/strings';
+import { understoodBy } from './rules';
 /** RS-3, CO-21 to CO-23: Learn's lines for Amber. As agreed 2026-10-17 (agent_wiki/plans/v0-4-0-amber-lines.md). */
 export const learnCompanion: RoomCompanion = {
   about: 'bring a subject and a tutor explains it as a graph of nodes, lighting one node at a time; you choose where to go next, ask questions, test yourself, and mark what you understand.',
+  // CO-55: Learn's navy surface, the identity's own Learn tuning.
+  surface: 'learn',
   tips: [
     { id: 'learn.arrows', text: 'Arrow keys walk the graph: left to the parent, right to a child, up and down between siblings.' },
     { id: 'learn.enter', text: 'Press Enter on a dark node to light it up.' },
@@ -20,7 +24,21 @@ export const learnCompanion: RoomCompanion = {
     intro: title => `Lighting up ${title}…`, light: title => `Lighting up ${title}…`, more: () => 'Looking for more directions…',
     reply: () => 'The tutor is thinking…', check: () => 'Preparing a question…'
   },
+  // CO-59: a flare when a node is understood; the graph's node, to glance at.
+  reactions: { flare: ['understood'], node: id => `.study:not(.hidden) .graph [data-id="${CSS.escape(id)}"]` },
+  // CO-37: rare nudges, once per subject.
+  nudges: [
+    { id: 'learn.untested', space: 'study', line: v => {
+      const nodes = Object.values(v.nodes), lit = nodes.filter(n => n.state === 'lit').length;
+      const tested = v.log.some(g => g.task === 'check') || nodes.some(n => understoodBy(n) === 'demonstrated');
+      return lit >= 3 && !tested ? `${strings.amberCount(lit)} nodes lit, none tested yet. *Test me* asks you a question about the one you’re reading.` : null;
+    } }
+  ],
   // CO-13: Study's three resting positions, just above the controls in each corner (legend, zoom, composer).
+  // CO-10, CO-20: the bubble never covers the reading panel or the graph tools, and Amber's default spot stays clear of them.
+  avoid: {
+    study: ['.study:not(.hidden) aside.panel', '.study:not(.hidden) .graph .controls', '.study:not(.hidden) .graph .zoom-controls', '.study:not(.hidden) .graph .corner']
+  },
   rests: {
     study: [
       { id: 'graph-left', label: 'Bottom left of the graph', anchor: '.study:not(.hidden) .graph-side', side: 'left', inset: { x: 16, y: 132 } },

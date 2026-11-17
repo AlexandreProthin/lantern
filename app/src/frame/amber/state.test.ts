@@ -30,11 +30,11 @@ test('CO-47: totals count input and output like a subject, and every record as a
   expect(totalsOf([{ usage: usage(100, 20) }, { usage: usage(50, 5) }, { usage: { input: -1, output: 'x' } }, null]))
     .toEqual({ input: 150, output: 25, calls: 4 });
 });
-test('SE-11, CO-1, CO-46: companion keys default on and to Haiku 5.5; bad values reset alone', () => {
+test('SE-11, CO-1, CO-21, CO-46: companion keys default on (tips too) and to Haiku 5.5; bad values reset alone', () => {
   const defaults = defaultSettings();
-  expect(validateSettings({}, defaults).companion).toEqual({ show: true, model: 'claude-haiku-5-5' });
-  expect(validateSettings({ companion: { show: 'no', model: 'bad id', future: 1 } }, defaults).companion).toEqual({ show: true, model: 'claude-haiku-5-5', future: 1 });
-  expect(validateSettings({ companion: { show: false, model: 'sonnet' } }, defaults).companion).toEqual({ show: false, model: 'sonnet' });
+  expect(validateSettings({}, defaults).companion).toEqual({ show: true, model: 'claude-haiku-5-5', tips: true });
+  expect(validateSettings({ companion: { show: 'no', model: 'bad id', tips: 'off', future: 1 } }, defaults).companion).toEqual({ show: true, model: 'claude-haiku-5-5', tips: true, future: 1 });
+  expect(validateSettings({ companion: { show: false, model: 'sonnet', tips: false } }, defaults).companion).toEqual({ show: false, model: 'sonnet', tips: false });
 });
 test('SE-48: Haiku 5.5 sits in the model list before Haiku 4.5', () => {
   const ids = MODELS.map(m => m.id);

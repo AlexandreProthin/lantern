@@ -181,20 +181,21 @@ pub fn record_open(config: &Path, id: &str, at: &str) -> Result<AppState> {
     state.last_opened_at.insert(id.into(), at.into()); state.recents.retain(|s| s != id); state.recents.insert(0, id.into());
     write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)?; Ok(state)
 }
-/// SE-50, CO-15, CO-21: Amber's spots per space and seen tips, under `companion`; other keys of the file are kept.
+/// SE-50, CO-15, CO-21, CO-39: Amber's spots per space, seen tips and seen nudges, under `companion`; other keys of the file are kept.
 pub fn save_companion_state(config: &Path, companion: &Value) -> Result<()> {
     let ok_id=|s:&str| (1..=80).contains(&s.len()) && s.chars().all(|c| c.is_ascii_alphanumeric() || "._:/-".contains(c));
     let spots_ok=companion["spots"].as_object().is_some_and(|m| m.iter().all(|(k,v)| ok_id(k) && v.as_str().is_some_and(ok_id)));
     let tips_ok=companion["seenTips"].as_array().is_some_and(|a| a.iter().all(|v| v.as_str().is_some_and(ok_id)));
+    let nudges_ok=companion["seenNudges"].is_null() || companion["seenNudges"].as_array().is_some_and(|a| a.len()<=200 && a.iter().all(|v| v.as_str().is_some_and(ok_id)));
     let version_ok=|v:&Value| v.is_null() || v.as_str().is_some_and(|s| (1..=40).contains(&s.len()) && s.chars().all(|c| c.is_ascii_alphanumeric() || ".+-".contains(c)));
     let greeting_ok=companion["lastGreeting"].is_null() || companion["lastGreeting"].as_str().is_some_and(ok_id);
     let notes=&companion["notes"];
     let notes_ok=notes.is_null() || (version_ok(&notes["version"]) && !notes["version"].is_null() && notes["text"].as_str().is_some_and(|t| t.chars().count() <= 20000));
-    if !spots_ok || !tips_ok || !version_ok(&companion["lastVersion"]) || !greeting_ok || !notes_ok { return Err("Invalid companion state".into()); }
+    if !spots_ok || !tips_ok || !nudges_ok || !version_ok(&companion["lastVersion"]) || !greeting_ok || !notes_ok { return Err("Invalid companion state".into()); }
     let mut state=read_state(config)?;
     if state.format!=state_format() { return Err("Newer app state is read-only".into()); }
     let mut kept=serde_json::json!({"spots":companion["spots"],"seenTips":companion["seenTips"]});
-    for key in ["lastVersion","lastGreeting","notes"] { if !companion[key].is_null() { kept[key]=companion[key].clone(); } }
+    for key in ["lastVersion","lastGreeting","notes","seenNudges"] { if !companion[key].is_null() { kept[key]=companion[key].clone(); } }
     state.extra.insert("companion".into(), kept);
     write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)
 }

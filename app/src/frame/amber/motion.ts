@@ -18,6 +18,10 @@ export interface Mood {
   lean: number;
   /** The living flame (CO-52); false while calm (CO-53) or with reduced motion. */
   flame: boolean;
+  /** CO-59: a flare when the learner reaches a milestone, 0 to 1 (react.ts `flareAt`). */
+  flare?: number;
+  /** CO-59: dozing after a long idle, 0 (awake) to 1 (eyes nearly closed). */
+  doze?: number;
 }
 /** CO-56: the 180 ms stabilisation of an interrupted gesture (IMPLEMENTATION.md). */
 export const INTERRUPT = 180;
@@ -63,6 +67,10 @@ export function compose(base: Pose, act: Act | null, mood: Mood, now: number, re
   if (mood.thinking) { z.gaze += 2.2 * Math.sin(now / 640); z.angle += 1.4 * Math.sin(now / 910); z.lid = Math.max(z.lid, .3); }
   // Working: tending its flame, lids lowered toward it, a small bob; the flame runs a little faster.
   if (mood.working) { z.lid = Math.max(z.lid, .45); z.y -= 1.2 * Math.abs(Math.sin(now / 420)); z.angle += .9 * Math.sin(now / 840); }
+  // Dozing: the lids sink; a flare wakes it, lifts it a little and brightens its light (CO-59).
+  const doze = clamp(mood.doze ?? 0, 0, 1), flare = clamp(mood.flare ?? 0, 0, 1);
+  if (doze) z.lid = Math.max(z.lid, .8 * doze * (1 - flare));
+  if (flare) { z.flare = flare; z.y -= 2.5 * flare; z.lid = Math.min(z.lid, .1); }
   z.gaze = clamp(z.gaze + 3 * mood.look, -3.5, 3.5);
   z.angle += mood.lean;
   z.flameTime = mood.flame || mood.working || mood.thinking ? now * (mood.working ? 1.6 : 1) : 0;

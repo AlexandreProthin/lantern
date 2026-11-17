@@ -136,12 +136,20 @@ const amber = (page: import('@playwright/test').Page) => page.getByRole('button'
 const bubble = (page: import('@playwright/test').Page) => page.getByRole('dialog', { name: 'Amber', exact: true });
 
 test('CO-10/11/20/21: Amber hangs under the bar on the right; a click opens a tip, Next tip, the guide; Esc closes; seen tips are kept', async ({ page }) => {
-  await page.goto('/?study=1&subject=Tides');
+  await page.goto('/');
   await expect(amber(page)).toBeVisible();
-  const box = (await amber(page).boundingBox())!, width = page.viewportSize()!.width;
+  const width = page.viewportSize()!.width;
+  let box = (await amber(page).boundingBox())!;
   expect(box.y).toBeGreaterThanOrEqual(56); expect(box.width).toBeGreaterThanOrEqual(64);
   expect(box.x + box.width).toBeLessThanOrEqual(width - 16); expect(box.x).toBeGreaterThan(width / 2);
   await expect(amber(page)).toHaveAttribute('data-spot', 'hang-9');
+  // CO-10 (amended 2026-11-17): in Study it hangs at the right of the graph, clear of the reading panel and the graph tools.
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await expect(amber(page)).toHaveAttribute('data-spot', /^hang-[1-8]$/);
+  box = (await amber(page).boundingBox())!;
+  const panel = (await page.locator('aside.panel').boundingBox())!, tools = (await page.locator('.graph .controls').boundingBox())!;
+  expect(box.x + box.width).toBeLessThanOrEqual(Math.min(panel.x, tools.x)); expect(box.x).toBeGreaterThan(panel.x / 2);
   await amber(page).click();
   await expect(bubble(page)).toContainText('Press Ctrl+J anywhere to ask me something.');
   await bubble(page).getByRole('button', { name: 'Next tip' }).click();
@@ -176,7 +184,8 @@ test('CO-16/58/15: the menu opens on right-click and Shift+F10; Move to… moves
   await expect(menu.getByRole('menuitem', { name: 'Move to…' })).toBeFocused();
   await menu.getByRole('menuitem', { name: 'Move to…' }).click();
   await expect(menu.getByRole('menuitemradio')).toHaveCount(13);
-  await expect(menu.getByRole('menuitemradio', { name: 'Hanging, position 10 of 10' })).toHaveAttribute('aria-checked', 'true');
+  const at = Number((await amber(page).getAttribute('data-spot'))!.slice(5));
+  await expect(menu.getByRole('menuitemradio', { name: `Hanging, position ${at + 1} of 10` })).toHaveAttribute('aria-checked', 'true');
   await menu.getByRole('menuitemradio', { name: 'Hanging, position 1 of 10' }).click();
   await expect(amber(page)).toHaveAttribute('data-spot', 'hang-0');
   expect((await amber(page).boundingBox())!.x).toBeLessThan(40);
@@ -244,6 +253,45 @@ test('CO-17: clicks beside Amber\'s drawn shape reach what is underneath; popove
   await page.keyboard.press('Control+k');
   const z = await page.evaluate(() => { const p = document.querySelector('.field-panel, [role=dialog]'); return p ? Number(getComputedStyle(p).zIndex) || 0 : -1; });
   expect(z).toBeGreaterThan(1);
+});
+
+// CO-20 (amended 2026-11-17): the bubble never covers the reading panel nor the graph tools.
+async function uncovered(page: import('@playwright/test').Page, what: import('@playwright/test').Locator, keep: string[]) {
+  const b = (await what.boundingBox())!;
+  for (const selector of keep) for (const r of await page.locator(selector).evaluateAll(els => els.map(e => e.getBoundingClientRect().toJSON()).filter(r => r.width && r.height))) {
+    const overlap = b.x < r.right && b.x + b.width > r.left && b.y < r.bottom && b.y + b.height > r.top;
+    expect(overlap, `${selector} under the bubble`).toBe(false);
+  }
+}
+const studyParts = ['.study:not(.hidden) aside.panel', '.study:not(.hidden) .graph .controls', '.study:not(.hidden) .graph .zoom-controls', '.study:not(.hidden) .graph .corner'];
+test('CO-20: the bubble never covers the reading panel or the graph tools; hung over the panel it opens beside it, its tail toward Amber', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await amber(page).click(); await expect(bubble(page)).toBeVisible();
+  await uncovered(page, bubble(page), studyParts);
+  await expect(page.locator('.tail.up')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  // Moved over the panel (its old default), the bubble opens on the graph's side of the panel.
+  await amber(page).click({ button: 'right' }); await page.getByRole('menuitem', { name: 'Move to…' }).click();
+  await page.getByRole('menuitemradio', { name: 'Hanging, position 10 of 10' }).click();
+  await expect(amber(page)).toHaveAttribute('data-spot', 'hang-9'); await expect(amber(page)).toHaveAttribute('data-motion', 'still', { timeout: 8000 });
+  await amber(page).click(); await expect(bubble(page)).toBeVisible();
+  await uncovered(page, bubble(page), studyParts);
+  await expect(page.locator('.tail.right')).toHaveCount(1);
+  // A narrower window: still clear.
+  await page.keyboard.press('Escape'); await page.setViewportSize({ width: 1024, height: 720 });
+  await amber(page).click(); await expect(bubble(page)).toBeVisible();
+  await uncovered(page, bubble(page), studyParts);
+});
+test('CO-20: in the Choose Survey the bubble keeps clear of the panel, the rail and the graph tools', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 720 });
+  await page.addInitScript(() => { const s = JSON.parse(localStorage.getItem('lantern.settings') ?? '{}'); s.ui = { ...(s.ui ?? {}), lastRoom: 'choose' }; localStorage.setItem('lantern.settings', JSON.stringify(s)); });
+  await page.goto('/?study=1&subject=3D%20printer');
+  await expect(page.locator('.graph .node', { hasText: 'Print volume' })).toBeVisible();
+  await amber(page).click(); await expect(bubble(page)).toBeVisible();
+  await uncovered(page, bubble(page), [...studyParts, '.study:not(.hidden) aside.rail']);
+  await uncovered(page, amber(page), [...studyParts, '.study:not(.hidden) aside.rail']);
 });
 
 // v0.4.0 slice 6: moving Amber (CO-12 to CO-16, CO-56).
@@ -493,4 +541,98 @@ test('CO-1, CO-30: with Amber off there is no greeting and no waiting line; the 
   await page.goto('/?study=1&subject=Tides&delay=150');
   await expect(page.locator('header .busy-dot')).toBeVisible();
   await expect(says(page)).toHaveCount(0);
+});
+
+// v0.8.0 amber/review: nudges (CO-37 to CO-39) and reactions (CO-59). `amberQuiet` and `amberIdle` shorten the
+// quiet moment and the idle time in DEV builds.
+const nudged = (page: import('@playwright/test').Page) => page.locator('[data-testid="amber-says"][data-kind="nudge"]');
+const seenNudges = (page: import('@playwright/test').Page) => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion') ?? '{}').seenNudges as string[] | undefined);
+async function lightThree(page: import('@playwright/test').Page) {
+  const panel = page.locator('.panel');
+  for (const title of ['Mechanism 1', 'Application 1']) {
+    await page.locator('.graph .node', { hasText: title }).click();
+    await panel.getByRole('button', { name: 'Light it up', exact: true }).click();
+    await expect(panel.getByRole('button', { name: 'Test me', exact: true })).toBeEnabled();
+  }
+}
+test('CO-37/38/39: three nodes lit and none tested: the nudge waits for the typing to stop, says it once, is dismissed and stays seen', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(v => { if (!localStorage.getItem('lantern.companion')) localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v })); }, appVersion);
+  await page.goto('/?study=1&subject=Ocean%20tides&amberQuiet=400');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await lightThree(page);
+  // CO-38: not while a question is being written.
+  const composer = page.locator('.panel').getByRole('textbox', { name: 'Ask about this, or answer the tutor… (Ctrl+Enter to send)' });
+  await composer.fill('Why two tides');
+  await page.waitForTimeout(2500); await expect(nudged(page)).toHaveCount(0);
+  await composer.fill(''); await page.locator('.graph').click({ position: { x: 30, y: 30 } });
+  await expect(nudged(page)).toContainText('Three nodes lit, none tested yet. Test me asks you a question about the one you’re reading.', { timeout: 15000 });
+  await expect(nudged(page).locator('strong, em').first()).toHaveText('Test me');
+  await uncovered(page, nudged(page), studyParts);
+  await expect.poll(() => seenNudges(page)).toEqual([expect.stringMatching(/^learn\.untested\//)]);
+  await nudged(page).getByRole('button', { name: 'Dismiss', exact: true }).click();
+  await expect(nudged(page)).toHaveCount(0);
+  // Seen: not again in this opening, nor after a restart, though still true.
+  await page.waitForTimeout(1500); await expect(nudged(page)).toHaveCount(0);
+  await page.goto('/?study=1&resume=1&amberQuiet=400');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await page.waitForTimeout(3000); await expect(nudged(page)).toHaveCount(0);
+});
+test('CO-37: a nudge goes by itself once it is no longer true', async ({ page }) => {
+  await page.addInitScript(v => localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v })), appVersion);
+  await page.goto('/?study=1&subject=Ocean%20tides&amberQuiet=400');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await lightThree(page);
+  await expect(nudged(page)).toBeVisible({ timeout: 15000 });
+  await page.locator('.panel').getByRole('button', { name: 'Test me', exact: true }).click();
+  await expect(nudged(page)).toHaveCount(0);
+});
+test('CO-21, CO-39: with tips and nudges off, no nudge, and the bubble opens on the guide without Next tip', async ({ page }) => {
+  await page.addInitScript(v => {
+    localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v }));
+    localStorage.setItem('lantern.settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('lantern.settings') ?? '{"format":"lantern-settings/1"}'), companion: { show: true, tips: false } }));
+  }, appVersion);
+  await page.goto('/?study=1&subject=Ocean%20tides&amberQuiet=400');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await lightThree(page);
+  await page.waitForTimeout(3000); await expect(nudged(page)).toHaveCount(0);
+  await amber(page).click();
+  await expect(bubble(page).locator('.guide li').first()).toHaveText('Walk the graph: arrow keys; Home goes back to the root.');
+  await expect(bubble(page).getByRole('button', { name: 'Next tip' })).toHaveCount(0);
+});
+test('CO-59: Amber flares when a node is understood: the halo grows, then settles', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await expect(amber(page)).toHaveAttribute('data-act', '', { timeout: 6000 });
+  await page.mouse.move(10, 700);
+  const halo = () => amber(page).evaluate(b => Number(b.querySelector('[data-part="halo"]')!.getAttribute('rx')));
+  expect(await halo()).toBe(60);
+  await page.locator('.panel').getByRole('button', { name: 'I get it', exact: true }).click();
+  await expect(amber(page)).toHaveAttribute('data-mood', 'flare');
+  await expect.poll(halo).toBeGreaterThan(66);
+  await expect(amber(page)).toHaveAttribute('data-mood', '', { timeout: 4000 });
+  expect(await halo()).toBe(60);
+  // A focus moved on the graph: a look toward it.
+  await page.locator('.graph .node', { hasText: 'Mechanism 1' }).click();
+  await expect(amber(page)).toHaveAttribute('data-mood', /^(look|glance)$/);
+});
+test('CO-59, CO-56: with reduced motion there is no flare and no doze', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/?study=1&subject=Tides&amberIdle=800');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  const a = await drawing(page);
+  await page.locator('.panel').getByRole('button', { name: 'I get it', exact: true }).click();
+  await page.waitForTimeout(2500);
+  await expect(amber(page)).toHaveAttribute('data-mood', ''); expect(await drawing(page)).toBe(a);
+});
+test('CO-59: after a long idle Amber dozes, its eyes closing; the pointer wakes it', async ({ page }) => {
+  await page.addInitScript(v => localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v })), appVersion);
+  await page.goto('/?study=1&subject=Tides&amberIdle=1500');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  const lid = () => amber(page).evaluate(b => Number(b.querySelector('mask ellipse')!.getAttribute('ry')));
+  await expect(amber(page)).toHaveAttribute('data-mood', 'doze', { timeout: 15000 });
+  await expect.poll(lid).toBeLessThan(1.2);
+  await page.mouse.move(10, 700); await page.mouse.move(20, 690);
+  await expect(amber(page)).toHaveAttribute('data-mood', '');
+  await expect.poll(lid).toBeCloseTo(3.2, 1);
 });

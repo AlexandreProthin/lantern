@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { AMBER_H, AMBER_W, BAR, DEFAULT_SPOT, FEET_Y, TIE_Y, bubbleBox, dropTarget, hangSpots, parseSpotId, restSpots, spotById } from './place';
+import { AMBER_H, AMBER_W, BAR, DEFAULT_SPOT, FEET_Y, TIE_Y, bubbleBox, defaultHang, dropTarget, hangSpots, parseSpotId, restSpots, spotById } from './place';
 import type { Rect } from './place';
 
 const rect = (left: number, top: number, width: number, height: number): Rect => ({ left, top, width, height, right: left + width, bottom: top + height });
@@ -45,9 +45,60 @@ test('CO-12, CO-14: dropped in the top quarter Amber hangs from the nearest poin
   expect(dropTarget(hangs, [], 500, 600, 720).kind).toBe('hang');
 });
 test('CO-20: the bubble opens toward the middle of the window: under a hanging Amber, above a resting one', () => {
-  const spots = hangSpots(1024, 138), right = bubbleBox(spots[9], 1024, 340, 720), left = bubbleBox(spots[0], 1024, 340, 720);
+  const view = { width: 1024, height: 720 }, size = { width: 340, height: 220 };
+  const spots = hangSpots(1024, 138), right = bubbleBox(spots[9], view, size), left = bubbleBox(spots[0], view, size);
   expect(right.left + 340).toBe(spots[9].left + AMBER_W); expect(left.left).toBe(spots[0].left);
-  expect(right.top).toBeGreaterThan(spots[9].top + AMBER_H);
-  const rest = restSpots(undefined, () => null, rect(0, 56, 1024, 664), labels)[1], above = bubbleBox(rest, 1024, 340, 720);
-  expect(above.top).toBeUndefined(); expect(720 - above.bottom!).toBeLessThan(rest.top);
+  expect(right.top).toBeGreaterThan(spots[9].top + AMBER_H); expect(right.tail).toBe('up');
+  const rest = restSpots(undefined, () => null, rect(0, 56, 1024, 664), labels)[1], above = bubbleBox(rest, view, size);
+  expect(above.top).toBeUndefined(); expect(720 - above.bottom!).toBeLessThan(rest.top); expect(above.tail).toBe('down');
+});
+
+// CO-20 (amended 2026-11-17): the bubble never covers the reading panel or the graph tools.
+const boxOf = (b: ReturnType<typeof bubbleBox>, view: { height: number }, size: { width: number; height: number }) => {
+  const top = b.top ?? view.height - b.bottom! - size.height;
+  return { left: b.left, top, right: b.left + size.width, bottom: top + size.height };
+};
+const hits = (a: { left: number; top: number; right: number; bottom: number }, r: Rect) => a.left < r.right && a.right > r.left && a.top < r.bottom && a.bottom > r.top;
+// Study at 1280 × 800 as the browser lays it out: the graph tools top right of the graph, zoom and legend at its foot, the panel on the right.
+const study = { panel: rect(721, 57, 559, 743), tools: rect(581, 73, 112, 33), zoom: rect(560, 744, 136, 40), legend: rect(16, 690, 543, 98) };
+const avoid = Object.values(study), view = { width: 1280, height: 800 }, size = { width: 340, height: 230 };
+test('CO-10, CO-20: by default Amber hangs at the rightmost spot clear of the panel and the tools; with nothing to avoid, the last spot', () => {
+  const hangs = hangSpots(1280, 0);
+  expect(defaultHang(hangs, [])).toBe(DEFAULT_SPOT);
+  const id = defaultHang(hangs, avoid), spot = spotById(hangs, undefined, id);
+  expect(spot.id).toBe(id); expect(id).not.toBe(DEFAULT_SPOT);
+  for (const r of avoid) expect(hits({ left: spot.left, right: spot.left + AMBER_W, top: BAR, bottom: spot.top + AMBER_H }, r)).toBe(false);
+  // The next spot to the right would touch the tools or the panel.
+  const next = hangs[Number(id.slice(5)) + 1];
+  expect(avoid.some(r => hits({ left: next.left - 8, right: next.left + AMBER_W + 8, top: BAR, bottom: next.top + AMBER_H }, r))).toBe(true);
+  // Its bubble is under it, clear of everything, the tail on Amber.
+  const b = bubbleBox(spot, view, size, avoid), box = boxOf(b, view, size);
+  expect(b.tail).toBe('up'); for (const r of avoid) expect(hits(box, r)).toBe(false);
+  expect(spot.left + AMBER_W / 2).toBeGreaterThan(box.left + 30); expect(spot.left + AMBER_W / 2).toBeLessThan(box.right - 30);
+  // Every spot that cannot avoid the panel itself falls back to the last one.
+  expect(defaultHang(hangs, [rect(0, 0, 1280, 800)])).toBe(DEFAULT_SPOT);
+});
+test('CO-20: from any hanging or resting spot, in Learn and Choose layouts, the bubble and the greeting never cover the panel or the tools', () => {
+  // Choose at 1024 × 720: a rail between the graph and the panel.
+  const choose = [rect(657, 57, 367, 663), rect(569, 57, 88, 663), rect(437, 73, 112, 33), rect(416, 664, 136, 40), rect(16, 542, 399, 166)];
+  for (const [w, hgt, rects, graphWidth] of [[1280, 800, avoid, 713], [1024, 720, choose, 569]] as const) {
+    const v = { width: w, height: hgt }, graph = rect(0, 57, graphWidth, hgt - 57), panel = rects[0];
+    const rests = restSpots([{ id: 'graph-left', label: '', anchor: 'g', side: 'left', inset: { x: 16, y: 132 } }, { id: 'graph-right', label: '', anchor: 'g', side: 'right', inset: { x: 16, y: 72 } },
+      { id: 'panel-right', label: '', anchor: 'p', side: 'right', inset: { x: 24, y: 140 } }], a => a === 'g' ? graph : panel, rect(0, 57, w, hgt - 57), labels);
+    for (const spot of [...hangSpots(w, 0), ...rests]) for (const sz of [{ width: 340, height: 230 }, { width: 300, height: 70 }]) {
+      const b = bubbleBox(spot, v, sz, rects), box = boxOf(b, v, sz);
+      for (const r of rects) expect(hits(box, r), `${w} ${spot.id} ${sz.width}`).toBe(false);
+      expect(box.left).toBeGreaterThanOrEqual(8); expect(box.right).toBeLessThanOrEqual(w - 8); expect(box.top).toBeGreaterThanOrEqual(BAR);
+    }
+  }
+});
+test('CO-20: hanging over the panel, the bubble opens beside the panel, its tail toward Amber; when nothing is clear it opens as before', () => {
+  const hangs = hangSpots(1280, 0), over = hangs[9];
+  const b = bubbleBox(over, view, size, avoid);
+  expect(b.tail).toBe('right'); expect(b.left + size.width).toBeLessThanOrEqual(study.panel.left);
+  // A phone-sized window where the panel is everything: no clear place, so the bubble keeps its old place.
+  expect(bubbleBox(over, view, size, [rect(0, 0, 1280, 800)])).toEqual(bubbleBox(over, view, size));
+  // The header's real height (a taller header) bounds a bubble that has to move away from Amber.
+  const tall = bubbleBox(over, { ...view, bar: 120 }, size, [study.panel]), usual = bubbleBox(over, view, size, [study.panel]);
+  expect(usual.top!).toBeLessThan(128); expect(tall.top!).toBeGreaterThanOrEqual(128);
 });

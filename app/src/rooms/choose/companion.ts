@@ -1,7 +1,11 @@
 import type { RoomCompanion } from '../../frame/room';
+import { strings } from '../../ui/strings';
+import { board } from './stats';
 /** RS-3, CO-21 to CO-23: Choose's lines for Amber. As agreed 2026-10-17 (agent_wiki/plans/v0-4-0-amber-lines.md). */
 export const chooseCompanion: RoomCompanion = {
   about: 'say what you want to buy; the room maps your needs, the criteria and candidate products as a graph, researches products on the web with sources, compares a shortlist side by side, and recommends one.',
+  // CO-55: Choose is Learn's house (the same navy surface, #101827), so the identity's Learn tuning; its teal is in the --amber-* tokens.
+  surface: 'learn',
   tips: [
     { id: 'choose.needs', text: 'Tell me your needs early: the Welcome field takes a budget, a use, a limit.' },
     { id: 'choose.rank', text: 'Rank each criterion *Must*, *Nice to have* or *Irrelevant*; the recommendation follows your ranks.' },
@@ -17,7 +21,24 @@ export const chooseCompanion: RoomCompanion = {
     intro: title => `Sizing up ${title}…`, light: title => `Lighting up ${title}…`, more: () => 'Looking for more directions…', reply: () => 'Thinking it over…',
     find: () => 'Looking for products…', fill: () => 'Filling in Compare…', check: title => `Checking ${title}…`, recommend: () => 'Weighing your options…'
   },
+  // CO-59: a flare when a product is chosen; the graph's node, to glance at.
+  reactions: { flare: ['chosen'], node: id => `.study:not(.hidden) .graph [data-id="${CSS.escape(id)}"]` },
+  // CO-37: rare nudges, once per decision.
+  nudges: [
+    { id: 'choose.needs', space: 'survey', line: v => {
+      const b = board(v), open = b.missing.needs.length, weighing = b.shortlisted > 0 || !!b.chosen || v.log.some(g => g.task === 'find' || g.task === 'recommend');
+      return open >= 2 && weighing ? `${strings.amberCount(open)} needs are still unanswered, so a recommendation would have to guess them. Answer them in the panel.` : null;
+    } },
+    { id: 'choose.cells', space: 'compare', line: v => {
+      const empty = board(v).missing.cells.length;
+      return empty >= 3 ? `${strings.amberCount(empty)} cells in Compare are still empty. *Fill Compare* looks them up.` : null;
+    } }
+  ],
   // CO-13: Study's three resting positions, just above the controls in each corner (legend, zoom, composer).
+  // CO-10, CO-20: the bubble never covers the reading panel, the rail or the graph tools, and Amber's default spot stays clear of them.
+  avoid: {
+    survey: ['.study:not(.hidden) aside.panel', '.study:not(.hidden) aside.rail', '.study:not(.hidden) .graph .controls', '.study:not(.hidden) .graph .zoom-controls', '.study:not(.hidden) .graph .corner']
+  },
   rests: {
     survey: [
       { id: 'graph-left', label: 'Bottom left of the graph', anchor: '.study:not(.hidden) .graph-side', side: 'left', inset: { x: 16, y: 132 } },

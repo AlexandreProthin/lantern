@@ -1,15 +1,19 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { strings } from '../../ui/strings';
-  import type { RoomDefinition } from '../room';
-  import { companionSvg, still, GESTURE } from '../../assets/identity/companion/lantern';
+  import type { RoomDefinition, RoomSession } from '../room';
+  import { companionParts, companionTemplate, GESTURE } from '../../assets/identity/companion/lantern';
+  import { CompanionDrawing } from './drawing';
   import type { Pose } from '../../assets/identity/companion/lantern';
   import { reducedMotion } from '../topbar';
   import type { AmberChat } from './chat';
   import type { AmberState } from './state';
-  import { markTipSeen, nextTip, setSpot, spotOf } from './state';
-  import { AMBER_H, AMBER_W, BAR, TIE_X, TIE_Y, bubbleBox, dropTarget, hangSpots, hintPoint, restSpots, spotById } from './place';
-  import type { Spot } from './place';
+  import { markNudgeSeen, markTipSeen, nextTip, setSpot, spotOf } from './state';
+  import { NUDGE_MS, NUDGE_QUIET, draftOf, pickNudge, stillHolds, typingNow } from './nudge';
+  import { DOZE_AFTER, REACTION_MS, flareAt, glimpse, lookToward, reaction } from './react';
+  import type { Glimpse, Reaction } from './react';
+  import { AMBER_H, AMBER_W, BAR, TIE_X, TIE_Y, bubbleBox, defaultHang, dropTarget, hangSpots, hintPoint, restSpots, spotById } from './place';
+  import type { BubbleBox, Rect, Spot } from './place';
   import { Rope, STEP, flightDuration, flightPoint } from './rope';
   import { LANDING_SETTLE, RETRACT, actDone, compose, dangle, endsStanding, flightBase, grabbedBase, hangingBase, lookAt, restingBase, startAct } from './motion';
   import type { Act } from './motion';
@@ -27,10 +31,15 @@
    * lift and landing for its flights; the flame lives between them (CO-52), the eyes follow a near pointer (CO-51),
    * and the new motions (CO-54): dangling from the hand, thinking, working, leaning toward a selection card. Calm in
    * the room's calm spaces (CO-53). Reduced motion: still poses, every move straight to its spot (CO-56).
+   * Reactions to the learner (CO-59): a flare, a glance at new nodes, a look toward the focus, a doze after long idle;
+   * and the room's rare nudges (CO-37 to CO-39).
    */
-  let { room, space, desktop, amberState, saveState, chat, revision, hide, openSettings, thinking = false, working = false, lean = null, greeting = null, waiting = null, greeted = () => {}, openRelease = () => {} }: {
+  let { room, space, desktop, amberState, saveState, chat, revision, hide, openSettings, session = null, subjectRevision = 0, generating = false, tips = true, thinking = false, working = false, lean = null, greeting = null, waiting = null, greeted = () => {}, openRelease = () => {} }: {
     room: RoomDefinition; space: string; desktop: boolean; amberState: AmberState; saveState: (s: AmberState) => void;
     chat: AmberChat; revision: number; hide: () => void; openSettings: () => void;
+    /** The open subject and its revision, read for reactions and nudges (CO-59, CO-37). */ session?: RoomSession | null; subjectRevision?: number;
+    /** A generation is running, in any subject (CO-38). */ generating?: boolean;
+    /** The companion's tips and nudges (CO-21, CO-39). */ tips?: boolean;
     /** Ask Amber or a selection card is waiting for its answer (CO-42). */ thinking?: boolean;
     /** A generation the user started waits for its first words (CO-35). */ working?: boolean;
     /** The selection card's centre, to lean toward (CO-45). */ lean?: { x: number; y: number } | null;
@@ -39,6 +48,9 @@
     openRelease?: (version: string) => void;
   } = $props();
   // CO-30, CO-31: the greeting fades after about 6 s; hovering it pauses the fade; long notes are cut, a click shows them all.
+  // CO-59: the reaction playing and the doze; CO-37: the nudge being said.
+  let reacting = $state.raw<{ kind: Reaction['kind']; start: number; point: { x: number; y: number } | null } | null>(null), dozing = $state(false), doze = 0;
+  let nudge = $state.raw<{ key: string; text: string } | null>(null), nudgeFading = $state(false);
   let expanded = $state(false), sayHover = $state(false), fading = $state(false), remaining = 0, sayTimer: ReturnType<typeof setTimeout> | undefined, sayStarted = 0;
   const notes = $derived(greeting?.kind === 'update' && greeting.notes ? cutNotes(greeting.notes) : null);
   function startFade(ms: number) { clearTimeout(sayTimer); remaining = ms; sayStarted = performance.now(); sayTimer = setTimeout(endGreeting, ms); }
@@ -48,8 +60,8 @@
   let shownGreeting = $state.raw<Greeting | null>(null);
   $effect(() => { if (greeting && greeting !== shownGreeting && ready && !waiting) { shownGreeting = greeting; expanded = false; startFade(greetingMs(greeting, notes?.short ?? greeting.text)); } });
   $effect(() => () => clearTimeout(sayTimer));
-  /** What Amber says now: the waiting line first (CO-35), else the greeting; nothing while its bubble or menu is open. */
-  const saying = $derived(waiting ? 'waiting' : greeting && shownGreeting === greeting ? 'greeting' : null);
+  /** What Amber says now: the waiting line first (CO-35), else the greeting, else a nudge (CO-37); nothing while its bubble or menu is open. */
+  const saying = $derived(waiting ? 'waiting' : greeting && shownGreeting === greeting ? 'greeting' : nudge ? 'nudge' : null);
   const BUBBLE_W = 340, SAY_W = 300, CONTROLS = 138, GRAB = 5, SWING_MAX = 6000, THROW = 6;
   /** CO-17: the lantern's silhouette (loop, frame and the flame inside it, in the actor's units) takes the pointer; the halo around it does not. */
   const HIT = 'M42 3 H58 V22 C70 34 86 47 86 65 C86 79 81 89 77 99 H23 C19 89 14 79 14 65 C14 47 30 34 42 22 Z';
@@ -59,14 +71,19 @@
 
   // CO-11, CO-13: the hanging spots along the bar, and this space's resting spots measured from the page.
   const hangs = $derived(hangSpots(width, desktop ? CONTROLS : 0, strings.amberSpotHang));
-  let rests = $state.raw<Spot[]>([]), measured = $state(false);
+  let rests = $state.raw<Spot[]>([]), avoid = $state.raw<Rect[]>([]), measured = $state(false);
+  const avoiding = $derived(room.companion?.avoid?.[space] ?? []);
   function measure() {
     const spaces = document.querySelector('.spaces'); if (!spaces) return;
     const find = (selector: string) => { for (const el of document.querySelectorAll(selector)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return r; } return null; };
     const next = restSpots(room.companion?.rests?.[space], find, spaces.getBoundingClientRect(), { left: strings.amberRestLeft, right: strings.amberRestRight });
     if (JSON.stringify(next) !== JSON.stringify(rests)) rests = next;
+    // CO-20: what the bubble keeps clear of, as laid out now.
+    const shown = avoiding.flatMap(selector => [...document.querySelectorAll(selector)]).map(el => el.getBoundingClientRect()).filter(r => r.width && r.height)
+      .map(r => ({ left: Math.round(r.left), top: Math.round(r.top), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) }));
+    if (JSON.stringify(shown) !== JSON.stringify(avoid)) avoid = shown;
     // The space draws its parts after Amber (Study's graph once the subject is in): measure again when they appear or resize.
-    const anchors = (room.companion?.rests?.[space] ?? []).flatMap(spec => [...document.querySelectorAll(spec.anchor)]);
+    const anchors = [...(room.companion?.rests?.[space] ?? []).map(spec => spec.anchor), ...avoiding].flatMap(selector => [...document.querySelectorAll(selector)]);
     if (!measured || anchors.length !== observed) {
       observer?.disconnect(); observer = new ResizeObserver(() => remeasure());
       observer.observe(spaces); for (const el of anchors) observer.observe(el); observed = anchors.length;
@@ -79,11 +96,13 @@
   $effect(() => { space; room; width; height; measured = false; observed = -1; void tick().then(remeasure); return () => { observer?.disconnect(); mutations?.disconnect(); cancelAnimationFrame(pendingMeasure); }; });
   const spots = $derived([...hangs, ...rests]);
   const saved = $derived(spotOf(amberState, room.id, space));
-  // Until the resting spots are measured, a saved resting spot waits rather than flashing at the default.
-  const spot = $derived(spotById(spots, saved));
+  // CO-10 (amended 2026-11-17): unless moved, Amber hangs at the rightmost spot clear of what the space keeps uncovered.
+  const spot = $derived(spotById(spots, saved, defaultHang(hangs, avoid)));
   let gaveUp = $state(false);
   $effect(() => { space; room; gaveUp = false; const t = setTimeout(() => gaveUp = true, 1500); return () => clearTimeout(t); });
-  const ready = $derived(!saved?.startsWith('rest-') || rests.some(r => r.id === saved) || (measured && gaveUp));
+  // Until the space is measured, a saved resting spot, or the default of a space with parts to avoid, waits rather than flashing elsewhere.
+  const layoutPending = $derived(saved?.startsWith('rest-') ? !rests.some(r => r.id === saved) : !saved && avoiding.length > 0 && !avoid.length);
+  const ready = $derived(!layoutPending || (measured && gaveUp));
 
   // Motion: still at the spot, held by the hand, swinging on the rope, or flying or falling to a spot.
   type Motion = { kind: 'still' }
@@ -95,7 +114,7 @@
   let act = $state.raw<Act | null>(null), hovered = $state(false), pointer: { x: number; y: number } | null = null, look = 0, tilt = 0, lastFrame = 0;
   const calmSpace = $derived(room.companion?.calm?.includes(space) ?? false);
   /** CO-53: in a calm space Amber is still unless it is hovered, clicked, grabbed, asked or working. */
-  const flameLive = $derived(!calmSpace || hovered || bubble || motion.kind !== 'still' || thinking || working || !!act);
+  const flameLive = $derived((!calmSpace && !dozing) || hovered || bubble || motion.kind !== 'still' || thinking || working || !!act || !!reacting);
   const leanSign = $derived(lean ? Math.sign(lean.x - (spot.left + AMBER_W / 2)) || 1 : 0);
   const view = $derived.by(() => {
     void frame;
@@ -112,18 +131,21 @@
     }
     // CO-45: lean toward the selection card (hanging from the loop, the body swings toward it; standing, it tips).
     const leanDeg = leanSign * 6 * (hanging ? -1 : 1);
-    const z = compose(base, act, { thinking, working, look: leanSign || look, lean: tilt + leanDeg, flame: flameLive }, now, reduced);
+    const flare = reacting?.kind === 'flare' ? flareAt(now - reacting.start) : 0;
+    const z = compose(base, act, { thinking, working, look: leanSign || look, lean: tilt + leanDeg, flame: flameLive, flare, doze }, now, reduced);
     return { left, top, angle, pose: z, rope };
   });
-  // CO-55: the identity's warm flame and body; the halo and the light on the frame follow the room's --amber-* tokens.
-  // The flame's clock is bucketed to about 30 frames a second, so a living flame redraws at most that often.
-  const poseKey = (z: Pose) => [z.x, z.y, z.angle, z.feet, z.step, z.gaze, z.lid, z.line, z.pivot].map(v => v.toFixed(2)).join() + ':' + Math.floor((z.flameTime ?? 0) / 33);
-  // The drawing (an SVG with a blur filter) is rebuilt at most about 30 times a second; only the position runs every frame.
-  let lastKey = '', lastSvg = '', drawnAt = -Infinity;
-  const svg = $derived.by(() => {
-    const key = poseKey(view.pose), now = performance.now();
-    if (key !== lastKey && (now - drawnAt >= 32 || motion.kind === 'still' && !act)) { lastKey = key; drawnAt = now; lastSvg = companionSvg(GESTURE.suspension, view.pose, uid, 'learn', true).replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"'); }
-    return lastSvg;
+  // CO-55: the identity's warm flame and body; the halo and the light on the frame follow the room's --amber-* tokens,
+  // and the frame's colour the identity's token set for the room's surface (its `companion.surface`).
+  const surface = $derived(room.companion?.surface ?? 'neutral');
+  // The drawing is put in once per surface; a pose only sets the attributes it moves (drawing.ts). The flame's clock is
+  // bucketed to about 30 frames a second, so a living flame redraws at most that often; only the position runs every frame.
+  const poseKey = (z: Pose) => [z.x, z.y, z.angle, z.feet, z.step, z.gaze, z.lid, z.line, z.pivot, z.flare ?? 0].map(v => v.toFixed(2)).join() + ':' + Math.floor((z.flameTime ?? 0) / 33);
+  let art = $state<HTMLElement>(), drawing: CompanionDrawing | null = null, lastKey = '', drawnAt = -Infinity;
+  $effect(() => { if (!art) return; art.innerHTML = companionTemplate(uid, surface); drawing = new CompanionDrawing(art); const z = untrack(() => view.pose); lastKey = poseKey(z); drawnAt = performance.now(); drawing.apply(companionParts(z)); });
+  $effect(() => {
+    const z = view.pose, key = poseKey(z), now = performance.now(); if (!drawing || !art) return;
+    if (key !== lastKey && (now - drawnAt >= 32 || motion.kind === 'still' && !act)) { lastKey = key; drawnAt = now; drawing.apply(companionParts(z)); }
   });
   let reduced = $state(reducedMotion());
   $effect(() => { const media = matchMedia('(prefers-reduced-motion: reduce)'), update = () => reduced = reducedMotion();
@@ -148,11 +170,16 @@
     else if (m.kind === 'drag') { if (m.rope) for (let i = 0; i < 2; i++) m.rope.step(); tilt = dangle(tilt, hand, dt); hand *= Math.exp(-dt / 120); }
     if (m.kind !== 'drag') tilt = dangle(tilt, 0, dt);
     // CO-51: the eyes ease toward the pointer.
-    const centre = { x: view.left + AMBER_W / 2, y: view.top + AMBER_H / 2 }, target = reduced ? 0 : lookAt(centre, pointer);
+    // CO-59: a reaction turns them toward its node, unless the pointer is near; it ends after its time.
+    const centre = { x: view.left + AMBER_W / 2, y: view.top + AMBER_H / 2 }, near = reduced ? 0 : lookAt(centre, pointer);
+    let target = near;
+    if (reacting) { if (now - reacting.start >= REACTION_MS[reacting.kind]) reacting = null; else if (!near && reacting.point) target = lookToward(centre, reacting.point); }
     look += (target - look) * (1 - Math.exp(-dt / 110)); if (Math.abs(look - target) < .01) look = target;
+    // CO-59: the eyes close slowly into a doze and open on waking.
+    const dozeTo = dozing ? 1 : 0; doze += (dozeTo - doze) * (1 - Math.exp(-dt / (dozing ? 700 : 150))); if (Math.abs(doze - dozeTo) < .01) doze = dozeTo;
     // Landed or stepped in at a resting spot: the feet fold in and Amber sits down.
     if (act && actDone(act, now)) { const ended = act.gesture; act = endsStanding(ended) && motion.kind === 'still' && spot.kind === 'rest' && !reduced ? { gesture: RETRACT, start: now } : null; }
-    const busy = motion.kind !== 'still' || !!act || Math.abs(tilt) > .05 || look !== target || (!reduced && (thinking || working || !!lean || flameLive));
+    const busy = motion.kind !== 'still' || !!act || Math.abs(tilt) > .05 || look !== target || doze !== dozeTo || (!reduced && (thinking || working || !!lean || flameLive));
     // Only motion needs every frame; a living flame, the eyes and the moods redraw about 30 times a second.
     if (motion.kind !== 'still' || now - lastFrame >= 32) { frame++; lastFrame = now; }
     raf = busy && !document.hidden ? requestAnimationFrame(loop) : 0;
@@ -192,7 +219,7 @@
     }
   }
   function move(e: PointerEvent) {
-    pointer = { x: e.clientX, y: e.clientY };
+    pointer = { x: e.clientX, y: e.clientY }; stir();
     if (!reduced && !raf && lookAt({ x: view.left + AMBER_W / 2, y: view.top + AMBER_H / 2 }, pointer) !== look) run();
     if (!grab || e.pointerId !== grab.id) return;
     if (motion.kind !== 'drag') {
@@ -228,11 +255,18 @@
   const pool = $derived([...strings.amberTips, ...(room.companion?.tips ?? [])]);
   const tip = $derived(pool.find(t => t.id === tipId));
   const guide = $derived(room.companion?.guide[space] ?? []);
-  const box = $derived(bubbleBox(spot, width, BUBBLE_W, height));
-  /** The bubble's tail, on the edge facing Amber, under its centre and clear of the bubble's rounded corners. */
-  function tailOf(at: { left: number; top?: number; bottom?: number }, w: number) {
+  // CO-20: the bubble's and the greeting's boxes keep clear of the space's panel and tools (their heights as drawn).
+  let bubbleH = $state(230), sayH = $state(80);
+  const box = $derived(bubbleBox(spot, { width, height }, { width: BUBBLE_W, height: bubbleH }, avoid));
+  const sayBox = $derived(bubbleBox(spot, { width, height }, { width: SAY_W, height: sayH }, avoid));
+  /** The bubble's tail, on the edge facing Amber: under (over) its centre, or level with it on a side; clear of the rounded corners. */
+  function tailOf(at: BubbleBox, w: number, h: number) {
+    if (at.tail === 'left' || at.tail === 'right') {
+      const top = at.top ?? height - at.bottom! - h, y = top + Math.max(22, Math.min(h - 22, spot.top + AMBER_H / 2 - top));
+      return { kind: at.tail, left: at.tail === 'right' ? at.left + w : at.left, top: y - 7, bottom: undefined };
+    }
     const x = at.left + Math.max(30, Math.min(w - 30, spot.left + AMBER_W / 2 - at.left));
-    return { left: x, top: at.top !== undefined ? at.top - 7 : undefined, bottom: at.bottom !== undefined ? at.bottom - 7 : undefined };
+    return { kind: at.tail, left: x, top: at.top !== undefined ? at.top - 7 : undefined, bottom: at.bottom !== undefined ? at.bottom - 7 : undefined };
   }
   /** CO-21: the next tip, unseen first; it is remembered as seen once shown. */
   function showNextTip() {
@@ -242,7 +276,7 @@
   /** CO-20, CO-41: opens the bubble; Ctrl+J also focuses the Ask field. */
   export async function open(focusAsk = false) {
     menu = null;
-    if (!bubble) { bubble = true; showNextTip(); }
+    if (!bubble) { bubble = true; if (tips) showNextTip(); else { tipId = undefined; mode = 'guide'; } }
     await tick(); if (focusAsk) askChat?.focus(); else bubbleEl?.focus();
   }
   function click() { if (dragged) { dragged = false; return; } if (motion.kind !== 'still') return; if (bubble) closeBubble(); else { play(GESTURE.curiosity); void open(); } }
@@ -258,14 +292,78 @@
   }
   // CO-20: Esc or a press outside closes the bubble (and forgets its chat, CO-44); the same for the menu.
   function outside(e: PointerEvent) {
-    if (!(e.target instanceof Node)) return;
+    stir(); if (!(e.target instanceof Node)) return;
     if (bubble && !bubbleEl?.contains(e.target) && !button?.contains(e.target)) closeBubble();
     if (menu && !menuEl?.contains(e.target)) menu = null;
   }
-  function windowKey(e: KeyboardEvent) { if (e.key === 'Escape' && motion.kind === 'drag') { e.preventDefault(); e.stopPropagation(); cancelDrag(); } }
+  function windowKey(e: KeyboardEvent) { stir(); lastKeyAt = performance.now(); if (e.key === 'Escape' && motion.kind === 'drag') { e.preventDefault(); e.stopPropagation(); cancelDrag(); } }
   $effect(() => () => { chat.close(); cancelAnimationFrame(raf); });
+
+  // A shorter quiet and idle for the browser tests (DEV builds only).
+  const devMs = (name: string) => { if (!import.meta.env.DEV) return undefined; const v = Number(new URLSearchParams(location.search).get(name)); return v > 0 ? v : undefined; };
+  const quiet = devMs('amberQuiet') ?? NUDGE_QUIET, dozeAfter = devMs('amberIdle') ?? DOZE_AFTER;
+
+  // CO-59 (added 2026-11-17): reactions, read from the open subject at most about four times a second, whatever its revisions.
+  let seen: Glimpse | null = null, reading: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => { void subjectRevision; void session; if (reading === undefined) reading = setTimeout(() => { reading = undefined; untrack(readSubject); }, 220); });
+  function readSubject() {
+    const s = session, visit = s?.subject.rooms[room.id];
+    if (!s || !visit) { seen = null; endNudge(true); return; }
+    const next = glimpse(`${room.id}/${s.subject.id}`, visit), reactions = room.companion?.reactions;
+    const r = reactions && !reduced ? reaction(seen, next, reactions.flare) : null;
+    if (seen && seen.subject !== next.subject) endNudge(true);
+    seen = next; stir(); armNudge();
+    if (nudge && !stillHolds(room.companion?.nudges, nudge.key, s.subject.id, visit)) endNudge();
+    if (r) react(r);
+  }
+  /** Flares (also when its node is not drawn here); glances and looks only at a node drawn in this space. */
+  function react(r: Reaction) {
+    const selector = room.companion?.reactions?.node(r.node), box = selector ? document.querySelector(selector)?.getBoundingClientRect() : undefined;
+    const point = box?.width ? { x: box.left + box.width / 2, y: box.top + box.height / 2 } : null;
+    if (r.kind !== 'flare' && !point) return;
+    reacting = { kind: r.kind, start: performance.now(), point }; run();
+  }
+
+  // CO-59: a doze after long idle (no pointer, key or change to the subject); any of them wakes it.
+  let lastStir = performance.now(), dozeTimer: ReturnType<typeof setTimeout> | undefined;
+  function stir() { lastStir = performance.now(); if (dozing) { dozing = false; armDoze(); run(); } }
+  function armDoze(ms = dozeAfter) { clearTimeout(dozeTimer); dozeTimer = setTimeout(checkDoze, ms); }
+  function checkDoze() {
+    const idle = performance.now() - lastStir;
+    if (idle < dozeAfter) { armDoze(dozeAfter - idle); return; }
+    if (reduced || bubble || menu || saying || thinking || working || generating || hovered || motion.kind !== 'still' || act) { armDoze(Math.min(dozeAfter, 30_000)); return; }
+    dozing = true; run();
+  }
+  $effect(() => { untrack(() => armDoze()); return () => clearTimeout(dozeTimer); });
+
+  // CO-37 to CO-39 (added 2026-11-17): the room's nudges, after a quiet moment, at most one per opening of a subject.
+  let nudgeTimer: ReturnType<typeof setTimeout> | undefined, nudgeFade: ReturnType<typeof setTimeout> | undefined;
+  let lastKeyAt = -Infinity, lastNudgeAt = -Infinity, opening = 0, nudgedOpening = -1, lastSession: RoomSession | null = null;
+  function armNudge(ms = quiet) { clearTimeout(nudgeTimer); if (room.companion?.nudges?.length) nudgeTimer = setTimeout(checkNudge, ms); }
+  function checkNudge() {
+    const s = session, visit = s?.subject.rooms[room.id], rules = room.companion?.nudges; if (!s || !visit || !rules || nudge) return;
+    const now = performance.now();
+    const moment = { on: tips, generating: generating || !!s.running, typing: typingNow(lastKeyAt, now, draftOf(document.activeElement), quiet),
+      busy: !ready || document.hidden || bubble || !!menu || !!saying || dozing || motion.kind !== 'still', sessionNudged: nudgedOpening === opening, sinceLast: now - lastNudgeAt };
+    // Kept from saying it only for now (CO-38): try again after another quiet moment.
+    if (moment.on && !moment.sessionNudged && (moment.generating || moment.typing || moment.busy)) { armNudge(); return; }
+    const picked = pickNudge(rules, space, s.subject.id, visit, amberState, moment); if (!picked) return;
+    nudge = picked; nudgeFading = false; nudgedOpening = opening; lastNudgeAt = now;
+    saveState(markNudgeSeen(amberState, picked.key)); play(GESTURE.rest); fadeNudge(NUDGE_MS);
+  }
+  function fadeNudge(ms: number) { clearTimeout(nudgeFade); nudgeFade = setTimeout(() => endNudge(), ms); }
+  /** The nudge goes: faded, or at once when dismissed or no longer true. */
+  function endNudge(now = false) {
+    clearTimeout(nudgeFade); if (!nudge) return;
+    if (now || reduced) { nudge = null; nudgeFading = false; return; }
+    nudgeFading = true; nudgeFade = setTimeout(() => { nudge = null; nudgeFading = false; }, 400);
+  }
+  $effect(() => { const s = session; untrack(() => { if (s !== lastSession) { lastSession = s; opening++; endNudge(true); } }); });
+  $effect(() => { void space; void room; untrack(() => { endNudge(true); armNudge(); }); });
+  $effect(() => () => { clearTimeout(nudgeTimer); clearTimeout(nudgeFade); clearTimeout(reading); });
+  const sayFading = $derived(saying === 'nudge' ? nudgeFading : fading);
 </script>
-<svelte:window bind:innerWidth={width} bind:innerHeight={height} onpointerdowncapture={outside} onpointermove={move} onpointerup={up} onpointercancel={up} onkeydowncapture={windowKey} />
+<svelte:window bind:innerWidth={width} bind:innerHeight={height} onpointerdowncapture={outside} onpointermove={move} onwheel={stir} onpointerup={up} onpointercancel={up} onkeydowncapture={windowKey} />
 <svelte:document onvisibilitychange={visibility} />
 {#if motion.kind === 'drag'}
   <!-- CO-14: while Amber is held, its spots are hinted; the one it would go to is lit. -->
@@ -277,17 +375,19 @@
 {/if}
 {#if ready}
 {#if view.rope}<svg class="rope" aria-hidden="true" width={width} height={height}><path d={view.rope} /></svg>{/if}
-<button bind:this={button} class="amber" class:held={motion.kind === 'drag'} data-spot={spot.id} data-motion={motion.kind} data-act={act ? act.gesture : ''} aria-label={strings.amberName} title={strings.amberTitle} aria-haspopup="dialog" aria-expanded={bubble}
+<button bind:this={button} class="amber" class:held={motion.kind === 'drag'} data-spot={spot.id} data-motion={motion.kind} data-act={act ? act.gesture : ''} data-mood={dozing ? 'doze' : reacting?.kind ?? ''} aria-label={strings.amberName} title={strings.amberTitle} aria-haspopup="dialog" aria-expanded={bubble}
   style:left={`${view.left}px`} style:top={`${view.top}px`} style:width={`${AMBER_W}px`} style:height={`${AMBER_H}px`}
   style:transform={view.angle ? `rotate(${view.angle}deg)` : undefined} style:transform-origin={`${TIE_X}px ${TIE_Y}px`}
   onpointerover={() => { if (!hovered) { hovered = true; if (!act) play(GESTURE.rest); } }} onpointerout={e => { if (!button?.contains(e.relatedTarget as Node)) hovered = false; }}
-  onfocus={() => { if (!act) play(GESTURE.rest); }} onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}>{@html svg}<svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
+  onfocus={() => { if (!act) play(GESTURE.rest); }} onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}><span class="art" bind:this={art}></span><svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
 {/if}
-{#if saying && ready && !bubble && !menu && motion.kind === 'still'}{@const at = bubbleBox(spot, width, SAY_W, height)}{@const t = tailOf(at, SAY_W)}
-  <div class="tail" class:up={t.top !== undefined} class:fading aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
-  <div class="say living" class:still={reduced} class:fading role="status" aria-live="polite" data-testid="amber-says" style:left={`${at.left}px`} style:top={at.top !== undefined ? `${at.top}px` : undefined} style:bottom={at.bottom !== undefined ? `${at.bottom}px` : undefined} style:width={`${SAY_W}px`}
-    onpointerenter={() => { if (saying === 'greeting') pauseFade(); }} onpointerleave={() => { if (saying === 'greeting' && sayHover) resumeFade(); }}>
+{#if saying && ready && !bubble && !menu && motion.kind === 'still'}{@const at = sayBox}{@const t = tailOf(at, SAY_W, sayH)}
+  <div class="tail {t.kind}" class:fading={sayFading} aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
+  <div class="say living" class:still={reduced} class:fading={sayFading} role="status" aria-live="polite" data-testid="amber-says" data-kind={saying} bind:offsetHeight={sayH} style:left={`${at.left}px`} style:top={at.top !== undefined ? `${at.top}px` : undefined} style:bottom={at.bottom !== undefined ? `${at.bottom}px` : undefined} style:width={`${SAY_W}px`}
+    onpointerenter={() => { if (saying === 'greeting') pauseFade(); else if (saying === 'nudge') { clearTimeout(nudgeFade); nudgeFading = false; } }}
+    onpointerleave={() => { if (saying === 'greeting' && sayHover) resumeFade(); else if (saying === 'nudge') fadeNudge(4000); }}>
     {#if saying === 'waiting'}<p>{waiting}</p>
+    {:else if saying === 'nudge' && nudge}<p><Emphasis text={nudge.text} /></p><button class="quiet" onclick={() => endNudge(true)}>{strings.dismiss}</button>
     {:else if greeting}<p>{greeting.text}</p>
       {#if greeting.kind === 'update'}
         {#if notes}<p class="notes">{expanded ? greeting.notes : notes.short}</p>{#if notes.cut && !expanded}<button class="quiet" onclick={() => { expanded = true; remaining = Math.max(remaining, 15000); }}>{strings.showAllNotes}</button>{/if}{/if}
@@ -296,13 +396,14 @@
     {/if}
   </div>
 {/if}
-{#if bubble}{@const t = tailOf(box, BUBBLE_W)}
-  <div class="tail" class:up={t.top !== undefined} aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
-  <div class="bubble living" class:still={reduced} role="dialog" aria-label={strings.amberName} tabindex="-1" bind:this={bubbleEl} style:left={`${box.left}px`} style:top={box.top !== undefined ? `${box.top}px` : undefined} style:bottom={box.bottom !== undefined ? `${box.bottom}px` : undefined} style:width={`${BUBBLE_W}px`}
+{#if bubble}{@const t = tailOf(box, BUBBLE_W, bubbleH)}
+  <div class="tail {t.kind}" aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
+  <div class="bubble living" class:still={reduced} role="dialog" aria-label={strings.amberName} tabindex="-1" bind:this={bubbleEl} bind:offsetHeight={bubbleH} style:left={`${box.left}px`} style:top={box.top !== undefined ? `${box.top}px` : undefined} style:bottom={box.bottom !== undefined ? `${box.bottom}px` : undefined} style:width={`${BUBBLE_W}px`}
     onkeydown={e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeBubble(true); } }}>
     {#if mode === 'tip'}<p class="tip">{#if tip}<Emphasis text={tip.text} />{/if}</p>
-    {:else}<h3>{strings.whatCanIDo}</h3><GuideLines lines={guide} />{/if}
-    <div class="row"><button onclick={showNextTip}>{strings.nextTip}</button>{#if guide.length}<button aria-pressed={mode === 'guide'} onclick={() => mode = 'guide'}>{strings.whatCanIDo}</button>{/if}</div>
+    {:else if guide.length}<h3>{strings.whatCanIDo}</h3><GuideLines lines={guide} />{/if}
+    <!-- CO-21: with the tips off, the bubble opens on the guide and has no Next tip. -->
+    {#if tips}<div class="row"><button onclick={showNextTip}>{strings.nextTip}</button>{#if guide.length}<button aria-pressed={mode === 'guide'} onclick={() => mode = 'guide'}>{strings.whatCanIDo}</button>{/if}</div>{/if}
     <AskChat bind:this={askChat} {chat} {revision} close={() => closeBubble(true)} {openSettings} autofocus={false} />
   </div>
 {/if}
@@ -329,6 +430,7 @@
   .amber :global(svg) { display:block; width:100%; height:100%; pointer-events:none; overflow:visible; }
   .amber :global(svg path), .amber :global(svg rect) { pointer-events:visiblePainted; }
   .amber :global(defs *) { pointer-events:none; }
+  .art { display:contents; }
   .hit { position:absolute; inset:0; } .hit path { fill:transparent; pointer-events:visiblePainted; }
   .amber:hover:not(:disabled), .amber:active { background:none; border:0; box-shadow:none; }
   .amber:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
@@ -349,6 +451,9 @@
   .tail { position:fixed; z-index:10; width:14px; height:14px; margin-left:-7px; box-sizing:border-box; pointer-events:none; transform:rotate(45deg); transition:opacity .4s;
     border-top-color:transparent; border-left-color:transparent; border-bottom-right-radius:4px; }
   .tail.up { border-color:var(--rim); border-right-color:transparent; border-bottom-color:transparent; border-radius:4px 0 0 0; }
+  /* Beside Amber (CO-20, amended 2026-11-17): the tail on the bubble's side, pointing to it. */
+  .tail.right { margin-left:-7px; border-color:var(--rim); border-left-color:transparent; border-bottom-color:transparent; border-radius:0 4px 0 0; }
+  .tail.left { margin-left:-7px; border-color:var(--rim); border-right-color:transparent; border-top-color:transparent; border-radius:0 0 0 4px; }
   .say.fading, .tail.fading { opacity:0; } .say p { margin:0; } .say .notes { white-space:pre-wrap; color:var(--ink-mute); font-size:13px; }
   .say .quiet { justify-self:start; background:none; border:0; padding:0; font-size:13px; color:var(--accent); }
   @media (prefers-reduced-motion: reduce) { .say, .tail { transition:none; } .living { animation:none; } }

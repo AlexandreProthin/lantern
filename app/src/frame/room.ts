@@ -4,6 +4,8 @@ import type { SubjectSummary } from './catalogue';
 import type { ErrorKind, InferenceProvider } from './provider';
 import type { Settings } from './settings';
 import type { LibrarySpaces } from './library-spaces';
+import type { Context } from '../assets/identity/companion/lantern';
+import type { NudgeRule } from './amber/nudge';
 export interface RoomSession {
   subject: Subject; running: { nodeId: string; task: string } | null;
   setFocus(id: string): void; cancel(): void; touch(): void; initialize(): Promise<void>;
@@ -23,16 +25,30 @@ export interface RestSpec { id: string; label: string; anchor: string; side: 'le
 export interface RoomCompanion {
   /** One line for Amber's app help: what the room is for. */
   about: string;
+  /** CO-55: the identity's token set for the room's surface (IMPLEMENTATION.md `context`): the frame's colour and the halo's strength; `neutral` when absent. */
+  surface?: Context;
   /** CO-21: ids are stable, since seen tips are remembered by id (SE-50). */
   tips: readonly { id: string; text: string }[];
   /** CO-22, GV-73: *What can I do here?* per space id, each line an action and its key. */
   guide: Record<string, readonly string[]>;
   /** CO-13: bottom resting positions per space id; a space without any gets the space's two bottom corners. */
   rests?: Record<string, readonly RestSpec[]>;
+  /**
+   * CO-10, CO-20 (amended 2026-11-17): per space id, what Amber's bubble must never cover and Amber's default spot
+   * stays clear of: selectors of the reading panel, the graph tools and the like.
+   */
+  avoid?: Record<string, readonly string[]>;
   /** CO-53: spaces where Amber stays still (no living flame) unless hovered, clicked, grabbed, asked or working. */
   calm?: readonly string[];
   /** CO-35: what Amber says per task while a generation waits for its first words; `title` is the node's, clipped. */
   waiting?: Record<string, (title: string) => string>;
+  /**
+   * CO-59 (added 2026-11-17): Amber's reactions to the learner: the node states that make it flare when a node
+   * reaches them, and the selector of a node's drawing in the space (to glance at it).
+   */
+  reactions?: { flare: readonly string[]; node: (id: string) => string };
+  /** CO-37 (added 2026-11-17): the room's rare nudges, its own rules and lines; the frame says when (CO-38). */
+  nudges?: readonly NudgeRule[];
 }
 /** RS-1..3, RS-30, SE-12, DM-66, ST-7. The frame calls only these members (RS-2). */
 export interface RoomDefinition {
