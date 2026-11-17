@@ -13,8 +13,10 @@
   let { session, revision, settings, closing, onclose, onclosed, recommend }: {
     session: ChooseSession; revision: number; settings: Settings; closing: boolean; onclose: () => void; onclosed: () => void; recommend: () => void;
   } = $props();
+  // The board reads only the graph: a streamed chunk or a focus change (a revision with the same visit and edits) leaves it be.
+  const visit = $derived.by(() => { revision; return session.visit; }), edits = $derived.by(() => { revision; return session.edits; });
   const model = $derived.by(() => {
-    revision; const v = session.visit, b = board(v);
+    edits; const v = visit, b = board(v);
     const needs = nodesOfKind(v, 'need').filter(n => n.state !== 'dismissed');
     const products = nodesOfKind(v, 'product'), rank = (s: string) => ['chosen', 'shortlisted', 'candidate'].indexOf(s);
     return { v, b, miss: missingItems(v), stage: stageOf(v), needs: [...needs.filter(n => n.state === 'open'), ...needs.filter(n => n.state === 'answered')],

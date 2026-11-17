@@ -12,7 +12,9 @@
   let { session, revision, settings, open, toggle, recommend }: {
     session: ChooseSession; revision: number; settings: Settings; open: boolean; toggle: () => void; recommend: () => void;
   } = $props();
-  const view = $derived.by(() => { revision; const v = session.visit; return { b: board(v), miss: missingItems(v), stage: stageOf(v) }; });
+  // Only the graph counts here: a streamed chunk or a focus change (same visit, same edits) recomputes nothing.
+  const visit = $derived.by(() => { revision; return session.visit; }), edits = $derived.by(() => { revision; return session.edits; });
+  const view = $derived.by(() => { edits; const v = visit; return { b: board(v), miss: missingItems(v), stage: stageOf(v) }; });
   const busy = $derived.by(() => { revision; return !!session.running; });
   const b = $derived(view.b), miss = $derived(view.miss), stage = $derived(view.stage);
   const tip = (area: string) => miss.filter(m => m.area === area);
