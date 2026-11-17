@@ -29,11 +29,15 @@ export const backdropLayers = [
 
 export const backdropMotion = {
   FRAME_MS: 1000 / 30, MAX_DT_S: .1,
+  /** At rest (nothing eases towards a target, no lit node, no fade) only the slow orbits and drift move. */
+  IDLE_FRAME_MS: 1000 / 15,
+  /** Each mote's light is worked out again every this many frames, a share of the motes per frame. */
+  LIGHT_EVERY: 4,
   PRESET_RATE: .7, PAN_RATE: 2.2, POINTER_RATE: .9, LAMP_RATE: .7,
   LIT_RISE_S: 1.4, LIT_FADE_S: 3.8, LIT_FLARE: .2, LIT_LIGHT: .7, LIT_POOL_ALPHA: .05, LIT_PUSH_PX: 6, LIT_REACH: .18,
   ZOOM_MIN: .5, ZOOM_MAX: 2.5,
-  /** Covers the CSS room-token fade (.45s in app.css) with a frame to spare. */
-  ROOM_FADE_MS: 520,
+  /** The CSS room-token fade (.45s ease in app.css), and that fade with a frame to spare. */
+  ROOM_FADE_CSS_MS: 450, ROOM_FADE_MS: 520,
   /** The lights' pan parallax is bounded to this many widths, so a long pan never sends them off screen. */
   PAN_LIMIT: 1
 } as const;
@@ -93,6 +97,28 @@ export function lightAt(x: number, y: number, lights: PlacedLight[], lamp: { x: 
   return L;
 }
 
+/** The tokens a room's stylesheet writes (`:root[data-room='x'] { … }`): where a room fade ends,
+ * read from the rules once rather than from the computed style on every frame of the fade. */
+export function roomTokens(room: string, sheets: Iterable<CSSStyleSheet> | ArrayLike<CSSStyleSheet>): Map<string, string> {
+  const out = new Map<string, string>(), marks = [`:root[data-room='${room}']`, `:root[data-room="${room}"]`];
+  const walk = (rules: CSSRuleList) => {
+    for (const rule of Array.from(rules)) {
+      const { style, selectorText } = rule as CSSStyleRule;
+      if (style && selectorText) {
+        if (selectorText.split(',').some(part => marks.includes(part.trim())))
+          for (const name of Array.from(style)) if (name.startsWith('--')) out.set(name, style.getPropertyValue(name).trim());
+      } else if ((rule as CSSGroupingRule).cssRules) walk((rule as CSSGroupingRule).cssRules);
+    }
+  };
+  for (const sheet of Array.from(sheets)) { try { walk(sheet.cssRules); } catch { /* another origin's sheet */ } }
+  return out;
+}
+
+/** Colour a fraction k of the way from a to b. */
+export const mixRgb = (a: Rgb, b: Rgb, k: number): Rgb => [0, 1, 2].map(i => Math.round(a[i] + (b[i] - a[i]) * k)) as Rgb;
+/** Close to CSS `ease` (cubic-bezier(.25, .1, .25, 1)), enough for colours. */
+export const cssEase = (x: number) => { const k = clamp(x, 0, 1); return 1 - (1 - k) ** 3 * (1 + 1.2 * k); };
+
 export interface Mote { x: number; y: number; s: number; a: number; ph: number; wob: number; drift: number; warm: boolean }
 /** Motes in world units (0..1, wrapping), seeded so the still frame of reduced motion is stable. */
 export function createMotes(seed = 7): Mote[][] {
@@ -105,7 +131,34 @@ export function createMotes(seed = 7): Mote[][] {
     ph: between(0, 6.28), wob: between(30, 80), drift: between(-.3, .3), warm: random() < .7 })));
 }
 
-interface Colors { bg: Rgb; warm: Rgb; cool: Rgb; glow: Rgb; lit: Rgb; lights: Rgb[] }
+export interface Colors { bg: Rgb; warm: Rgb; cool: Rgb; glow: Rgb; lit: Rgb; lights: Rgb[] }
+const colorKeys = ['bg', 'warm', 'cool', 'glow', 'lit'] as const;
+/** The backdrop's colours from token values; a token it cannot read keeps its fallback. */
+export function colorsFrom(value: (name: string) => string | undefined): Colors {
+  const token = (name: string, fallback: Rgb) => parseColor(value(name) ?? '') ?? fallback;
+  const bg = token('--bg', [16, 24, 39]);
+  return { bg, warm: token('--node-lit', [255, 225, 170]), cool: token('--ink-mute', [174, 179, 191]),
+    glow: token('--glow-far', [255, 182, 88]), lit: token('--node-lit', [255, 225, 170]),
+    lights: backdropLights.map(L => token(L.token, bg)) };
+}
+export function mixColors(a: Colors, b: Colors, k: number): Colors {
+  const out = { lights: a.lights.map((c, i) => mixRgb(c, b.lights[i], k)) } as Colors;
+  for (const key of colorKeys) out[key] = mixRgb(a[key], b[key], k);
+  return out;
+}
+const sameRgb = (a: Rgb, b: Rgb) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+
+type Point = { x: number; y: number };
+/** At rest nothing eases towards a target any more (pan, pointer, lantern, the space's anchor), no node is lit and no room fades. */
+export function atRest(s: { pan: Point & { k: number }; sPan: Point & { k: number }; pointer: Point; sPointer: Point; lamp: Point;
+  w: number; h: number; P: Preset; target: Preset; lits: number; fading: boolean }) {
+  if (s.lits || s.fading) return false;
+  // Within about 2 px of where they are going: closer than that, a soft light's step cannot be seen.
+  if (Math.abs(s.pan.x - s.sPan.x) > 2 || Math.abs(s.pan.y - s.sPan.y) > 2 || Math.abs(s.pan.k - s.sPan.k) > 2e-3) return false;
+  if (Math.abs(s.pointer.x - s.sPointer.x) * s.w > 2 || Math.abs(s.pointer.y - s.sPointer.y) * s.h > 2) return false;
+  if (Math.abs(s.pointer.x * s.w - s.lamp.x) > 2 || Math.abs(s.pointer.y * s.h - s.lamp.y) > 2) return false;
+  return (Object.keys(s.target) as (keyof Preset)[]).every(key => Math.abs(s.target[key] - s.P[key]) < 5e-3);
+}
 const rgba = (c: Rgb, a: number) => `rgba(${c[0]},${c[1]},${c[2]},${Math.max(0, a)})`;
 
 /** Draws the backdrop on two canvases: the lights at CSS-pixel resolution, the motes at up to 1.5× DPR. */
@@ -114,9 +167,14 @@ export class Backdrop {
   private pan = { x: 0, y: 0, k: 1 }; private sPan = { x: 0, y: 0, k: 1 };
   private pointerAt = { x: .5, y: .5 }; private sPointer = { x: .5, y: .5 }; private lamp = { x: 0, y: 0 };
   private lits: { x: number; y: number; t0: number }[] = [];
-  private started = false; private fadeUntil = 0; private frame = 0; private lastDraw = 0; private w = 1; private h = 1; private ratio = 1;
+  private started = false; private frame = 0; private timer: ReturnType<typeof setTimeout> | 0 = 0; private idle = false;
+  private lastDraw = 0; private w = 1; private h = 1; private ratio = 1;
+  /** A room fade: colours go from → to over the CSS fade, both read once when it starts. */
+  private fade: { from: Colors; to: Colors; t0: number } | null = null;
   private colors!: Colors; private sprites!: { warm: HTMLCanvasElement; cool: HTMLCanvasElement };
   private readonly motes = createMotes();
+  /** Each mote's light (lightAt), refreshed a share at a time while the backdrop rests. */
+  private readonly moteLight = backdropLayers.map(L => new Float32Array(L.n)); private lightTurn = 0; private lightStale = true;
   constructor(private haze: HTMLCanvasElement, private dust: HTMLCanvasElement, private reduced: () => boolean) {}
 
   start() { this.readColors(); this.started = true; this.resize(); this.refresh(); }
@@ -125,50 +183,64 @@ export class Backdrop {
     if (!this.started) return;
     if (this.reduced()) { this.halt(); this.still(); this.draw(performance.now() / 1000); }
     else if (document.hidden) this.halt();
-    else if (!this.frame) { this.lastDraw = performance.now() - backdropMotion.FRAME_MS; this.frame = requestAnimationFrame(this.tick); }
+    else if (!this.frame && !this.timer) { this.lastDraw = performance.now() - backdropMotion.FRAME_MS; this.frame = requestAnimationFrame(this.tick); }
   }
-  /** The room changed: its tokens repaint the haze, lights and motes. They fade in CSS
-   * (data-room-fade), so the loop keeps reading them until that fade is over. */
+  /** The room changed: its tokens repaint the haze, lights and motes. They fade in CSS (data-room-fade);
+   * the backdrop reads where they start and where they end once, and eases between them itself. */
   recolor() {
     if (!this.started) return;
-    this.readColors(); this.fadeUntil = performance.now() + backdropMotion.ROOM_FADE_MS;
-    if (this.reduced()) this.refresh();
+    if (this.reduced()) { this.fade = null; this.readColors(); this.refresh(); return; }
+    const css = getComputedStyle(document.documentElement), room = document.documentElement.dataset.room ?? '';
+    const own = roomTokens(room, document.styleSheets);
+    this.fade = { from: this.colors, to: colorsFrom(name => own.get(name) ?? css.getPropertyValue(name)), t0: performance.now() };
+    this.wake();
   }
   setSpace(space: string) {
-    this.space = space; this.pan = { x: 0, y: 0, k: 1 };
-    if (this.reduced()) this.refresh();
+    if (space === this.space && !this.pan.x && !this.pan.y && this.pan.k === 1) return;
+    this.space = space; this.pan = { x: 0, y: 0, k: 1 }; this.lightStale = true;
+    if (this.reduced()) this.refresh(); else this.wake();
   }
-  pointer(x: number, y: number) { this.pointerAt = { x: x / this.w, y: y / this.h }; }
+  pointer(x: number, y: number) { this.pointerAt = { x: x / this.w, y: y / this.h }; this.wake(); }
   /** Graph pan/zoom in Study, as a delta in pixels and a zoom ratio. */
   panBy(dx: number, dy: number, ratio: number) {
     if (this.space !== 'study') return;
     this.pan = { x: this.pan.x + dx, y: this.pan.y + dy, k: clamp(this.pan.k * ratio, backdropMotion.ZOOM_MIN, backdropMotion.ZOOM_MAX) };
+    this.wake();
   }
   /** A node became lit at this screen position. */
-  light(x: number, y: number) { if (!this.reduced()) this.lits.push({ x, y, t0: performance.now() / 1000 }); }
+  light(x: number, y: number) { if (!this.reduced()) { this.lits.push({ x, y, t0: performance.now() / 1000 }); this.wake(); } }
   resize() {
     this.w = Math.max(1, innerWidth); this.h = Math.max(1, innerHeight); this.ratio = Math.min(1.5, devicePixelRatio || 1);
     this.haze.width = Math.ceil(this.w); this.haze.height = Math.ceil(this.h);
     this.dust.width = Math.ceil(this.w * this.ratio); this.dust.height = Math.ceil(this.h * this.ratio);
+    this.lightStale = true;
     if (this.started && this.reduced()) { this.still(); this.draw(performance.now() / 1000); }
   }
   dispose() { this.halt(); }
+  /** Frames per second the loop runs at now: 30 while something moves, 15 at rest (for tests and traces). */
+  get rate() { return this.idle ? 1000 / backdropMotion.IDLE_FRAME_MS : 1000 / backdropMotion.FRAME_MS; }
 
-  private halt() { cancelAnimationFrame(this.frame); this.frame = 0; }
-  private readColors() {
-    const css = getComputedStyle(document.documentElement);
-    const token = (name: string, fallback: Rgb) => parseColor(css.getPropertyValue(name)) ?? fallback;
-    const bg = token('--bg', [16, 24, 39]);
-    this.colors = { bg, warm: token('--node-lit', [255, 225, 170]), cool: token('--ink-mute', [174, 179, 191]),
-      glow: token('--glow-far', [255, 182, 88]), lit: token('--node-lit', [255, 225, 170]),
-      lights: backdropLights.map(L => token(L.token, bg)) };
+  private halt() { cancelAnimationFrame(this.frame); this.frame = 0; if (this.timer) clearTimeout(this.timer); this.timer = 0; }
+  /** Something started to move while the loop rests: draw at the full rate from the next frame. */
+  private wake() {
+    if (!this.idle || !this.timer || !this.started) return;
+    clearTimeout(this.timer); this.timer = 0; this.idle = false;
+    this.frame = requestAnimationFrame(this.tick);
+  }
+  private setColors(colors: Colors) {
+    const old = this.colors; this.colors = colors;
     const sprite = (c: Rgb) => {
       const s = document.createElement('canvas'); s.width = s.height = 64;
       const x = s.getContext('2d')!, g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
       g.addColorStop(0, rgba(c, 1)); g.addColorStop(.35, rgba(c, .55)); g.addColorStop(1, rgba(c, 0));
       x.fillStyle = g; x.fillRect(0, 0, 64, 64); return s;
     };
-    this.sprites = { warm: sprite(this.colors.warm), cool: sprite(this.colors.cool) };
+    if (!old || !sameRgb(old.warm, colors.warm)) this.sprites = { ...this.sprites, warm: sprite(colors.warm) };
+    if (!old || !sameRgb(old.cool, colors.cool)) this.sprites = { ...this.sprites, cool: sprite(colors.cool) };
+  }
+  private readColors() {
+    const css = getComputedStyle(document.documentElement);
+    this.setColors(colorsFrom(name => css.getPropertyValue(name)));
   }
   /** Reduced motion: the space's preset at rest, no pointer, pan or lit node. */
   private still() {
@@ -176,11 +248,21 @@ export class Backdrop {
     this.pointerAt = { x: .5, y: .5 }; this.sPointer = { ...this.pointerAt }; this.lamp = { x: this.w / 2, y: this.h / 2 }; this.lits = [];
   }
   private tick = (now: number) => {
-    this.frame = requestAnimationFrame(this.tick);
-    if (now - this.lastDraw < backdropMotion.FRAME_MS - 1) return;
-    const dt = Math.min(backdropMotion.MAX_DT_S, (now - this.lastDraw) / 1000); this.lastDraw = now;
-    if (now < this.fadeUntil) this.readColors();
+    const m = backdropMotion;
+    this.frame = 0;
+    const dt = Math.min(m.MAX_DT_S, Math.max(0, now - this.lastDraw) / 1000); this.lastDraw = now;
+    if (this.fade) {
+      const age = now - this.fade.t0;
+      // The CSS fade is over a frame or so after its 450 ms: read the tokens once more, exactly.
+      if (age >= m.ROOM_FADE_MS) { this.fade = null; this.readColors(); }
+      else this.setColors(mixColors(this.fade.from, this.fade.to, cssEase(age / m.ROOM_FADE_CSS_MS)));
+    }
     this.advance(dt); this.draw(now / 1000);
+    this.idle = atRest({ pan: this.pan, sPan: this.sPan, pointer: this.pointerAt, sPointer: this.sPointer, lamp: this.lamp, w: this.w, h: this.h,
+      P: this.P, target: presetFor(this.space), lits: this.lits.length, fading: !!this.fade });
+    // Between frames the loop asks for none: a timer wakes it a little before the next one is due.
+    const wait = (this.idle ? m.IDLE_FRAME_MS : m.FRAME_MS) - (performance.now() - now) - 10;
+    this.timer = setTimeout(() => { this.timer = 0; this.frame = requestAnimationFrame(this.tick); }, Math.max(0, wait));
   };
   private advance(dt: number) {
     const m = backdropMotion, ease = (rate: number) => 1 - Math.exp(-dt * rate);
@@ -222,7 +304,11 @@ export class Backdrop {
     // Motes: they only show where light falls.
     dctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0); dctx.clearRect(0, 0, W, H);
     const t = this.t, pdx = this.sPointer.x - .5, pdy = this.sPointer.y - .5;
+    // At rest the light on each mote changes slowly: a share of the motes work theirs out again each frame.
+    const every = this.idle && !this.lightStale && !this.reduced() ? backdropMotion.LIGHT_EVERY : 1, turn = this.lightTurn++ % every;
+    this.lightStale = false;
     backdropLayers.forEach((L, li) => {
+      const cache = this.moteLight[li];
       const vis = L.key === 'near' ? Math.max(0, P.dust * 1.6 - .6) : P.dust; if (vis < .01) return;
       const z = 1 + (this.sPan.k - 1) * .4 * L.depth;
       const offX = this.sPan.x * .25 * L.depth - pdx * W * .03 * L.depth, offY = this.sPan.y * .25 * L.depth - pdy * H * .03 * L.depth;
@@ -237,7 +323,8 @@ export class Backdrop {
           if (dd < reach) { const push = backdropMotion.LIT_PUSH_PX * L.depth * l.e * (1 - dd / reach); x += ex / dd * push; y += ey / dd * push; }
         }
         const twinkle = .78 + .22 * Math.sin(t * 1.3 + m.ph * 3);
-        const a = Math.min(1, m.a * (.3 + lightAt(x, y, lights, this.lamp, P.lamp, W, lits)) * twinkle * shown * P.gain);
+        if (every === 1 || i % every === turn) cache[i] = lightAt(x, y, lights, this.lamp, P.lamp, W, lits);
+        const a = Math.min(1, m.a * (.3 + cache[i]) * twinkle * shown * P.gain);
         if (a < .012) return;
         const color = m.warm ? colors.warm : colors.cool;
         if (L.key === 'near') {

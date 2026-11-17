@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest';
-import { backdropLayers, backdropLights, createMotes, envelope, LIT_LIFE_S, parseColor, placeLights, presetFor, type Rgb, type View } from './backdrop';
+import { atRest, backdropLayers, backdropLights, backdropMotion, colorsFrom, createMotes, cssEase, envelope, LIT_LIFE_S, mixColors, mixRgb,
+  parseColor, placeLights, presetFor, roomTokens, type Rgb, type View } from './backdrop';
 import { defaultSettings, validateSettings } from './settings';
 
 const view: View = { w: 1000, h: 800, panX: 0, panY: 0, zoom: 1, px: .5, py: .5 };
@@ -51,6 +52,38 @@ test('RS-34: motes are seeded, so the reduced-motion still frame is stable', () 
   expect(a.map(layer => layer.length)).toEqual(backdropLayers.map(layer => layer.n));
   expect(a).toEqual(b);
   expect(a.flat().every(m => m.x >= 0 && m.x < 1 && m.y >= 0 && m.y < 1)).toBe(true);
+});
+
+test('RS-34: a room fade reads where it ends once, from the room’s own rule, and eases there', () => {
+  const rule = (selectorText: string, values: Record<string, string>) => ({ selectorText,
+    style: Object.assign(Object.keys(values), { getPropertyValue: (name: string) => values[name] ?? '' }) });
+  const sheet = { cssRules: [
+    rule(":root[data-room='learn']", { '--accent': '#e8b66e', '--bg': '#101827' }),
+    { cssRules: [rule(":root[data-room='choose']", { '--accent': '#5cc6bd', color: 'red' })] },
+    rule(':root[data-room-fade]', { '--accent': '#000' })
+  ] } as unknown as CSSStyleSheet;
+  const foreign = { get cssRules(): CSSRuleList { throw new Error('cross-origin'); } } as unknown as CSSStyleSheet;
+  const choose = roomTokens('choose', [foreign, sheet]);
+  expect([...choose]).toEqual([['--accent', '#5cc6bd']]);
+  const from = colorsFrom(name => ({ '--accent': '#e8b66e' } as Record<string, string>)[name]), to = colorsFrom(name => choose.get(name));
+  expect(to.lights[0]).toEqual([92, 198, 189]); expect(to.bg).toEqual([16, 24, 39]);
+  expect(mixColors(from, to, 0)).toEqual(from); expect(mixColors(from, to, 1)).toEqual(to);
+  expect(mixColors(from, to, .5).lights[0]).toEqual(mixRgb([232, 182, 110], [92, 198, 189], .5));
+  expect(cssEase(0)).toBe(0); expect(cssEase(1)).toBe(1); expect(cssEase(2)).toBe(1);
+  expect(cssEase(.5)).toBeCloseTo(.8, 1);
+});
+
+test('RS-34: the backdrop rests once nothing eases any more, and wakes when something moves or is lit', () => {
+  const P = presetFor('study'), still = { pan: { x: 10, y: 0, k: 1 }, sPan: { x: 10, y: 0, k: 1 }, pointer: { x: .5, y: .5 }, sPointer: { x: .5, y: .5 },
+    lamp: { x: 500, y: 400 }, w: 1000, h: 800, P: { ...P }, target: P, lits: 0, fading: false };
+  expect(atRest(still)).toBe(true);
+  expect(atRest({ ...still, sPan: { x: 4, y: 0, k: 1 } })).toBe(false);
+  expect(atRest({ ...still, pointer: { x: .7, y: .5 } })).toBe(false);
+  expect(atRest({ ...still, lamp: { x: 480, y: 400 } })).toBe(false);
+  expect(atRest({ ...still, P: presetFor('welcome') })).toBe(false);
+  expect(atRest({ ...still, lits: 1 })).toBe(false);
+  expect(atRest({ ...still, fading: true })).toBe(false);
+  expect(backdropMotion.IDLE_FRAME_MS).toBeGreaterThan(backdropMotion.FRAME_MS);
 });
 
 test('RS-34: the backdrop setting defaults on and rejects non-booleans', () => {
