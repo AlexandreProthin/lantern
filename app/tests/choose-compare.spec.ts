@@ -65,8 +65,12 @@ test('CR-50: columns, grouped rows, irrelevant behind the toggle, and the row su
   await expect(page.locator('tr.grp th')).toHaveText(['Must', 'Nice to have']);
   await expect(page.locator('tr.crow th .cn')).toHaveText(['Price', 'Build volume', 'Noise', 'Enclosure']);
   await expect(row(page, b.ids.volume)).toContainText('You want to print large cases');
-  await expect(row(page, b.ids.volume).locator('.sum')).toHaveText('2 manufacturer · 2 measured · ≠ 1 · ? 1');
-  await expect(row(page, b.ids.noise).locator('.sum')).toHaveText('1 measured · 1 opinion · ✎ 1');
+  // The marks are drawn; each mark and its count is one image named for screen readers.
+  await expect(row(page, b.ids.volume).locator('.sum')).toHaveText('2 manufacturer · 2 measured · 1 · 1');
+  expect(await row(page, b.ids.volume).locator('.sum [role=img]').evaluateAll(es => es.map(e => e.getAttribute('aria-label')))).toEqual(['1 disagree', '1 not found']);
+  await expect(row(page, b.ids.volume).locator('.sum [role=img] svg')).toHaveCount(2);
+  await expect(row(page, b.ids.noise).locator('.sum')).toHaveText('1 measured · 1 opinion · 1');
+  expect(await row(page, b.ids.noise).locator('.sum [role=img]').evaluateAll(es => es.map(e => e.getAttribute('aria-label')))).toEqual(['1 edited']);
   await expect(page.locator('tr.crow .cn', { hasText: 'Unranked' })).toHaveCount(0);
   await expect(page.locator('tr.crow .cn', { hasText: 'Warranty' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Show irrelevant (1)' }).click();
@@ -83,9 +87,9 @@ test('CR-50, CR-51, CR-42: cells show value, sources, disagreement, nothing foun
   const price = cellOf(page, b.ids.A, b.ids.price);
   await expect(price).toContainText('399 €'); await expect(price).toContainText('an indication, not a promise · seen 12 Oct'); await expect(price).toContainText('shop'); await expect(price).toContainText('Maker shop · 12 Oct');
   const vol = cellOf(page, b.ids.B, b.ids.volume);
-  await expect(vol).toContainText('≠'); await expect(vol).toContainText('The maker says 256 mm'); await expect(vol.locator('.k')).toHaveText(['manufacturer', 'measured']);
+  await expect(vol.locator('.mark svg')).toBeVisible(); await expect(vol).toContainText('The maker says 256 mm'); await expect(vol.locator('.k')).toHaveText(['manufacturer', 'measured']);
   const none = cellOf(page, b.ids.C, b.ids.volume);
-  await expect(none).toContainText('? No source found'); await expect(none).toHaveAttribute('data-status', 'none');
+  await expect(none.locator('.mark svg')).toBeVisible(); await expect(none).toContainText('No source found'); await expect(none).toHaveAttribute('data-status', 'none');
   const spons = cellOf(page, b.ids.B, b.ids.noise);
   await expect(spons.locator('.k[data-k="sponsored"]')).toHaveText('sponsored'); await expect(spons).toContainText('Promo blog: not used');
   expect(await spons.locator('.k[data-k="sponsored"]').evaluate(e => getComputedStyle(e).textDecorationLine)).toContain('line-through');
@@ -229,10 +233,17 @@ test('GV-100: reduced motion unfolds and folds instantly', async ({ page }) => {
 
 test('motion: a band grows from zero height and the table is intact afterwards', async ({ page }) => {
   const { b } = await open(page);
+  // Sample the band's height on every frame in the page, so a slow round trip under load cannot miss the growth.
+  await page.evaluate(() => {
+    const w = window as unknown as { growth: number[] };
+    w.growth = [];
+    const sample = () => { const e = document.querySelector<HTMLElement>('tr.ev.full'); if (e?.dataset.fx) w.growth.push(e.getBoundingClientRect().height); requestAnimationFrame(sample); };
+    requestAnimationFrame(sample);
+  });
   await row(page, b.ids.volume).click();
-  const early = await page.locator('tr.ev.full').evaluate(e => e.getBoundingClientRect().height);
   await expect.poll(() => page.locator('tr.ev.full').evaluate(e => e.dataset.fx ?? '')).toBe('');
   const late = await page.locator('tr.ev.full').evaluate(e => e.getBoundingClientRect().height);
-  expect(early).toBeLessThan(late); expect(late).toBeGreaterThan(60);
+  const growth = await page.evaluate(() => (window as unknown as { growth: number[] }).growth);
+  expect(growth.length).toBeGreaterThan(0); expect(Math.min(...growth)).toBeLessThan(late); expect(late).toBeGreaterThan(60);
   await expect(page.locator('tr.ev.full .w').first()).toHaveCSS('overflow', 'visible');
 });

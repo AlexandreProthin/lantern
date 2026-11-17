@@ -131,7 +131,7 @@ test('shortlist, reject with a reason, choose, un-choose, mark as bought; the ra
   await expect(node(page, /Printer A/).locator('.badge[data-badge="chosen"]')).toBeVisible();
   await expect(node(page, /Printer A/).locator('.ring2')).toHaveCSS('opacity', '1');
   await expect(page.locator('.graph .node[data-kind="subject"] .badge[data-badge="decided"]')).toBeVisible();
-  await expect(counter(page, 'pick')).toHaveText('✓');
+  await expect(counter(page, 'pick').locator('svg.tick')).toBeVisible();
   await expect(page.locator('.rail .st')).toHaveText('decided');
   await panel(page).getByRole('button', { name: 'Un-choose', exact: true }).click();
   await expect(page.locator('.graph .node[data-kind="subject"] .badge[data-badge="exploring"]')).toBeVisible();

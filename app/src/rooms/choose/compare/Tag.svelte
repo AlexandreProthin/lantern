@@ -6,7 +6,7 @@
 </script>
 <span class="k" data-k={kind}>{kind === 'user' ? strings.yours : strings.kinds[kind]}</span>
 <style>
-  .k { display: inline-block; font: 600 11px/15px var(--font-small, 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; white-space: nowrap; color: var(--ink-mute); flex: none; }
+  .k { display: inline-block; font: 600 11px/15px var(--font-small, 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: 0 6px; white-space: nowrap; color: var(--ink-mute); flex: none; }
   .k[data-k='measured'] { border-color: var(--ink-mute); color: var(--ink); }
   .k[data-k='opinion'] { border-style: dashed; font-style: italic; }
   .k[data-k='model'] { border-style: dotted; }

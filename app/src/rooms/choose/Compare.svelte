@@ -14,6 +14,11 @@
   import { strings } from './compare/strings';
   import Card from './compare/Card.svelte';
   import CellBody from './compare/CellBody.svelte';
+  import Icon from '../../ui/Icon.svelte';
+  import type { IconName } from '../../ui/icons';
+  /** CR-50: the row summary's marks (≠ ? ✎ …) are drawn, the count beside them, the word for screen readers. */
+  const markIcons: Record<string, IconName> = { '≠': 'notEqual', '?': 'question', '✎': 'pencil', '…': 'ellipsis' };
+  const summaryParts = (text: string) => text.split(' · ').map(part => { const m = /^(≠|\?|✎|…) (\d+)$/.exec(part); return m ? { mark: m[1], n: m[2] } : { text: part }; });
   let { session, revision, visible, settings, navigate, preferencesChanged }: SpaceProps = $props();
   const choose = $derived(session as ChooseSession | null);
   let open = $state<Open>(nothingOpen), showIrr = $state(false), noHover = $state(false), scroller = $state<HTMLElement | null>(null);
@@ -47,7 +52,7 @@
 </script>
 {#snippet band(rowId: string, title: string, price: boolean, full: boolean)}
   <tr class="ev" class:full class:single={!full} in:rowFx out:rowFx={{ out: true }} use:keep>
-    <th class="evh"><div class="w">{#if full}{strings.evidenceFor(title)}{#if web}<button class="outline" disabled={busy} onclick={() => guard(() => choose!.run('check', rowId))}>{strings.checkRow}</button>{/if}{/if}</div></th>
+    <th class="evh"><div class="w">{#if full}{strings.evidenceFor(title)}{#if web}<button class="accent" disabled={busy} onclick={() => guard(() => choose!.run('check', rowId))}>{strings.checkRow}</button>{/if}{/if}</div></th>
     {#each view!.cols as p (p.id)}
       {@const k = slotKey(p.id, rowId)}
       {@const shown = full || cur.item === k}
@@ -74,21 +79,21 @@
         {#if failed}<span class="failed" role="alert">{strings.checkFailed} <button onclick={() => void failed.retry().catch(() => {})}>{strings.retry}</button></span>{/if}
         <span class="sp"></span>
         {#if view.irr}<button class:on={showIrr} aria-pressed={showIrr} onclick={() => { noHover = true; showIrr = !showIrr; }}>{showIrr ? strings.hideIrrelevant(view.irr) : strings.showIrrelevant(view.irr)}</button>{/if}
-        {#if view.cols.length}<button disabled={!view.empty} onclick={() => choose!.fillCompare()}>{strings.fillCompare}</button>{/if}
+        {#if view.cols.length}<button class:primary={view.empty} disabled={!view.empty} onclick={() => choose!.fillCompare()}>{strings.fillCompare}</button>{/if}
       </div>
       {#if !view.cols.length}
-        <div class="stage"><div class="emptystate"><h2>{strings.emptyTitle}</h2><p>{strings.emptyBody}</p><button onclick={() => navigate('survey')}>{strings.openSurvey}</button></div></div>
+        <div class="stage"><div class="emptystate"><h2>{strings.emptyTitle}</h2><p>{strings.emptyBody}</p><button class="primary" onclick={() => navigate('survey')}>{strings.openSurvey}</button></div></div>
       {:else}
         <div class="stage"><div class="scroll" bind:this={scroller} onpointermove={() => noHover = false} role="presentation">
           <table role="grid" class:nohover={noHover}>
             <thead><tr>
               <th class="corner" scope="col" aria-label={allOpen ? strings.foldAllLabel : strings.unfoldAllLabel} aria-expanded={allOpen}>
-                <button class="corner-btn" data-all onclick={() => go(clickAll(cur, view!.rowIds))}><span class="cnt">{strings.shortlisted(view.cols.length)}</span><small>{allOpen ? strings.foldAll : strings.unfoldAll}</small></button></th>
+                <button class="corner-btn" data-all onclick={() => go(clickAll(cur, view!.rowIds))}><span class="cnt">{strings.shortlisted(view.cols.length)}</span><small><Icon name={allOpen ? 'foldAll' : 'unfoldAll'} size={12} />{allOpen ? strings.foldAll : strings.unfoldAll}</small></button></th>
               {#each view.cols as p (p.id)}
                 {@const chosen = p.id === view.chosenId}
-                <th class="prod" class:chosen scope="col" data-product={p.id}><span class="pn">{chosen ? '✓ ' : ''}{p.title}</span>
+                <th class="prod" class:chosen scope="col" data-product={p.id}><span class="pn">{#if chosen}<Icon name="check" />{/if}{p.title}</span>
                   <div class="acts">{#if chosen}<span class="chosen-l">{strings.chosen}</span><button onclick={() => guard(() => choose!.unchoose(p.id))}>{strings.unchoose}</button>
-                    {:else}<button class="outline" onclick={() => guard(() => choose!.choose(p.id))}>{strings.choose}</button><button onclick={() => guard(() => choose!.unshortlist(p.id))}>{strings.remove}</button>{/if}</div></th>
+                    {:else}<button class="accent" onclick={() => guard(() => choose!.choose(p.id))}>{strings.choose}</button><button onclick={() => guard(() => choose!.unshortlist(p.id))}>{strings.remove}</button>{/if}</div></th>
               {/each}
               {#if view.cols.length === 1}
                 <th class="prod more-h" scope="col"><div class="more">{strings.oneProduct(view.candidates.slice(0, 3).map(c => c.title), Math.max(0, view.candidates.length - 3))}
@@ -104,8 +109,8 @@
                   <tr class="crow" class:irr={g.state === 'irrelevant'} class:banded in:rowFx|global out:rowFx|global={{ out: true }}>
                     <th class="crit" scope="row" data-row={r.id} onclick={() => go(clickRow(cur, r.id))}><div class="w">
                       <button class="crit-btn" aria-expanded={full} onkeydown={e => key(e, () => go(clickRow(cur, r.id)))}>
-                        <span class="tw" aria-hidden="true">{full ? '▾' : '▸'}</span><span class="cn">{r.title}</span>{#if r.why}<span class="why" title={r.why}>{r.why}</span>{/if}
-                        <span class="sum">{rowSummary(view.cols, r.id, view.filling)}</span></button></div></th>
+                        <span class="tw"><Icon name={full ? 'chevronDown' : 'chevronRight'} size={12} /></span><span class="cn">{r.title}</span>{#if r.why}<span class="why" title={r.why}>{r.why}</span>{/if}
+                        <span class="sum">{#each summaryParts(rowSummary(view.cols, r.id, view.filling)) as part, i}{i ? ' · ' : ''}{#if part.mark}<span class="mk" role="img" aria-label={`${part.n} ${strings.marks[part.mark]}`}><Icon name={markIcons[part.mark]} size={11} />{part.n}</span>{:else}{part.text}{/if}{/each}</span></button></div></th>
                     {#each view.cols as p (p.id)}
                       {@const k = slotKey(p.id, r.id)}
                       {@const cell = cellOf(p.id, r.id)}
@@ -136,7 +141,7 @@
   .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 16px; }
   .bar h1 { margin: 0; font: 350 24px/1.2 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; } .sp { flex: 1; }
   .research { display: flex; gap: 10px; align-items: center; font-size: 12px; border: 1px solid var(--accent); padding: 3px 4px 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 70%, transparent); }
-  .research button { font-size: 11px; padding: 1px 8px; border-radius: 999px; }
+  .research button { font-size: 11px; padding: 1px 8px; border-radius: var(--radius-pill); }
   .spin { display: inline-block; width: 9px; height: 9px; border: 1.5px solid var(--accent); border-radius: 50%; border-right-color: transparent; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(1turn); } }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; border-right-color: var(--accent); border-style: dashed; } .prod.chosen { animation: none; } }
@@ -145,7 +150,8 @@
   .failed { color: var(--error-ink); }
   .stage { position: relative; flex: 1; min-height: 0; }
   .emptystate { max-width: 460px; margin: 10vh auto; padding: 0 16px; text-align: center; } .emptystate h2 { font: 350 24px 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; margin: 0 0 8px; } .emptystate p { color: var(--ink-mute); font-size: 13px; }
-  .scroll { position: absolute; inset: 0; overflow: auto; padding-bottom: 40px; background: var(--glass); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-top: 1px solid var(--glass-line); }
+  /* RS-34: the table is a solid surface, not glass over the moving backdrop. */
+  .scroll { position: absolute; inset: 0; overflow: auto; padding-bottom: 40px; background: var(--surface); border-top: 1px solid var(--line); }
   table { border-collapse: separate; border-spacing: 0; min-width: 100%; }
   th, td { vertical-align: top; text-align: left; padding: 0; border-bottom: 1px solid var(--glass-line); border-right: 1px solid var(--glass-line); font-weight: 400; }
   td { max-width: 260px; } .w { padding: 6px 8px; box-sizing: border-box; }
@@ -153,20 +159,21 @@
   .cell-btn:focus-visible, .crit-btn:focus-visible, .corner-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
   thead th { position: sticky; top: 0; z-index: 2; background: color-mix(in srgb, var(--surface) 92%, transparent); padding: 6px 8px; min-width: 170px; border-bottom: 1px solid var(--line); }
   thead th.corner { left: 0; z-index: 3; width: 190px; min-width: 190px; padding: 0; } .corner-btn { padding: 6px 8px; }
-  .cnt { display: block; font: 600 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; } .corner small { display: block; font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; color: var(--ink-mute); }
-  .pn { display: block; font: 600 15px/1.25 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; }
-  .acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 4px; } .acts button { font-size: 11px; padding: 0 6px; border-radius: 2px; } .chosen-l { font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; }
-  .outline { border-color: var(--accent); color: var(--accent); background: transparent; }
-  th.prod.chosen { background: var(--accent); color: var(--accent-ink); animation: lift 200ms ease-out; } th.prod.chosen .acts button { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
+  .cnt { display: block; font: 600 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; } .corner small { display: flex; align-items: center; gap: 4px; font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; color: var(--ink-mute); }
+  .pn { display: flex; align-items: center; gap: 5px; font: 600 15px/1.25 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; }
+  .acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 4px; } .acts button { font-size: 11px; padding: 2px 8px; border-radius: var(--radius); } .chosen-l { font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; }
+  /* One shape per role (RS-38): Compare's actions are the app's quiet buttons; Choose and Check this row take the accent's colour. */
+  .accent { color: var(--accent); }
+  th.prod.chosen { background: var(--accent); color: var(--accent-ink); animation: lift 200ms ease-out; } th.prod.chosen .acts button { color: var(--accent-ink); } th.prod.chosen .acts button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-ink) 14%, transparent); }
   @keyframes lift { from { opacity: .45; } }
-  .more { font-weight: 400; color: var(--ink-mute); border: 1px dashed var(--line); padding: 6px; display: grid; gap: 4px; justify-items: start; }
+  .more { font-weight: 400; color: var(--ink-mute); border: 1px dashed var(--line); border-radius: var(--radius); padding: 6px; display: grid; gap: 4px; justify-items: start; }
   tr.grp th { background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--accent); font: 600 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; border-right: 0; }
   tr.grp .w { padding: 3px 8px; position: sticky; left: 0; width: max-content; }
   tbody th.crit { position: sticky; left: 0; z-index: 1; width: 190px; min-width: 190px; max-width: 190px; background: color-mix(in srgb, var(--surface) 88%, transparent); cursor: pointer; }
   tbody th.crit .w { padding: 0; } .crit-btn { padding: 6px 8px; }
-  .crit-btn .why, .crit-btn .sum { display: block; } .crit-btn .tw { display: inline-block; width: 14px; color: var(--accent); } .crit-btn .cn { display: inline; font: 600 13px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
+  .crit-btn .why, .crit-btn .sum { display: block; } .crit-btn .tw { display: inline-block; width: 14px; color: var(--accent); } .crit-btn .tw :global(.icon) { vertical-align: -1px; } .crit-btn .cn { display: inline; font: 600 13px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
   .why, .sum { margin-left: 14px; font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
-  .why { color: var(--ink-faint); } .sum { color: var(--ink-mute); }
+  .why { color: var(--ink-faint); } .sum { color: var(--ink-mute); } .mk { display: inline-flex; align-items: center; gap: 2px; } .mk :global(.icon) { color: var(--focus); }
   tr.crow.banded > th.crit { box-shadow: inset 2px 0 0 var(--accent); }
   tr.crow:hover > * { background: color-mix(in srgb, var(--ink) 4%, transparent); } tr.crow:hover > th.crit { background: color-mix(in srgb, var(--surface-2) 92%, transparent); }
   table.nohover tr.crow:hover > td:not(.item):not(.filling) { background: transparent; } table.nohover tr.crow:hover > th.crit { background: color-mix(in srgb, var(--surface) 88%, transparent); }
@@ -177,7 +184,7 @@
   td.spare, td.nocrit { cursor: default; } td.nocrit { color: var(--ink-mute); }
   tr.ev > * { background: var(--band); border-bottom: 1px solid color-mix(in srgb, var(--accent) calc(var(--fx, 1) * 100%), var(--glass-line)); cursor: default; }
   tr.ev > th .w, tr.ev > td .w { padding: 6px 8px 10px; }
-  tr.ev > th { position: sticky; left: 0; z-index: 1; } tr.ev th .w { color: var(--ink-mute); font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; } tr.ev th .w button { display: block; margin-top: 4px; font-size: 11px; padding: 0 6px; border-radius: 2px; }
+  tr.ev > th { position: sticky; left: 0; z-index: 1; } tr.ev th .w { color: var(--ink-mute); font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; } tr.ev th .w button { display: block; margin-top: 4px; margin-left: -8px; font-size: 11px; padding: 2px 8px; }
   tr.ev.single > td.has { box-shadow: inset calc(var(--fx, 1) * 2px) 0 0 var(--accent); }
   tr.ev.single > td.has.chosen { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
   tr.ev > td.chosen { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
