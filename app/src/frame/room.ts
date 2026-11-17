@@ -4,6 +4,7 @@ import type { SubjectSummary } from './catalogue';
 import type { ErrorKind, InferenceProvider } from './provider';
 import type { Settings } from './settings';
 import type { LibrarySpaces } from './library-spaces';
+import type { Context } from '../assets/identity/companion/lantern';
 export interface RoomSession {
   subject: Subject; running: { nodeId: string; task: string } | null;
   setFocus(id: string): void; cancel(): void; touch(): void; initialize(): Promise<void>;
@@ -23,6 +24,8 @@ export interface RestSpec { id: string; label: string; anchor: string; side: 'le
 export interface RoomCompanion {
   /** One line for Amber's app help: what the room is for. */
   about: string;
+  /** CO-55: the identity's token set for the room's surface (IMPLEMENTATION.md `context`): the frame's colour and the halo's strength; `neutral` when absent. */
+  surface?: Context;
   /** CO-21: ids are stable, since seen tips are remembered by id (SE-50). */
   tips: readonly { id: string; text: string }[];
   /** CO-22, GV-73: *What can I do here?* per space id, each line an action and its key. */

@@ -2,6 +2,8 @@ import type { RoomCompanion } from '../../frame/room';
 /** RS-3, CO-21 to CO-23: Choose's lines for Amber. As agreed 2026-10-17 (agent_wiki/plans/v0-4-0-amber-lines.md). */
 export const chooseCompanion: RoomCompanion = {
   about: 'say what you want to buy; the room maps your needs, the criteria and candidate products as a graph, researches products on the web with sources, compares a shortlist side by side, and recommends one.',
+  // CO-55: Choose is Learn's house (the same navy surface, #101827), so the identity's Learn tuning; its teal is in the --amber-* tokens.
+  surface: 'learn',
   tips: [
     { id: 'choose.needs', text: 'Tell me your needs early: the Welcome field takes a budget, a use, a limit.' },
     { id: 'choose.rank', text: 'Rank each criterion *Must*, *Nice to have* or *Irrelevant*; the recommendation follows your ranks.' },

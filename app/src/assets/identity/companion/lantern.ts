@@ -17,7 +17,8 @@ export const GESTURES = [
 ] as const;
 export const GESTURE = { rest: 0, curiosity: 1, steps: 2, suspension: 3, lift: 4, landing: 5 } as const;
 
-export interface Pose { x: number; y: number; angle: number; pivot: number; feet: number; step: number; gaze: number; lid: number; line: number; flameTime?: number }
+export interface Pose { x: number; y: number; angle: number; pivot: number; feet: number; step: number; gaze: number; lid: number; line: number; flameTime?: number;
+  /** Not in the release: Amber's flare (CO-54), 0 to 1; only `companionParts` draws it. */ flare?: number }
 const clamp = (x: number) => Math.min(1, Math.max(0, x)), ease = (x: number) => { x = clamp(x); return x * x * (3 - 2 * x); };
 const segment = (t: number, a: number, b: number) => ease((t - a) / (b - a));
 const rest = (): Pose => ({ x: 0, y: 0, angle: 0, pivot: 94, feet: 0, step: 0, gaze: 0, lid: 0, line: 0 });
@@ -48,16 +49,34 @@ export function mix(a: Pose, b: Pose, t: number): Pose {
   return z as unknown as Pose;
 }
 
+/** The eyes in the face mask: the two pupils' centres and their height (the lids close them). */
+const eyesOf = (z: Pose) => ({ left: 44 + z.gaze, right: 55 + z.gaze, ry: 3.2 * (1 - .85 * z.lid) });
+/** The feet's path, standing (`feet` 1) or folded (0), lifted in turn while walking (`step`). */
+function feetPath(z: Pose): string {
+  const footA = -2.5 * Math.max(0, z.step), footB = -2.5 * Math.max(0, -z.step);
+  return `M35 96 V${96 + 11 * z.feet + footA} H28 M65 96 V${96 + 11 * z.feet + footB} H72`;
+}
+/** The flame's outer contour at its clock (the 1.2 s layer). */
+function flameShape(t: number): string {
+  const a = 2 * Math.PI * t / 1200;
+  const dx = 1.15 * Math.sin(a) + .35 * Math.sin(2 * a), dy = .8 * (Math.sin(a + Math.PI / 3) - Math.sin(Math.PI / 3));
+  return `M ${49 + dx} ${30 + dy} C ${38 + .65 * dx} ${35 + dy} ${53 + dx} ${41 + dy} ${46 + .7 * dx} 51 C ${43 + .5 * dx} 56 31 67 32 78 C 32 88 40 91 50 91 C 64 91 71 83 64 73 C 56 62 ${64 + .6 * dx} 56 ${60 + .8 * dx} ${47 + dy} C ${57 + dx} ${41 + dy} ${47 + dx} ${40 + dy} ${49 + dx} ${30 + dy} Z`;
+}
+/** The flame's two inner layers at its clock (the 2.4 s layer). */
+function innerLayers(t: number): [string, string] {
+  const a = 2 * Math.PI * t / 2400, m = .9 * Math.sin(a), c = .55 * (Math.sin(a + Math.PI / 3) - Math.sin(Math.PI / 3)), h = .8 * (Math.sin(a + Math.PI / 2) - 1);
+  return [`M${48 + m} ${46 + h} C${42 + m} 59 ${53 + m} 62 ${47 + m * .6} 69 C39 77 39 88 50 91 C63 91 66 81 ${57 + m * .4} 72 C${51 + m} 65 ${57 + m} 57 ${48 + m} ${46 + h}Z`,
+    `M${49 + c} ${65 + h * .5} C${45 + c} 74 ${46 + c} 77 43 82 C42 89 49 92 53 90 C60 87 ${54 + c} 79 ${53 + c} 76Z`];
+}
+const bodyTransform = (z: Pose) => `translate(${z.x} ${z.y}) rotate(${z.angle} 50 ${z.pivot})`;
+
 /** motion.js `svg`: the unstyled actor (the living outer contour, the eyes mask, the feet and the suspension line). */
 export function rawSvg(i: number, z: Pose, uid = 'actor', body = BODY): string {
-  const eye = 3.2 * (1 - .85 * z.lid), mask = `${uid}-face`, line = z.line ? '<path d="M50 -16 V4" fill="none" stroke="currentColor" stroke-width="1.7"/>' : '';
-  const footA = -2.5 * Math.max(0, z.step), footB = -2.5 * Math.max(0, -z.step);
-  const feet = z.feet ? `<g opacity="${z.feet}"><path d="M35 96 V${96 + 11 * z.feet + footA} H28 M65 96 V${96 + 11 * z.feet + footB} H72" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>` : '';
-  const t = z.flameTime || 0, a = 2 * Math.PI * t / 1200;
-  const dx = 1.15 * Math.sin(a) + .35 * Math.sin(2 * a), dy = .8 * (Math.sin(a + Math.PI / 3) - Math.sin(Math.PI / 3));
-  const flame = `<path d="M ${49 + dx} ${30 + dy} C ${38 + .65 * dx} ${35 + dy} ${53 + dx} ${41 + dy} ${46 + .7 * dx} 51 C ${43 + .5 * dx} 56 31 67 32 78 C 32 88 40 91 50 91 C 64 91 71 83 64 73 C 56 62 ${64 + .6 * dx} 56 ${60 + .8 * dx} ${47 + dy} C ${57 + dx} ${41 + dy} ${47 + dx} ${40 + dy} ${49 + dx} ${30 + dy} Z"/>`;
+  const eyes = eyesOf(z), mask = `${uid}-face`, line = z.line ? '<path d="M50 -16 V4" fill="none" stroke="currentColor" stroke-width="1.7"/>' : '';
+  const feet = z.feet ? `<g opacity="${z.feet}"><path d="${feetPath(z)}" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>` : '';
+  const flame = `<path d="${flameShape(z.flameTime || 0)}"/>`;
   const livingBody = body.replace(/<path d="M 49 30[^>]*\/>/, flame);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -24 140 148" role="img" aria-label="${GESTURES[i].name}"><defs><mask id="${mask}"><rect x="-40" y="-40" width="200" height="220" fill="white"/><ellipse cx="${44 + z.gaze}" cy="74" rx="2.2" ry="${eye}" fill="black"/><ellipse cx="${55 + z.gaze}" cy="73" rx="2.2" ry="${eye}" fill="black"/></mask></defs><g fill="currentColor">${line}<g transform="translate(${z.x} ${z.y}) rotate(${z.angle} 50 ${z.pivot})"><g mask="url(#${mask})">${livingBody}</g>${feet}</g></g></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -24 140 148" role="img" aria-label="${GESTURES[i].name}"><defs><mask id="${mask}"><rect x="-40" y="-40" width="200" height="220" fill="white"/><ellipse cx="${eyes.left}" cy="74" rx="2.2" ry="${eyes.ry}" fill="black"/><ellipse cx="${eyes.right}" cy="73" rx="2.2" ry="${eyes.ry}" fill="black"/></mask></defs><g fill="currentColor">${line}<g transform="${bodyTransform(z)}"><g mask="url(#${mask})">${livingBody}</g>${feet}</g></g></svg>`;
 }
 
 /** system.js tokens (sRGB): the flame for every background, and the per-background tuning (D0022). */
@@ -82,11 +101,10 @@ export function companionSvg(i: number, z: Pose, uid: string, ctx: Context = 'le
   let out = rawSvg(i, z, id, BODY);
   const flame = [...out.matchAll(/<path d="M [^"]+"\/>/g)].find(x => x[0].includes(FLAME_KEY))![0];
   const shape = flame.match(/d="([^"]+)"/)![1];
-  const ft = z.flameTime || 0, a = 2 * Math.PI * ft / 2400,
-    m = .9 * Math.sin(a), c = .55 * (Math.sin(a + Math.PI / 3) - Math.sin(Math.PI / 3)), h = .8 * (Math.sin(a + Math.PI / 2) - 1);
+  const [inner1, inner2] = innerLayers(z.flameTime || 0);
   const haloStop = roomTokens ? `style="stop-color:var(--amber-halo,${T.mid})"` : `stop-color="${T.mid}"`;
   let defs = `<radialGradient id="${id}-depth" cx="42%" cy="72%" r="70%"><stop stop-color="${T.core}"/><stop offset=".42" stop-color="${T.mid}"/><stop offset="1" stop-color="${outer}"/></radialGradient><radialGradient id="${id}-light"><stop ${haloStop} stop-opacity="${halo}"/><stop offset="1" ${haloStop} stop-opacity="0"/></radialGradient><linearGradient id="${id}-inner" x1="0" y1="1" x2=".3" y2="0"><stop stop-color="${T.core}"/><stop offset="1" stop-color="${T.mid}"/></linearGradient><clipPath id="${id}-clip"><path d="${shape}"/></clipPath><filter id="${id}-blur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${T.blur}"/></filter>`;
-  const layers = `<path d="${shape}" fill="${T.mid}" opacity=".27" filter="url(#${id}-blur)"/><path d="${shape}" fill="url(#${id}-depth)"/><g clip-path="url(#${id}-clip)"><path d="M${48 + m} ${46 + h} C${42 + m} 59 ${53 + m} 62 ${47 + m * .6} 69 C39 77 39 88 50 91 C63 91 66 81 ${57 + m * .4} 72 C${51 + m} 65 ${57 + m} 57 ${48 + m} ${46 + h}Z" fill="${T.mid}" opacity=".74"/><path d="M${49 + c} ${65 + h * .5} C${45 + c} 74 ${46 + c} 77 43 82 C42 89 49 92 53 90 C60 87 ${54 + c} 79 ${53 + c} 76Z" fill="url(#${id}-inner)" opacity=".94"/></g>`;
+  const layers = `<path d="${shape}" fill="${T.mid}" opacity=".27" filter="url(#${id}-blur)"/><path d="${shape}" fill="url(#${id}-depth)"/><g clip-path="url(#${id}-clip)"><path d="${inner1}" fill="${T.mid}" opacity=".74"/><path d="${inner2}" fill="url(#${id}-inner)" opacity=".94"/></g>`;
   out = out.replace(flame, layers);
   // c01 lit frame: the frame receives the flame's light, warm near it, darker away.
   const [near, far] = tun.lit;
@@ -98,4 +116,38 @@ export function companionSvg(i: number, z: Pose, uid: string, ctx: Context = 'le
   if (halo > 0) out = out.replace('<g mask=', `<ellipse cx="50" cy="68" rx="60" ry="53" fill="url(#${id}-light)"${roomTokens ? ' pointer-events="none"' : ''}/><g mask=`);
   out = out.replace(/(<rect x="24" y="90"[^>]*\/>)/, `$1<path d="M29 92 H71" stroke="${T.mid}" stroke-opacity=".45" stroke-width="1" stroke-linecap="round"/>`);
   return out.replaceAll('currentColor', frame);
+}
+
+/**
+ * v0.8.0 (the review's first Amber item): the drawing is built once and only what a pose moves is updated, instead
+ * of a new SVG string per frame. `companionTemplate` is the accepted companion (room tokens on) with every moving
+ * element marked `data-part`; `companionParts` gives those elements' attributes for a pose, from the same maths as
+ * `companionSvg`, so applying them reproduces its output (lantern.test.ts). The filter, gradients and frame are never
+ * rebuilt. `flare` (0 to 1) brightens the glow and widens the halo for Amber's reactions (CO-54); 0 is the release.
+ */
+export interface CompanionParts {
+  body: string; eyes: { left: number; right: number; ry: number }; line: boolean;
+  feet: { opacity: number; d: string } | null; flame: string; inner: [string, string];
+  glow: string; halo: { rx: number; ry: number };
+}
+export function companionParts(z: Pose): CompanionParts {
+  const t = z.flameTime || 0, f = Math.max(0, Math.min(1, z.flare ?? 0));
+  return { body: bodyTransform(z), eyes: eyesOf(z), line: !!z.line, feet: z.feet ? { opacity: z.feet, d: feetPath(z) } : null,
+    flame: flameShape(t), inner: innerLayers(t), glow: f ? String(Math.round((.27 + .45 * f) * 1000) / 1000) : '.27',
+    halo: { rx: Math.round((60 + 16 * f) * 100) / 100, ry: Math.round((53 + 14 * f) * 100) / 100 } };
+}
+/** The companion with its moving parts marked, drawn at a reference pose that has the rope's line and the feet. */
+export function companionTemplate(uid: string, ctx: Context = 'learn'): string {
+  const z = still(GESTURE.suspension); z.feet = 1;
+  const shape = flameShape(0);
+  return companionSvg(GESTURE.suspension, z, uid, ctx, true)
+    .replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"')
+    .replace(/<ellipse (cx="[\d.]+" cy="7[34]")/g, '<ellipse data-part="eye" $1')
+    .replace('<path d="M50 -16 V4"', '<path data-part="line" d="M50 -16 V4"')
+    .replace('<g transform=', '<g data-part="body" transform=')
+    .replace('<ellipse cx="50" cy="68"', '<ellipse data-part="halo" cx="50" cy="68"')
+    .replaceAll(`<path d="${shape}"`, `<path data-part="flame" d="${shape}"`)
+    .replace(`data-part="flame" d="${shape}" fill="${T.mid}" opacity=".27"`, `data-part="flame glow" d="${shape}" fill="${T.mid}" opacity=".27"`)
+    .replace(/(<g clip-path="[^"]*">)<path d=([^>]*)\/><path d=/, '$1<path data-part="inner" d=$2/><path data-part="inner" d=')
+    .replace('<g opacity="1"><path d="M35 96', '<g data-part="feet" opacity="1"><path d="M35 96');
 }

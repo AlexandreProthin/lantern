@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { strings } from '../../ui/strings';
   import type { RoomDefinition } from '../room';
-  import { companionSvg, still, GESTURE } from '../../assets/identity/companion/lantern';
+  import { companionParts, companionTemplate, GESTURE } from '../../assets/identity/companion/lantern';
+  import { CompanionDrawing } from './drawing';
   import type { Pose } from '../../assets/identity/companion/lantern';
   import { reducedMotion } from '../topbar';
   import type { AmberChat } from './chat';
@@ -115,15 +116,17 @@
     const z = compose(base, act, { thinking, working, look: leanSign || look, lean: tilt + leanDeg, flame: flameLive }, now, reduced);
     return { left, top, angle, pose: z, rope };
   });
-  // CO-55: the identity's warm flame and body; the halo and the light on the frame follow the room's --amber-* tokens.
-  // The flame's clock is bucketed to about 30 frames a second, so a living flame redraws at most that often.
-  const poseKey = (z: Pose) => [z.x, z.y, z.angle, z.feet, z.step, z.gaze, z.lid, z.line, z.pivot].map(v => v.toFixed(2)).join() + ':' + Math.floor((z.flameTime ?? 0) / 33);
-  // The drawing (an SVG with a blur filter) is rebuilt at most about 30 times a second; only the position runs every frame.
-  let lastKey = '', lastSvg = '', drawnAt = -Infinity;
-  const svg = $derived.by(() => {
-    const key = poseKey(view.pose), now = performance.now();
-    if (key !== lastKey && (now - drawnAt >= 32 || motion.kind === 'still' && !act)) { lastKey = key; drawnAt = now; lastSvg = companionSvg(GESTURE.suspension, view.pose, uid, 'learn', true).replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"'); }
-    return lastSvg;
+  // CO-55: the identity's warm flame and body; the halo and the light on the frame follow the room's --amber-* tokens,
+  // and the frame's colour the identity's token set for the room's surface (its `companion.surface`).
+  const surface = $derived(room.companion?.surface ?? 'neutral');
+  // The drawing is put in once per surface; a pose only sets the attributes it moves (drawing.ts). The flame's clock is
+  // bucketed to about 30 frames a second, so a living flame redraws at most that often; only the position runs every frame.
+  const poseKey = (z: Pose) => [z.x, z.y, z.angle, z.feet, z.step, z.gaze, z.lid, z.line, z.pivot, z.flare ?? 0].map(v => v.toFixed(2)).join() + ':' + Math.floor((z.flameTime ?? 0) / 33);
+  let art = $state<HTMLElement>(), drawing: CompanionDrawing | null = null, lastKey = '', drawnAt = -Infinity;
+  $effect(() => { if (!art) return; art.innerHTML = companionTemplate(uid, surface); drawing = new CompanionDrawing(art); const z = untrack(() => view.pose); lastKey = poseKey(z); drawnAt = performance.now(); drawing.apply(companionParts(z)); });
+  $effect(() => {
+    const z = view.pose, key = poseKey(z), now = performance.now(); if (!drawing || !art) return;
+    if (key !== lastKey && (now - drawnAt >= 32 || motion.kind === 'still' && !act)) { lastKey = key; drawnAt = now; drawing.apply(companionParts(z)); }
   });
   let reduced = $state(reducedMotion());
   $effect(() => { const media = matchMedia('(prefers-reduced-motion: reduce)'), update = () => reduced = reducedMotion();
@@ -281,7 +284,7 @@
   style:left={`${view.left}px`} style:top={`${view.top}px`} style:width={`${AMBER_W}px`} style:height={`${AMBER_H}px`}
   style:transform={view.angle ? `rotate(${view.angle}deg)` : undefined} style:transform-origin={`${TIE_X}px ${TIE_Y}px`}
   onpointerover={() => { if (!hovered) { hovered = true; if (!act) play(GESTURE.rest); } }} onpointerout={e => { if (!button?.contains(e.relatedTarget as Node)) hovered = false; }}
-  onfocus={() => { if (!act) play(GESTURE.rest); }} onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}>{@html svg}<svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
+  onfocus={() => { if (!act) play(GESTURE.rest); }} onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}><span class="art" bind:this={art}></span><svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
 {/if}
 {#if saying && ready && !bubble && !menu && motion.kind === 'still'}{@const at = bubbleBox(spot, width, SAY_W, height)}{@const t = tailOf(at, SAY_W)}
   <div class="tail" class:up={t.top !== undefined} class:fading aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
@@ -329,6 +332,7 @@
   .amber :global(svg) { display:block; width:100%; height:100%; pointer-events:none; overflow:visible; }
   .amber :global(svg path), .amber :global(svg rect) { pointer-events:visiblePainted; }
   .amber :global(defs *) { pointer-events:none; }
+  .art { display:contents; }
   .hit { position:absolute; inset:0; } .hit path { fill:transparent; pointer-events:visiblePainted; }
   .amber:hover:not(:disabled), .amber:active { background:none; border:0; box-shadow:none; }
   .amber:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }

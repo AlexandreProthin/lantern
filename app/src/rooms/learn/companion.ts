@@ -2,6 +2,8 @@ import type { RoomCompanion } from '../../frame/room';
 /** RS-3, CO-21 to CO-23: Learn's lines for Amber. As agreed 2026-10-17 (agent_wiki/plans/v0-4-0-amber-lines.md). */
 export const learnCompanion: RoomCompanion = {
   about: 'bring a subject and a tutor explains it as a graph of nodes, lighting one node at a time; you choose where to go next, ask questions, test yourself, and mark what you understand.',
+  // CO-55: Learn's navy surface, the identity's own Learn tuning.
+  surface: 'learn',
   tips: [
     { id: 'learn.arrows', text: 'Arrow keys walk the graph: left to the parent, right to a child, up and down between siblings.' },
     { id: 'learn.enter', text: 'Press Enter on a dark node to light it up.' },
