@@ -307,7 +307,7 @@
   </div>
 {/if}
 {#if menu}
-  <div class="menu" role="menu" tabindex="-1" aria-label={strings.amberName} bind:this={menuEl} onkeydown={menuKey} style:left={`${Math.max(8, Math.min(width - 250, spot.left))}px`}
+  <div class="menu menu-surface" role="menu" tabindex="-1" aria-label={strings.amberName} bind:this={menuEl} onkeydown={menuKey} style:left={`${Math.max(8, Math.min(width - 250, spot.left))}px`}
     style:top={spot.kind === 'hang' ? `${spot.top + AMBER_H + 6}px` : undefined} style:bottom={spot.kind === 'rest' ? `${height - spot.top + 6}px` : undefined}>
     {#if menu === 'main'}
       <button role="menuitem" aria-haspopup="menu" onclick={async () => { menu = 'move'; await tick(); menuEl?.querySelector<HTMLElement>('[aria-checked=true]')?.focus(); }}>{strings.moveTo}</button>
@@ -354,7 +354,7 @@
   @media (prefers-reduced-motion: reduce) { .say, .tail { transition:none; } .living { animation:none; } }
   .bubble:focus { outline:none; } .tip { margin:0; } h3 { margin:0; font-size:14px; font-weight:600; }
   .row { display:flex; gap:8px; flex-wrap:wrap; } .row button { font-size:13px; } .row [aria-pressed='true'] { border-color:var(--accent); }
-  .menu { position:fixed; z-index:9; display:grid; gap:2px; min-width:220px; max-height:60vh; overflow:auto; padding:6px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.35); }
-  .menu button { text-align:left; border:0; background:none; padding:6px 10px; border-radius:6px; font-size:13px; }
-  .menu button:hover, .menu button:focus { background:var(--surface-2); outline:none; } .menu [aria-checked='true'] { color:var(--accent); }
+  /* RS-38: Amber's menu is the app's menu (app.css .menu-surface). */
+  .menu { position:fixed; z-index:9; gap:2px; min-width:220px; max-height:60vh; overflow:auto; }
+  .menu button:focus { background:var(--hover); outline:none; } .menu [aria-checked='true'] { color:var(--accent); }
 </style>
