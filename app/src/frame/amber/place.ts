@@ -18,8 +18,8 @@ export interface Spot {
   id: string; kind: 'hang' | 'rest'; label: string;
   /** Amber's box. */
   left: number; top: number;
-  /** Hanging: the rope's length and where it ties on the bar. */
-  rope: number; anchorX: number;
+  /** Hanging: the rope's length and where it ties on the bar (`anchorY`: the bar's bottom edge, the measured header on a phone). */
+  rope: number; anchorX: number; anchorY: number;
   /** Resting: where the feet stand. */
   ground: number;
 }
@@ -33,17 +33,20 @@ export function parseSpotId(id: string | undefined): { base: string; rope?: numb
 }
 export const hangId = (index: number, rope: number) => rope === ROPE_DEFAULT ? `hang-${index}` : `hang-${index}:${clampRope(rope)}`;
 
-function hang(index: number, left: number, rope: number, label: string): Spot {
-  return { id: hangId(index, rope), kind: 'hang', label, left, top: BAR + rope - TIE_Y, rope, anchorX: left + TIE_X, ground: 0 };
+function hang(index: number, left: number, rope: number, label: string, bar = BAR): Spot {
+  return { id: hangId(index, rope), kind: 'hang', label, left, top: bar + rope - TIE_Y, rope, anchorX: left + TIE_X, anchorY: bar, ground: 0 };
 }
-/** CO-11: ten positions equally spaced along the bar, never over the window controls (138 px on the desktop). */
-export function hangSpots(width: number, controls: number, label: (n: number) => string = n => `hang ${n}`): Spot[] {
+/**
+ * CO-11: ten positions equally spaced along the bar, never over the window controls (138 px on the desktop).
+ * `bar` is where the rope ties: the header's bottom edge as measured (56 on the desktop, two rows on a phone, NW-40).
+ */
+export function hangSpots(width: number, controls: number, label: (n: number) => string = n => `hang ${n}`, bar = BAR): Spot[] {
   const min = EDGE, max = Math.max(min, width - controls - (controls ? CONTROLS_GAP : EDGE) - AMBER_W);
-  return Array.from({ length: HANG_COUNT }, (_, index) => hang(index, Math.round(min + (max - min) * index / (HANG_COUNT - 1)), ROPE_DEFAULT, label(index + 1)));
+  return Array.from({ length: HANG_COUNT }, (_, index) => hang(index, Math.round(min + (max - min) * index / (HANG_COUNT - 1)), ROPE_DEFAULT, label(index + 1), bar));
 }
 /** Standing with the feet on `ground`, its box's left at `left`. */
 export function rest(id: string, label: string, left: number, ground: number): Spot {
-  return { id: `rest-${id}`, kind: 'rest', label, left: Math.round(left), top: Math.round(ground - FEET_Y), rope: 0, anchorX: 0, ground: Math.round(ground) };
+  return { id: `rest-${id}`, kind: 'rest', label, left: Math.round(left), top: Math.round(ground - FEET_Y), rope: 0, anchorX: 0, anchorY: 0, ground: Math.round(ground) };
 }
 /**
  * CO-13, RS-3: a room's bottom resting positions, each in a corner of an element of the space. An anchor that is
@@ -62,7 +65,7 @@ export function restSpots(specs: readonly RestSpec[] | undefined, find: (anchor:
 export function spotById(spots: readonly Spot[], id: string | undefined, fallback = DEFAULT_SPOT): Spot {
   const { base, rope } = parseSpotId(id);
   const found = spots.find(s => s.id === base);
-  if (found && found.kind === 'hang' && rope !== undefined) return hang(Number(base.slice(5)), found.left, rope, found.label);
+  if (found && found.kind === 'hang' && rope !== undefined) return hang(Number(base.slice(5)), found.left, rope, found.label, found.anchorY);
   return found ?? spots.find(s => s.id === fallback) ?? spots.find(s => s.id === DEFAULT_SPOT) ?? spots[0];
 }
 const GAP = 8;
@@ -75,11 +78,31 @@ const overlaps = (a: { left: number; top: number; right: number; bottom: number 
  */
 export function defaultHang(hangs: readonly Spot[], avoid: readonly Rect[]): string {
   if (!avoid.length) return DEFAULT_SPOT;
-  const clear = [...hangs].reverse().find(s => !avoid.some(r => overlaps({ left: s.left, right: s.left + AMBER_W, top: BAR, bottom: s.top + AMBER_H }, r, GAP)));
+  const clear = [...hangs].reverse().find(s => !avoid.some(r => overlaps({ left: s.left, right: s.left + AMBER_W, top: s.anchorY, bottom: s.top + AMBER_H }, r, GAP)));
   return clear?.id ?? DEFAULT_SPOT;
 }
+/**
+ * CO-10 (amended 2026-11-18), NW-40: on a phone the two-row header leaves no room to hang over the graph, so Amber rests by
+ * default: on the rightmost resting spot whose box clears what the space keeps uncovered, else the rightmost one.
+ */
+export function phoneRest(rests: readonly Spot[], avoid: readonly Rect[]): string | undefined {
+  const order = [...rests].sort((a, b) => b.left - a.left || b.top - a.top);
+  const clear = order.find(s => !avoid.some(r => overlaps({ left: s.left, right: s.left + AMBER_W, top: s.top, bottom: s.ground }, r, GAP)));
+  return (clear ?? order[0])?.id;
+}
+/**
+ * NW-40 (added 2026-11-18): on a phone the panel is a sheet over the whole space; while something Amber must keep
+ * uncovered fills most of the space (three quarters or more), Amber waits out of sight.
+ */
+export function covered(space: Rect, avoid: readonly Rect[]): boolean {
+  const area = space.width * space.height;
+  return area > 0 && avoid.some(r => {
+    const w = Math.min(r.right, space.right) - Math.max(r.left, space.left), h = Math.min(r.bottom, space.bottom) - Math.max(r.top, space.top);
+    return w > 0 && h > 0 && w * h >= area * .75;
+  });
+}
 /** Where a spot's hint is drawn, and what "nearest" measures from: the tie under the bar, or the feet on the ground. */
-export const hintPoint = (s: Spot) => s.kind === 'hang' ? { x: s.anchorX, y: BAR } : { x: s.left + AMBER_W / 2, y: s.ground };
+export const hintPoint = (s: Spot) => s.kind === 'hang' ? { x: s.anchorX, y: s.anchorY } : { x: s.left + AMBER_W / 2, y: s.ground };
 /** CO-14: the nearest spot to Amber's box at (left, top), measured from its centre. */
 export function nearest(spots: readonly Spot[], left: number, top: number): Spot {
   const cx = left + AMBER_W / 2, cy = top + AMBER_H / 2;
@@ -97,7 +120,7 @@ export function dropTarget(hangs: readonly Spot[], rests: readonly Spot[], left:
   if (tieY < windowHeight / 4 || !rests.length) {
     const near = hangs.reduce((best, s) => Math.abs(s.anchorX - (left + TIE_X)) < Math.abs(best.anchorX - (left + TIE_X)) ? s : best);
     const index = Number(near.id.slice(5).split(':')[0]);
-    return hang(index, near.left, clampRope(tieY - BAR), near.label);
+    return hang(index, near.left, clampRope(tieY - near.anchorY), near.label, near.anchorY);
   }
   return nearest(rests, left, top);
 }

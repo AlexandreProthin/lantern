@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { AMBER_H, AMBER_W, BAR, DEFAULT_SPOT, FEET_Y, TIE_Y, bubbleBox, defaultHang, dropTarget, hangSpots, parseSpotId, restSpots, spotById } from './place';
+import { AMBER_H, AMBER_W, BAR, DEFAULT_SPOT, FEET_Y, TIE_Y, bubbleBox, covered, defaultHang, dropTarget, hangSpots, hintPoint, parseSpotId, phoneRest, restSpots, spotById } from './place';
 import type { Rect } from './place';
 
 const rect = (left: number, top: number, width: number, height: number): Rect => ({ left, top, width, height, right: left + width, bottom: top + height });
@@ -101,4 +101,41 @@ test('CO-20: hanging over the panel, the bubble opens beside the panel, its tail
   // The header's real height (a taller header) bounds a bubble that has to move away from Amber.
   const tall = bubbleBox(over, { ...view, bar: 120 }, size, [study.panel]), usual = bubbleBox(over, view, size, [study.panel]);
   expect(usual.top!).toBeLessThan(128); expect(tall.top!).toBeGreaterThanOrEqual(128);
+});
+
+// NW-40, CO-10/11/12 (amended 2026-11-18): Amber on a phone, measured at 390 × 844 (a two-row header, 108 px to its bottom line).
+const phone = { width: 390, height: 844, bar: 108 };
+const phoneStudy = { details: rect(12, 121, 98, 40), tools: rect(242, 121, 136, 40), legend: rect(12, 743, 72, 88), zoom: rect(242, 791, 136, 40) };
+test('NW-40, CO-11: hanging spots tie on the measured header; Amber hangs under it, never over its controls', () => {
+  const hangs = hangSpots(phone.width, 0, undefined, phone.bar);
+  for (const s of hangs) { expect(s.anchorY).toBe(108); expect(s.top + TIE_Y).toBeGreaterThan(108); expect(hintPoint(s).y).toBe(108); }
+  expect(spotById(hangs, 'hang-3:42')).toMatchObject({ top: 108 + 42 - TIE_Y, anchorY: 108 });
+  // Dropped near the header, the rope is measured from it, not from the desktop's 56 px bar.
+  expect(dropTarget(hangs, [], hangs[4].left, 108 + 30 - TIE_Y, phone.height)).toMatchObject({ kind: 'hang', rope: 30, anchorY: 108 });
+  // The desktop default is unchanged.
+  expect(hangSpots(1280, 138)[0].anchorY).toBe(BAR);
+});
+test('NW-40, CO-10: on a phone Amber rests by default, on the rightmost resting spot clear of the graph tools', () => {
+  const space = rect(0, 109, 390, 735), graph = space;
+  const rests = restSpots([{ id: 'graph-left', label: '', anchor: 'g', side: 'left', inset: { x: 16, y: 132 } }, { id: 'graph-right', label: '', anchor: 'g', side: 'right', inset: { x: 16, y: 72 } }],
+    a => a === 'g' ? graph : null, space, labels);
+  const id = phoneRest(rests, Object.values(phoneStudy)), spot = spotById([...hangSpots(390, 0, undefined, 108), ...rests], undefined, id);
+  expect(spot.id).toBe('rest-graph-right');
+  for (const r of Object.values(phoneStudy)) expect(hits({ left: spot.left, right: spot.left + AMBER_W, top: spot.top, bottom: spot.ground }, r)).toBe(false);
+  // Its bubble fits the width, above it, clear of the tools and under the header.
+  for (const width of [390, 360]) {
+    const sz = { width: Math.min(340, width - 16), height: 230 }, v = { ...phone, width }, b = bubbleBox(spot, v, sz, Object.values(phoneStudy)), box = boxOf(b, v, sz);
+    expect(box.left).toBeGreaterThanOrEqual(8); expect(box.right).toBeLessThanOrEqual(width - 8); expect(box.top).toBeGreaterThanOrEqual(108);
+    for (const r of Object.values(phoneStudy)) expect(hits(box, r)).toBe(false);
+  }
+  // A spot that touches what must stay clear gives way to one that does not; with none clear, the rightmost.
+  expect(phoneRest(rests, [rect(300, 600, 90, 200)])).toBe('rest-graph-left');
+  expect(phoneRest(rests, [space])).toBe('rest-graph-right');
+  expect(phoneRest([], [])).toBeUndefined();
+});
+test('NW-40: the panel sheet covering the space hides Amber; the graph tools do not', () => {
+  const space = rect(0, 109, 390, 735);
+  expect(covered(space, [rect(0, 154, 390, 690)])).toBe(true);
+  expect(covered(space, Object.values(phoneStudy))).toBe(false);
+  expect(covered(space, [])).toBe(false);
 });

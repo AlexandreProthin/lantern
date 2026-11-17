@@ -80,6 +80,11 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
     [rooms-spaces](/specs/rooms-spaces.md) RS-38) or Esc;
   - the field panel, Settings (tabs in a row) and every dialog use the whole width; the graph legend
     starts folded; the Choose rail is a horizontal bar; the compare grid is one column.
+  - *(Amended 2026-11-18, the mobile review at 390 × 844 and 360 × 740 with touch.)* Amber rests by default
+    at the bottom right of the space, clear of the graph tools; it hangs only where the user puts it, its rope
+    tied under the measured two-row header; its bubble fits the screen's width; a tap opens it; it is not
+    drawn while the panel sheet covers the graph ([companion](/specs/companion.md) CO-10, CO-11, CO-12,
+    CO-15, CO-20).
 - **NW-41** Touch: pan and pinch on the graph (d3-zoom), tap to open a node, a long press opens the node
   menu that a right-click opens on the desktop; graph controls are 40 px. No action depends on hover alone.
 - **NW-42** Inputs are 16 px or more (no zoom on focus in iOS Safari); the viewport is
