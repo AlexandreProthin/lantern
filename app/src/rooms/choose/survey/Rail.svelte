@@ -8,6 +8,9 @@
   import { missingItems, stageOf } from './missing';
   import { EASE_OUT, mayMove } from './motion';
   import { t } from './strings';
+  import { icons } from '../../../ui/icons';
+  /** The pick counter's tick, drawn (RS-38); counters are markup so they can roll. */
+  const tick = `<svg class="icon tick" viewBox="0 0 16 16" aria-hidden="true">${icons.check}</svg>`;
 
   let { session, revision, settings, open, toggle, recommend }: {
     session: ChooseSession; revision: number; settings: Settings; open: boolean; toggle: () => void; recommend: () => void;
@@ -20,7 +23,7 @@
     { key: 'needs', value: `${b.needsAnswered}<span class="faint">/${b.needsTotal}</span>`, label: t.needsLabel, area: 'needs' },
     { key: 'must', value: String(b.must), label: t.mustLabel(b.nice), area: 'criteria' },
     { key: 'shortlist', value: String(b.shortlisted), label: t.shortlistLabel, area: 'shortlist' },
-    { key: 'pick', value: b.chosen ? '✓' : '—', label: b.chosen ? b.chosen.title : t.pickLabel, area: '' },
+    { key: 'pick', value: b.chosen ? tick : '—', label: b.chosen ? b.chosen.title : t.pickLabel, area: '' },
   ]);
   const els: HTMLElement[] = [];
   let spine: HTMLElement, chip = $state<HTMLElement>(), rec = $state<HTMLElement>();
@@ -35,7 +38,7 @@
         if (old.status !== status && chip) chip.animate([{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: EASE_OUT });
         if (now === 'ready' && old.stage !== 'ready') {
           spine?.animate([{ transform: 'scaleY(0)', opacity: 1 }, { transform: 'scaleY(1)', opacity: 1, offset: .75 }, { transform: 'scaleY(1)', opacity: 0 }], { duration: 600, easing: EASE_OUT });
-          rec?.animate([{ clipPath: 'inset(0 100% 0 0 round 999px)' }, { clipPath: 'inset(0 0 0 0 round 999px)' }], { duration: 360, delay: 420, easing: EASE_OUT, fill: 'backwards' });
+          rec?.animate([{ clipPath: 'inset(0 100% 0 0 round 8px)' }, { clipPath: 'inset(0 0 0 0 round 8px)' }], { duration: 360, delay: 420, easing: EASE_OUT, fill: 'backwards' });
         }
       }
       previous = { values, html: els.map(e => e?.innerHTML ?? ''), stage: now, status };
@@ -68,7 +71,7 @@
 </aside>
 <style>
   .rail { --ink-faint:color-mix(in srgb, var(--ink-mute) 62%, var(--bg)); position:relative; flex:0 0 88px; width:88px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; z-index:3;
-    background:var(--glass); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); border-left:2px solid var(--accent); font-family:'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; }
+    background:var(--surface); border-left:2px solid var(--accent); font-family:'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; }
   .open { all:unset; box-sizing:border-box; flex:1; min-height:0; display:flex; flex-direction:column; align-items:stretch; gap:22px; padding:18px 8px; text-align:center; cursor:pointer; }
   .open:hover { background:color-mix(in srgb, var(--ink) 5%, transparent); }
   .open:focus-visible { outline:1px solid var(--focus); outline-offset:-3px; }
@@ -79,7 +82,7 @@
   .st[data-s='bought'] { background:var(--accent); color:var(--accent-ink); border-radius:999px; }
   .ctr { position:relative; display:block; }
   .ctr b { display:block; font:350 30px/1.1 'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif; letter-spacing:-.01em; font-variant-numeric:tabular-nums; color:var(--accent); }
-  .ctr b :global(.faint) { font-size:15px; color:var(--ink-faint); }
+  .ctr b :global(.faint) { font-size:15px; color:var(--ink-faint); } .ctr b :global(.tick) { width:26px; height:26px; stroke-width:1.6; vertical-align:-3px; }
   .ctr small { display:block; margin-top:6px; font:400 11px/1.3 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); overflow-wrap:anywhere; }
   .ctr.miss b { color:var(--ink); }
   .ctr.miss b::before { content:''; display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--focus); vertical-align:middle; margin:0 5px 0 -10px; }
@@ -89,9 +92,10 @@
   .ctr:hover .tip { display:block; }
   .gap { flex:1; }
   .miss-n { font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); }
-  .rec { margin:0 5px 18px; font:600 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; border-radius:999px; padding:6px 2px; white-space:nowrap; background:transparent; border:1px solid var(--accent); color:var(--accent); }
-  .rec.on { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); box-shadow:0 0 24px 6px var(--glow-far); }
-  .rec:hover:not(:disabled) { background:var(--accent); color:var(--accent-ink); }
+  /* RS-38: Recommend is a quiet accent button until the board is ready, then the filled primary; nothing glows. */
+  .rec { margin:0 5px 18px; font:600 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:6px 2px; white-space:nowrap; color:var(--accent); }
+  .rec.on { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .rec.on:hover:not(:disabled) { background:color-mix(in srgb, var(--accent) 86%, var(--ink)); }
   /* NW-40: on a phone the rail is a bar under the graph; its counters run in a row. */
   @media (max-width: 719px) {
     .rail { flex:none; width:100%; height:auto; flex-direction:row; align-items:center; border-left:0; border-top:2px solid var(--accent); padding-bottom:env(safe-area-inset-bottom); }

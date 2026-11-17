@@ -231,6 +231,14 @@ DM-4).
   so they never block lighting, replies or Recommend ([choose-protocol](/specs/choose-protocol.md) CP-40, CP-41).
   *(B4 slices 5 to 7, agreed by the user 2026-10-15.)* While a check runs, the toolbar shows *Checking… · <step>* with Cancel. Unranked criteria get no
   row. The web-off banner gives no knowledge date (none is stored).
+  *(Amended 2026-11-17, design review, [rooms-spaces](/specs/rooms-spaces.md) RS-34 and RS-38.)* The ledger, the board
+  sheet and the rail are solid `--surface`, not glass. The marks are drawn icons, not characters: the summary's ≠, ?, ✎
+  and … are icons before their count (a screen reader hears *1 disagree*, *1 not found*, *1 edited*, *1 researching*),
+  a cell's ≠ and ? likewise, the row toggle and *unfold / fold all evidence* are drawn chevrons, the chosen product's
+  tick and the rail's *pick* tick are drawn. Compare's buttons take the app's radius (no more 2 px squares), *Choose*
+  and *Check this row* are quiet buttons in `--accent`, *Fill Compare* is the primary while cells are empty; source tags
+  are pills. On the board, buttons take the app's radius, the rank segments are a pill, *Recommend* is a quiet
+  `--accent` button until the board is ready and then the filled primary, without the glow it had.
 
 # Recommendation
 

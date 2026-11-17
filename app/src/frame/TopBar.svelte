@@ -4,6 +4,7 @@
   import { onMount, tick } from 'svelte';
   import { strings } from '../ui/strings';
   import { glyphs } from '../ui/glyphs';
+  import Icon from '../ui/Icon.svelte';
   import WindowControls from './WindowControls.svelte';
   import { barFit, BAR_GAP } from './topbar';
   import type { BarFit } from './topbar';
@@ -72,14 +73,14 @@
   <div class="drag-strip" data-tauri-drag-region style:right={desktop ? `${CONTROLS}px` : '0'}></div>
   <button class="mark" onclick={() => navigate('welcome')} title={strings.welcome} aria-label={strings.welcome}><span class="mark-art" aria-hidden="true">{@html mark}</span></button>
   <div class="capsule" class:instant bind:this={capsule}>
-    {#if rooms.length > 1}<span class="room-chip"><button class="room menu" aria-label={room.name} aria-haspopup="menu" aria-expanded={roomMenu} title={strings.rooms} onclick={() => roomMenu = !roomMenu}>{room.name}</button>{#if roomMenu}<div class="room-menu" role="menu" aria-label={strings.rooms}>{#each rooms as r, i (r.id)}<button role="menuitemradio" aria-checked={r.id === room.id} title={`Ctrl+Shift+${i + 1}`} onclick={() => switchRoom(r.id)}><span class="swatch" style:background={r.accent['--accent']}></span>{r.name}</button>{/each}</div>{/if}</span>{:else}<span class="room">{room.name}</span>{/if}
+    {#if rooms.length > 1}<span class="room-chip"><button class="room menu" aria-label={room.name} aria-haspopup="menu" aria-expanded={roomMenu} title={strings.rooms} onclick={() => roomMenu = !roomMenu}>{room.name}<Icon name="chevronDown" size={12} /></button>{#if roomMenu}<div class="room-menu menu-surface" role="menu" aria-label={strings.rooms}>{#each rooms as r, i (r.id)}<button role="menuitemradio" aria-checked={r.id === room.id} title={`Ctrl+Shift+${i + 1}`} onclick={() => switchRoom(r.id)}><span class="swatch" style:background={r.accent['--accent']}></span>{r.name}{#if r.id === room.id}<span class="current"><Icon name="check" size={14} /></span>{/if}</button>{/each}</div>{/if}</span>{:else}<span class="room">{room.name}</span>{/if}
     <span class="sep" aria-hidden="true"></span>
     <nav aria-label={strings.spaces} class:folded={!fit.words}>{#each room.spaces as item (item.id)}<button class="space" aria-label={item.label} title={`${item.label} · Ctrl+${item.shortcutIndex}`} aria-current={space === item.id ? 'page' : undefined} disabled={item.id !== 'welcome' && !subjectCount} onclick={() => navigate(item.id)}><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true">{@html item.icon}</svg><span class="word" aria-hidden="true">{item.label}</span></button>{/each}</nav>
     <span class="sep" aria-hidden="true"></span>
     <button class="gear" aria-label={strings.settings} title={`${strings.settings} · Ctrl+,`} onclick={openSettings}><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true">{@html glyphs.settings}</svg></button>
     <!-- RS-12, CO-41: while Amber is off, its Ask button is the capsule's last segment. -->
     {#if ask}<span class="sep" aria-hidden="true"></span><span class="ask-chip"><button class="ask" bind:this={askButton} aria-label={strings.askAmber} aria-haspopup={bringBack ? 'menu' : undefined} aria-expanded={bringBack ? askMenuOpen : undefined} title={bringBack ? strings.askAmberTitle : `${strings.askAmber} · Ctrl+J`} onclick={ask}
-      oncontextmenu={e => { if (!bringBack) return; e.preventDefault(); void openAskMenu(); }} onkeydown={e => { if (bringBack) askKey(e); }}><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true">{@html glyphs.ask}</svg></button>{#if askMenuOpen && bringBack}<div class="room-menu ask-menu" role="menu" tabindex="-1" aria-label={strings.askAmber} bind:this={askMenu} onkeydown={askMenuKey}><button role="menuitem" onclick={() => { askMenuOpen = false; bringBack(); }}>{strings.bringAmberBack}</button></div>{/if}</span>{/if}
+      oncontextmenu={e => { if (!bringBack) return; e.preventDefault(); void openAskMenu(); }} onkeydown={e => { if (bringBack) askKey(e); }}><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true">{@html glyphs.ask}</svg></button>{#if askMenuOpen && bringBack}<div class="room-menu menu-surface ask-menu" role="menu" tabindex="-1" aria-label={strings.askAmber} bind:this={askMenu} onkeydown={askMenuKey}><button role="menuitem" onclick={() => { askMenuOpen = false; bringBack(); }}>{strings.bringAmberBack}</button></div>{/if}</span>{/if}
     {#if marker.shown}<span class="marker" aria-hidden="true" style:left={`${marker.left}px`} style:width={`${marker.width}px`}></span><span class="dot" aria-hidden="true" style:left={`${marker.dot}px`}></span>{/if}
   </div>
   <button class="subject-field" bind:this={field} aria-haspopup="dialog" aria-expanded={panelOpen} aria-keyshortcuts="Control+K" title={title ?? strings.openASubject} onclick={togglePanel}>
@@ -103,7 +104,7 @@
   .capsule { position:relative; z-index:1; flex:none; display:flex; align-items:center; height:36px; box-sizing:border-box; padding:0 4px; border:1px solid var(--line); border-radius:18px; }
   .capsule button, .capsule .room { height:34px; padding:0 9px; font-size:13px; display:inline-flex; align-items:center; white-space:nowrap; transition:color .12s; }
   .room { color:var(--ink); }
-  .room.menu::after { content:'▾'; margin-left:6px; font-size:10px; color:var(--ink-mute); }
+  .room.menu { gap:5px; } .room.menu :global(.icon) { color:var(--ink-mute); }
   .sep { width:1px; height:18px; background:var(--line); flex:none; }
   nav { display:flex; align-items:center; }
   .space[aria-current='page'] { color:var(--ink); }
@@ -117,10 +118,11 @@
   .instant .marker, .instant .dot { transition:none; }
   .room-chip, .ask-chip { position:relative; display:inline-flex; }
   .ask-menu { left:auto; right:-4px; transform:none; }
-  .room-menu { position:absolute; left:50%; transform:translateX(-50%); top:42px; z-index:13; display:grid; gap:2px; min-width:180px; padding:6px; background:var(--surface); border:1px solid var(--line); border-radius:6px; box-shadow:0 12px 32px color-mix(in srgb, var(--bg) 70%, transparent); }
-  .room-menu button { height:32px; display:flex; align-items:center; gap:8px; padding:0 10px; border-radius:4px; color:var(--ink); text-align:left; }
-  .room-menu button:hover { background:color-mix(in srgb, var(--ink) 6%, transparent); }
-  .room-menu [aria-checked='true'] { box-shadow:inset 2px 0 0 var(--accent); }
+  /* RS-38: the room menu is the app's menu (app.css .menu-surface); the current room carries a tick. */
+  .room-menu { position:absolute; left:50%; transform:translateX(-50%); top:42px; z-index:13; gap:2px; min-width:180px; }
+  .room-menu button { height:32px; display:flex; align-items:center; gap:10px; padding:0 10px; border-radius:6px; color:var(--ink); text-align:left; }
+  .room-menu button:hover { background:var(--hover); }
+  .room-menu .current { margin-left:auto; display:flex; color:var(--accent); }
   .swatch { width:10px; height:10px; border-radius:50%; flex:none; }
   /* RS-12: the field, centred in the window whatever sits beside it. */
   header .subject-field { position:absolute; left:50%; top:11px; transform:translateX(-50%); width:var(--field); height:34px; box-sizing:border-box; display:flex; align-items:center; gap:8px; padding:0 14px;

@@ -4,6 +4,7 @@
   import type { Snippet } from 'svelte';
   import type { Settings } from '../frame/settings';
   import { strings } from './strings';
+  import Icon from './Icon.svelte';
   import { phone } from './phone.svelte';
   let { settings, preferencesChanged, visible, ready = true, panelBusy = false, sheetButton = true, graph, panel, divider }: {
     settings: Settings; preferencesChanged: () => void; visible: boolean; ready?: boolean; panelBusy?: boolean;
@@ -43,15 +44,15 @@
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="graph-side" onclick={tapped}><div class="kept-space">{@render graph(visible && !sheet)}</div></div>
     {#if divider}{@render divider()}{/if}
-    {#if !sheet && sheetButton}<button class="sheet-open" onclick={() => sheet = true}>{strings.openPanel}{panelBusy ? ' ·' : ''}</button>{/if}
+    {#if !sheet && sheetButton}<button class="sheet-open" onclick={() => sheet = true}>{strings.openPanel}{#if panelBusy}<span class="busy"></span>{/if}</button>{/if}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="panel-side" class:hidden={!sheet} onkeydown={sheetKey}>
-      <button class="sheet-close" onclick={() => sheet = false}>‹ {strings.backToGraph}</button>
+      <button class="sheet-close" onclick={() => sheet = false}><Icon name="chevronLeft" />{strings.backToGraph}</button>
       <div class="kept-space">{@render panel()}</div>
     </div>
   {:else if ready}
     <div class="graph-side" class:collapsed={settings.ui.studyCollapsed === 'graph'} style:width={settings.ui.studyCollapsed === 'graph' ? '28px' : settings.ui.studyCollapsed === 'panel' ? 'calc(100% - 36px)' : `calc(${graphPercent}% - 4px)`}>
-      {#if settings.ui.studyCollapsed === 'graph'}<button class="rail" aria-label={strings.restoreGraph} onclick={() => { settings.ui.studyCollapsed='none'; preferencesChanged(); }}>›</button>
+      {#if settings.ui.studyCollapsed === 'graph'}<button class="rail" aria-label={strings.restoreGraph} onclick={() => { settings.ui.studyCollapsed='none'; preferencesChanged(); }}><Icon name="chevronRight" size={14} /></button>
       {/if}
       <div class:hidden={settings.ui.studyCollapsed === 'graph'} class="kept-space">{@render graph(visible && settings.ui.studyCollapsed !== 'graph')}</div>
     </div>
@@ -59,12 +60,12 @@
     <!-- This focusable separator implements the keyboard contract of GV-85. -->
     <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
     <div class="divider" role="separator" aria-orientation="vertical" aria-valuenow={Math.round(settings.ui.studySplitPercent)} aria-valuemin="20" aria-valuemax="80" tabindex="0" onpointerdown={e => { e.preventDefault(); dragging=true; }} ondblclick={reset} onkeydown={key}>
-      <button aria-label={strings.collapseGraph} onclick={() => { settings.ui.studyCollapsed = settings.ui.studyCollapsed === 'graph' ? 'none' : 'graph'; preferencesChanged(); }}>‹</button>
-      <button aria-label={strings.collapsePanel} onclick={() => { settings.ui.studyCollapsed = settings.ui.studyCollapsed === 'panel' ? 'none' : 'panel'; preferencesChanged(); }}>›</button>
+      <button aria-label={strings.collapseGraph} onclick={() => { settings.ui.studyCollapsed = settings.ui.studyCollapsed === 'graph' ? 'none' : 'graph'; preferencesChanged(); }}><Icon name="chevronLeft" size={12} /></button>
+      <button aria-label={strings.collapsePanel} onclick={() => { settings.ui.studyCollapsed = settings.ui.studyCollapsed === 'panel' ? 'none' : 'panel'; preferencesChanged(); }}><Icon name="chevronRight" size={12} /></button>
     </div>
     {/if}
     <div class="panel-side" class:collapsed={settings.ui.studyCollapsed === 'panel'}>
-      {#if settings.ui.studyCollapsed === 'panel'}<button class="rail" aria-label={strings.restorePanel} onclick={() => { settings.ui.studyCollapsed='none'; preferencesChanged(); }}>‹{panelBusy ? '·' : ''}</button>
+      {#if settings.ui.studyCollapsed === 'panel'}<button class="rail" aria-label={strings.restorePanel} onclick={() => { settings.ui.studyCollapsed='none'; preferencesChanged(); }}><Icon name="chevronLeft" size={14} />{#if panelBusy}<span class="busy"></span>{/if}</button>
       {/if}
       <div class:hidden={settings.ui.studyCollapsed === 'panel'} class="kept-space">{@render panel()}</div>
     </div>
@@ -77,8 +78,11 @@
   .narrow { position:relative; flex-direction:column; } .narrow .graph-side { position:relative; width:100%; flex:1; min-height:0; }
   .narrow .panel-side { position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; background:var(--bg); padding-bottom:env(safe-area-inset-bottom); }
   .narrow .panel-side.hidden { display:none; } .narrow .panel-side .kept-space { flex:1; min-height:0; overflow:auto; }
-  .sheet-close { flex:none; height:44px; text-align:left; padding:0 16px; border:0; border-bottom:1px solid var(--glass-line); border-radius:0; background:var(--glass); font-size:15px; }
-  .sheet-open { position:absolute; left:12px; top:12px; z-index:4; height:40px; padding:0 18px; border-radius:20px; font-size:15px; background:var(--surface); }
+  .sheet-close { flex:none; display:flex; align-items:center; gap:6px; height:44px; text-align:left; padding:0 12px; border:0; border-bottom:1px solid var(--line); border-radius:0; background:var(--surface); font-size:15px; }
+  .sheet-open { position:absolute; left:12px; top:12px; z-index:4; display:flex; align-items:center; gap:8px; height:40px; padding:0 18px; border-radius:var(--radius-pill); border-color:var(--line); font-size:15px; background:var(--surface); }
+  /* The panel is working: a small lit dot, not a typed character. */
+  .busy { width:6px; height:6px; border-radius:50%; background:var(--accent); }
   .divider { width:8px; flex:0 0 8px; background:var(--glass-line); cursor:col-resize; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px; z-index:3; }
-  .divider button { border:0; padding:2px; width:20px; height:28px; font-size:12px; }.rail { width:28px; height:100%; padding:0; border-radius:0; }
+  .divider button { display:grid; place-items:center; border:0; padding:0; width:20px; height:28px; color:var(--ink-mute); }
+  .rail { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; width:28px; height:100%; padding:0; border-radius:0; color:var(--ink-mute); }
 </style>

@@ -126,7 +126,8 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   *Previous view* (which sat hidden under the layout toggle) went with them. The layout toggle
   (GV-53) and the search button (GV-57) are the only controls at the top of the graph.
 - **GV-51** A **zoom cluster** at the **bottom-right**, in this order: zoom out, **recenter** (fit
-  all), zoom in (order since v0.1.1 I2).
+  all), zoom in (order since v0.1.1 I2). *(Amended 2026-11-17.)* They and the top tools (fold all, search,
+  layout) are the app's icon buttons: 32 px circles on a solid `--surface` with drawn icons (RS-38).
   Recenter is its own control and no longer changes focus (the PoC reset also jumped to the
   root).
 - **GV-52** The legend is bottom-left ([rooms-spaces](/specs/rooms-spaces.md) RS-35).
@@ -153,6 +154,10 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   disabled on a dead end (LR-101). After the shared list and a separator, the menu alone (it is a view
   action, not in the panel) offers *Collapse sub-nodes* or *Expand sub-nodes* (GV-130); on the root
   they read *Collapse all* / *Expand all* (GV-132).
+  *(Amended 2026-11-17, design review.)* The menu has the app's menu look ([rooms-spaces](/specs/rooms-spaces.md)
+  RS-38): a drawn icon before each item, the first action (the node's main one) in a stronger weight with
+  its icon in `--accent`, and *Delete* set apart last, after a separator and below the view actions, turning
+  `--error-ink` on hover.
 - **GV-57** *Search (v0.1.3).* A **search** button (magnifier, tooltip *Search · Ctrl+F*) sits left of
   the layout toggle. It, or **Ctrl+F** anywhere in Study, opens a search field in its place (the text
   selected when it was already open). The query matches, as a substring ignoring case, accents and

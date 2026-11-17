@@ -1,6 +1,6 @@
 /** Compare's texts (CR-50, CR-51, agent_design/choose-compare/RECIPE.md). */
 export const strings = {
-  title: 'Compare', shortlisted: (n: number) => `${n} shortlisted`, unfoldAll: '▸ unfold all evidence', foldAll: '▾ fold all evidence',
+  title: 'Compare', shortlisted: (n: number) => `${n} shortlisted`, unfoldAll: 'unfold all evidence', foldAll: 'fold all evidence',
   unfoldAllLabel: 'Unfold the evidence of every criterion', foldAllLabel: 'Fold the evidence of every criterion',
   groups: { must: 'Must', nice: 'Nice to have', irrelevant: 'Irrelevant' },
   showIrrelevant: (n: number) => `Show irrelevant (${n})`, hideIrrelevant: (n: number) => `Hide irrelevant (${n})`,
@@ -22,4 +22,6 @@ export const strings = {
   noCriteria: 'No ranked criteria yet. Mark criteria Must or Nice to have in the Survey to compare on them.',
   kinds: { manufacturer: 'manufacturer', measured: 'measured', shop: 'shop', opinion: 'opinion', sponsored: 'sponsored', model: 'model knowledge' },
   edited: (n: number) => `✎ ${n}`, summaryFilling: (n: number) => `… ${n}`,
+  /** The summary's marks, drawn as icons; the word is what a screen reader says after the count. */
+  marks: { '≠': 'disagree', '?': 'not found', '✎': 'edited', '…': 'researching' } as Record<string, string>,
 };

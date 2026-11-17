@@ -1,5 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
+  import Icon from '../../ui/Icon.svelte';
   // Choose's Gallery (CR-12, CR-24, WG-51..71): the shared grid with status tabs, five sorts, the status band, the steps bar,
   // the pick line, and the selected card lifted over a still grid with its history and the board's numbers.
   import type { SpaceProps } from '../../frame/room';
@@ -56,7 +57,7 @@
     <span class="sp"></span>
     <input type="search" placeholder={text.filterName} aria-label={text.filterName} value={filter} oninput={e => catalogue.setFilter(e.currentTarget.value)} onkeydown={e => { if (e.key === 'Escape') { e.stopPropagation(); catalogue.setFilter(''); } }} />
     <label class="sortl"><span>{text.sort}</span> <select aria-label={text.sort} value={sort} onchange={e => sort = e.currentTarget.value as SortKey}>{#each sortKeys as key}<option value={key}>{text.sorts[key]}</option>{/each}</select></label>
-    <button class="dirb" aria-label={text.reverse} onclick={() => reverse = !reverse}>{reverse ? '↑' : '↓'}</button>
+    <button class="dirb icon-button" aria-label={text.reverse} title={text.reverse} onclick={() => reverse = !reverse}><Icon name={reverse ? 'arrowUp' : 'arrowDown'} size={14} /></button>
     <span class="count">{text.count(ctx.cards.length, ctx.count)}</span>
   </div>
 {/snippet}
@@ -64,7 +65,7 @@
   <p class="nomatch">{text.noMatch(f, tab)}. <button onclick={() => { if (f) catalogue.setFilter(''); else tab = 'all'; }}>{f ? text.clearFilter : text.showAll}</button></p>
 {/snippet}
 {#snippet empty()}
-  <div class="emptyc"><h1>{text.emptyTitle}</h1><p>{text.emptyNote}</p><button onclick={() => navigate('welcome')}>{text.startOne}</button></div>
+  <div class="emptyc"><h1>{text.emptyTitle}</h1><p>{text.emptyNote}</p><button class="primary" onclick={() => navigate('welcome')}>{text.startOne}</button></div>
 {/snippet}
 {#snippet visual(summary: SubjectSummary)}<Band {summary} openedAt={opened(summary)} lifted={selectedId === summary.id} />{/snippet}
 {#snippet figures(summary: SubjectSummary, _detail: CardDetail)}
@@ -116,12 +117,12 @@
   .tab.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}.tab .n{font-size:11px;line-height:1.5;padding:0 1px;color:var(--ink-faint);overflow:hidden;display:inline-block}.tab.on .n{color:color-mix(in srgb,var(--accent-ink) 75%,transparent)}
   .roll{display:inline-block;animation:roll 280ms cubic-bezier(.2,.7,.2,1)}
   .dot{width:7px;height:7px;border-radius:50%;box-sizing:border-box;border:1px dashed var(--accent)}.dot[data-s=decided]{border:1.5px solid var(--focus)}.dot[data-s=bought]{background:var(--accent);border:0}.tab.on .dot{border-color:var(--accent-ink)}.tab.on .dot[data-s=bought]{background:var(--accent-ink)}
-  .bar input{width:220px;max-width:100%;border-radius:999px;padding:6px 14px;background:var(--glass);border:1px solid var(--line);color:var(--ink);caret-color:var(--accent);font:13px var(--font-text)}.bar input::placeholder{color:var(--ink-faint)}.bar input:focus{border-color:var(--accent);outline:none}
-  .sortl{display:flex;align-items:center;gap:8px;color:var(--ink-faint);font:12px var(--font-small)}.sortl select{padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--glass);color:var(--ink);font:12px var(--font-small)}.sortl option{background:var(--surface)}
-  .dirb{padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font:12px var(--font-small)}.count{color:var(--ink-faint);font:12px var(--font-small);font-variant-numeric:tabular-nums}
+  .bar input{width:220px;max-width:100%;padding:6px 12px;background:var(--surface);border:1px solid var(--line);color:var(--ink);caret-color:var(--accent);font:13px var(--font-text)}.bar input::placeholder{color:var(--ink-faint)}.bar input:focus{border-color:var(--accent);outline:none}
+  /* RS-38: fields and buttons take the app's one radius; the status tabs stay pills (a choice). */
+  .sortl{display:flex;align-items:center;gap:8px;color:var(--ink-faint);font:12px var(--font-small)}.sortl select{padding:5px 30px 5px 10px;background-color:var(--surface);font:12px var(--font-small)}.sortl option{background:var(--surface)}
+  .count{color:var(--ink-faint);font:12px var(--font-small);font-variant-numeric:tabular-nums}
   .nomatch{color:var(--ink-mute)}.nomatch button{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
   .emptyc{text-align:center;padding:18vh 0;color:var(--ink-mute)}.emptyc h1{font:350 24px/1.1 var(--font-display);color:var(--ink);margin:0 0 10px}.emptyc p{max-width:380px;margin:0 auto 18px}
-  .emptyc button{background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);border-radius:999px;font:600 12px var(--font-small);padding:7px 16px}
   /* resting card slots */
   .mid{margin:0 20px;min-width:0}.stats{font:11px/1.45 var(--font-small);color:var(--ink-faint);border-top:1px solid var(--glass-line);padding-top:10px}
   /* lifted card */
@@ -145,14 +146,14 @@
   :global(.cg .card.selected){z-index:5;border-color:transparent;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;outline:none}
   :global(.cg .card.selected:focus-visible .lift){outline:2px solid var(--focus);outline-offset:2px}
   :global(.cg .card .rest){visibility:hidden;display:flex;flex-direction:column;gap:12px}
-  :global(.cg .card .lift){position:absolute;top:-10px;left:-12px;right:-12px;display:flex;flex-direction:column;gap:12px;padding-bottom:22px;border-radius:14px;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid color-mix(in srgb,var(--accent) 50%,transparent);box-shadow:0 0 40px 6px var(--glow-far),0 24px 60px color-mix(in srgb,var(--code) 80%,transparent);animation:unfold 320ms cubic-bezier(.2,.7,.2,1) both}
+  :global(.cg .card .lift){position:absolute;top:-10px;left:-12px;right:-12px;display:flex;flex-direction:column;gap:12px;padding-bottom:22px;border-radius:14px;background:var(--surface);border:1px solid color-mix(in srgb,var(--accent) 50%,transparent);box-shadow:0 24px 60px color-mix(in srgb,var(--code) 80%,transparent);animation:unfold 320ms cubic-bezier(.2,.7,.2,1) both}
   :global(.cg .card .lift h2){margin:4px 22px 0;font:350 24px/1.1 var(--font-display);color:var(--ink);white-space:normal;overflow-wrap:anywhere}
-  :global(.cg .card .lift .rename){display:block;width:calc(100% - 44px);margin:4px 22px 0;background:transparent;border:0;border-bottom:1px solid var(--accent);border-radius:0;color:var(--ink);caret-color:var(--accent);padding:2px 0 4px;outline:none;box-shadow:0 6px 12px -10px var(--glow-near);font:350 24px/1.1 var(--font-display)}
+  :global(.cg .card .lift .rename){display:block;width:calc(100% - 44px);margin:4px 22px 0;background:transparent;border:0;border-bottom:1px solid var(--accent);border-radius:0;color:var(--ink);caret-color:var(--accent);padding:2px 0 4px;outline:none;box-shadow:none;font:350 24px/1.1 var(--font-display)}
   :global(.cg .card .lift .rename::selection){background:color-mix(in srgb,var(--accent) 38%,transparent);color:var(--ink)}
   :global(.cg .card .lift .actions){margin:0 22px;gap:8px}
-  :global(.cg .card .lift .actions button){padding:5px 13px;font:12px var(--font-small);border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink)}
-  :global(.cg .card .lift .actions button:first-child){background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}:global(.cg .card .lift .actions button:first-child:hover:not(:disabled)){background:var(--focus)}
-  :global(.cg .card .lift .actions button:nth-child(3):hover:not(:disabled)){border-color:var(--error);color:var(--error-ink)}
+  :global(.cg .card .lift .actions button){padding:5px 12px;font:12px var(--font-small);color:var(--ink)}
+  :global(.cg .card .lift .actions button:first-child){background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}:global(.cg .card .lift .actions button:first-child:hover:not(:disabled)){background:color-mix(in srgb,var(--accent) 86%,var(--ink))}
+  :global(.cg .card .lift .actions button:nth-child(3):hover:not(:disabled)){color:var(--error-ink)}
   :global(.cg .card .error){margin:0 20px}
   @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
   @keyframes unfold{from{clip-path:inset(0 0 100% 0);opacity:.4}to{clip-path:inset(-60px -60px -80px -60px);opacity:1}}

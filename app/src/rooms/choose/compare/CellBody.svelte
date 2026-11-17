@@ -5,6 +5,7 @@
   import { day, priceDate, sponsoredSources, timeDay, usedSources } from './model';
   import { strings } from './strings';
   import Tag from './Tag.svelte';
+  import Icon from '../../../ui/Icon.svelte';
   let { cell, filling, price }: { cell: Cell | undefined; filling: boolean; price: boolean } = $props();
   const status = $derived(cellStatus(cell)), date = $derived(priceDate(cell));
 </script>
@@ -13,7 +14,7 @@
 {:else if !cell}
   <span class="v none">{strings.notFilled}</span>
 {:else}
-  <span class="v" class:none={status === 'none'}><span class="mark" aria-hidden="true">{status === 'disagree' ? '≠ ' : status === 'none' ? '? ' : ''}</span>{status === 'edited' ? cell.user!.value : cell.value ?? strings.noneFound}</span>
+  <span class="v" class:none={status === 'none'}>{#if status === 'disagree' || status === 'none'}<span class="mark"><Icon name={status === 'disagree' ? 'notEqual' : 'question'} size={12} /></span>{/if}{status === 'edited' ? cell.user!.value : cell.value ?? strings.noneFound}</span>
   {#if price && cell.value !== null && date}<span class="line price">{strings.priceCaution(day(date))}</span>{/if}
   {#if status === 'edited'}
     <span class="srcs"><span class="tagline"><Tag kind="user" /><span class="sn">{timeDay(cell.user!.at)}</span></span></span>
@@ -28,7 +29,7 @@
   span { display: block; }
   .v { font: 600 13px/1.3 var(--font-text, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif); overflow-wrap: anywhere; }
   .v.none { font-weight: 400; font-style: italic; color: var(--ink-mute); }
-  .mark { display: inline; color: var(--focus); }
+  .mark { display: inline; margin-right: 3px; color: var(--focus); }
   .line, .note, .tagline { font: 400 11px/1.35 var(--font-small, 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif); }
   .line { color: var(--ink-mute); }
   .note { margin-top: 3px; border-left: 2px solid var(--focus); padding-left: 5px; }

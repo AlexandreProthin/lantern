@@ -48,7 +48,7 @@
 </script>
 {#snippet placeholder(node: { id: string; state: string }, ctx: { running: unknown; perform: (fn: () => void) => void })}
   {#if node.state === 'dismissed'}
-    <p>{strings.dismissedNotice}</p><button onclick={() => ctx.perform(() => setState(session.visit, node.id, 'open'))}>{strings.restore}</button>
+    <p>{strings.dismissedNotice}</p><button class="primary" onclick={() => ctx.perform(() => setState(session.visit, node.id, 'open'))}>{strings.restore}</button>
   {:else}
     <p>{strings.darkNode}</p><button class="primary" disabled={!!ctx.running} onclick={() => session.run('light', node.id)}>{strings.lightUp}</button>
   {/if}
@@ -72,7 +72,7 @@
 {/snippet}
 <Panel {session} {room} {placeholder} {notice} {footer} {body} {revision} {showTokens} {request} {preview} />
 <style>
-  .rewrite { display:grid; gap:8px; margin:12px 0; } .rewrite div { display:flex; gap:6px; }
+  .rewrite { display:grid; gap:8px; margin:12px 0; } .rewrite div { display:flex; gap:8px; align-items:center; }
   :global(.panel.learn-panel .state-chip[data-state='understood']) { color:var(--node-understood); border-color:var(--node-understood); }
   :global(.panel.learn-panel .state-chip[data-state='lit']) { color:var(--node-lit); }
   :global(.panel.learn-panel .state-chip[data-state='dismissed']) { opacity:.35; }

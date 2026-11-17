@@ -43,7 +43,7 @@ export const t = {
   failed: 'The tutor could not answer.',
   // rail
   rail: 'Decision board', boardTitle: 'Board', needsLabel: 'needs', mustLabel: (nice: number) => `must · ${nice} nice`, shortlistLabel: 'shortlist', pickLabel: 'pick',
-  missingCount: (n: number) => `${n} missing`, complete: 'complete', recommend: 'Recommend', recommendReady: 'Recommend ›', recommendNow: (n: number) => `Recommend now (${n} missing)`, recommendOffer: 'Ready: get the recommendation',
+  missingCount: (n: number) => `${n} missing`, complete: 'complete', recommend: 'Recommend', recommendReady: 'Recommend', recommendNow: (n: number) => `Recommend now (${n} missing)`, recommendOffer: 'Ready: get the recommendation',
   openBoard: 'Open the decision board', closeBoard: 'Close the decision board',
   // board
   boardHeading: 'Decision board', backToGraph: 'Back to graph', stillMissing: 'Still missing:', nothingMissing: 'Nothing missing.', fillCompare: 'Fill Compare',
@@ -54,7 +54,7 @@ export const t = {
   segment: { must: 'must', nice: 'nice', irrelevant: 'irr.' },
   shortlistCard: 'Shortlist and pick', shortlistCount: (shortlisted: number, candidates: number) => `${shortlisted} shortlisted · ${candidates} candidate${candidates === 1 ? '' : 's'}`,
   noBoardProducts: 'No products yet. They come from the graph (families, products) and from research.',
-  boughtDone: 'Bought ✓', rejectedList: 'Rejected', pick: 'Pick',
+  boughtDone: 'Bought', rejectedList: 'Rejected', pick: 'Pick',
   // missing items
   missing: {
     answer: (title: string) => `Answer: ${title}`, noMust: 'Mark at least one criterion as must', noCriteria: 'No criteria yet', rank: (title: string) => `Rank: ${title}`,

@@ -78,6 +78,14 @@ The last-opened times and the recents list are **not** in this file: they live i
 - **SE-15** Each setting that only affects future work MUST say so in a one-line hint (for example *Applies to new generations*).
 - **SE-16** Each section MUST offer *Reset to defaults* for its own keys, after a confirmation.
 - **SE-17** All labels and hints MUST live in the strings module (PQ-4).
+- **SE-18** *(Added 2026-11-17, design review.)* **Look.** The section list is plain text, not boxed buttons: the
+  current section alone is marked (ink colour, weight 600, a `--surface-2` ground and a 2 px `--accent` bar on its
+  left; on a phone, where the list is a row of tabs, the bar is under the tab); hover only lifts the text to ink. A
+  field's name sits above it, small and muted; a checkbox or switch sits on one line with its label, box first. The
+  controls are the app's drawn ones ([rooms-spaces](/specs/rooms-spaces.md) RS-38): checkboxes, switches, selects
+  with a drawn chevron, text fields. A lone button keeps its own width; *Test* is the Provider section's primary,
+  the other buttons are quiet; the confirming button of a *Reset to defaults* or library transfer is a primary;
+  the close button is a drawn ×.
 
 # General
 

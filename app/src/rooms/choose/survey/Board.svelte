@@ -9,6 +9,7 @@
   import { EASE_IN, EASE_OUT, mayMove } from './motion';
   import { strings } from '../../../ui/strings';
   import { stateNames, t } from './strings';
+  import Icon from '../../../ui/Icon.svelte';
 
   let { session, revision, settings, closing, onclose, onclosed, recommend }: {
     session: ChooseSession; revision: number; settings: Settings; closing: boolean; onclose: () => void; onclosed: () => void; recommend: () => void;
@@ -59,7 +60,7 @@
       const old = previous; previous = { chosen, stage: now, status };
       if (!old || !mayMove(settings) || !sheet) return;
       if (chosen && chosen !== old.chosen) sheet.querySelector('.prod.chosen')?.animate([{ clipPath: 'inset(0 100% 0 0 round 10px)' }, { clipPath: 'inset(0 0 0 0 round 10px)' }], { duration: 360, easing: EASE_OUT });
-      if (now === 'ready' && old.stage !== 'ready') sheet.querySelector('button[data-rec]')?.animate([{ clipPath: 'inset(0 100% 0 0 round 999px)' }, { clipPath: 'inset(0 0 0 0 round 999px)' }], { duration: 360, easing: EASE_OUT, fill: 'backwards' });
+      if (now === 'ready' && old.stage !== 'ready') sheet.querySelector('button[data-rec]')?.animate([{ clipPath: 'inset(0 100% 0 0 round 89px)' }, { clipPath: 'inset(0 0 0 0 round 999px)' }], { duration: 360, easing: EASE_OUT, fill: 'backwards' });
       if (status !== old.status) sheet.querySelector('.st')?.animate([{ opacity: 0, transform: 'translateX(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: EASE_OUT });
     });
   });
@@ -75,8 +76,8 @@
   <div class="sheet">
     <div class="top">
       <h2>{t.boardHeading}</h2><span class="st" data-s={stage}>{t.stages[stage]}</span><span class="sp"></span>
-      {#if model.status === 'exploring'}<button data-rec class:on={stage === 'ready'} disabled={busy} onclick={recommend}>{stage === 'ready' ? t.recommendOffer : t.recommendNow(miss.length)}</button>{/if}
-      <button data-close onclick={onclose}>{t.backToGraph} ✕</button>
+      {#if model.status === 'exploring'}<button data-rec class:on={stage === 'ready'} class:primary={stage === 'ready'} disabled={busy} onclick={recommend}>{stage === 'ready' ? t.recommendOffer : t.recommendNow(miss.length)}</button>{/if}
+      <button data-close onclick={onclose}>{t.backToGraph}<Icon name="close" size={14} /></button>
     </div>
     {#if lane}<p class="research" role="status"><span>{progress(lane.run)}</span><button onclick={lane.cancel}>{t.cancelResearch}</button></p>{/if}
     <div class="missing" class:none={!miss.length}>
@@ -125,7 +126,7 @@
               {#if p.state === 'candidate'}<button onclick={() => attempt(() => session.shortlist(p.id))}>{t.shortlist}</button><button onclick={() => { rejectId = p.id; reason = ''; }}>{t.reject}</button>{/if}
               {#if p.state === 'shortlisted'}<button onclick={() => attempt(() => session.choose(p.id))}>{t.choose}</button><button onclick={() => attempt(() => session.unshortlist(p.id))}>{t.remove}</button><button onclick={() => { rejectId = p.id; reason = ''; }}>{t.reject}</button>{/if}
               {#if p.state === 'chosen' && model.status !== 'bought'}<button class="on" onclick={() => attempt(() => session.bought())}>{t.bought}</button><button onclick={() => attempt(() => session.unchoose(p.id))}>{t.unchoose}</button>{/if}
-              {#if p.state === 'chosen' && model.status === 'bought'}<b>{t.boughtDone}</b>{/if}
+              {#if p.state === 'chosen' && model.status === 'bought'}<b class="done"><Icon name="check" size={14} />{t.boughtDone}</b>{/if}
             </div>
             {#if rejectId === p.id}
               <form class="reject" onsubmit={e => { e.preventDefault(); rejectNow(p.id); }}>
@@ -142,15 +143,17 @@
 </section>
 <style>
   .board-sheet { --ink-faint:color-mix(in srgb, var(--ink-mute) 62%, var(--bg)); position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; min-height:0; overflow:hidden;
-    background:var(--glass); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); border-top:2px solid var(--accent); font:400 13px/1.45 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; }
+    background:var(--surface); border-top:2px solid var(--accent); font:400 13px/1.45 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; }
   .sheet { flex:1; overflow:auto; padding:32px 40px 80px; }
   .top { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; } .sp { flex:1; }
   h2 { margin:0; font:350 24px/1.2 'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif; letter-spacing:-.01em; color:var(--ink); }
-  .top button, .missing button, .small { border-radius:999px; font:400 12px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; padding:6px 14px; }
+  /* RS-34, RS-38: a solid sheet; buttons take the app's one radius, the rank choice is a pill, nothing glows. */
+  .top button, .missing button, .small { font:500 12px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; padding:6px 12px; }
+  .top button[data-close] { display:inline-flex; align-items:center; gap:6px; color:var(--ink-mute); } .top button[data-close]:hover { color:var(--ink); }
   .small { padding:2px 10px; font-size:11px; }
-  .top button[data-rec] { background:transparent; border-color:var(--accent); color:var(--accent); }
-  .top button[data-rec].on { background:var(--accent); color:var(--accent-ink); box-shadow:0 0 24px 6px var(--glow-far); }
-  .st { border:1px solid var(--accent); border-radius:999px; padding:1px 10px; font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--accent); }
+  .top button[data-rec]:not(.on) { color:var(--accent); }
+  .top button[data-rec].on { font-weight:600; }
+  .st { border:1px solid var(--accent); border-radius:var(--radius-pill); padding:1px 10px; font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--accent); }
   .st[data-s='ready'] { background:color-mix(in srgb, var(--accent) 18%, transparent); } .st[data-s='decided'] { background:var(--surface-2); color:var(--focus); border-color:var(--focus); }
   .st[data-s='bought'] { background:var(--accent); color:var(--accent-ink); }
   .research { display:flex; gap:12px; align-items:center; margin:14px 0 0; color:var(--focus); } .research button { font-size:12px; padding:2px 10px; }
@@ -164,29 +167,31 @@
   h3 { margin:0 0 18px; font:600 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--accent); display:flex; gap:10px; align-items:center; }
   .mute { color:var(--ink-mute); font-size:12px; } .faint { color:var(--ink-faint); }
   .note { display:grid; gap:4px; margin-bottom:20px; } .note .q { font:400 12px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); }
-  textarea, input { box-sizing:border-box; width:100%; background:transparent; color:var(--ink); border:0; border-bottom:1px solid var(--glass-line); font:400 15px/1.35 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; padding:4px 0; border-radius:0; outline:none; resize:vertical; }
-  textarea:focus, input:focus { border-bottom-color:var(--accent); }
+  textarea, input { box-sizing:border-box; width:100%; background:transparent; color:var(--ink); border:0; border-bottom:1px solid var(--line); font:400 15px/1.35 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; padding:4px 0; border-radius:0; outline:none; resize:vertical; box-shadow:none; }
+  textarea:focus, input:focus { border-bottom-color:var(--accent); box-shadow:none; }
   .need { display:grid; padding:0 0 16px; } .need .q { font:400 12px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); text-align:left; }
   .need .edit { border-bottom-color:transparent; } .need .edit:hover { border-bottom-color:var(--glass-line); } .need .edit:focus { border-bottom-color:var(--accent); }
-  .need.open .q { color:var(--focus); } .need.open .q::before { content:'○ '; }
+  .need.open .q { color:var(--focus); } .need.open .q::before { content:''; display:inline-block; width:6px; height:6px; margin-right:6px; border:1.3px solid currentColor; border-radius:50%; vertical-align:1px; }
   .link { all:unset; cursor:pointer; box-sizing:border-box; } .link:hover { text-decoration:underline; text-underline-offset:3px; } .link:focus-visible { outline:1px solid var(--focus); outline-offset:2px; }
   .grp { margin-bottom:22px; } .grp h4 { margin:0 0 8px; font:600 15px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; color:var(--ink); } .grp.must h4 { color:var(--accent); }
   .grp.irr { opacity:.5; }
   .crit { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0; font-size:13px; } .crit .why { display:block; font:400 11px/1.35 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-faint); margin-top:2px; }
-  .seg { display:inline-flex; border:1px solid var(--accent); border-radius:8px; overflow:hidden; flex:none; }
-  .seg button { border:0; border-radius:0; background:transparent; color:var(--ink-mute); font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:3px 8px; }
+  .seg { display:inline-flex; border:1px solid var(--accent); border-radius:var(--radius-pill); overflow:hidden; flex:none; }
+  .seg button { border:0; border-radius:0; background:transparent; color:var(--ink-mute); font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:3px 10px; }
   .seg button + button { border-left:1px solid color-mix(in srgb, var(--accent) 40%, transparent); } .seg button.on { background:var(--accent); color:var(--accent-ink); }
   .short { margin-top:40px; border-top:1px solid color-mix(in srgb, var(--accent) 30%, transparent); padding-top:26px; }
   .prods { display:grid; }
   .prod { display:grid; grid-template-columns:minmax(140px, 1fr) 2fr auto auto; align-items:baseline; gap:18px; padding:14px 0; border-bottom:1px solid var(--glass-line); }
   .prod .name { font:350 18px/1.2 'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif; color:var(--ink); } .prod.shortlisted .name, .prod.chosen .name { font-weight:600; }
   .prod .mute, .prod .faint { font:400 12px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; }
-  .prod .acts { display:flex; gap:6px; flex-wrap:wrap; } .prod .acts button { border-radius:999px; font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; }
-  .prod .reject { grid-column:1 / -1; display:flex; gap:8px; align-items:center; } .prod .reject input { flex:1; font-size:13px; } .prod .reject button { border-radius:999px; font-size:11px; }
+  .prod .acts { display:flex; gap:6px; flex-wrap:wrap; } .prod .acts button { font:500 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:4px 10px; }
+  .prod .reject { grid-column:1 / -1; display:flex; gap:8px; align-items:center; } .prod .reject input { flex:1; font-size:13px; } .prod .reject button { font-size:11px; }
   .prod.chosen { background:var(--accent); color:var(--accent-ink); border-radius:10px; padding:14px 16px; margin:8px 0; border-bottom-color:transparent; }
-  .prod.chosen .name { color:var(--accent-ink); } .prod.chosen .name::before { content:'● '; }
+  .prod.chosen .name { color:var(--accent-ink); } .prod.chosen .name::before { content:''; display:inline-block; width:8px; height:8px; margin-right:8px; border-radius:50%; background:currentColor; vertical-align:2px; }
+  .done { display:inline-flex; align-items:center; gap:5px; }
   .prod.chosen .mute, .prod.chosen .faint { color:color-mix(in srgb, var(--accent-ink) 75%, var(--accent)); }
-  .prod.chosen button:not(.link) { background:var(--accent-ink); color:var(--accent); border-color:var(--accent-ink); } .prod.chosen button.on { background:var(--bg); color:var(--focus); }
+  .prod.chosen button:not(.link) { color:var(--accent-ink); } .prod.chosen button:not(.link):hover:not(:disabled) { background:color-mix(in srgb, var(--accent-ink) 14%, transparent); }
+  .prod.chosen button.on { background:var(--accent-ink); color:var(--accent); }
   .rej { margin-top:14px; font:400 12px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; color:var(--ink-faint); }
   @media (max-width:719px) { .cols { grid-template-columns:1fr; } .cols .card + .card { border-left:0; padding-left:0; } .cols .card:first-child { padding-right:0; } .prod { grid-template-columns:1fr; gap:4px; } .sheet { padding:20px; } }
 </style>

@@ -54,45 +54,155 @@
   --glass-blur: none;
 }
 
+/* One control system for every room (design review 2026-11-17): three button levels, one shape per role,
+   one icon set (ui/icons.ts), styled form controls, and a reading face for node content (RS-38). */
+:root {
+  --font-ui: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  /* NP-80: node content reads in a serif. System faces only, nothing bundled: Sitka Text (Windows),
+     Charter / Iowan Old Style (macOS, iOS), then Cambria, Georgia and the platform serif. */
+  --font-reading: 'Sitka Text', Charter, 'Bitstream Charter', 'Iowan Old Style', Cambria, Georgia, 'Noto Serif', serif;
+  /* Shapes: one radius for buttons and fields, one for surfaces (dialogs, menus, cards), pills for
+     choices and chips, circles for graph tools (.icon-button). */
+  --radius: 8px;
+  --radius-surface: 12px;
+  --radius-pill: 999px;
+  --hover: color-mix(in srgb, var(--ink) 8%, transparent);
+  --press: color-mix(in srgb, var(--ink) 12%, transparent);
+  --menu-shadow: 0 12px 32px color-mix(in srgb, var(--bg) 70%, transparent);
+}
+
 html,
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-ui);
   font-size: 15px;
 }
 
+/* Level 2, the default: a quiet text button for secondary actions. */
 button {
   font: inherit;
+  font-weight: 500;
   color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 7px 14px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 6px 10px;
   cursor: pointer;
+  transition: background-color .12s ease, color .12s ease, border-color .12s ease;
 }
 button:hover:not(:disabled) {
-  background: var(--surface-2);
-  border-color: var(--accent);
+  background: var(--hover);
+}
+button:active:not(:disabled) {
+  background: var(--press);
 }
 button:focus-visible {
   outline: 1px solid var(--focus);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 button:disabled {
   opacity: 0.45;
   cursor: default;
 }
+/* Level 1: one filled primary per view. */
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
   font-weight: 600;
+  padding: 6px 16px;
 }
 button.primary:hover:not(:disabled) {
-  background: var(--focus);
+  background: color-mix(in srgb, var(--accent) 86%, var(--ink));
+  border-color: color-mix(in srgb, var(--accent) 86%, var(--ink));
 }
+button.primary:disabled {
+  opacity: 1;
+  background: var(--surface-2);
+  border-color: transparent;
+  color: color-mix(in srgb, var(--ink-mute) 70%, var(--bg));
+}
+button.primary.danger { background: var(--error); border-color: var(--error); color: var(--bg); }
+button.primary.danger:hover:not(:disabled) { background: var(--error-ink); border-color: var(--error-ink); }
+button.danger:not(.primary):hover:not(:disabled) { color: var(--error-ink); }
+/* Level 3: an icon button for tools; a circle (the graph tools' shape), borderless when .bare. */
+button.icon-button {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--ink-mute);
+  background: var(--surface);
+  border-color: var(--line);
+}
+button.icon-button:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+button.icon-button.bare {
+  background: transparent;
+  border-color: transparent;
+}
+button.icon-button.bare:hover:not(:disabled) {
+  background: var(--hover);
+}
+/* A small quiet button inside text (edit, previous version, show all). */
+button.link {
+  padding: 2px 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-mute);
+}
+button.link:hover:not(:disabled) {
+  background: none;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The drawn icons (ui/Icon.svelte): one line style, in currentColor. */
+.icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -0.2em;
+}
+
+/* Menus (node menu, room menu, subject menus): one look. */
+.menu-surface {
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: 5px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+  box-shadow: var(--menu-shadow);
+}
+.menu-surface > button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 400;
+  border-radius: 6px;
+}
+.menu-surface > button .icon { color: var(--ink-mute); }
+.menu-surface > button:hover:not(:disabled) .icon, .menu-surface > button:focus-visible .icon { color: var(--accent); }
+.menu-surface > button:focus-visible { outline: none; background: var(--hover); }
+.menu-surface hr { border: 0; border-top: 1px solid var(--line); margin: 5px 4px; }
 
 ::-webkit-scrollbar {
   width: 10px;
@@ -105,7 +215,42 @@ button.primary:hover:not(:disabled) {
 :root[data-room="learn"] { --error:#d86a5a; --error-ink:#f0a598; }
 /* Code tokens (NP-70): distinct hues on --code, at least 9:1 (comments 5:1, deliberately quieter). */
 :root[data-room="learn"] { --code-keyword:#e8b66e; --code-string:#a6d189; --code-number:#d4a5e8; --code-function:#8cc4ec; --code-type:#7fd4c8; --code-attr:#f2a97f; --code-comment:#7d8698; }
-input, textarea, select { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px; }
+/* Fields: one radius, the room's tokens; checkboxes, switches, radios and selects drawn, not the browser's. */
+input:where(:not([type='checkbox'], [type='radio'], [type='range'])), textarea, select {
+  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 10px;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+input:where(:not([type='checkbox'], [type='radio'], [type='range'])):hover:not(:disabled):not(:focus), textarea:hover:not(:disabled):not(:focus), select:hover:not(:disabled):not(:focus) { border-color: color-mix(in srgb, var(--ink-mute) 55%, var(--line)); }
+input:where(:not([type='checkbox'], [type='radio'], [type='range'])):focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+input:disabled, textarea:disabled, select:disabled { opacity: .55; cursor: default; }
+input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--ink-mute) 70%, var(--bg)); }
+select {
+  appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 32px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-mute) 50%), linear-gradient(135deg, var(--ink-mute) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 52%, calc(100% - 12px) 52%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+select option, select optgroup { background: var(--surface); color: var(--ink); }
+input[type='checkbox'], input[type='radio'] {
+  appearance: none; -webkit-appearance: none; flex: none; display: inline-grid; place-content: center; margin: 0; width: 16px; height: 16px;
+  border: 1.5px solid var(--ink-mute); border-radius: 4px; background: transparent; cursor: pointer; vertical-align: -0.2em;
+  transition: background-color .12s ease, border-color .12s ease;
+}
+input[type='radio'] { border-radius: 50%; }
+input[type='checkbox']:hover:not(:disabled), input[type='radio']:hover:not(:disabled) { border-color: var(--ink); }
+input[type='checkbox']:checked { background: var(--accent); border-color: var(--accent); }
+input[type='checkbox']::before { content: ''; width: 8px; height: 4px; margin-top: -2px; border: solid var(--accent-ink); border-width: 0 0 2px 2px; transform: rotate(-45deg); visibility: hidden; }
+input[type='checkbox']:checked::before { visibility: visible; }
+input[type='radio']:checked { border-color: var(--accent); box-shadow: inset 0 0 0 3px var(--bg), inset 0 0 0 8px var(--accent); }
+input[type='checkbox']:focus-visible, input[type='radio']:focus-visible { outline: 1px solid var(--focus); outline-offset: 2px; }
+input[type='checkbox']:disabled, input[type='radio']:disabled { cursor: default; }
+/* A switch: a checkbox with role="switch". */
+input[type='checkbox'][role='switch'] { width: 30px; height: 18px; border-radius: var(--radius-pill); place-content: center start; padding: 0 2px; box-sizing: border-box; }
+input[type='checkbox'][role='switch']::before { width: 10px; height: 10px; margin: 0; border: 0; border-radius: 50%; background: var(--ink-mute); transform: none; visibility: visible; transition: transform .15s ease, background-color .15s ease; }
+input[type='checkbox'][role='switch']:checked::before { background: var(--accent-ink); transform: translateX(12px); }
+@media (prefers-reduced-motion: reduce) { button, input, select, textarea, input::before { transition: none !important; } }
+:root[data-reduce-motion='on'] :is(button, input, select, textarea), :root[data-reduce-motion='on'] input::before { transition: none !important; }
+/* A label that holds a checkbox, switch or radio reads on one line, the box first. */
+label:has(> input[type='checkbox'], > input[type='radio']) { display: flex; align-items: center; gap: 10px; cursor: pointer; }
 /* NW-40, NW-42: on a phone, fields are at least 16 px (no zoom on focus) and every dialog uses
    the whole width. Desktop windows (1024 px and up) never match. */
 @media (max-width: 719px) {

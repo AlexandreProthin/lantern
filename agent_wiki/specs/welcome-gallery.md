@@ -86,6 +86,9 @@ motion are the component's final recipe, and no Welcome UI is built before that 
   itself; it is docked at the right end of the capsule, or at the bottom right of the card when the direction is
   open. Enter submits whether or not the button is in view. A blank subject keeps it disabled whatever the direction
   holds, with *Add a subject to carry the lantern in; the direction alone is not enough.* under the example line.
+  *(Amended 2026-11-17, design review.)* It is the Welcome's one primary; it keeps the pill shape of the capsule it
+  docks in. The field has no glow behind it (glow belongs to lit things, [rooms-spaces](/specs/rooms-spaces.md)
+  RS-38), and the recent cards show hover by opacity alone.
 - **WG-11** *Suggest 3 subjects* chips fill the subject only (WG-4); the app never fills the direction. The look and
   motion of WG-9/WG-10 are the `welcome-context` recipe.
 
@@ -118,7 +121,10 @@ motion are the component's final recipe, and no Welcome UI is built before that 
   in full. *Added 2026-10-05 (v0.1.1 I3/I4).*
 - **WG-53** Sorting: **last opened** (default, newest first), **created** (newest first),
   **progress** (understood / total, highest first). A direction toggle reverses the order. Ties
-  fall back to title, A to Z.
+  fall back to title, A to Z. *(Amended 2026-11-17, design review.)* The toggle is an icon button with a drawn arrow
+  ([rooms-spaces](/specs/rooms-spaces.md) RS-38), not the characters ↑ ↓; the toolbar's fields are solid
+  (RS-34), a card shows hover by its border, not a glow, and the empty Gallery's *Start one* and a delete
+  confirmation's *Delete* are the view's primary.
 - **WG-54** Filter: a text field matching the subject title, case-insensitive substring, applied
   as you type with a 150 ms debounce; Esc clears it. With a filter that matches nothing, the grid
   shows *No subject matches "<text>"* with a *Clear filter* link.

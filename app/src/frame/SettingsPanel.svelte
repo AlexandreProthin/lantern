@@ -7,6 +7,7 @@
   import { ProviderError } from './provider';
   import { strings } from '../ui/strings';
   import ModelPicker from '../ui/ModelPicker.svelte';
+  import Icon from '../ui/Icon.svelte';
   import EndpointsSettings from './EndpointsSettings.svelte';
   import NetworkSettings from './NetworkSettings.svelte';
   import { backend, native, remote } from './host';
@@ -85,7 +86,7 @@
   onMount(()=>{section=initialSection;dialog.showModal();void detect().catch(e=>details=String(e));return()=>abort?.abort();});
 </script>
 <dialog class="settings" bind:this={dialog} oncancel={close}>
-  <header><h2>{strings.settings}</h2><button aria-label={strings.close} onclick={close}>×</button></header>
+  <header><h2>{strings.settings}</h2><button class="icon-button bare" aria-label={strings.close} title={strings.close} onclick={close}><Icon name="close" /></button></header>
   <div class="body"><nav>{#each [{id:'general',label:strings.general},{id:'provider',label:strings.provider},...rooms.map(r=>({id:`room:${r.id}`,label:r.name})),{id:'companion',label:strings.companion},{id:'appearance',label:strings.appearance},...(native?[{id:'network',label:strings.network}]:[]),...(developerShown?[{id:'developer',label:strings.developer}]:[])] as item}<button aria-current={section===item.id?'page':undefined} onclick={()=>{section=item.id;validation='';resetting=false;}}>{item.label}</button>{/each}</nav>
     <section><fieldset disabled={readonly||transferring}>
     {#if section==='general'}
@@ -105,7 +106,7 @@
       <label>{strings.defaultEffort}<select bind:value={settings.provider.defaultEffort} onchange={changed}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label><p>{strings.newSubjectsHint}</p>
       <h3>{strings.claudeCode}</h3>
       {#if found!==null}<p>{found?strings.found:strings.notFound} · {located} · {version}</p>{/if}
-      <p role="status">{status}</p><button disabled={testing||generating} onclick={test}>{strings.testProvider}</button>
+      <p role="status">{status}</p><button class="primary" disabled={testing||generating} onclick={test}>{strings.testProvider}</button>
       {#if errorKind==='not-installed'}<p>{strings.installInstructions}</p><a href="https://code.claude.com/docs/en/setup" target="_blank" rel="noopener noreferrer" onclick={install}>{strings.installClaude}</a><button disabled={testing||generating} onclick={test}>{strings.checkAgain}</button>{/if}
       {#if errorKind==='not-logged-in'}<p>{strings.signinInstructions}</p><button disabled={testing||generating} onclick={test}>{strings.checkAgain}</button>{/if}
       {#if errorKind==='model-unknown'}<button onclick={()=>document.getElementById('default-model')?.focus()}>{strings.chooseModel}</button>{/if}
@@ -141,23 +142,44 @@
       <label><input type="checkbox" bind:checked={settings.appearance.showTokenStats} onchange={changed} />{strings.showTokens}</label>
     {/if}
       {#if validation}<p class="invalid" role="alert">{validation}</p>{/if}
-      {#if destination}<div class="confirmation"><h3>{strings.transferLibrary}</h3><p>{destination}</p><p>{strings.transferHint}</p><div class="actions"><button onclick={()=>transfer('move')}>{strings.moveSubjects}</button><button onclick={()=>transfer('copy')}>{strings.copySubjects}</button><button onclick={()=>transfer('leave')}>{strings.leaveSubjects}</button><button onclick={()=>destination=''}>{strings.cancel}</button></div></div>{/if}
-      {#if resetting}<p>{strings.confirmReset}</p><div class="actions"><button onclick={reset}>{strings.resetDefaults}</button><button onclick={()=>resetting=false}>{strings.cancel}</button></div>{:else}<button disabled={generating&&section==='general'} onclick={()=>resetting=true}>{strings.resetDefaults}</button>{/if}
+      {#if destination}<div class="confirmation"><h3>{strings.transferLibrary}</h3><p>{destination}</p><p>{strings.transferHint}</p><div class="actions"><button class="primary" onclick={()=>transfer('move')}>{strings.moveSubjects}</button><button onclick={()=>transfer('copy')}>{strings.copySubjects}</button><button onclick={()=>transfer('leave')}>{strings.leaveSubjects}</button><button onclick={()=>destination=''}>{strings.cancel}</button></div></div>{/if}
+      {#if resetting}<p>{strings.confirmReset}</p><div class="actions"><button class="primary" onclick={reset}>{strings.resetDefaults}</button><button onclick={()=>resetting=false}>{strings.cancel}</button></div>{:else}<button class="reset" disabled={generating&&section==='general'} onclick={()=>resetting=true}>{strings.resetDefaults}</button>{/if}
     </fieldset></section>
   </div>
 </dialog>
 <style>
-  .settings { position:fixed; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:12px; width:min(800px,85vw); padding:0; }
-  .settings::backdrop { background:var(--code); opacity:.7; } header { display:flex; justify-content:space-between; align-items:center; padding:12px 24px; border-bottom:1px solid var(--line); } h2 {font-size:18px;}
-  .body { display:grid; grid-template-columns:160px 1fr; min-height:400px; } nav {display:flex;flex-direction:column;gap:8px;padding:20px;border-right:1px solid var(--line);} nav button {text-align:left;} [aria-current='page'] {color:var(--accent);border-color:var(--accent);}
-  section { padding:24px; overflow:auto; max-height:65vh; } fieldset {padding:0;border:0;display:grid;gap:16px;} label,.field {display:grid;gap:8px;} p {color:var(--ink-mute);font-size:13px;} pre {white-space:pre-wrap;} h3 {font-size:15px;} a {color:var(--accent);} .actions {display:flex;gap:8px;flex-wrap:wrap;} .confirmation {border:1px solid var(--line);padding:12px;} .invalid {color:var(--focus);}
+  .settings { position:fixed; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-surface); width:min(800px,85vw); padding:0; }
+  .settings::backdrop { background:var(--code); opacity:.7; } header { display:flex; justify-content:space-between; align-items:center; padding:10px 14px 10px 24px; border-bottom:1px solid var(--line); } h2 {font-size:18px;}
+  /* SE-1: the sections are a plain list; only the current one is marked (a bar and the ink colour), hover is a tint. */
+  .body { display:grid; grid-template-columns:170px 1fr; min-height:400px; }
+  nav {display:flex;flex-direction:column;gap:2px;padding:16px 10px;border-right:1px solid var(--line);}
+  nav button {position:relative;text-align:left;font-weight:400;color:var(--ink-mute);padding:7px 12px;}
+  nav button:hover:not(:disabled) {color:var(--ink);background:none;}
+  nav [aria-current='page'] {color:var(--ink);font-weight:600;background:var(--surface-2);}
+  nav [aria-current='page']::before {content:'';position:absolute;left:0;top:8px;bottom:8px;width:2px;border-radius:2px;background:var(--accent);}
+  section { padding:24px; overflow:auto; max-height:65vh; } fieldset {padding:0;border:0;display:grid;gap:16px;}
+  /* A lone button keeps its size instead of stretching across the column. */
+  fieldset > :global(button), fieldset > :global(a) {justify-self:start;}
+  /* A field's name sits above it, small and muted; a checkbox or switch reads on one line, box first. Room menus share it. */
+  section :global(label), .field {display:grid;gap:6px;font-size:13px;color:var(--ink-mute);}
+  section :global(label) :global(:is(input, select, textarea)), .field :global(:is(input, select, textarea)) {color:var(--ink);}
+  /* NW-42: a phone keeps its 16 px fields (app.css). */
+  @media (min-width: 720px) { section :global(label) :global(:is(input, select, textarea)), .field :global(:is(input, select, textarea)) {font-size:14px;} }
+  section :global(label:has(> input[type='checkbox'], > input[type='radio'])) {display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink);}
+  section :global(p) {color:var(--ink-mute);font-size:13px;margin:0;} pre {white-space:pre-wrap;} section :global(h3) {font-size:15px;margin:8px 0 0;}
+  section :global(.codex) {display:grid;gap:12px;} section :global(.codex > button) {justify-self:start;} a {color:var(--accent);} .actions {display:flex;gap:4px;flex-wrap:wrap;margin-left:-10px;} .actions :global(button.primary) {margin-left:10px;}
+  .confirmation {justify-self:stretch;display:grid;gap:10px;border:1px solid var(--line);border-radius:var(--radius-surface);padding:14px 16px;} .confirmation h3 {margin:0;} .invalid {color:var(--focus);}
+  .reset {margin-left:-10px;color:var(--ink-mute);}
   /* NW-40: on a phone Settings fills the screen and its sections become a row of tabs. */
   @media (max-width: 719px) {
     .settings { width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; margin:0; border:0; border-radius:0; box-sizing:border-box; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-    .settings[open] { display:flex; flex-direction:column; } header { padding:8px 16px; } header button { min-width:44px; min-height:44px; font-size:20px; }
+    .settings[open] { display:flex; flex-direction:column; } header { padding:6px 8px 6px 16px; } header button { width:44px; height:44px; }
     .body { flex:1; min-height:0; grid-template-columns:1fr; grid-template-rows:auto 1fr; }
-    nav { flex-direction:row; overflow-x:auto; padding:8px 16px; border-right:0; border-bottom:1px solid var(--line); scrollbar-width:none; } nav button { flex:none; white-space:nowrap; }
+    nav { flex-direction:row; gap:4px; overflow-x:auto; padding:0 12px; border-right:0; border-bottom:1px solid var(--line); scrollbar-width:none; } nav button { flex:none; white-space:nowrap; border-radius:0; padding:12px 10px; }
+    nav [aria-current='page'] {background:none;}
+    nav [aria-current='page']::before {left:10px;right:10px;top:auto;bottom:0;width:auto;height:2px;}
     section { max-height:none; padding:16px; }
   }
-  .version {justify-self:start;background:none;border:0;padding:0;color:var(--ink-mute);font-size:13px;cursor:default;}
+  .version {justify-self:start;background:none;border:0;padding:0;color:var(--ink-mute);font-size:13px;font-weight:400;cursor:default;}
+  .version:hover:not(:disabled) {background:none;}
 </style>
