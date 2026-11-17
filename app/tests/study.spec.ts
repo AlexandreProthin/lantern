@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { graphMotion } from '../src/ui/graph/graphMotion';
 test('PQ-22: Study fake loop, edits, dismiss/restore and restart persistence', async ({page}) => {
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/?study=1&subject=Ocean%20tides');
@@ -62,28 +63,67 @@ test('GV-92/94/96: pending bodies reveal in place and stay out of saved state', 
 });
 test('GV-90/91/92: sequential branch tips, breathing, completion particles and reduced motion', async ({page}) => {
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  // GV-90 runs on the clock from the moment the placeholders appear (three 500 ms growths, 120 ms apart): on a loaded
+  // machine one round trip can outlast a phase, and a starved page can skip frames. The page records every change of
+  // phase, tip, light layer or particle with its time (and the moment reduced motion switches on); the test checks the
+  // recorded sequence and its timing afterwards instead of polling a live window.
+  await page.addInitScript(()=>{
+    const log:unknown[]=[];(window as any).__spawnLog=log;let last='';
+    const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+    const state=()=>({tips:document.querySelectorAll('.spawn-tip').length,lights:document.querySelectorAll('.spawn-light').length,
+      particles:document.querySelectorAll('.spawn-particle').length,
+      nodes:[...document.querySelectorAll<HTMLElement>('.node[data-pending="waiting"]')].map(n=>({id:n.dataset.id,phase:n.dataset.spawnPhase??null,
+        visibility:getComputedStyle(n).visibility,animation:getComputedStyle(n.querySelector('.disc')!).animationName}))});
+    const record=(reduceEvent:boolean)=>{const s=state(),key=JSON.stringify(s);
+      if(reduceEvent||key!==last)log.push({...s,t:performance.now(),reduceEvent});last=key;};
+    new MutationObserver(()=>record(false)).observe(document,{subtree:true,childList:true,attributes:true,attributeFilter:['data-spawn-phase','data-pending']});
+    // Created before the app's own query, so this listener runs first (CSSOM View): it sees the motion as it was.
+    reduce.addEventListener('change',()=>{if(reduce.matches)record(true);});
+  });
+  type Snap={t:number;reduceEvent:boolean;tips:number;lights:number;particles:number;nodes:{id:string;phase:string|null;visibility:string;animation:string}[]};
+  const log=(from=0):Promise<Snap[]>=>page.evaluate(n=>(window as any).__spawnLog.slice(n),from);
+  const allBreathing=(s:Snap)=>s.nodes.length===3&&s.nodes.every(n=>n.phase==='breathing');
   await page.goto('/?study=1&subject=Branch%20motion&delay=200');
-  const pending=page.locator('.node[data-pending="waiting"]');
-  await expect(pending).toHaveCount(3);
-  await expect(page.locator('.spawn-tip')).toHaveCount(1);
-  await expect(pending.nth(0)).toHaveAttribute('data-spawn-phase','breathing');
-  await expect(pending.nth(1)).toHaveAttribute('data-spawn-phase','growing');
-  expect(await pending.nth(1).evaluate(el=>getComputedStyle(el).visibility)).toBe('hidden');
-  await expect(page.locator('.node[data-pending="waiting"][data-spawn-phase="breathing"]')).toHaveCount(3);
-  await expect(page.locator('.spawn-tip')).toHaveCount(0);
-  expect(await pending.first().locator('.disc').evaluate(el=>getComputedStyle(el).animationName)).toContain('breathe');
-  await expect.poll(()=>page.locator('.spawn-particle').count(),{intervals:[50],timeout:10000}).toBeGreaterThan(0);
+  await expect.poll(async()=>(await log()).some(allBreathing),{timeout:10000}).toBe(true);
+  let growth=(await log()).filter(s=>s.nodes.length===3);
+  const trace=`[ms, tips, phases] ${JSON.stringify(growth.map(s=>[Math.round(s.t-growth[0].t),s.tips,s.nodes.map(n=>n.phase?.[0]??'-').join('')]))}`;
+  // GV-90: one glowing tip at a time, and a placeholder stays hidden until its tip arrives.
+  expect(Math.max(...growth.map(s=>s.tips)),trace).toBe(1);
+  for(const s of growth)for(const n of s.nodes)expect(n.visibility,`${n.phase} at ${s.t}`).toBe(n.phase==='breathing'?'visible':'hidden');
+  // One after another: branch i arrives no sooner than i × (grow + stagger) + grow after the placeholders appeared, and
+  // never before the branch ahead of it. (A starved page may land two arrivals in one frame, never out of order. The
+  // slack covers the placeholders being observed up to one task after their clock starts.)
+  const {SPAWN_GROW_MS:grow,SPAWN_STAGGER_MS:stagger}=graphMotion, slack=250;
+  const arrived=growth[0].nodes.map(({id})=>growth.find(s=>s.nodes.find(n=>n.id===id)?.phase==='breathing')?.t??NaN);
+  arrived.forEach((t,i)=>{
+    expect(t-growth[0].t,`branch ${i}: ${trace}`).toBeGreaterThanOrEqual(i*(grow+stagger)+grow-slack);
+    if(i)expect(t,`branch ${i}: ${trace}`).toBeGreaterThanOrEqual(arrived[i-1]);
+  });
+  // GV-91: once grown, all three breathe together and no tip is left.
+  const waiting=growth.find(allBreathing)!;
+  expect(waiting.tips).toBe(0);for(const n of waiting.nodes)expect(n.animation).toContain('breathe');
+  // GV-92: the response turns them into real nodes with a particle burst, then the effect layer goes away.
+  // The fake reply streams in 15 chunks of 200 ms: allow a loaded machine more than the default 5 s for it.
+  await expect(page.locator('.node[data-pending]')).toHaveCount(0,{timeout:10000});
+  await expect.poll(async()=>(await log()).some(s=>s.particles>0)).toBe(true);
   await page.screenshot({path:'test-results/spawn-completion.png'});
   await expect(page.locator('.spawn-light')).toHaveCount(0);
-  await expect(page.locator('.node[data-pending]')).toHaveCount(0);
   // System reduction applies immediately, including to an in-flight growth sequence.
   await page.locator('.panel').getByRole('button',{name:'Mechanism 1',exact:false}).click();
+  const mark=(await log()).length;
   await page.locator('.panel').getByRole('button',{name:'Light it up',exact:true}).click();
-  await expect(page.locator('.spawn-tip')).toHaveCount(1);
+  await page.waitForFunction(()=>document.querySelector('.spawn-tip'),undefined,{polling:'raf'});
   await page.emulateMedia({reducedMotion:'reduce'});
-  await expect(page.locator('.spawn-light')).toHaveCount(0);
-  await expect(pending.first()).toBeVisible();
-  await expect(page.locator('.node[data-pending]')).toHaveCount(0);
+  await expect.poll(async()=>(await log(mark)).some(s=>s.reduceEvent)).toBe(true);
+  await expect(page.locator('.node[data-pending]')).toHaveCount(0,{timeout:10000});
+  growth=await log(mark);
+  const at=growth.findIndex(s=>s.reduceEvent);
+  expect(growth[at].nodes.some(n=>n.phase==='growing'),'reduced motion arrived while a branch was growing').toBe(true);
+  expect(growth.slice(at+1).some(s=>s.nodes.length===3),'placeholders shown under reduced motion').toBe(true);
+  for(const s of growth.slice(at+1)){
+    expect(s).toMatchObject({tips:0,lights:0,particles:0});
+    for(const n of s.nodes)expect(n.visibility).toBe('visible');
+  }
   await expect(page.locator('.spawn-particle')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
