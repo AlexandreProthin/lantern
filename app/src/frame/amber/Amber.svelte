@@ -9,8 +9,8 @@
   import type { AmberChat } from './chat';
   import type { AmberState } from './state';
   import { markTipSeen, nextTip, setSpot, spotOf } from './state';
-  import { AMBER_H, AMBER_W, BAR, TIE_X, TIE_Y, bubbleBox, dropTarget, hangSpots, hintPoint, restSpots, spotById } from './place';
-  import type { Spot } from './place';
+  import { AMBER_H, AMBER_W, BAR, TIE_X, TIE_Y, bubbleBox, defaultHang, dropTarget, hangSpots, hintPoint, restSpots, spotById } from './place';
+  import type { BubbleBox, Rect, Spot } from './place';
   import { Rope, STEP, flightDuration, flightPoint } from './rope';
   import { LANDING_SETTLE, RETRACT, actDone, compose, dangle, endsStanding, flightBase, grabbedBase, hangingBase, lookAt, restingBase, startAct } from './motion';
   import type { Act } from './motion';
@@ -60,14 +60,19 @@
 
   // CO-11, CO-13: the hanging spots along the bar, and this space's resting spots measured from the page.
   const hangs = $derived(hangSpots(width, desktop ? CONTROLS : 0, strings.amberSpotHang));
-  let rests = $state.raw<Spot[]>([]), measured = $state(false);
+  let rests = $state.raw<Spot[]>([]), avoid = $state.raw<Rect[]>([]), measured = $state(false);
+  const avoiding = $derived(room.companion?.avoid?.[space] ?? []);
   function measure() {
     const spaces = document.querySelector('.spaces'); if (!spaces) return;
     const find = (selector: string) => { for (const el of document.querySelectorAll(selector)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return r; } return null; };
     const next = restSpots(room.companion?.rests?.[space], find, spaces.getBoundingClientRect(), { left: strings.amberRestLeft, right: strings.amberRestRight });
     if (JSON.stringify(next) !== JSON.stringify(rests)) rests = next;
+    // CO-20: what the bubble keeps clear of, as laid out now.
+    const shown = avoiding.flatMap(selector => [...document.querySelectorAll(selector)]).map(el => el.getBoundingClientRect()).filter(r => r.width && r.height)
+      .map(r => ({ left: Math.round(r.left), top: Math.round(r.top), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) }));
+    if (JSON.stringify(shown) !== JSON.stringify(avoid)) avoid = shown;
     // The space draws its parts after Amber (Study's graph once the subject is in): measure again when they appear or resize.
-    const anchors = (room.companion?.rests?.[space] ?? []).flatMap(spec => [...document.querySelectorAll(spec.anchor)]);
+    const anchors = [...(room.companion?.rests?.[space] ?? []).map(spec => spec.anchor), ...avoiding].flatMap(selector => [...document.querySelectorAll(selector)]);
     if (!measured || anchors.length !== observed) {
       observer?.disconnect(); observer = new ResizeObserver(() => remeasure());
       observer.observe(spaces); for (const el of anchors) observer.observe(el); observed = anchors.length;
@@ -80,11 +85,13 @@
   $effect(() => { space; room; width; height; measured = false; observed = -1; void tick().then(remeasure); return () => { observer?.disconnect(); mutations?.disconnect(); cancelAnimationFrame(pendingMeasure); }; });
   const spots = $derived([...hangs, ...rests]);
   const saved = $derived(spotOf(amberState, room.id, space));
-  // Until the resting spots are measured, a saved resting spot waits rather than flashing at the default.
-  const spot = $derived(spotById(spots, saved));
+  // CO-10 (amended 2026-11-17): unless moved, Amber hangs at the rightmost spot clear of what the space keeps uncovered.
+  const spot = $derived(spotById(spots, saved, defaultHang(hangs, avoid)));
   let gaveUp = $state(false);
   $effect(() => { space; room; gaveUp = false; const t = setTimeout(() => gaveUp = true, 1500); return () => clearTimeout(t); });
-  const ready = $derived(!saved?.startsWith('rest-') || rests.some(r => r.id === saved) || (measured && gaveUp));
+  // Until the space is measured, a saved resting spot, or the default of a space with parts to avoid, waits rather than flashing elsewhere.
+  const layoutPending = $derived(saved?.startsWith('rest-') ? !rests.some(r => r.id === saved) : !saved && avoiding.length > 0 && !avoid.length);
+  const ready = $derived(!layoutPending || (measured && gaveUp));
 
   // Motion: still at the spot, held by the hand, swinging on the rope, or flying or falling to a spot.
   type Motion = { kind: 'still' }
@@ -231,11 +238,18 @@
   const pool = $derived([...strings.amberTips, ...(room.companion?.tips ?? [])]);
   const tip = $derived(pool.find(t => t.id === tipId));
   const guide = $derived(room.companion?.guide[space] ?? []);
-  const box = $derived(bubbleBox(spot, width, BUBBLE_W, height));
-  /** The bubble's tail, on the edge facing Amber, under its centre and clear of the bubble's rounded corners. */
-  function tailOf(at: { left: number; top?: number; bottom?: number }, w: number) {
+  // CO-20: the bubble's and the greeting's boxes keep clear of the space's panel and tools (their heights as drawn).
+  let bubbleH = $state(230), sayH = $state(80);
+  const box = $derived(bubbleBox(spot, { width, height }, { width: BUBBLE_W, height: bubbleH }, avoid));
+  const sayBox = $derived(bubbleBox(spot, { width, height }, { width: SAY_W, height: sayH }, avoid));
+  /** The bubble's tail, on the edge facing Amber: under (over) its centre, or level with it on a side; clear of the rounded corners. */
+  function tailOf(at: BubbleBox, w: number, h: number) {
+    if (at.tail === 'left' || at.tail === 'right') {
+      const top = at.top ?? height - at.bottom! - h, y = top + Math.max(22, Math.min(h - 22, spot.top + AMBER_H / 2 - top));
+      return { kind: at.tail, left: at.tail === 'right' ? at.left + w : at.left, top: y - 7, bottom: undefined };
+    }
     const x = at.left + Math.max(30, Math.min(w - 30, spot.left + AMBER_W / 2 - at.left));
-    return { left: x, top: at.top !== undefined ? at.top - 7 : undefined, bottom: at.bottom !== undefined ? at.bottom - 7 : undefined };
+    return { kind: at.tail, left: x, top: at.top !== undefined ? at.top - 7 : undefined, bottom: at.bottom !== undefined ? at.bottom - 7 : undefined };
   }
   /** CO-21: the next tip, unseen first; it is remembered as seen once shown. */
   function showNextTip() {
@@ -286,9 +300,9 @@
   onpointerover={() => { if (!hovered) { hovered = true; if (!act) play(GESTURE.rest); } }} onpointerout={e => { if (!button?.contains(e.relatedTarget as Node)) hovered = false; }}
   onfocus={() => { if (!act) play(GESTURE.rest); }} onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}><span class="art" bind:this={art}></span><svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
 {/if}
-{#if saying && ready && !bubble && !menu && motion.kind === 'still'}{@const at = bubbleBox(spot, width, SAY_W, height)}{@const t = tailOf(at, SAY_W)}
-  <div class="tail" class:up={t.top !== undefined} class:fading aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
-  <div class="say living" class:still={reduced} class:fading role="status" aria-live="polite" data-testid="amber-says" style:left={`${at.left}px`} style:top={at.top !== undefined ? `${at.top}px` : undefined} style:bottom={at.bottom !== undefined ? `${at.bottom}px` : undefined} style:width={`${SAY_W}px`}
+{#if saying && ready && !bubble && !menu && motion.kind === 'still'}{@const at = sayBox}{@const t = tailOf(at, SAY_W, sayH)}
+  <div class="tail {t.kind}" class:fading aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
+  <div class="say living" class:still={reduced} class:fading role="status" aria-live="polite" data-testid="amber-says" bind:offsetHeight={sayH} style:left={`${at.left}px`} style:top={at.top !== undefined ? `${at.top}px` : undefined} style:bottom={at.bottom !== undefined ? `${at.bottom}px` : undefined} style:width={`${SAY_W}px`}
     onpointerenter={() => { if (saying === 'greeting') pauseFade(); }} onpointerleave={() => { if (saying === 'greeting' && sayHover) resumeFade(); }}>
     {#if saying === 'waiting'}<p>{waiting}</p>
     {:else if greeting}<p>{greeting.text}</p>
@@ -299,9 +313,9 @@
     {/if}
   </div>
 {/if}
-{#if bubble}{@const t = tailOf(box, BUBBLE_W)}
-  <div class="tail" class:up={t.top !== undefined} aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
-  <div class="bubble living" class:still={reduced} role="dialog" aria-label={strings.amberName} tabindex="-1" bind:this={bubbleEl} style:left={`${box.left}px`} style:top={box.top !== undefined ? `${box.top}px` : undefined} style:bottom={box.bottom !== undefined ? `${box.bottom}px` : undefined} style:width={`${BUBBLE_W}px`}
+{#if bubble}{@const t = tailOf(box, BUBBLE_W, bubbleH)}
+  <div class="tail {t.kind}" aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
+  <div class="bubble living" class:still={reduced} role="dialog" aria-label={strings.amberName} tabindex="-1" bind:this={bubbleEl} bind:offsetHeight={bubbleH} style:left={`${box.left}px`} style:top={box.top !== undefined ? `${box.top}px` : undefined} style:bottom={box.bottom !== undefined ? `${box.bottom}px` : undefined} style:width={`${BUBBLE_W}px`}
     onkeydown={e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeBubble(true); } }}>
     {#if mode === 'tip'}<p class="tip">{#if tip}<Emphasis text={tip.text} />{/if}</p>
     {:else}<h3>{strings.whatCanIDo}</h3><GuideLines lines={guide} />{/if}
@@ -353,6 +367,9 @@
   .tail { position:fixed; z-index:10; width:14px; height:14px; margin-left:-7px; box-sizing:border-box; pointer-events:none; transform:rotate(45deg); transition:opacity .4s;
     border-top-color:transparent; border-left-color:transparent; border-bottom-right-radius:4px; }
   .tail.up { border-color:var(--rim); border-right-color:transparent; border-bottom-color:transparent; border-radius:4px 0 0 0; }
+  /* Beside Amber (CO-20, amended 2026-11-17): the tail on the bubble's side, pointing to it. */
+  .tail.right { margin-left:-7px; border-color:var(--rim); border-left-color:transparent; border-bottom-color:transparent; border-radius:0 4px 0 0; }
+  .tail.left { margin-left:-7px; border-color:var(--rim); border-right-color:transparent; border-top-color:transparent; border-radius:0 0 0 4px; }
   .say.fading, .tail.fading { opacity:0; } .say p { margin:0; } .say .notes { white-space:pre-wrap; color:var(--ink-mute); font-size:13px; }
   .say .quiet { justify-self:start; background:none; border:0; padding:0; font-size:13px; color:var(--accent); }
   @media (prefers-reduced-motion: reduce) { .say, .tail { transition:none; } .living { animation:none; } }

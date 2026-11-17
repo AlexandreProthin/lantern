@@ -136,12 +136,20 @@ const amber = (page: import('@playwright/test').Page) => page.getByRole('button'
 const bubble = (page: import('@playwright/test').Page) => page.getByRole('dialog', { name: 'Amber', exact: true });
 
 test('CO-10/11/20/21: Amber hangs under the bar on the right; a click opens a tip, Next tip, the guide; Esc closes; seen tips are kept', async ({ page }) => {
-  await page.goto('/?study=1&subject=Tides');
+  await page.goto('/');
   await expect(amber(page)).toBeVisible();
-  const box = (await amber(page).boundingBox())!, width = page.viewportSize()!.width;
+  const width = page.viewportSize()!.width;
+  let box = (await amber(page).boundingBox())!;
   expect(box.y).toBeGreaterThanOrEqual(56); expect(box.width).toBeGreaterThanOrEqual(64);
   expect(box.x + box.width).toBeLessThanOrEqual(width - 16); expect(box.x).toBeGreaterThan(width / 2);
   await expect(amber(page)).toHaveAttribute('data-spot', 'hang-9');
+  // CO-10 (amended 2026-11-17): in Study it hangs at the right of the graph, clear of the reading panel and the graph tools.
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await expect(amber(page)).toHaveAttribute('data-spot', /^hang-[1-8]$/);
+  box = (await amber(page).boundingBox())!;
+  const panel = (await page.locator('aside.panel').boundingBox())!, tools = (await page.locator('.graph .controls').boundingBox())!;
+  expect(box.x + box.width).toBeLessThanOrEqual(Math.min(panel.x, tools.x)); expect(box.x).toBeGreaterThan(panel.x / 2);
   await amber(page).click();
   await expect(bubble(page)).toContainText('Press Ctrl+J anywhere to ask me something.');
   await bubble(page).getByRole('button', { name: 'Next tip' }).click();
@@ -176,7 +184,8 @@ test('CO-16/58/15: the menu opens on right-click and Shift+F10; Move to… moves
   await expect(menu.getByRole('menuitem', { name: 'Move to…' })).toBeFocused();
   await menu.getByRole('menuitem', { name: 'Move to…' }).click();
   await expect(menu.getByRole('menuitemradio')).toHaveCount(13);
-  await expect(menu.getByRole('menuitemradio', { name: 'Hanging, position 10 of 10' })).toHaveAttribute('aria-checked', 'true');
+  const at = Number((await amber(page).getAttribute('data-spot'))!.slice(5));
+  await expect(menu.getByRole('menuitemradio', { name: `Hanging, position ${at + 1} of 10` })).toHaveAttribute('aria-checked', 'true');
   await menu.getByRole('menuitemradio', { name: 'Hanging, position 1 of 10' }).click();
   await expect(amber(page)).toHaveAttribute('data-spot', 'hang-0');
   expect((await amber(page).boundingBox())!.x).toBeLessThan(40);
@@ -244,6 +253,45 @@ test('CO-17: clicks beside Amber\'s drawn shape reach what is underneath; popove
   await page.keyboard.press('Control+k');
   const z = await page.evaluate(() => { const p = document.querySelector('.field-panel, [role=dialog]'); return p ? Number(getComputedStyle(p).zIndex) || 0 : -1; });
   expect(z).toBeGreaterThan(1);
+});
+
+// CO-20 (amended 2026-11-17): the bubble never covers the reading panel nor the graph tools.
+async function uncovered(page: import('@playwright/test').Page, what: import('@playwright/test').Locator, keep: string[]) {
+  const b = (await what.boundingBox())!;
+  for (const selector of keep) for (const r of await page.locator(selector).evaluateAll(els => els.map(e => e.getBoundingClientRect().toJSON()).filter(r => r.width && r.height))) {
+    const overlap = b.x < r.right && b.x + b.width > r.left && b.y < r.bottom && b.y + b.height > r.top;
+    expect(overlap, `${selector} under the bubble`).toBe(false);
+  }
+}
+const studyParts = ['.study:not(.hidden) aside.panel', '.study:not(.hidden) .graph .controls', '.study:not(.hidden) .graph .zoom-controls', '.study:not(.hidden) .graph .corner'];
+test('CO-20: the bubble never covers the reading panel or the graph tools; hung over the panel it opens beside it, its tail toward Amber', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await amber(page).click(); await expect(bubble(page)).toBeVisible();
+  await uncovered(page, bubble(page), studyParts);
+  await expect(page.locator('.tail.up')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  // Moved over the panel (its old default), the bubble opens on the graph's side of the panel.
+  await amber(page).click({ button: 'right' }); await page.getByRole('menuitem', { name: 'Move to…' }).click();
+  await page.getByRole('menuitemradio', { name: 'Hanging, position 10 of 10' }).click();
+  await expect(amber(page)).toHaveAttribute('data-spot', 'hang-9'); await expect(amber(page)).toHaveAttribute('data-motion', 'still', { timeout: 8000 });
+  await amber(page).click(); await expect(bubble(page)).toBeVisible();
+  await uncovered(page, bubble(page), studyParts);
+  await expect(page.locator('.tail.right')).toHaveCount(1);
+  // A narrower window: still clear.
+  await page.keyboard.press('Escape'); await page.setViewportSize({ width: 1024, height: 720 });
+  await amber(page).click(); await expect(bubble(page)).toBeVisible();
+  await uncovered(page, bubble(page), studyParts);
+});
+test('CO-20: in the Choose Survey the bubble keeps clear of the panel, the rail and the graph tools', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 720 });
+  await page.addInitScript(() => { const s = JSON.parse(localStorage.getItem('lantern.settings') ?? '{}'); s.ui = { ...(s.ui ?? {}), lastRoom: 'choose' }; localStorage.setItem('lantern.settings', JSON.stringify(s)); });
+  await page.goto('/?study=1&subject=3D%20printer');
+  await expect(page.locator('.graph .node', { hasText: 'Print volume' })).toBeVisible();
+  await amber(page).click(); await expect(bubble(page)).toBeVisible();
+  await uncovered(page, bubble(page), [...studyParts, '.study:not(.hidden) aside.rail']);
+  await uncovered(page, amber(page), [...studyParts, '.study:not(.hidden) aside.rail']);
 });
 
 // v0.4.0 slice 6: moving Amber (CO-12 to CO-16, CO-56).

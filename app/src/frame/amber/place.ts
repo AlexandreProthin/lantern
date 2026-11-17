@@ -55,12 +55,28 @@ export function restSpots(specs: readonly RestSpec[] | undefined, find: (anchor:
   const found = (specs ?? []).flatMap(s => { const r = find(s.anchor); return r && r.width >= AMBER_W + 2 * (s.inset?.x ?? EDGE) && r.height >= AMBER_H * 2 ? [corner(s.id, s.label, r, s.side, s.inset?.x ?? EDGE, s.inset?.y ?? EDGE)] : []; });
   return found.length ? found : [corner('left', labels.left, spaces, 'left', EDGE, EDGE), corner('right', labels.right, spaces, 'right', EDGE, EDGE)];
 }
-/** A saved spot that no longer exists (another layout, an older app) falls back to the default; a saved rope is kept. */
-export function spotById(spots: readonly Spot[], id: string | undefined): Spot {
+/**
+ * A saved spot that no longer exists (another layout, an older app) falls back to the default; a saved rope is kept.
+ * `fallback` is the space's default (`defaultHang`), else the last hanging spot.
+ */
+export function spotById(spots: readonly Spot[], id: string | undefined, fallback = DEFAULT_SPOT): Spot {
   const { base, rope } = parseSpotId(id);
   const found = spots.find(s => s.id === base);
   if (found && found.kind === 'hang' && rope !== undefined) return hang(Number(base.slice(5)), found.left, rope, found.label);
-  return found ?? spots.find(s => s.id === DEFAULT_SPOT) ?? spots[0];
+  return found ?? spots.find(s => s.id === fallback) ?? spots.find(s => s.id === DEFAULT_SPOT) ?? spots[0];
+}
+const GAP = 8;
+const overlaps = (a: { left: number; top: number; right: number; bottom: number }, b: Rect, gap = 0) =>
+  a.left < b.right + gap && a.right > b.left - gap && a.top < b.bottom + gap && a.bottom > b.top - gap;
+/**
+ * CO-10, CO-20 (amended 2026-11-17): where Amber hangs by default in a space: the rightmost hanging spot whose lantern
+ * clears what the space keeps uncovered (`avoid`: the reading panel, the graph tools); with nothing to avoid, or no
+ * spot clear, the last one, on the right.
+ */
+export function defaultHang(hangs: readonly Spot[], avoid: readonly Rect[]): string {
+  if (!avoid.length) return DEFAULT_SPOT;
+  const clear = [...hangs].reverse().find(s => !avoid.some(r => overlaps({ left: s.left, right: s.left + AMBER_W, top: BAR, bottom: s.top + AMBER_H }, r, GAP)));
+  return clear?.id ?? DEFAULT_SPOT;
 }
 /** Where a spot's hint is drawn, and what "nearest" measures from: the tie under the bar, or the feet on the ground. */
 export const hintPoint = (s: Spot) => s.kind === 'hang' ? { x: s.anchorX, y: BAR } : { x: s.left + AMBER_W / 2, y: s.ground };
@@ -85,9 +101,44 @@ export function dropTarget(hangs: readonly Spot[], rests: readonly Spot[], left:
   }
   return nearest(rests, left, top);
 }
-/** CO-20: the bubble opens toward the middle of the window: under a hanging Amber, above a resting one. */
-export function bubbleBox(spot: Spot, width: number, bubbleWidth: number, height: number): { left: number; top?: number; bottom?: number } {
-  const centre = spot.left + AMBER_W / 2, left = centre > width / 2 ? spot.left + AMBER_W - bubbleWidth : spot.left;
-  const x = Math.max(8, Math.min(width - bubbleWidth - 8, left));
-  return spot.kind === 'hang' ? { left: x, top: spot.top + AMBER_H + 6 } : { left: x, bottom: Math.max(8, height - spot.top + 6) };
+/** Where the bubble's tail points: up to a hanging Amber, down to a resting one, or sideways when it sits beside Amber. */
+export type Tail = 'up' | 'down' | 'left' | 'right';
+export interface BubbleBox { left: number; top?: number; bottom?: number; tail: Tail }
+/**
+ * CO-20: the bubble opens toward the middle of the window: under a hanging Amber, above a resting one.
+ * CO-20 (amended 2026-11-17): it never covers what the space keeps uncovered (`avoid`: the reading panel, the graph
+ * tools). Tried in turn: under (or above) Amber, slid sideways as little as needed with the tail still on Amber;
+ * beside Amber, the tail pointing to it; then anywhere clear, nearest to Amber; and only when nothing is clear (a
+ * narrow window, a phone) where it opened before. `bar` is the header's height (BAR on the desktop).
+ */
+export function bubbleBox(spot: Spot, view: { width: number; height: number; bar?: number }, size: { width: number; height: number }, avoid: readonly Rect[] = []): BubbleBox {
+  const { width, height } = view, bar = view.bar ?? BAR, w = size.width, h = size.height;
+  const centre = spot.left + AMBER_W / 2, middle = spot.top + AMBER_H / 2;
+  const clampX = (x: number) => Math.max(GAP, Math.min(width - w - GAP, x)), clampY = (y: number) => Math.max(bar + GAP, Math.min(height - h - GAP, y));
+  const below = spot.kind === 'hang', top = below ? spot.top + AMBER_H + 6 : height - Math.max(GAP, height - spot.top + 6) - h;
+  const place = (x: number, y: number, tail: Tail): BubbleBox => tail === 'down' ? { left: x, bottom: height - y - h, tail } : { left: x, top: y, tail };
+  const preferred = clampX(centre > width / 2 ? spot.left + AMBER_W - w : spot.left);
+  const fallback = place(preferred, top, below ? 'up' : 'down');
+  if (!avoid.length) return fallback;
+  const clear = (x: number, y: number) => x >= GAP - .5 && x + w <= width - GAP + .5 && !avoid.some(r => overlaps({ left: x, right: x + w, top: y, bottom: y + h }, r, GAP));
+  /** The clear left edges at height y, nearest to `x` first. */
+  const clearXs = (y: number, x: number) => {
+    const edges = [x, GAP, width - w - GAP, ...avoid.flatMap(r => [r.left - GAP - w - 1, r.right + GAP + 1])].map(e => Math.round(clampX(e)));
+    return [...new Set(edges)].filter(e => clear(e, y)).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
+  };
+  // 1. Under (above) Amber, slid sideways but with Amber's centre still over the bubble, clear of its rounded corners.
+  const under = clearXs(top, preferred).find(x => centre >= x + 30 && centre <= x + w - 30);
+  if (under !== undefined) return place(under, top, below ? 'up' : 'down');
+  // 2. Beside Amber, level with it: on the side toward the middle of the window first.
+  const y = clampY(middle - 36), sides: [number, Tail][] = [[spot.left - GAP - w, 'right'], [spot.left + AMBER_W + GAP, 'left']];
+  for (const [x, tail] of centre > width / 2 ? sides : sides.reverse()) if (clear(x, y)) return { left: x, top: y, tail };
+  // 3. Anywhere clear, nearest to Amber (beside an obstacle, under the header, above or below one); the tail toward it.
+  const ys = [...new Set([top, y, bar + GAP, ...avoid.flatMap(r => [r.bottom + GAP + 1, r.top - GAP - h - 1])].map(v => Math.round(clampY(v))))];
+  let best: [number, number] | null = null, distance = Infinity;
+  for (const at of ys) {
+    const x = clearXs(at, clampX(centre - w / 2))[0]; if (x === undefined) continue;
+    const d = Math.hypot(x + w / 2 - centre, at + h / 2 - middle); if (d < distance) { distance = d; best = [x, at]; }
+  }
+  if (best) { const [x, at] = best; return place(x, at, centre >= x + 30 && centre <= x + w - 30 ? (at >= middle ? 'up' : 'down') : x + w / 2 < centre ? 'right' : 'left'); }
+  return fallback;
 }

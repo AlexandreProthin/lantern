@@ -20,6 +20,10 @@ export const chooseCompanion: RoomCompanion = {
     find: () => 'Looking for products…', fill: () => 'Filling in Compare…', check: title => `Checking ${title}…`, recommend: () => 'Weighing your options…'
   },
   // CO-13: Study's three resting positions, just above the controls in each corner (legend, zoom, composer).
+  // CO-10, CO-20: the bubble never covers the reading panel, the rail or the graph tools, and Amber's default spot stays clear of them.
+  avoid: {
+    survey: ['.study:not(.hidden) aside.panel', '.study:not(.hidden) aside.rail', '.study:not(.hidden) .graph .controls', '.study:not(.hidden) .graph .zoom-controls', '.study:not(.hidden) .graph .corner']
+  },
   rests: {
     survey: [
       { id: 'graph-left', label: 'Bottom left of the graph', anchor: '.study:not(.hidden) .graph-side', side: 'left', inset: { x: 16, y: 132 } },

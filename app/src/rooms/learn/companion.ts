@@ -23,6 +23,10 @@ export const learnCompanion: RoomCompanion = {
     reply: () => 'The tutor is thinking…', check: () => 'Preparing a question…'
   },
   // CO-13: Study's three resting positions, just above the controls in each corner (legend, zoom, composer).
+  // CO-10, CO-20: the bubble never covers the reading panel or the graph tools, and Amber's default spot stays clear of them.
+  avoid: {
+    study: ['.study:not(.hidden) aside.panel', '.study:not(.hidden) .graph .controls', '.study:not(.hidden) .graph .zoom-controls', '.study:not(.hidden) .graph .corner']
+  },
   rests: {
     study: [
       { id: 'graph-left', label: 'Bottom left of the graph', anchor: '.study:not(.hidden) .graph-side', side: 'left', inset: { x: 16, y: 132 } },

@@ -32,6 +32,11 @@ export interface RoomCompanion {
   guide: Record<string, readonly string[]>;
   /** CO-13: bottom resting positions per space id; a space without any gets the space's two bottom corners. */
   rests?: Record<string, readonly RestSpec[]>;
+  /**
+   * CO-10, CO-20 (amended 2026-11-17): per space id, what Amber's bubble must never cover and Amber's default spot
+   * stays clear of: selectors of the reading panel, the graph tools and the like.
+   */
+  avoid?: Record<string, readonly string[]>;
   /** CO-53: spaces where Amber stays still (no living flame) unless hovered, clicked, grabbed, asked or working. */
   calm?: readonly string[];
   /** CO-35: what Amber says per task while a generation waits for its first words; `title` is the node's, clipped. */
