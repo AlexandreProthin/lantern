@@ -202,12 +202,6 @@
   const sim = forceSimulation<SimNode>().alphaDecay(0.03).stop();
   const settled=$derived.by(()=>{tick;return sim.alpha()<=sim.alphaMin();});
 
-  function childrenOf(id: string): string[] {
-    return Object.values(session.visit.nodes)
-      .filter((n) => n.parents[0] === id)
-      .map((n) => n.id);
-  }
-
   /** The design's tree: depth columns, leaves on rows, parents centred on their children. */
   function treeTargets(): Map<string, { x: number; y: number }> {
     return treePositions({ ...session.visit, nodes: sceneNodes });
@@ -426,7 +420,7 @@
 
   let searchOpen = $state(false), searchText = $state(''), searchQuery = $state(''), searchPicked = $state(false), searchField = $state<HTMLInputElement>();
   let searchTimer: ReturnType<typeof setTimeout> | undefined;
-  const searchOptions = $derived({ shown: projection.shown, sealed: room.sealed });
+  const searchOptions = $derived({ shown: projection.shown, sealed: room.sealed, children: projection.children });
   const matches = $derived.by(() => { revision; return searchNodes(session.visit, searchQuery, searchOptions); });
   const matchSet = $derived(new Set(matches));
   const searching = $derived(searchOpen && !!searchQuery.trim());
