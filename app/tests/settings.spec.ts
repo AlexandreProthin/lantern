@@ -90,7 +90,7 @@ test('SE-11, CO-1, CO-46, CO-47: the Companion section sits before Appearance, w
   await expect(show).toBeChecked();await show.uncheck();
   await expect(dialog.getByText(/Ctrl\+J, Alt\+D and \? still work/)).toBeVisible();
   await model.selectOption('claude-sonnet-5-5');
-  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')!).companion)).toEqual({show:false,model:'claude-sonnet-5-5'});
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')!).companion)).toEqual({show:false,model:'claude-sonnet-5-5',tips:true});
   await dialog.getByRole('button',{name:'Reset to defaults',exact:true}).click();
   await dialog.getByRole('button',{name:'Reset to defaults',exact:true}).click();
   await expect(show).toBeChecked();await expect(model).toHaveValue('claude-haiku-5-5');
