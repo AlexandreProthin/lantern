@@ -9,6 +9,17 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T00:30:00Z }
 
 Entries move out of here into a versioned plan when the user schedules them. Newest first.
 
+# From the November 2026 review: review queue, bridge between rooms, Compare export
+
+- **Added:** 2026-11-17, deferred by the user from the [v0.8.0 plan](v0-8-0.md).
+- **Review queue**: understood Learn nodes come back when due (spaced review), with a *due again* list
+  on Welcome. The biggest gap for a learning tool; a *Practice* room (exercises graded, fading back
+  when due) was proposed as its fuller form.
+- **Bridge between rooms**: open a concept from one room in another, for example a Choose concept
+  as a new Learn subject, or a Learn subject's gaps in a later *Teach* room.
+- **Export of the Compare table**: Choose's decision as Markdown or CSV (and an image to share),
+  next to the export of a subject already listed here.
+
 # Learn prompts tuned for Haiku 5.5
 
 - **Added:** 2026-10-23. The user accepted `learn-3` on the rewrite cases alone ([tutor-protocol](/specs/tutor-protocol.md) TP-14).
