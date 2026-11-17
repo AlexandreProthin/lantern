@@ -117,6 +117,8 @@
     {:else if section==='companion'}
       <label><input type="checkbox" bind:checked={settings.companion.show} onchange={changed} />{strings.showAmber}</label>
       {#if !settings.companion.show}<p>{strings.amberHiddenHint}</p>{/if}
+      <label><input type="checkbox" bind:checked={settings.companion.tips} onchange={changed} disabled={!settings.companion.show} />{strings.amberTipsSetting}</label>
+      <p>{strings.amberTipsHint}</p>
       <div class="field"><label for="amber-model">{strings.amberModel}</label><ModelPicker id="amber-model" value={settings.companion.model} label={strings.amberModel} commit={model=>{settings.companion.model=model;validation='';changed();}} /></div>
       <p>{strings.amberEffortHint}</p>
       {#if amberTotals}<p data-testid="amber-tokens">{#if amberTotals.calls}{@const split=splitModels(amberTotals.models)}{split?strings.amberSpentSplit(strings.inOut(tokens(split.claude.input),tokens(split.claude.output)),strings.inOut(tokens(split.local.input),tokens(split.local.output)),amberTotals.calls):strings.amberSpent(tokens(amberTotals.input+amberTotals.output),tokens(amberTotals.input),tokens(amberTotals.output),amberTotals.calls)}{:else}{strings.amberSpentNone}{/if}</p>{/if}

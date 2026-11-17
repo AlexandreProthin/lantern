@@ -105,6 +105,11 @@ fn companion_state_keeps_other_keys_and_refuses_bad_or_newer_state() {
     let state=read_state(config.path()).unwrap();
     assert_eq!(state.extra["companion"]["notes"]["version"],"0.4.1");assert_eq!(state.extra["companion"]["lastVersion"],"0.4.0");
     assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[],"lastVersion":"0.4.0 beta"})).is_err());
+    // CO-39: the nudges already shown, one per rule and subject.
+    save_companion_state(config.path(),&json!({"spots":{},"seenTips":[],"seenNudges":["learn.untested/tides-k3f9"]})).unwrap();
+    assert_eq!(read_state(config.path()).unwrap().extra["companion"]["seenNudges"],json!(["learn.untested/tides-k3f9"]));
+    assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[],"seenNudges":["bad nudge!"]})).is_err());
+    assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[],"seenNudges":vec!["n";201]})).is_err());
     assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[],"notes":{"version":"1","text":"x".repeat(20001)}})).is_err());
     fs::write(config.path().join("state.json"),br#"{"format":"lantern-state/2"}"#).unwrap();
     assert!(save_companion_state(config.path(),&json!({"spots":{},"seenTips":[]})).is_err());

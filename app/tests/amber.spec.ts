@@ -542,3 +542,97 @@ test('CO-1, CO-30: with Amber off there is no greeting and no waiting line; the 
   await expect(page.locator('header .busy-dot')).toBeVisible();
   await expect(says(page)).toHaveCount(0);
 });
+
+// v0.8.0 amber/review: nudges (CO-37 to CO-39) and reactions (CO-59). `amberQuiet` and `amberIdle` shorten the
+// quiet moment and the idle time in DEV builds.
+const nudged = (page: import('@playwright/test').Page) => page.locator('[data-testid="amber-says"][data-kind="nudge"]');
+const seenNudges = (page: import('@playwright/test').Page) => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.companion') ?? '{}').seenNudges as string[] | undefined);
+async function lightThree(page: import('@playwright/test').Page) {
+  const panel = page.locator('.panel');
+  for (const title of ['Mechanism 1', 'Application 1']) {
+    await page.locator('.graph .node', { hasText: title }).click();
+    await panel.getByRole('button', { name: 'Light it up', exact: true }).click();
+    await expect(panel.getByRole('button', { name: 'Test me', exact: true })).toBeEnabled();
+  }
+}
+test('CO-37/38/39: three nodes lit and none tested: the nudge waits for the typing to stop, says it once, is dismissed and stays seen', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(v => { if (!localStorage.getItem('lantern.companion')) localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v })); }, appVersion);
+  await page.goto('/?study=1&subject=Ocean%20tides&amberQuiet=400');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await lightThree(page);
+  // CO-38: not while a question is being written.
+  const composer = page.locator('.panel').getByRole('textbox', { name: 'Ask about this, or answer the tutor… (Ctrl+Enter to send)' });
+  await composer.fill('Why two tides');
+  await page.waitForTimeout(2500); await expect(nudged(page)).toHaveCount(0);
+  await composer.fill(''); await page.locator('.graph').click({ position: { x: 30, y: 30 } });
+  await expect(nudged(page)).toContainText('Three nodes lit, none tested yet. Test me asks you a question about the one you’re reading.', { timeout: 15000 });
+  await expect(nudged(page).locator('strong, em').first()).toHaveText('Test me');
+  await uncovered(page, nudged(page), studyParts);
+  await expect.poll(() => seenNudges(page)).toEqual([expect.stringMatching(/^learn\.untested\//)]);
+  await nudged(page).getByRole('button', { name: 'Dismiss', exact: true }).click();
+  await expect(nudged(page)).toHaveCount(0);
+  // Seen: not again in this opening, nor after a restart, though still true.
+  await page.waitForTimeout(1500); await expect(nudged(page)).toHaveCount(0);
+  await page.goto('/?study=1&resume=1&amberQuiet=400');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await page.waitForTimeout(3000); await expect(nudged(page)).toHaveCount(0);
+});
+test('CO-37: a nudge goes by itself once it is no longer true', async ({ page }) => {
+  await page.addInitScript(v => localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v })), appVersion);
+  await page.goto('/?study=1&subject=Ocean%20tides&amberQuiet=400');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await lightThree(page);
+  await expect(nudged(page)).toBeVisible({ timeout: 15000 });
+  await page.locator('.panel').getByRole('button', { name: 'Test me', exact: true }).click();
+  await expect(nudged(page)).toHaveCount(0);
+});
+test('CO-21, CO-39: with tips and nudges off, no nudge, and the bubble opens on the guide without Next tip', async ({ page }) => {
+  await page.addInitScript(v => {
+    localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v }));
+    localStorage.setItem('lantern.settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('lantern.settings') ?? '{"format":"lantern-settings/1"}'), companion: { show: true, tips: false } }));
+  }, appVersion);
+  await page.goto('/?study=1&subject=Ocean%20tides&amberQuiet=400');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await lightThree(page);
+  await page.waitForTimeout(3000); await expect(nudged(page)).toHaveCount(0);
+  await amber(page).click();
+  await expect(bubble(page).locator('.guide li').first()).toHaveText('Walk the graph: arrow keys; Home goes back to the root.');
+  await expect(bubble(page).getByRole('button', { name: 'Next tip' })).toHaveCount(0);
+});
+test('CO-59: Amber flares when a node is understood: the halo grows, then settles', async ({ page }) => {
+  await page.goto('/?study=1&subject=Tides');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  await expect(amber(page)).toHaveAttribute('data-act', '', { timeout: 6000 });
+  await page.mouse.move(10, 700);
+  const halo = () => amber(page).evaluate(b => Number(b.querySelector('[data-part="halo"]')!.getAttribute('rx')));
+  expect(await halo()).toBe(60);
+  await page.locator('.panel').getByRole('button', { name: 'I get it', exact: true }).click();
+  await expect(amber(page)).toHaveAttribute('data-mood', 'flare');
+  await expect.poll(halo).toBeGreaterThan(66);
+  await expect(amber(page)).toHaveAttribute('data-mood', '', { timeout: 4000 });
+  expect(await halo()).toBe(60);
+  // A focus moved on the graph: a look toward it.
+  await page.locator('.graph .node', { hasText: 'Mechanism 1' }).click();
+  await expect(amber(page)).toHaveAttribute('data-mood', /^(look|glance)$/);
+});
+test('CO-59, CO-56: with reduced motion there is no flare and no doze', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/?study=1&subject=Tides&amberIdle=800');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  const a = await drawing(page);
+  await page.locator('.panel').getByRole('button', { name: 'I get it', exact: true }).click();
+  await page.waitForTimeout(2500);
+  await expect(amber(page)).toHaveAttribute('data-mood', ''); expect(await drawing(page)).toBe(a);
+});
+test('CO-59: after a long idle Amber dozes, its eyes closing; the pointer wakes it', async ({ page }) => {
+  await page.addInitScript(v => localStorage.setItem('lantern.companion', JSON.stringify({ spots: {}, seenTips: [], lastVersion: v })), appVersion);
+  await page.goto('/?study=1&subject=Tides&amberIdle=1500');
+  await expect(page.locator('.graph .node', { hasText: 'Experiment 1' })).toBeVisible();
+  const lid = () => amber(page).evaluate(b => Number(b.querySelector('mask ellipse')!.getAttribute('ry')));
+  await expect(amber(page)).toHaveAttribute('data-mood', 'doze', { timeout: 15000 });
+  await expect.poll(lid).toBeLessThan(1.2);
+  await page.mouse.move(10, 700); await page.mouse.move(20, 690);
+  await expect(amber(page)).toHaveAttribute('data-mood', '');
+  await expect.poll(lid).toBeCloseTo(3.2, 1);
+});

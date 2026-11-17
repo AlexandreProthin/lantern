@@ -5,6 +5,7 @@ import type { ErrorKind, InferenceProvider } from './provider';
 import type { Settings } from './settings';
 import type { LibrarySpaces } from './library-spaces';
 import type { Context } from '../assets/identity/companion/lantern';
+import type { NudgeRule } from './amber/nudge';
 export interface RoomSession {
   subject: Subject; running: { nodeId: string; task: string } | null;
   setFocus(id: string): void; cancel(): void; touch(): void; initialize(): Promise<void>;
@@ -41,6 +42,13 @@ export interface RoomCompanion {
   calm?: readonly string[];
   /** CO-35: what Amber says per task while a generation waits for its first words; `title` is the node's, clipped. */
   waiting?: Record<string, (title: string) => string>;
+  /**
+   * CO-59 (added 2026-11-17): Amber's reactions to the learner: the node states that make it flare when a node
+   * reaches them, and the selector of a node's drawing in the space (to glance at it).
+   */
+  reactions?: { flare: readonly string[]; node: (id: string) => string };
+  /** CO-37 (added 2026-11-17): the room's rare nudges, its own rules and lines; the frame says when (CO-38). */
+  nudges?: readonly NudgeRule[];
 }
 /** RS-1..3, RS-30, SE-12, DM-66, ST-7. The frame calls only these members (RS-2). */
 export interface RoomDefinition {

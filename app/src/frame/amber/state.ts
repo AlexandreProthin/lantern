@@ -6,11 +6,13 @@ export interface AmberState {
   lastVersion?: string; lastGreeting?: string;
   /** CO-31: the notes of the release being installed, kept for the first launch after the update. */
   notes?: { version: string; text: string };
+  /** CO-39: the nudges already shown, `rule/subject`, the latest last (at most NUDGES_KEPT). */
+  seenNudges?: string[];
 }
 export const emptyAmberState = (): AmberState => ({ spots: {}, seenTips: [] });
 export const spotKey = (room: string, space: string) => `${room}/${space}`;
 const ID = /^[A-Za-z0-9._:/-]{1,80}$/, VERSION = /^[0-9A-Za-z.+-]{1,40}$/;
-export const NOTES_MAX = 20000;
+export const NOTES_MAX = 20000, NUDGES_KEPT = 200;
 
 /** A missing or damaged part yields empty state for that part; unknown keys are dropped (only Rust keeps the file's other keys). */
 export function parseAmberState(raw: unknown): AmberState {
@@ -22,6 +24,7 @@ export function parseAmberState(raw: unknown): AmberState {
   if (typeof value.lastVersion === 'string' && VERSION.test(value.lastVersion)) out.lastVersion = value.lastVersion;
   if (typeof value.lastGreeting === 'string' && ID.test(value.lastGreeting)) out.lastGreeting = value.lastGreeting;
   const notes = value.notes as { version?: unknown; text?: unknown } | undefined;
+  if (Array.isArray(value.seenNudges)) { const seen = [...new Set(value.seenNudges.filter((t): t is string => typeof t === 'string' && ID.test(t)))].slice(-NUDGES_KEPT); if (seen.length) out.seenNudges = seen; }
   if (notes && typeof notes.version === 'string' && VERSION.test(notes.version) && typeof notes.text === 'string' && notes.text.length <= NOTES_MAX) out.notes = { version: notes.version, text: notes.text };
   return out;
 }
@@ -31,6 +34,11 @@ export function setSpot(state: AmberState, room: string, space: string, spot: st
 export const spotOf = (state: AmberState, room: string, space: string): string | undefined => state.spots[spotKey(room, space)];
 export function markTipSeen(state: AmberState, id: string): AmberState {
   return state.seenTips.includes(id) ? state : { ...state, seenTips: [...state.seenTips, id] };
+}
+/** CO-39: a nudge is shown once per rule and subject; the oldest are forgotten past NUDGES_KEPT. */
+export function markNudgeSeen(state: AmberState, key: string): AmberState {
+  const seen = state.seenNudges ?? [];
+  return seen.includes(key) ? state : { ...state, seenNudges: [...seen, key].slice(-NUDGES_KEPT) };
 }
 /** CO-21: tips not yet seen first, in pool order; once all are seen, the cycle restarts after the last one shown. */
 export function nextTip(pool: readonly string[], state: AmberState, last?: string): string | undefined {
