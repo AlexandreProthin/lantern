@@ -390,3 +390,16 @@ fn real_library_copy_converts_lists_and_keeps_backups() {
         println!("{id}: converted, listed, round trip equal");
     }
 }
+#[test]
+fn st27_stamp_follows_writes_without_reading() {
+    let dir = tempfile::tempdir().unwrap(); let s = subject(2);
+    let SaveResult::Saved { stamp } = save_subject(dir.path(), &s, None, true).unwrap() else { panic!("expected saved") };
+    let quick = subject_stamp(dir.path(), "tides-k3f9").unwrap();
+    assert_eq!((quick.size, &quick.modified_ns), (stamp.size, &stamp.modified_ns));
+    let mut external = s.clone(); external["title"] = json!("Changed outside, longer");
+    std::thread::sleep(std::time::Duration::from_millis(20));
+    write_json(&subject_path(dir.path(), "tides-k3f9").unwrap(), &external).unwrap();
+    assert_ne!(subject_stamp(dir.path(), "tides-k3f9").unwrap(), quick);
+    assert!(subject_stamp(dir.path(), "missing-a1b2").is_err());
+    assert!(subject_stamp(dir.path(), "../escape").is_err());
+}

@@ -11,9 +11,18 @@ fn io(e: impl std::fmt::Display) -> String { e.to_string() }
 #[serde(rename_all = "camelCase")]
 pub struct Stamp { pub size: u64, pub modified_ns: String, pub hash: String }
 fn stamp(path: &Path, bytes: &[u8]) -> Result<Stamp> {
-    let metadata = fs::metadata(path).map_err(io)?;
-    Ok(Stamp { size: metadata.len(), modified_ns: metadata.modified().map_err(io)?.duration_since(std::time::UNIX_EPOCH).map_err(io)?.as_nanos().to_string(), hash: format!("{:x}", Sha256::digest(bytes)) })
+    let FileStamp { size, modified_ns } = file_stamp(path)?;
+    Ok(Stamp { size, modified_ns, hash: format!("{:x}", Sha256::digest(bytes)) })
 }
+/// ST-27: the file's size and modification time, without reading it: the once-a-second check of an open subject.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FileStamp { pub size: u64, pub modified_ns: String }
+fn file_stamp(path: &Path) -> Result<FileStamp> {
+    let metadata = fs::metadata(path).map_err(io)?;
+    Ok(FileStamp { size: metadata.len(), modified_ns: metadata.modified().map_err(io)?.duration_since(std::time::UNIX_EPOCH).map_err(io)?.as_nanos().to_string() })
+}
+pub fn subject_stamp(library: &Path, id: &str) -> Result<FileStamp> { file_stamp(&subject_path(library, id)?) }
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Loaded { pub subject: Value, pub stamp: Stamp, pub read_only: bool }
