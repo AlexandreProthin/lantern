@@ -211,9 +211,12 @@ Space navigation is not necessarily tabs; it must be intuitive.
   vignette), so another room re-tints it. It reacts gently to the space (each has its own anchor
   and strength, eased over about 1.5 s), the pointer (a faint lantern pool and a slight
   parallax), graph pan and zoom (parallax), and a node becoming lit (a soft warm pool for about
-  5 s). The header, the Study panel and divider, the graph's controls, the Gallery cards and
-  toolbar controls, and thumbnails are frosted glass (`--surface` at 55 % over a 20 px blur, with
-  `--ink-mute` hairlines at 16 %) so the lights pass behind them. The backdrop never intercepts
+  5 s). The header and the Gallery cards are frosted glass (`--surface` at 55 % over a 20 px blur,
+  with `--ink-mute` hairlines at 16 %) so the lights pass behind them. *(Amended 2026-11-17, design
+  review.)* Everything read or worked in sits on a **solid** `--surface`: the Study panel, the graph's
+  controls, search and open legend, the Gallery toolbar, the Choose board, rail and Compare table;
+  thumbnails take a plain translucent `--bg` without blur. Glass behind running text blurred the
+  reading and cost a backdrop blur on every frame. The backdrop never intercepts
   input, draws at most 30 frames per second and stops while the window is hidden. In reduced
   motion (GV-100) it is one still frame with no pointer, pan or lit-node reaction. *Appearance →
   Backdrop* off ([settings](/specs/settings.md)) removes it: plain `--bg` and solid surfaces.
@@ -230,6 +233,34 @@ Space navigation is not necessarily tabs; it must be intuitive.
   approximation. *(Amended 2026-11-12.)* Learn adds **dead end**, the end cap of GV-26.
 - **RS-37** The legend MUST NOT intercept pan/drag on the graph outside its own box. Keyboard:
   the chip is focusable, Enter toggles it.
+
+# One control system
+
+- **RS-38** *(Added 2026-11-17, design review.)* Every room and the frame share one set of controls,
+  defined once in `app/src/ui/app.css` and taking the room's tokens:
+  - **Three button levels.** A *primary* (`button.primary`: `--accent` fill, `--accent-ink` text) is
+    the one main action of a view: the node's first action under its explanation (*More options*,
+    *Find products*), *Light it up* on a dark node, *Restore* on a dismissed one, *Send* once a
+    message is typed, the confirming button of a dialog, Settings' *Test*. Every other action is a
+    *quiet* text button (no fill, no border, a light ink tint on hover); a destructive one turns
+    `--error-ink` on hover, and a confirming *Delete* is a primary in `--error`. Tools are *icon
+    buttons* (`button.icon-button`): 32 px circles on `--surface` with a `--line` border (the
+    graph's tools and zoom cluster, sort direction), or borderless (`.bare`: close buttons).
+  - **One shape per role.** Buttons and fields share one radius (8 px, `--radius`); dialogs, menus
+    and cards one larger radius (12 px); choices and chips are pills (status chips, source tags,
+    the rank segments, tone choices, the Legend chip); graph tools are circles.
+  - **Drawn icons.** Icons are line drawings on a 16 px grid in `currentColor`, from one set
+    (`app/src/ui/icons.ts`, the line style of the header glyphs), never typed characters (no `×`,
+    `‹ ›`, `▾ ▸`, `−`, `+`, `⌖`, `✓`, `≠`, `↑ ↓`). They are decorative: the button's label,
+    `aria-label` or a visually hidden word carries the name. The graph's node and legend glyphs
+    (GV) are not icons and keep their characters.
+  - **Menus** (node menu, room menu, Amber's menu) are one surface: `--surface`, `--line` border,
+    12 px radius, an icon column, the main action's icon in `--accent`, separators between groups.
+  - **Form controls** are drawn in the room's tokens: checkboxes (an `--accent` box with an
+    `--accent-ink` tick), switches (`role="switch"`, a pill with a knob), radios, selects (no native
+    arrow, a drawn chevron) and text fields (`--bg`, `--line`, `--accent` border and ring on focus).
+  - **Glow only on lit things**: lit nodes, the travelling light, the lit pools of the backdrop and
+    Amber. Buttons, cards, fields and the Welcome field carry no glow.
 
 # Frame-level error and empty states
 
