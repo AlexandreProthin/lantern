@@ -23,4 +23,4 @@ below except the roadmap, the backlog and the network plan has landed and is `de
 * [Codex CLI provider](codex-cli.md) - Codex as a second CLI provider (CE-58), built from OpenAI's docs without a plan to test with; what a first real run must check.
 * [Prepared subjects plan](prepared-subjects.md) - Replay of prepared Learn content, visibility by progress, reset and restore, dead ends, collapse, collapsible solutions. Landed 2026-11-12.
 * [v0.8.0 plan](v0-8-0.md) - The November 2026 review's open findings: one branch per section, two waves, merge order, release checks.
-* [Backlog](backlog.md) - Agreed future work with no version yet: custom endpoints' later pieces, local models for Amber, more rooms, export, a cheaper model for cheap tasks.
+* [Backlog](backlog.md) - Agreed future work with no version yet: custom endpoints' later pieces, local models for Amber, more rooms (Think, Explore, Interview, and seven further ideas), export, a cheaper model for cheap tasks.

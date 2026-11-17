@@ -9,6 +9,32 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T00:30:00Z }
 
 Entries move out of here into a versioned plan when the user schedules them. Newest first.
 
+# More room ideas: Teach, Fix, Practice, Make, Imagine, Write, Tale
+
+- **Added:** 2026-11-17, from room ideas proposed to the user after the November 2026 review.
+- **What:** seven rooms beyond Learn, Choose and the [planned three](#future-rooms-think-explore-interview).
+  Each keeps the same model: one map per subject, an AI role, and nodes that light up as you progress.
+
+| Room | You bring | The AI is | A node is, and it lights when | Second space |
+|---|---|---|---|---|
+| **Teach** | A subject you think you know (or an existing Learn map) | A curious student who asks naive questions and finds the gaps | A concept; lit when your own explanation holds up (gap / patchy / clear) | Gaps: what to revisit, with *Open in Learn* |
+| **Fix** | A symptom ("the printer under-extrudes", "the drive clicks") | A diagnostician who proposes the cheapest test that splits the hypotheses | A hypothesis or a test; ruled out, confirmed or open | Case notes: what was tried and the conclusion |
+| **Practice** | A Learn subject, or a skill | An examiner who writes exercises and grades your answer | An exercise; failed, shaky or solid, and it fades back when due again | Today: the queue of what is due |
+| **Make** | A project ("build a shelf", "ship v1") | A planner who breaks work down and spots what blocks what | A step; to do, blocked or done, with text links as dependencies | Next: the steps you can start now |
+| **Imagine** | A seed ("names for…", "ways to…") | A prolific partner who varies, and crosses two nodes into a third | An idea; spark, kept or dropped | Shortlist, with *Open in Choose* |
+| **Write** | Something to write | An editor who questions structure and never writes for you | A section or an argument; idea, drafted or revised | Manuscript: the tree read in order, exported as Markdown |
+| **Tale** | A premise | A narrator | A scene; each choice grows a branch, and untaken paths stay dim to revisit | Story so far: the path as continuous text |
+
+- **Two more, closer to rooms already planned:**
+  - **Rehearse** would generalise Interview: any conversation you dread (a negotiation, an oral exam,
+    a language at the bakery), with Interview as one template.
+  - **Research** could be what Explore becomes: an open question split into sub-questions, each
+    answered with sources and marked answered or contested.
+- **Links:** *Practice* is the fuller form of the review queue above; *Teach*'s *Open in Learn* and
+  *Imagine*'s *Open in Choose* need the bridge between rooms above; *Fix* reuses Learn's dead ends.
+- **Needs:** no order agreed. Each room is a spec workshop round on the room-generic frame
+  ([rooms-spaces](/specs/rooms-spaces.md)), like the planned three.
+
 # From the November 2026 review: review queue, bridge between rooms, Compare export
 
 - **Added:** 2026-11-17, deferred by the user from the [v0.8.0 plan](v0-8-0.md).
@@ -91,6 +117,8 @@ Entries move out of here into a versioned plan when the user schedules them. New
   - **Interview**: resume, skills and experience, to prepare a job interview and find job
     opportunities.
 - **Needs:** each one a spec workshop round, on top of the room-generic frame the Choose room brings.
+  More room ideas (Teach, Fix, Practice, Make, Imagine, Write, Tale; Rehearse and Research) are listed
+  [above](#more-room-ideas-teach-fix-practice-make-imagine-write-tale).
 
 # Export a subject
 
