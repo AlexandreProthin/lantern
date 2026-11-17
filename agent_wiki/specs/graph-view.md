@@ -34,7 +34,12 @@ are referenced here, not restated. The graph shows one room visit's tree
   derived from a hash of its id around its parent (not `Math.random`), so reopening a subject
   gives the same picture. Node positions are not stored in v0.1.0. *(Amended 2026-11-17.)* A node
   added to an open map is seated outward from its grandparent, at the hash-derived offset, so a branch
-  grows away from the centre; opening a subject still uses the hash alone.
+  grows away from the centre; opening a subject still uses the hash alone. *(Amended 2026-11-17, perf
+  review.)* When a free map at rest grows (a light-up, *More options*, a replay, an unfold), **only the new
+  nodes move**: they find their seats among the others (pushed by every node, kept off their discs, held on
+  their edges), which stay exactly where they were, and come to rest in about 1.5 s. A node that goes leaves
+  its place empty. The whole map is laid out again only on opening, on a switch of layout, in the tree
+  layout, or when a growth comes while a full layout is still running.
 - **GV-15** Free layout: the root is pinned at the origin; repulsion, collision radius and link
   distance are tunable constants (PoC values: charge −900, collide 62, link distance 130).
 
@@ -183,7 +188,10 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
   viewport with 48 px padding, scale clamped to [0.1, 1], animated over **400 ms** with an
   ease-in-out curve; **instant** under reduced motion. It also runs once when a subject opens.
 - **GV-62** Below zoom 0.5 titles MAY be hidden (level of detail) while glyphs stay; the
-  threshold is a tunable constant.
+  threshold is a tunable constant. *(Amended 2026-11-17.)* Below it, some titles stay readable, drawn
+  at reading size whatever the zoom: the focused node's, the hovered node's, those on the **route** to
+  the focus (GV-31) and those of the **modules** (the root's children). The focused and hovered titles
+  sit over the others. A zoom step restyles only these nodes, never the whole map (GV-110).
 - **GV-63** The view transform is kept per session while the subject stays open, and is not
   persisted.
 
@@ -302,7 +310,8 @@ and nothing else in the code hard-codes them.
 - **GV-93** On **cancel** or **error**, all placeholders shrink back over `SPAWN_SHRINK_MS`.
 - **GV-94** These rules apply in **both layouts**. In free layout the placeholders MUST be real
   simulation bodies so the graph makes room; in tree layout the layout MUST reserve their slots
-  as if they were children, relaxing when they go.
+  as if they were children, relaxing when they go. *(Amended 2026-11-17.)* In free layout the room is
+  found, not made: the placeholders seat themselves among the nodes, which do not move (GV-14).
 - **GV-95** The focus-route travelling light and embers are unchanged (GV-32).
   Spawn tips and completion particles are a separate effect and MUST NOT replay
   the focus-route effect. Cancellation/error MUST NOT emit completion particles.
@@ -376,7 +385,12 @@ view.
 # Performance
 
 - **GV-110** A graph of **500 nodes** MUST pan and zoom at 60 fps on a typical laptop: pan and zoom
-  change only the transform of the world layer, never per-node styles.
+  change only the transform of the world layer, never per-node styles. *(Amended 2026-11-17.)* The
+  browser check `tests/graph-performance.spec.ts` opens, zooms and grows (*More options*) a 117-node course
+  and a 300-node tree; it records the time to rest on opening and after growing, long tasks, the median zoom
+  frame and how many nodes moved, and requires fewer than 10% of the nodes to move more than 40 px when the
+  map grows (GV-14). Its default budgets are generous, to catch a regression of several times on any
+  machine; `LANTERN_PERF=1` applies the strict ones and the 500-node check, on an idle machine.
 - **GV-111** The force simulation MUST stop when settled and wake only on graph change.
 - **GV-113** *(Added 2026-11-12.)* Visibility and collapse are recomputed in one pass over the nodes
   (linear) on each graph change, never per frame. A 200-node prepared subject is well inside the
