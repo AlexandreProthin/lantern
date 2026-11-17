@@ -3,6 +3,7 @@
   // The rooms' shared reading panel (PS-5): breadcrumb, labels, explanation, children, dialogue and composer.
   // The room supplies its vocabulary, rules, actions and three snippets (panel-types.ts).
   import Markdown from './Markdown.svelte';
+  import Icon from './Icon.svelte';
   import { askAmber } from './ask-amber';
   import { strings } from './strings';
   import { phone } from './phone.svelte';
@@ -139,15 +140,15 @@
 <svelte:window onkeydown={onGlobalKey} onmouseup={selectText} />
 <aside class="panel {room.className}" tabindex="-1">
   <div class="scroll" bind:this={scroller} onscroll={() => { selection = ''; nearBottom=scroller.scrollHeight-scroller.clientHeight-scroller.scrollTop<48; }}>
-    <nav class="crumbs">{#each path.slice(0,-1) as parent (parent.id)}<button onclick={() => session.setFocus(parent.id)}>{parent.title}</button><span>›</span>{/each}</nav>
+    <nav class="crumbs">{#each path.slice(0,-1) as parent (parent.id)}<button onclick={() => session.setFocus(parent.id)}>{parent.title}</button><Icon name="chevronRight" size={12} />{/each}</nav>
     <div class="meta">{room.kindLabel(node.kind)} · <span class="state-chip" data-state={node.state}>{room.stateLabel(node)}</span>{node.content ? ` · ${provenance(node)}` : ''}</div>
     {#if editors[node.id] === 'labels'}
       <input aria-label={strings.title} data-field="title" bind:value={editDrafts[node.id].title} onkeydown={editKey} maxlength="120" />
       <textarea aria-label={strings.hook} bind:value={editDrafts[node.id].hook} onkeydown={editKey} maxlength="200"></textarea>
-      <button onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button>
+      <div class="row"><button class="primary" onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button></div>
     {:else}
       <h1>{node.title || room.untitled}</h1>{#if node.hook}<p class="hook">{node.hook}</p>{/if}
-      {#if !readOnly}<button class="quiet" onclick={() => beginEdit('labels')}>{strings.editLabels}</button>{/if}
+      {#if !readOnly}<button class="link" onclick={() => beginEdit('labels')}>{strings.editLabels}</button>{/if}
     {/if}
     {#if busy && room.tasks.stream.includes(running!.task)}
       <!-- CE-41: a local model can take a minute before its first words. -->
@@ -157,35 +158,36 @@
         <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
         <div class="replay" onclick={() => session.cancel()}><Markdown text={shownText(running!.text) || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>
       {:else}<Markdown text={shownText(running!.text) || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} />{/if}
-      <button onclick={() => session.cancel()}>{running!.replay ? strings.showAll : strings.cancel}</button>
+      <div class="row"><button onclick={() => session.cancel()}>{running!.replay ? strings.showAll : strings.cancel}</button></div>
     {:else if room.dormant(node)}
       {@render placeholder(node, { running, perform })}
     {:else if editors[node.id] === 'content'}
       <textarea class="markdown-edit" aria-label={strings.editExplanation} bind:value={editDrafts[node.id].text} onkeydown={editKey} rows="12"></textarea>
-      <button onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button>
+      <div class="row"><button class="primary" onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button></div>
     {:else}
       <Markdown text={shownText(node.content)} {visit} {linkable} focus={id => session.setFocus(id)} {preview} />
-      <button class="quiet" disabled={readOnly} onclick={() => beginEdit('content')}>{strings.editExplanation}</button>
+      <div class="under"><button class="link" disabled={readOnly} onclick={() => beginEdit('content')}>{strings.editExplanation}</button>
       {#if node.edited}<small>{strings.editedBy(node.edited.by)}</small>{/if}
-      {#if node.previous !== undefined}<button class="quiet" onclick={() => compare = node}>{strings.previousVersion}</button>{/if}
+      {#if node.previous !== undefined}<button class="link" onclick={() => compare = node}>{strings.previousVersion}</button>{/if}</div>
     {/if}
     {#if body}{@render body(node, { running, busy, perform })}{/if}
     {#if kids.some(n => !room.setAside(n))}
       <section><h2>{room.nextHeading(node, visit)}</h2>
-        {#each kids.filter(n => !room.setAside(n)) as child (child.id)}<button class="option" onclick={() => session.setFocus(child.id)}><strong>{child.title}</strong><span>{child.hook}</span><small>{room.optionTag(child)}</small></button>{/each}
+        {#each kids.filter(n => !room.setAside(n)) as child (child.id)}<button class="option" onclick={() => session.setFocus(child.id)}><strong>{child.title}</strong><span>{child.hook}</span><small>{room.optionTag(child)}</small><Icon name="chevronRight" /></button>{/each}
       </section>
     {/if}
     {#if busy && room.tasks.spawn.includes(running!.task)}<div class="skeletons" aria-hidden="true"><div></div><div></div><div></div></div>{/if}
     {#if kids.some(n => room.setAside(n))}
       <details><summary>{strings.dismissedCount(kids.filter(n => room.setAside(n)).length)}</summary>
-        {#each kids.filter(n => room.setAside(n)) as child (child.id)}<div><button onclick={() => session.setFocus(child.id)}>{child.title}</button><button disabled={busy} onclick={() => { trace.action(area, 'Restore', { nodeId: child.id }); perform(() => room.restore(visit,child.id)); }}>{strings.restore}</button></div>{/each}
+        {#each kids.filter(n => room.setAside(n)) as child (child.id)}<div class="aside-row"><button class="link" onclick={() => session.setFocus(child.id)}>{child.title}</button><button disabled={busy} onclick={() => { trace.action(area, 'Restore', { nodeId: child.id }); perform(() => room.restore(visit,child.id)); }}>{strings.restore}</button></div>{/each}
       </details>
     {/if}
     <div class="actions">
       <!-- The room's inline actions (Learn: Light it up, Restore) are shown with its placeholder above. -->
-      {#each room.actions(visit, node, running).filter(a => !room.inlineActions?.includes(a.id)) as action (action.id)}<button disabled={action.disabled} title={action.title} onclick={() => act(action.id)}>{action.label}</button>{/each}
+      <!-- RS-38: the node's main action is the one filled button; the others are quiet, Delete last. -->
+      {#each room.actions(visit, node, running).filter(a => !room.inlineActions?.includes(a.id)) as action, i (action.id)}<button class:primary={i === 0 && action.id !== 'delete' && !room.dormant(node)} class:danger={action.id === 'delete'} disabled={action.disabled} title={action.title} onclick={() => act(action.id)}>{action.label}</button>{/each}
     </div>
-    {#if adding}<form onsubmit={e => { e.preventDefault(); addOwn(); }}><input aria-label={strings.title} bind:value={ownTitle} placeholder={strings.title} maxlength="120" required /><input aria-label={strings.hook} bind:value={ownHook} placeholder={strings.hook} maxlength="200" /><button type="submit">{strings.add}</button><button type="button" onclick={() => adding = false}>{strings.cancel}</button></form>{/if}
+    {#if adding}<form onsubmit={e => { e.preventDefault(); addOwn(); }}><input aria-label={strings.title} bind:value={ownTitle} placeholder={strings.title} maxlength="120" required /><input aria-label={strings.hook} bind:value={ownHook} placeholder={strings.hook} maxlength="200" /><div class="row"><button type="submit" class="primary">{strings.add}</button><button type="button" onclick={() => adding = false}>{strings.cancel}</button></div></form>{/if}
     {#if localError}<p class="error" role="alert">{localError}</p>{/if}
     {#if notice}
       <div class="notice" role="status">{@render noticeBody(notice, { running })}</div>
@@ -193,38 +195,57 @@
     {#if lit && (node.dialogue.length || (busy && room.tasks.dialogue.includes(running!.task)))}
       <section><h2>{strings.dialogue}</h2>{#each node.dialogue as turn, i (i)}
         <div class="turn {turn.role}" title={provenance(turn)}>
-          {#if editors[node.id] === `turn:${i}`}<textarea class="markdown-edit" aria-label={strings.edit} bind:value={editDrafts[node.id].text} onkeydown={editKey}></textarea><button onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button>
-          {:else}<Markdown text={turn.text} {visit} {linkable} focus={id => session.setFocus(id)} {preview} />{#if turn.role === 'model'}<button class="quiet" disabled={busy} onclick={() => beginEdit(`turn:${i}`,turn)}>{strings.edit}</button>{/if}{#if turn.edited}<small>{strings.editedBy(turn.edited.by)}</small>{/if}{#if turn.previous !== undefined}<button class="quiet" onclick={() => compare = turn}>{strings.previousVersion}</button>{/if}{/if}
+          {#if editors[node.id] === `turn:${i}`}<textarea class="markdown-edit" aria-label={strings.edit} bind:value={editDrafts[node.id].text} onkeydown={editKey}></textarea><div class="row"><button class="primary" onclick={saveEdit}>{strings.save}</button><button onclick={() => delete editors[node.id]}>{strings.cancel}</button></div>
+          {:else}<Markdown text={turn.text} {visit} {linkable} focus={id => session.setFocus(id)} {preview} />{#if turn.role === 'model'}<button class="link" disabled={busy} onclick={() => beginEdit(`turn:${i}`,turn)}>{strings.edit}</button>{/if}{#if turn.edited}<small>{strings.editedBy(turn.edited.by)}</small>{/if}{#if turn.previous !== undefined}<button class="link" onclick={() => compare = turn}>{strings.previousVersion}</button>{/if}{/if}
         </div>{/each}
         {#if busy && room.tasks.dialogue.includes(running!.task)}<div class="turn model"><Markdown text={running!.text || '…'} {visit} {linkable} streaming={true} focus={id => session.setFocus(id)} {preview} /></div>{/if}
       </section>
     {/if}
     {#if after}{@render after(node, { running, busy, perform })}{/if}
   </div>
-  {#if busy&&!nearBottom}<button class="jump-latest" onclick={()=>{scroller.scrollTop=scroller.scrollHeight;nearBottom=true;}}>{strings.jumpLatest}</button>{/if}
+  {#if busy&&!nearBottom}<button class="jump-latest" onclick={()=>{scroller.scrollTop=scroller.scrollHeight;nearBottom=true;}}>{strings.jumpLatest}<Icon name="arrowDown" size={12} /></button>{/if}
   {#if lit}<footer><textarea bind:this={composer} aria-label={phone.current ? strings.composerPhone : strings.composer} value={drafts[node.id] ?? ''} oninput={e => drafts[node.id] = e.currentTarget.value} placeholder={phone.current ? strings.composerPhone : strings.composer} rows="2" disabled={busy} onkeydown={e => { if(e.ctrlKey && e.key === 'Enter') { e.preventDefault(); send(); } }}></textarea>
-    <div class="actions">{#if busy}<button onclick={() => session.cancel()}>{running!.replay ? strings.showAll : strings.cancel}</button>{:else}<button class="primary" disabled={!!running || !drafts[node.id]?.trim()} onclick={send}>{strings.send}</button>{/if}
+    <div class="actions">{#if busy}<button onclick={() => session.cancel()}>{running!.replay ? strings.showAll : strings.cancel}</button>{:else}<button class:primary={!!drafts[node.id]?.trim()} disabled={!!running || !drafts[node.id]?.trim()} onclick={send}>{strings.send}</button>{/if}
     {@render footer(node, { running, busy, perform })}</div>
   </footer>{/if}
 </aside>
-{#if selection}<div class="selection" style:left={`${selectionX}px`} style:top={`${selectionY}px`}><button disabled={!!running} title="Alt+A" onclick={() => askSelection()}>{strings.askSelection}</button><button disabled={busy || !lit} title="Alt+N" onclick={makeSelection}>{strings.nodeSelection}</button><button title="Alt+D" onclick={amberSelection}>{strings.askAmber}</button></div>{/if}
-<dialog bind:this={deleteDialog} oncancel={() => deleting = null}><h2>{strings.deleteNode}</h2>{#if deleting}<p>{strings.deleteDescription(visit.nodes[deleting].title,deleteIds.length)}</p>{#if room.deleteNote?.(visit, deleteIds)}<p>{room.deleteNote(visit, deleteIds)}</p>{/if}{#if running && deleteIds.includes(running.nodeId)}<p>{strings.generationCancelled}</p>{/if}{/if}<p>{strings.deleteHistory}</p><button onclick={() => { deleting = null; deleteDialog.close(); }}>{strings.cancel}</button><button onclick={remove}>{strings.delete}</button></dialog>
-<dialog bind:this={compareDialog} oncancel={() => compare = null}><div class="compare">{#if compare}<section><h2>{strings.previous}</h2><Markdown text={compare.previous!} {visit} {linkable} focus={id => session.setFocus(id)} {preview} /></section><section><h2>{strings.current}</h2><Markdown text={'text' in compare ? compare.text : compare.content} {visit} {linkable} focus={id => session.setFocus(id)} {preview} /></section>{/if}</div><button disabled={busy} onclick={() => { perform(() => revertText(compare!)); compare = null; compareDialog.close(); }}>{strings.revert}</button><button onclick={() => { compare = null; compareDialog.close(); }}>{strings.keepCurrent}</button></dialog>
+{#if selection}<div class="selection menu-surface" style:left={`${selectionX}px`} style:top={`${selectionY}px`}><button disabled={!!running} title="Alt+A" onclick={() => askSelection()}>{strings.askSelection}</button><button disabled={busy || !lit} title="Alt+N" onclick={makeSelection}>{strings.nodeSelection}</button><button title="Alt+D" onclick={amberSelection}>{strings.askAmber}</button></div>{/if}
+<dialog bind:this={deleteDialog} oncancel={() => deleting = null}><h2>{strings.deleteNode}</h2>{#if deleting}<p>{strings.deleteDescription(visit.nodes[deleting].title,deleteIds.length)}</p>{#if room.deleteNote?.(visit, deleteIds)}<p>{room.deleteNote(visit, deleteIds)}</p>{/if}{#if running && deleteIds.includes(running.nodeId)}<p>{strings.generationCancelled}</p>{/if}{/if}<p>{strings.deleteHistory}</p><div class="dialog-actions"><button onclick={() => { deleting = null; deleteDialog.close(); }}>{strings.cancel}</button><button class="primary danger" onclick={remove}>{strings.delete}</button></div></dialog>
+<dialog bind:this={compareDialog} oncancel={() => compare = null}><div class="compare">{#if compare}<section><h2>{strings.previous}</h2><Markdown text={compare.previous!} {visit} {linkable} focus={id => session.setFocus(id)} {preview} /></section><section><h2>{strings.current}</h2><Markdown text={'text' in compare ? compare.text : compare.content} {visit} {linkable} focus={id => session.setFocus(id)} {preview} /></section>{/if}</div><div class="dialog-actions"><button onclick={() => { compare = null; compareDialog.close(); }}>{strings.keepCurrent}</button><button class="primary" disabled={busy} onclick={() => { perform(() => revertText(compare!)); compare = null; compareDialog.close(); }}>{strings.revert}</button></div></dialog>
 <style>
-  .panel { display:flex; flex-direction:column; height:100%; min-width:0; background:var(--glass); backdrop-filter:var(--glass-blur); overflow:hidden; }
-  .state-chip { border:1px solid var(--line);border-radius:8px;padding:2px 6px; }
+  /* RS-34, RS-38: the reading panel is a solid surface, not glass over the moving backdrop. */
+  .panel { display:flex; flex-direction:column; height:100%; min-width:0; background:var(--surface); overflow:hidden; }
+  .state-chip { border:1px solid var(--line); border-radius:var(--radius-pill); padding:1px 8px; }
   .scroll { padding:20px 28px 32px; flex:1; overflow:auto; }
-  .crumbs { display:flex; flex-wrap:wrap; align-items:center; gap:5px; min-height:20px; }.crumbs button { font-size:12px; border:0; background:none; padding:2px; }
-  .meta { font-size:11px; color:var(--ink-mute); margin-top:12px; } .loading-model { color:var(--ink-mute); font-style:italic; } h1 { font-size:24px; font-weight:600; margin:12px 0; } h2 { font-size:13px; color:var(--ink-mute); font-weight:500; margin:20px 0 10px; }
-  .hook { font-style:italic; color:var(--ink-mute); }.quiet { font-size:11px; background:none; border:0; padding:4px 6px; color:var(--ink-mute); }
-  .option { display:grid; text-align:left; width:100%; margin:8px 0; gap:5px; }.option strong { font-weight:500; }.option span,.option small { color:var(--ink-mute); font-size:12px; }
-  .actions { display:flex; gap:6px; flex-wrap:wrap; margin:16px 0; }.actions :global(button) { font-size:12px; }
-  .turn { padding:10px 14px; margin:10px 0; }.turn.model { border-left:2px solid var(--accent); }.turn.user { margin-left:30px; background:var(--surface-2); border-radius:8px; }
+  /* NP-80: a reading measure near 70 characters; the column's controls keep the text's width. */
+  .scroll > :global(*) { max-width:620px; }
+  .scroll :global(.md) { max-width:70ch; font-family:var(--font-reading); font-size:16.5px; line-height:1.6; }
+  .scroll :global(.md code), .scroll :global(.md pre), .scroll :global(.md kbd) { font-size:13.5px; }
+  .crumbs { display:flex; flex-wrap:wrap; align-items:center; gap:2px; min-height:20px; color:var(--ink-mute); }.crumbs button { font-size:12px; font-weight:400; padding:2px 4px; color:var(--ink-mute); }.crumbs button:hover { color:var(--ink); }
+  .meta { font-size:11px; color:var(--ink-mute); margin-top:12px; } .loading-model { color:var(--ink-mute); font-style:italic; } h1 { font-size:24px; font-weight:600; margin:12px 0 6px; } h2 { font-size:13px; color:var(--ink-mute); font-weight:500; margin:24px 0 8px; }
+  .hook { font-family:var(--font-reading); font-size:16px; font-style:italic; color:var(--ink-mute); margin:0 0 4px; }
+  .under { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:4px 0 0 -4px; } .under small { font-size:11px; color:var(--ink-mute); }
+  .row { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
+  /* The next nodes: a list of rows, not boxed buttons. */
+  .option { display:grid; grid-template-columns:1fr auto; column-gap:12px; text-align:left; width:100%; margin:0; padding:10px 10px; border-radius:var(--radius); border-top:1px solid var(--line); border-radius:0; }
+  .option:last-child { border-bottom:1px solid var(--line); }
+  .option:hover:not(:disabled) { border-radius:var(--radius); border-top-color:transparent; }
+  .option:hover:not(:disabled) + :global(.option) { border-top-color:transparent; }
+  .option strong { font-weight:500; grid-column:1; } .option span, .option small { grid-column:1; color:var(--ink-mute); font-size:12px; font-weight:400; } .option small { font-size:11px; margin-top:2px; }
+  .option :global(.icon) { grid-column:2; grid-row:1 / span 3; align-self:center; color:var(--ink-mute); }
+  .option:hover :global(.icon) { color:var(--accent); }
+  .aside-row { display:flex; align-items:center; gap:4px; }
+  .actions { display:flex; gap:4px; flex-wrap:wrap; align-items:center; margin:20px 0 16px -10px; }.actions :global(button) { font-size:13px; }.actions :global(button.primary) { margin-left:10px; margin-right:6px; }
+  .turn { padding:10px 14px; margin:10px 0; }.turn.model { border-left:2px solid var(--accent); }.turn.user { margin-left:30px; background:var(--surface-2); border-radius:var(--radius-surface); }
   footer { padding:12px 20px; border-top:1px solid var(--line); } footer textarea { width:100%; box-sizing:border-box; resize:vertical; max-height:180px; } footer .actions { margin:8px 0 0; }
-  .markdown-edit { width:100%; box-sizing:border-box; font-family:monospace; max-height:50vh; } .error { color:var(--error-ink); }.notice { padding:12px; border:1px solid var(--line); border-radius:8px; }
-  dialog { color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:10px; max-width:min(800px,85vw); } dialog::backdrop { background:var(--code); opacity:.75; }.compare { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  form { display:grid; gap:8px; }.selection { position:fixed; z-index:10; background:var(--surface-2); border:1px solid var(--line); padding:4px; border-radius:8px; }
+  footer .actions :global(button.primary) { margin-left:0; }
+  .markdown-edit { width:100%; box-sizing:border-box; font-family:monospace; max-height:50vh; } .error { color:var(--error-ink); }.notice { padding:12px; border:1px solid var(--line); border-radius:var(--radius-surface); }
+  dialog { color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-surface); max-width:min(800px,85vw); padding:20px 24px; } dialog::backdrop { background:var(--code); opacity:.75; }.compare { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  dialog h2 { color:var(--ink); font-size:16px; font-weight:600; margin:0 0 12px; } dialog :global(.md) { font-family:var(--font-reading); }
+  .dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+  form { display:grid; gap:8px; }.selection { position:fixed; z-index:10; flex-direction:row; min-width:0; padding:4px; gap:2px; }.selection button { font-size:13px; }
+  .jump-latest { display:inline-flex; align-items:center; gap:6px; align-self:center; flex:none; margin:6px 0; padding:5px 14px; font-size:12px; background:var(--surface-2); border-color:var(--line); border-radius:var(--radius-pill); box-shadow:var(--menu-shadow); }
   .replay { cursor:pointer; }
-  .skeletons div { margin:8px 0; height:40px; background:var(--surface-2); border-radius:6px; opacity:.6; }
-  @media(max-width:520px) { .compare { grid-template-columns:1fr; } }
+  .skeletons div { margin:8px 0; height:40px; background:var(--surface-2); border-radius:var(--radius); opacity:.6; }
+  @media(max-width:520px) { .compare { grid-template-columns:1fr; } .scroll :global(.md) { font-size:16px; } }
 </style>

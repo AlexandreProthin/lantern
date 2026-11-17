@@ -52,15 +52,17 @@
 <article class="md" class:streaming bind:this={root} onclick={click} onmouseover={hover} onfocusin={hover} onmouseleave={leave} onfocusout={leave}>{@html html}</article>
 <style>
   .md { max-width:75ch; overflow-wrap:anywhere; line-height:1.65; }
-  .md :global(strong) { color:var(--focus); }
+  /* NP-81: bold is weight only, in the text's own colour. */
+  .md :global(strong) { font-weight:650; color:inherit; }
   .md :global(a), .md :global(.node-link) { color:var(--accent); }
   .md :global(.node-link) { padding:0; border:0; background:none; text-decoration:underline; font:inherit; }
-  .md :global(pre) { overflow:auto; padding:14px; background:var(--code); border-radius:7px; }
+  .md :global(pre) { overflow:auto; padding:14px; background:var(--code); }
   .md :global(table) { border-collapse:collapse; max-width:100%; }
   .md :global(th), .md :global(td) { padding:6px 10px; border:1px solid var(--line); }
   .md :global(blockquote) { border-left:2px solid var(--line); margin-left:0; padding-left:16px; color:var(--ink-mute); }
   .md :global(.code-block) { position:relative; }
-  .md :global([data-copy]) { position:absolute; right:4px; top:4px; font-size:11px; }
+  .md :global([data-copy]) { position:absolute; right:4px; top:4px; font:400 11px var(--font-ui); color:var(--ink-mute); padding:2px 8px; }
+  .md :global(pre) { border-radius:var(--radius); }
   .md :global(.math-error) { color:var(--error-ink); }
   .md :global(.hljs-keyword),.md :global(.hljs-selector-tag),.md :global(.hljs-meta .hljs-keyword) {color:var(--code-keyword);}
   .md :global(.hljs-string),.md :global(.hljs-regexp),.md :global(.hljs-symbol),.md :global(.hljs-template-tag),.md :global(.hljs-addition) {color:var(--code-string);}
@@ -71,7 +73,7 @@
   .md :global(.hljs-comment),.md :global(.hljs-quote),.md :global(.hljs-deletion) {color:var(--code-comment);font-style:italic;}
   .md :global(svg) { max-width:100%; height:auto; }
   /* NP-78: collapsible blocks, in the panel's tokens. */
-  .md :global(details.md-details) { margin:1em 0; border:1px solid var(--line); border-radius:6px; background:var(--surface); }
+  .md :global(details.md-details) { margin:1em 0; border:1px solid var(--line); border-radius:var(--radius); background:var(--surface); }
   .md :global(details.md-details > summary) { cursor:pointer; padding:7px 12px; color:var(--ink-mute); list-style:none; border-radius:6px; user-select:none; }
   .md :global(details.md-details > summary::-webkit-details-marker) { display:none; }
   .md :global(details.md-details > summary::before) { content:''; display:inline-block; width:6px; height:6px; margin:0 10px 2px 2px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(-45deg); transition:transform .15s ease-out; }
@@ -82,7 +84,7 @@
   .md :global(details.md-details > :not(summary)) { margin-left:16px; margin-right:16px; }
   .md :global(details.md-details > :last-child:not(summary)) { margin-bottom:12px; }
   @media(prefers-reduced-motion:reduce) { .md :global(details.md-details > summary::before) { transition:none; } }
-  .streaming::after { content:'▍'; color:var(--accent); animation:cursor 1s steps(2) infinite; }
+  .streaming::after { content:''; display:inline-block; width:.4em; height:1.05em; margin-left:2px; vertical-align:text-bottom; background:var(--accent); animation:cursor 1s steps(2) infinite; }
   @keyframes cursor { to { opacity:0; } }
   @media(prefers-reduced-motion:reduce) { .streaming::after { animation:none; } }
   :global(html[data-reduce-motion='on']) .streaming::after {animation:none;}

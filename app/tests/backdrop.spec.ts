@@ -10,7 +10,7 @@ const centre = async (page: Page, title: string) => {
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 };
 
-test('RS-34: the backdrop drifts, warms where a node is lit, and the surfaces are glass', async ({ page }) => {
+test('RS-34: the backdrop drifts, warms where a node is lit; the header is glass, the reading panel solid', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto('/?study=1&subject=Backdrop');
   const panel = page.locator('.panel');
@@ -20,11 +20,12 @@ test('RS-34: the backdrop drifts, warms where a node is lit, and the surfaces ar
   // It moves on its own.
   const before = await glow(page, 300, 300); await page.waitForTimeout(1500);
   expect(await glow(page, 300, 300)).not.toBe(before);
-  // Glass: translucent, blurred surfaces over it.
+  // Glass: the header is translucent and blurred; the reading panel is a solid surface (amended 2026-11-17).
   const header = await page.locator('header').first().evaluate(e => getComputedStyle(e).backdropFilter);
   expect(header).toContain('blur(20px)');
   const panelBg = await panel.evaluate(e => getComputedStyle(e).backgroundColor);
-  expect(panelBg).toMatch(/rgba|color\(srgb .* \/ 0\.55\)|oklab/);
+  expect(panelBg).toBe('rgb(23, 33, 50)');
+  expect(await panel.evaluate(e => getComputedStyle(e).backdropFilter)).toBe('none');
   // A node that becomes lit warms the backdrop at its own position, not elsewhere.
   await panel.getByRole('button', { name: 'Mechanism 1', exact: false }).click();
   await page.waitForTimeout(800);

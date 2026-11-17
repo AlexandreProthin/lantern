@@ -75,9 +75,10 @@ async function selectInPanel(page: import('@playwright/test').Page, text: string
   const paragraph = page.locator('.panel .md p', { hasText: text }).first();
   await expect(paragraph).toBeVisible();
   // Drag across the first words, as a user selects (a triple-click's last click can land on the popover).
+  // 200 px covers the first three words in the reading serif (NP-80).
   await page.evaluate(() => getSelection()?.removeAllRanges());
   const box = (await paragraph.boundingBox())!, y = box.y + 10;
-  await page.mouse.move(box.x + 1, y); await page.mouse.down(); await page.mouse.move(box.x + 140, y, { steps: 5 }); await page.mouse.up();
+  await page.mouse.move(box.x + 1, y); await page.mouse.down(); await page.mouse.move(box.x + 200, y, { steps: 5 }); await page.mouse.up();
   await expect(page.locator('.selection')).toBeVisible();
 }
 test('NP-54, CO-45: the popover\'s Ask Amber and Alt+D open a card by the selection; Ask the tutor quotes it; Esc closes', async ({ page }) => {

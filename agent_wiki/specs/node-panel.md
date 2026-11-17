@@ -24,7 +24,8 @@ One scroll area holds everything except the composer, which is pinned at the bot
   hook; (4) explanation; (5) *Where to go next*; (6) the *Dismissed (n)* fold; (7) actions; (8)
   dialogue; (9) the composer (pinned). Sections with nothing to show are absent, not empty.
 - **NP-2** **Breadcrumbs**: the path from the root to the parent, each a button that focuses that
-  node, separated by `›`; the current node is not repeated. The root shows an empty line of
+  node, separated by a drawn chevron ([rooms-spaces](/specs/rooms-spaces.md) RS-38; *amended
+  2026-11-17*, was the character `›`); the current node is not repeated. The root shows an empty line of
   the same height.
 - **NP-3** The **meta line** MUST show: *kind · state* (kind as a label: subject, axis, go deeper,
   application, adjacent idea, exercise, from a question, own) with the state as a chip using the
@@ -53,7 +54,10 @@ One scroll area holds everything except the composer, which is pinned at the bot
   overflow menu (*⋯*) with *Dismiss* (open nodes only) and *Delete* (NP-100). *(Amended 2026-11-12.)* The overflow menu also holds
   *Mark as dead end* / *Not a dead end* ([learn-room](/specs/learn-room.md) LR-102); on a dead end *More options* is disabled with
   the tooltip *Marked as a dead end*. On an **open** node the overflow holds the toggle too, beside *Dismiss*. (The panel shows these
-  actions as one row of buttons; the toggle sits before *Delete*.)
+  actions as one row of buttons; the toggle sits before *Delete*.) *(Amended 2026-11-17, design review.)* The
+  first action of the row is the panel's one filled primary (RS-38: *More options* on a lit node), the others
+  are quiet text buttons, and *Delete* comes last, turning `--error-ink` on hover; a dormant node's row has no
+  primary.
 - **NP-11** The **dialogue** section (*Dialogue*) lists turns in order: learner turns right-indented
   on `--surface-2`, tutor turns with a 2 px `--accent` left border; each **tutor** turn can be edited
   (NP-42) and shows its author on hover (*tutor: Sonnet 5.5 · medium*, *you: Alex*).
@@ -62,7 +66,8 @@ One scroll area holds everything except the composer, which is pinned at the bot
   **Send**, **Test me**, **I get it** / **Not sure anymore**, and **Cancel** while streaming
   (NP-14). Drafts are kept per node for the session.
 - **NP-13** Focusing a node scrolls the panel to the top; the scroll area MUST keep 28 px side
-  padding and a maximum text measure of about 75 characters.
+  padding and a maximum text measure of about 75 characters. *(Amended 2026-11-17: the node's content
+  reads at about 70 characters, NP-80; the panel's other rows stop at 620 px.)*
 - **NP-14** While a generation runs on this node, **Send** is replaced by **Cancel**; the other
   buttons and the textarea are disabled. Esc cancels it (shortcut table:
   [graph-view](/specs/graph-view.md) GV-76). Cancel discards the partial reply, restores the node's
@@ -151,12 +156,13 @@ corrections as truth.
 # Streaming display
 
 - **NP-60** While text streams, the partial markdown is rendered with a blinking block cursor
-  `▍` in `--accent` after the last element (1 s step blink; static under reduced motion). Tagged
+  (a drawn `--accent` bar, *amended 2026-11-17*; was the character `▍`) after the last element (1 s step blink; static under reduced motion). Tagged
   blocks (`<options>`, `<branch>`, `<understood/>`, a partial tag at the end) MUST be hidden from the
   display ([tagged-blocks-protocol](/decisions/tagged-blocks-protocol.md)).
 - **NP-61** The panel MUST follow the stream (scroll to the bottom) **only if the user was already at the
   bottom** (within 48 px) when the text arrived; a user who has scrolled up is not moved, and a
-  *Jump to latest ↓* pill appears at the bottom until they return.
+  *Jump to latest ↓* pill appears at the bottom until they return (the arrow drawn, RS-38; *amended
+  2026-11-17*).
 - **NP-62** On subject creation the root node is lit with the `intro` task and its explanation streams
   into the panel as it arrives, with the root's children placeholders in the graph.
 - **NP-64** *(Added 2026-11-12, [learn-room](/specs/learn-room.md) LR-91 to LR-93.)* A **replay** streams the stored text
@@ -214,7 +220,8 @@ corrections as truth.
 - **NP-77** Behaviour: closed by default unless written `open`. Open or closed is kept for the session while the node's text
   is unchanged (a save elsewhere does not close it); it is not saved. A Mermaid diagram inside renders when the block is first
   opened if it could not be measured closed. Text selection (NP-50) works inside; search (GV-57) matches inside closed blocks.
-- **NP-78** Look: the panel's tokens only. A 1 px `--line` border, 6 px radius, `--surface` background; the summary row in
+- **NP-78** Look: the panel's tokens only. A 1 px `--line` border, the app's 8 px radius (*amended 2026-11-17*, was
+  6 px), `--surface` background; the summary row in
   `--ink-mute` with a chevron that turns when open, `--accent` on hover, the `--focus` ring on keyboard focus (the summary is
   natively focusable; Enter and Space toggle); the content padded like a block quote.
 - **NP-73** Mermaid diagrams render only once their fence is closed and the stream has ended; they
@@ -222,6 +229,14 @@ corrections as truth.
   drawn*.
 - **NP-74** Rendering of a large text MUST NOT block input for more than 50 ms per update during
   streaming (batch updates to animation frames).
+- **NP-80** *(Added 2026-11-17, design review.)* **Reading face and measure.** A node's content (explanation and
+  dialogue turns rendered as markdown) reads in a serif, a measure of about **70 characters**, 16.5 px on a 1.6
+  line height. The face is the system's, nothing bundled: *Sitka Text* (Windows), then *Charter* / *Iowan Old
+  Style* (macOS, iOS), *Cambria*, *Georgia* and the platform serif (`--font-reading`). The hook is the same serif
+  in italic. Everything else in the panel (breadcrumbs, meta line, title, buttons, the composer) stays in the UI
+  sans.
+- **NP-81** *(Added 2026-11-17.)* **Bold** in the tutor's text is weight only (650), in the text's own colour; it
+  is never tinted.
 
 # Errors
 
