@@ -39,9 +39,44 @@ are referenced here, not restated. The graph shows one room visit's tree
   nodes move**: they find their seats among the others (pushed by every node, kept off their discs, held on
   their edges), which stay exactly where they were, and come to rest in about 1.5 s. A node that goes leaves
   its place empty. The whole map is laid out again only on opening, on a switch of layout, in the tree
-  layout, or when a growth comes while a full layout is still running.
+  layout, or when a growth comes while a full layout is still running. *(Amended 2026-11-18, physics
+  review.)* Positions are no longer purely hash-derived: a node the learner has **pinned** (GV-17) sits
+  where it was dropped, on opening too, and the rest of the layout settles around it.
 - **GV-15** Free layout: the root is pinned at the origin; repulsion, collision radius and link
   distance are tunable constants (PoC values: charge −900, collide 62, link distance 130).
+  *(Amended 2026-11-18, physics review.)* **Collision is on what a node draws**: its disc and the title
+  under it (the title measured once and wrapped in its 134 px column, up to 3 lines; a waiting
+  placeholder keeps room for a two-line title), not a 62 px circle. Two such boxes keep about 12 px apart
+  across and 8 px down; they are pushed apart along the line between their centres, out of a rounded
+  rectangle on their sizes, so siblings ring their parent instead of stacking in columns. The growth
+  seating of GV-14 uses the same boxes. **Modules read as groups**: the link from the subject to a
+  module is long and the links inside a module short, each longer by the square root of the nodes under
+  its end (so a big branch has room); the subject and the modules push harder than inner nodes, leaves
+  least. The constants live in `graphMotion` (`label`, `cluster`). Opening settles in the same number of
+  steps as before.
+- **GV-16** *(Added 2026-11-18, physics review.)* **Opening reveal.** The settled layout (GV-112) does
+  not pop in: each node fades in and grows from half size about its disc centre, a depth step after its
+  parent, and each tree edge draws out from its parent as its node comes; the text-link lines (GV-40)
+  fade in last. The whole takes about half a second (`OPEN_REVEAL_MS` 520, each node 260 ms), whatever
+  the depth. It is CSS only (a delay per depth, no script per frame), and nothing is left animating once
+  it ends. A map opened out of sight plays it when first shown. None under reduced motion.
+- **GV-17** *(Added 2026-11-18, physics review.)* **Dragging and pins.** In the free layout a node other
+  than the root can be dragged: with a mouse or pen once the press has moved 5 px, with a touch once the
+  finger has rested 300 ms on the node (a quick swipe still pans the map; a 500 ms rest still opens the
+  menu, NW-41). While it is dragged only the node and its branch (its drawn, unpinned descendants) move,
+  seated as in GV-14; the rest of the map stays still. A drag does not focus the node; a click without
+  movement still focuses (GV-30), and a press on the root or the background pans (GV-60). Dropped, the
+  node is **pinned** where it is: it carries a small pin mark above its disc, its tooltip says *pinned
+  (double-click to release)*, and every later layout (opening, growth, a switch back from Tree) holds it
+  there. A **double-click** on a pinned node, or *Release pin* in its node menu (GV-55, among the view
+  actions), releases it, and it finds a seat again near where it is, with its branch. Pins are a
+  **view** state, persisted app-side per subject as `pinned` (subject id → node id → [x, y]) in the app
+  state file ([settings](/specs/settings.md) SE-50), never in the subject file: no save, no undo step
+  (as folds, GV-135, GV-136); a subject's pins are read before its first layout, ids that no longer exist
+  are dropped on load, and deleting a subject drops its pins. *Recenter* still fits every node, pinned or
+  not (GV-61); the tree layout ignores pins, shows no mark and allows no drag. Keyboard moves (GV-70) are
+  unchanged. Under reduced motion the dragged node follows the pointer and its branch is settled at once
+  when it is dropped.
 
 # Node rendering
 
@@ -341,7 +376,8 @@ and nothing else in the code hard-codes them.
   placeholders appear and disappear with no growth, breathing or stagger; the busy pulse is replaced
   by a static dashed outline (the PoC's busy look); title reveal is immediate.
 - **GV-102** Layout switches, recenter and pan-to-focus are instant; the free layout is
-  pre-settled (run to rest before display) rather than animated.
+  pre-settled (run to rest before display) rather than animated. *(Amended 2026-11-18.)* No opening
+  reveal (GV-16).
 - **GV-103** Information MUST NOT depend on motion: every state conveyed by animation (pending,
   busy) has a static equivalent.
 
