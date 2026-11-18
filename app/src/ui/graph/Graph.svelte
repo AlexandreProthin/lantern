@@ -812,7 +812,7 @@
     class="world"
     class:tiny={transform.k < graphMotion.hideTitlesBelow}
     class:moving={viewMoving}
-    style="transform: translate3d({transform.x + width / 2}px, {transform.y + height / 2}px, 0) scale({transform.k});--inv:{transform.k < graphMotion.hideTitlesBelow ? Math.round(100 / transform.k) / 100 : 1}"
+    style="transform: translate3d({transform.x + width / 2}px, {transform.y + height / 2}px, 0) scale({transform.k});--k:{transform.k};--inv:{transform.k < graphMotion.hideTitlesBelow ? Math.round(100 / transform.k) / 100 : 1}"
   >
     <!-- Edges sit under the nodes: the opaque circles cut the lines at their rims. -->
     <svg class="edges" bind:this={edgesSvg} aria-hidden="true">
@@ -1124,6 +1124,11 @@
     .corner { left:12px; bottom:calc(12px + env(safe-area-inset-bottom)); max-width:calc(100% - 180px); }
     .legend-chip, .open-file { padding:8px 14px; font-size:13px; }
     .node-menu > button { padding:12px 14px; font-size:15px; }
+  }
+  /* NW-41 (amended 2026-11-18): on touch a node takes a finger however small the map is drawn: a hit circle on the disc,
+     at least 36 px on screen, invisible, outside the layout; the drawn disc and the positions do not change. */
+  @media (pointer: coarse) {
+    .node::before { content:''; position:absolute; left:50%; top:30px; width:max(60px, calc(36px / var(--k, 1))); aspect-ratio:1; border-radius:50%; transform:translate(-50%, -50%); }
   }
   @media (prefers-reduced-motion: reduce) {
     .node .disc, .node .name { animation:none !important; }

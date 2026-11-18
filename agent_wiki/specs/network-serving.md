@@ -97,6 +97,10 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
     checkbox sits beside its label, and no disabled button shows that cannot work on the device (NW-31).
 - **NW-41** Touch: pan and pinch on the graph (d3-zoom), tap to open a node, a long press opens the node
   menu that a right-click opens on the desktop; graph controls are 40 px. No action depends on hover alone.
+  *(Amended 2026-11-18, the mobile review.)* On a touch screen (`pointer: coarse`) every node takes a finger however
+  far the map is zoomed out: an invisible hit circle on its disc, at least 36 px on screen (sized from the zoom),
+  outside the layout, so the drawn disc, the title and the positions do not change. A phone's fit never goes below
+  the scale where titles hide (NW-40), so a fitted big map shows readable titles around the focused node.
 - **NW-42** Inputs are 16 px or more (no zoom on focus in iOS Safari); the viewport is
   `width=device-width, initial-scale=1, viewport-fit=cover`.
 - **NW-43** The desktop window (1024 px and up) is unchanged.

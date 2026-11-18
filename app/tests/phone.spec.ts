@@ -284,6 +284,51 @@ for (const size of PHONES) test.describe(`a ${size.width} × ${size.height} phon
     }
     expect(await noSideScroll(page)).toBe(true);
   });
+
+  test('NW-40, NW-41: a big map fits with readable titles; zoomed far out, a small node still takes a finger, drawn and placed as before', async ({ page }) => {
+    await greeted(page);
+    await seed(page, bigMap());
+    await page.goto('/?study=1&resume=1');
+    await settled(page);
+    // The phone fit keeps titles: never below the scale where they hide.
+    expect(await scale(page)).toBeGreaterThanOrEqual(.5);
+    await expect(page.locator('.world.tiny')).toHaveCount(0);
+    expect(await page.locator('.node .name').evaluateAll(names => names.filter(n => { const r = n.getBoundingClientRect(); return r.width && r.top > 0 && r.bottom < innerHeight && r.left > 0 && r.right < innerWidth; }).length)).toBeGreaterThan(8);
+    // Zoomed far out the discs are drawn small.
+    const zoomOut = page.getByRole('button', { name: 'Zoom out' });
+    for (let i = 0; i < 8 && (await scale(page)) > .22; i++) { await zoomOut.tap(); await page.waitForTimeout(350); }
+    await settled(page);
+    const k = await scale(page);
+    expect(k).toBeLessThan(.3);
+    // A point 13 px above a small disc: outside the node's own box and its title, clear of every other disc and of the controls.
+    const target = await page.evaluate(() => {
+      const nodes = [...document.querySelectorAll<HTMLElement>('.node[data-id]')].filter(n => n.getAttribute('aria-pressed') !== 'true').map(n => {
+        const r = n.querySelector('.disc')!.getBoundingClientRect(); return { id: n.dataset.id!, x: r.left + r.width / 2, y: r.top + r.height / 2, size: r.width, box: n.getBoundingClientRect() };
+      });
+      const g = document.querySelector('.graph')!.getBoundingClientRect();
+      const tools = [...document.querySelectorAll('.graph .controls, .graph .zoom-controls, .graph .corner, .sheet-open, button.amber')].map(e => e.getBoundingClientRect());
+      for (const d of nodes) for (const angle of [-90, -60, -120, -45, -135]) {
+        const a = angle * Math.PI / 180, px = d.x + 13 * Math.cos(a), py = d.y + 13 * Math.sin(a);
+        if (px < g.left + 20 || px > g.right - 20 || py < g.top + 20 || py > g.bottom - 20) continue;
+        if (px >= d.box.left && px <= d.box.right && py >= d.box.top && py <= d.box.bottom) continue;
+        if (tools.some(t => px > t.left - 20 && px < t.right + 20 && py > t.top - 20 && py < t.bottom + 20)) continue;
+        if (nodes.some(o => o !== d && Math.hypot(o.x - px, o.y - py) < 24)) continue;
+        return { ...d, px, py };
+      }
+      return null;
+    });
+    expect(target).toBeTruthy();
+    // The disc is drawn at the map's scale (44 px × k): the hit area does not change it, nor the node's box.
+    expect(Math.abs(target!.size - 44 * k)).toBeLessThan(1.5);
+    expect(target!.size).toBeLessThan(16);
+    expect(Math.abs(target!.box.width - 150 * k)).toBeLessThan(1.5);
+    // The hit circle is at least 32 px on screen.
+    expect(await page.locator(`.node[data-id="${target!.id}"]`).evaluate((n, k) => parseFloat(getComputedStyle(n, '::before').width) * k, k)).toBeGreaterThanOrEqual(32);
+    expect(await page.evaluate(({ px, py }) => document.elementFromPoint(px, py)?.closest('.node')?.getAttribute('data-id') ?? null, target!)).toBe(target!.id);
+    // A tap there opens the node.
+    await page.touchscreen.tap(target!.px, target!.py);
+    await expect(page.locator(`.node[data-id="${target!.id}"]`)).toHaveAttribute('aria-pressed', 'true');
+  });
 });
 
 /** NW-30: a page served by the desktop app on the network (the meta the server adds), its /api answered here, as the desktop would. */
