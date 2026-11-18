@@ -46,7 +46,7 @@
 </script>
 <section class="codex" aria-labelledby="codex-title">
   <h3 id="codex-title">{strings.codex.title}</h3>
-  <label><input type="checkbox" checked={on} onchange={toggle} />{strings.codex.use}</label>
+  <label class="check"><input type="checkbox" checked={on} onchange={toggle} />{strings.codex.use}</label>
   <p>{strings.codex.hint}</p>
   {#if on}
     {#if found && found.kind !== 'not-installed'}<p>{strings.found}{found.path ? ` · ${found.path}` : ''}{found.version ? ` · ${found.version}` : ''}{found.kind === 'signed-in' ? ` · ${strings.signedIn}` : ''}</p>{/if}

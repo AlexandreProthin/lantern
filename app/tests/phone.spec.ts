@@ -252,4 +252,51 @@ for (const size of PHONES) test.describe(`a ${size.width} × ${size.height} phon
     await expect.poll(() => deck.evaluate(e => e.scrollLeft === 2 * e.clientWidth)).toBe(true);
     await expect(cards.nth(2).locator('.prow[data-status="none"]')).toHaveCount(1);
   });
+
+  for (const client of ['browser', 'remote'] as const) test(`NW-31, NW-40: Settings on a ${client === 'remote' ? 'LAN client' : 'browser build'}: every checkbox sits beside its label, and no button shows that cannot work there`, async ({ page }) => {
+    await greeted(page);
+    if (client === 'remote') await asRemote(page);
+    await page.goto('/');
+    await page.locator('header').getByRole('button', { name: 'Settings', exact: true }).tap();
+    const dialog = page.getByRole('dialog'), tabs = dialog.locator('nav button');
+    await expect(tabs.first()).toHaveAttribute('aria-current', 'page');
+    // The library line says where the subjects are, in place of a disabled path field and its buttons.
+    await expect(dialog.getByTestId('library-where')).toHaveText(client === 'remote' ? 'The library and updates are managed on the computer running Lantern.' : /^Subjects are kept in this browser\./);
+    await expect(dialog.getByRole('textbox', { name: 'Library folder' })).toHaveCount(0);
+    for (const name of ['Apply path', 'Browse…', 'Reveal library in Explorer', 'Check for updates']) await expect(dialog.getByRole('button', { name, exact: true })).toHaveCount(0);
+    const names = await tabs.allTextContents();
+    expect(names).not.toContain('Network');
+    for (let i = 0; i < names.length; i++) {
+      await tabs.nth(i).tap();
+      await expect(tabs.nth(i)).toHaveAttribute('aria-current', 'page');
+      const section = dialog.locator('section');
+      // No disabled control is offered: what the device cannot do is hidden or said in a line.
+      expect(await section.locator('button:disabled').count(), `${names[i]}: disabled buttons`).toBe(0);
+      if (client === 'remote' && names[i] === 'Provider') await expect(section.getByTestId('endpoint')).toHaveCount(0);
+      // Each checkbox is on its label's first line, before the text.
+      const placed = await section.locator('label:has(> input[type="checkbox"])').evaluateAll(labels => labels.map(l => {
+        const box = l.querySelector('input')!.getBoundingClientRect(), range = document.createRange();
+        const text = [...l.childNodes].find(n => n.nodeType === Node.TEXT_NODE && n.textContent!.trim())!;
+        range.selectNodeContents(text); const line = range.getClientRects()[0];
+        return { label: l.textContent, beside: box.right <= line.left && box.top < line.bottom && box.bottom > line.top };
+      }));
+      for (const p of placed) expect(p.beside, `${names[i]}: ${p.label}`).toBe(true);
+    }
+    expect(await noSideScroll(page)).toBe(true);
+  });
 });
+
+/** NW-30: a page served by the desktop app on the network (the meta the server adds), its /api answered here, as the desktop would. */
+async function asRemote(page: Page) {
+  await page.addInitScript(() => {
+    new MutationObserver((_, o) => { if (!document.head) return; const m = document.createElement('meta'); m.name = 'lantern-remote'; document.head.prepend(m); o.disconnect(); }).observe(document, { childList: true, subtree: true });
+  });
+  await page.route('**/api/session', r => r.fulfill({ json: { paired: true } }));
+  await page.route('**/api/invoke/*', r => {
+    const replies: Record<string, unknown> = {
+      load_settings: { document: { format: 'lantern-settings/1', library: { path: 'C:\\Users\\me\\Documents\\Lantern' } }, readOnly: false, recovered: false, defaultLibrary: 'C:\\Users\\me\\Documents\\Lantern', defaultName: 'Me' },
+      list_subjects: [], read_state: { format: 'lantern-state/1', recents: [], lastOpenedAt: {} }, provider_status: { kind: 'found', path: 'claude', version: '1' },
+    };
+    return r.fulfill({ json: replies[new URL(r.request().url()).pathname.split('/').pop()!] ?? null });
+  });
+}

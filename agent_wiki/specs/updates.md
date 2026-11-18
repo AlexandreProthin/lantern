@@ -50,6 +50,8 @@ contacts GitHub, so the content security policy and the capability list do not c
   It checks regardless of UP-1 and UP-3, and shows its outcome in place: *Checking…*, *Lantern is up to
   date*, *Lantern 0.1.3 is available* with **Install**, or a short reason it could not check
   (*Could not reach the update server*, *Updates are not set up in this build*).
+  *(Amended 2026-11-18, [network-serving](/specs/network-serving.md) NW-31.)* The button shows in the desktop app
+  only; the browser build and a device on the network show no disabled *Check for updates*.
 - **UP-21** A manual check updates `ui.lastUpdateCheck` when it succeeds.
 
 ## Installing

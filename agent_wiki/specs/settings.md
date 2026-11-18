@@ -91,6 +91,12 @@ The last-opened times and the recents list are **not** in this file: they live i
 
 - **SE-20** The display name default MUST be the Windows user name (`USERNAME`), read at first run and stored; the user can change it. It is the author name on learner turns and edits ([domain-model](/specs/domain-model.md)).
 - **SE-21** *Reveal library in Explorer* MUST open the library folder.
+  *(Amended 2026-11-18, the mobile review, [network-serving](/specs/network-serving.md) NW-31, NW-40.)* The *Library
+  folder* field, *Apply path*, *Browse…*, *Reveal library in Explorer* and *Check for updates* show in the desktop app
+  only. On a device served over the network a line under *Library folder* says the library and updates are managed
+  on the computer running Lantern; in the browser build it says the subjects are kept in this browser. Developer's
+  *Browse…* buttons are likewise desktop only. A checkbox or switch sits beside its label on every browser (the
+  label carries the `check` class, not only the `:has()` rule).
 - **SE-22** The section MUST end with the app version, *Lantern 0.5.0* (the current version), taken at build time from `package.json` (kept equal to `Cargo.toml` and `tauri.conf.json`), followed by the *Check for updates* button and the *Check for updates at launch* checkbox ([updates](/specs/updates.md) UP-3, UP-20).
 
 # Library folder change flow

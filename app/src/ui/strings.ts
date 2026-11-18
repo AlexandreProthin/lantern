@@ -161,7 +161,7 @@ export const strings = {
   networkForgetConfirm:'Every paired device will need a new code. Forget them all?', networkLastSeen:(when:string)=>`last used ${when}`,
   pairTitle:'Pair this device with Lantern', pairHint:'On the computer running Lantern, open Settings → Network → Pair a device, then type the code shown there.',
   pairCode:'Pairing code', pairSubmit:'Pair', pairWorking:'Pairing…', pairUnreachable:'Lantern cannot be reached. Check that it is still running on the computer.',
-  libraryOnDesktop:'The library and updates are managed on the computer running Lantern.', endpointsOnDesktop:'Endpoints and their keys are changed on the computer running Lantern.',
+  libraryOnDesktop:'The library and updates are managed on the computer running Lantern.', libraryInBrowser:'Subjects are kept in this browser. The desktop app keeps them as files in a library folder, and updates itself.', endpointsOnDesktop:'Endpoints and their keys are changed on the computer running Lantern.',
   developer:'Developer', updateFolder:'Local update folder', clearFolder:'Clear', updatesFromFolder:'Updates come from a local folder',
   updateFolderHint:'While set, updates come from this folder instead of GitHub. It must hold latest.json and the installer it names (make-latest-json.mjs --out).',
   updateFolderErrors:{ 'update-folder:no-latest-json':'No latest.json in the update folder', 'update-folder:no-installer-named':'The update folder does not name an installer', 'update-folder:installer-missing':'The installer named in latest.json is missing' } as Record<string,string>,finishGeneration:'Finish or cancel the running generation first',undone:'Undone. Ctrl+Y brings it back.',redone:'Redone.',nothingToUndo:'Nothing to undo.',nothingToRedo:'Nothing to redo.',

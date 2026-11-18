@@ -91,16 +91,18 @@
     <section><fieldset disabled={readonly||transferring}>
     {#if section==='general'}
       <label>{strings.displayName}<input value={settings.user.displayName} onblur={e=>text(e,'name')} onkeydown={e=>{if(e.key==='Enter')text(e,'name');}} /></label><p>{strings.appliesNext}</p>
-      {#if remote}<p>{strings.libraryOnDesktop}</p>{/if}
-      <label>{strings.libraryFolder}<input bind:value={typedPath} disabled={!native} spellcheck="false" onkeydown={e=>{if(e.key==='Enter'){e.preventDefault();if(typedPath.trim()&&typedPath.trim()!==settings.library.path)void choose(typedPath.trim());}}} /></label>
-      <div class="actions"><button disabled={!native||generating||!typedPath.trim()||typedPath.trim()===settings.library.path} onclick={()=>choose(typedPath.trim())}>{strings.applyLibrary}</button><button disabled={!native||generating} title={generating?strings.finishGeneration:undefined} onclick={()=>choose()}>{strings.changeLibrary}</button><button disabled={!native} onclick={()=>invoke('reveal_library',{path:settings.library.path}).catch(e=>validation=String(e))}>{strings.revealLibrary}</button></div>
+      <!-- NW-31, SE-30: the library folder and its actions are the desktop app's; elsewhere a line says where the subjects are (amended 2026-11-18). -->
+      {#if native}
+      <label>{strings.libraryFolder}<input bind:value={typedPath} spellcheck="false" onkeydown={e=>{if(e.key==='Enter'){e.preventDefault();if(typedPath.trim()&&typedPath.trim()!==settings.library.path)void choose(typedPath.trim());}}} /></label>
+      <div class="actions"><button disabled={generating||!typedPath.trim()||typedPath.trim()===settings.library.path} onclick={()=>choose(typedPath.trim())}>{strings.applyLibrary}</button><button disabled={generating} title={generating?strings.finishGeneration:undefined} onclick={()=>choose()}>{strings.changeLibrary}</button><button onclick={()=>invoke('reveal_library',{path:settings.library.path}).catch(e=>validation=String(e))}>{strings.revealLibrary}</button></div>
+      {:else}<div class="field"><span>{strings.libraryFolder}</span><p data-testid="library-where">{remote?strings.libraryOnDesktop:strings.libraryInBrowser}</p></div>{/if}
       {#if generating}<p>{strings.finishGeneration}</p>{/if}
       <button class="version" onclick={versionClick}>{strings.appVersion(__APP_VERSION__)}</button>
       {#if settings.developer.updateFolder}<p>{strings.updatesFromFolder}</p>{/if}
-      <div class="actions"><button disabled={!native||['checking','downloading','installing'].includes(updater.phase)} onclick={()=>void checkUpdates()}>{strings.checkForUpdates}</button>
-        {#if updater.phase==='available'}<button disabled={generating} title={generating?strings.finishGeneration:undefined} onclick={()=>void installUpdate()}>{strings.installUpdate}</button>{/if}</div>
+      {#if native}<div class="actions"><button disabled={['checking','downloading','installing'].includes(updater.phase)} onclick={()=>void checkUpdates()}>{strings.checkForUpdates}</button>
+        {#if updater.phase==='available'}<button disabled={generating} title={generating?strings.finishGeneration:undefined} onclick={()=>void installUpdate()}>{strings.installUpdate}</button>{/if}</div>{/if}
       <p role="status" data-testid="update-status">{#if updater.phase==='checking'}{strings.checkingUpdates}{:else if updater.phase==='up-to-date'}{strings.upToDate}{:else if updater.phase==='available'}{strings.updateAvailable(updater.version)}{:else if updater.phase==='unconfigured'}{strings.updateUnconfigured}{:else if updater.phase==='downloading'}{strings.updateDownloading(updater.percent)}{:else if updater.phase==='installing'}{strings.updateInstalling}{:else if updater.phase==='failed'}{updater.message}{/if}</p>
-      <label><input type="checkbox" bind:checked={settings.updates.checkAtLaunch} onchange={changed} />{strings.checkAtLaunch}</label>
+      <label class="check"><input type="checkbox" bind:checked={settings.updates.checkAtLaunch} onchange={changed} />{strings.checkAtLaunch}</label>
     {:else if section==='provider'}
       <div class="field"><label for="default-model">{strings.defaultModel}</label><ModelPicker id="default-model" value={settings.provider.defaultModel} label={strings.defaultModel} commit={model=>{settings.provider.defaultModel=model;validation='';changed();}} /></div>
       <label>{strings.defaultEffort}<select bind:value={settings.provider.defaultEffort} onchange={changed}>{#each ['low','medium','high','xhigh','max'] as effort}<option>{effort}</option>{/each}</select></label><p>{strings.newSubjectsHint}</p>
@@ -113,12 +115,12 @@
       {#if details}<details><summary>{strings.details}</summary><pre>{details}</pre><button onclick={()=>navigator.clipboard.writeText(details)}>{strings.copyDetails}</button></details>{/if}
       {#if remote}<p>{strings.endpointsOnDesktop}</p>{/if}
       <CodexSettings {settings} {changed} {provider} health={endpointHealth.codex} fakeOptions={fakeEndpoint} disabled={generating||remote} />
-      <EndpointsSettings {settings} {changed} {provider} health={endpointHealth} fakeOptions={fakeEndpoint} disabled={generating||remote} />
+      {#if !remote}<EndpointsSettings {settings} {changed} {provider} health={endpointHealth} fakeOptions={fakeEndpoint} disabled={generating} />{/if}
     {:else if roomOf(section)}{@const RoomSettings=roomOf(section)!.settingsMenu}<RoomSettings {settings} {changed} />
     {:else if section==='companion'}
-      <label><input type="checkbox" bind:checked={settings.companion.show} onchange={changed} />{strings.showAmber}</label>
+      <label class="check"><input type="checkbox" bind:checked={settings.companion.show} onchange={changed} />{strings.showAmber}</label>
       {#if !settings.companion.show}<p>{strings.amberHiddenHint}</p>{/if}
-      <label><input type="checkbox" bind:checked={settings.companion.tips} onchange={changed} disabled={!settings.companion.show} />{strings.amberTipsSetting}</label>
+      <label class="check"><input type="checkbox" bind:checked={settings.companion.tips} onchange={changed} disabled={!settings.companion.show} />{strings.amberTipsSetting}</label>
       <p>{strings.amberTipsHint}</p>
       <div class="field"><label for="amber-model">{strings.amberModel}</label><ModelPicker id="amber-model" value={settings.companion.model} label={strings.amberModel} commit={model=>{settings.companion.model=model;validation='';changed();}} /></div>
       <p>{strings.amberEffortHint}</p>
@@ -127,19 +129,19 @@
       <NetworkSettings />
     {:else if section==='developer'}
       {#if debugAllowed}
-        <label><input type="checkbox" role="switch" checked={settings.developer.debug} onchange={e=>{settings.developer.debug=e.currentTarget.checked;changed();}} />{strings.debugMode}</label>
+        <label class="check"><input type="checkbox" role="switch" checked={settings.developer.debug} onchange={e=>{settings.developer.debug=e.currentTarget.checked;changed();}} />{strings.debugMode}</label>
         <p>{strings.debugModeHint}</p>
         <label>{strings.logFolder}<input value={settings.developer.logFolder} readonly spellcheck="false" /></label>
-        <div class="actions"><button disabled={!native} onclick={pickDebugFolder}>{strings.debug.browse}</button><button aria-label={strings.debug.clearLogFolder} disabled={!settings.developer.logFolder} onclick={()=>{settings.developer.logFolder='';settings.developer.record=false;changed();}}>{strings.clearFolder}</button></div>
+        <div class="actions">{#if native}<button onclick={pickDebugFolder}>{strings.debug.browse}</button>{/if}<button aria-label={strings.debug.clearLogFolder} disabled={!settings.developer.logFolder} onclick={()=>{settings.developer.logFolder='';settings.developer.record=false;changed();}}>{strings.clearFolder}</button></div>
         <p>{strings.logFolderHint}</p>
       {/if}
       <label>{strings.updateFolder}<input value={settings.developer.updateFolder} readonly spellcheck="false" /></label>
-      <div class="actions"><button disabled={!native} onclick={pickFolder}>{strings.changeLibrary}</button><button disabled={!settings.developer.updateFolder} onclick={()=>{settings.developer.updateFolder='';changed();}}>{strings.clearFolder}</button></div>
+      <div class="actions">{#if native}<button onclick={pickFolder}>{strings.changeLibrary}</button>{/if}<button disabled={!settings.developer.updateFolder} onclick={()=>{settings.developer.updateFolder='';changed();}}>{strings.clearFolder}</button></div>
       <p>{strings.updateFolderHint}</p>
     {:else}
       <label>{strings.reduceMotion}<select bind:value={settings.appearance.reduceMotion} onchange={changed}><option value="system">{strings.followSystem}</option><option value="on">{strings.alwaysReduce}</option></select></label>
-      <label><input type="checkbox" bind:checked={settings.appearance.backdrop} onchange={changed} />{strings.backdrop}</label>
-      <label><input type="checkbox" bind:checked={settings.appearance.showTokenStats} onchange={changed} />{strings.showTokens}</label>
+      <label class="check"><input type="checkbox" bind:checked={settings.appearance.backdrop} onchange={changed} />{strings.backdrop}</label>
+      <label class="check"><input type="checkbox" bind:checked={settings.appearance.showTokenStats} onchange={changed} />{strings.showTokens}</label>
     {/if}
       {#if validation}<p class="invalid" role="alert">{validation}</p>{/if}
       {#if destination}<div class="confirmation"><h3>{strings.transferLibrary}</h3><p>{destination}</p><p>{strings.transferHint}</p><div class="actions"><button class="primary" onclick={()=>transfer('move')}>{strings.moveSubjects}</button><button onclick={()=>transfer('copy')}>{strings.copySubjects}</button><button onclick={()=>transfer('leave')}>{strings.leaveSubjects}</button><button onclick={()=>destination=''}>{strings.cancel}</button></div></div>{/if}
@@ -165,7 +167,9 @@
   section :global(label) :global(:is(input, select, textarea)), .field :global(:is(input, select, textarea)) {color:var(--ink);}
   /* NW-42: a phone keeps its 16 px fields (app.css). */
   @media (min-width: 720px) { section :global(label) :global(:is(input, select, textarea)), .field :global(:is(input, select, textarea)) {font-size:14px;} }
-  section :global(label:has(> input[type='checkbox'], > input[type='radio'])) {display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink);}
+  /* `.check` names it for browsers without :has() (an older phone browser stacked the box above its label; amended 2026-11-18). */
+  section :global(label.check), section :global(label:has(> input[type='checkbox'], > input[type='radio'])) {display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink);}
+  section :global(label.check > input) {flex:none;margin:0;}
   section :global(p) {color:var(--ink-mute);font-size:13px;margin:0;} pre {white-space:pre-wrap;} section :global(h3) {font-size:15px;margin:8px 0 0;}
   section :global(.codex) {display:grid;gap:12px;} section :global(.codex > button) {justify-self:start;} a {color:var(--accent);} .actions {display:flex;gap:4px;flex-wrap:wrap;margin-left:-10px;} .actions :global(button.primary) {margin-left:10px;}
   .confirmation {justify-self:stretch;display:grid;gap:10px;border:1px solid var(--line);border-radius:var(--radius-surface);padding:14px 16px;} .confirmation h3 {margin:0;} .invalid {color:var(--focus);}
