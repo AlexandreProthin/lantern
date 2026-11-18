@@ -20,6 +20,7 @@ export const t = {
     { state: 'dismissed', badge: '', label: 'dismissed' },
   ],
   untitled: 'Untitled',
+  hideSettled: 'Hide settled',
   rejectedBecause: (reason: string) => ` · rejected: ${reason}`,
   answeredWith: (text: string) => ` · ${text}`,
   // panel

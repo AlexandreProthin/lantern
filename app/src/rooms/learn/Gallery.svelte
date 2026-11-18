@@ -32,5 +32,5 @@
 {/snippet}
 <GalleryGrid {visible} {settings} {library} {revision} {navigate} {visual} {figures} {details} />
 <style>
-  .progress{height:2px;background:var(--line);margin-bottom:16px}.progress span{display:block;height:100%;background:var(--node-understood)}dl{display:grid;gap:7px;margin:0;font-size:12px}dl>div{display:flex;justify-content:space-between;gap:12px}dt{color:var(--ink-mute)}dd{margin:0;text-align:right;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.span,.model{font-size:12px;color:var(--ink-mute);margin:12px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.details{border-top:1px solid var(--line);padding-top:14px;margin-top:16px}
+  .progress{height:2px;background:var(--line);margin-bottom:16px}.progress span{display:block;height:100%;background:var(--node-understood)}dl{display:grid;gap:7px;margin:0;font-size:calc(12px * var(--text-scale))}dl>div{display:flex;justify-content:space-between;gap:12px}dt{color:var(--ink-mute)}dd{margin:0;text-align:right;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.span,.model{font-size:calc(12px * var(--text-scale));color:var(--ink-mute);margin:12px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.details{border-top:1px solid var(--line);padding-top:14px;margin-top:16px}
 </style>

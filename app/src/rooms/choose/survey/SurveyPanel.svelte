@@ -141,17 +141,17 @@
   :global(.panel.choose-panel .state-chip[data-state='answered']), :global(.panel.choose-panel .state-chip[data-state='must']), :global(.panel.choose-panel .state-chip[data-state='nice']),
   :global(.panel.choose-panel .state-chip[data-state='chosen']) { color:var(--node-understood); border-color:var(--node-understood); }
   :global(.panel.choose-panel .state-chip[data-state='dismissed']), :global(.panel.choose-panel .state-chip[data-state='rejected']), :global(.panel.choose-panel .state-chip[data-state='irrelevant']) { opacity:.6; }
-  h2 { font-size:13px; color:var(--ink-mute); font-weight:500; margin:20px 0 10px; }
-  .soft, small { color:var(--ink-mute); font-size:12px; }
+  h2 { font-size:calc(13px * var(--text-scale)); color:var(--ink-mute); font-weight:500; margin:20px 0 10px; }
+  .soft, small { color:var(--ink-mute); font-size:calc(12px * var(--text-scale)); }
   .research { display:flex; align-items:center; gap:12px; margin:14px 0; padding:8px 12px; border:1px solid var(--line); border-radius:8px; color:var(--focus); }
-  .research .step { flex:1; } .research button { font-size:12px; }
+  .research .step { flex:1; } .research button { font-size:calc(12px * var(--text-scale)); }
   textarea, input { width:100%; box-sizing:border-box; }
   .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px; }
   .seg { display:inline-flex; border:1px solid var(--accent); border-radius:8px; overflow:hidden; }
-  .seg button { border:0; border-radius:0; background:transparent; font-size:12px; color:var(--ink-mute); }
+  .seg button { border:0; border-radius:0; background:transparent; font-size:calc(12px * var(--text-scale)); color:var(--ink-mute); }
   .seg button + button { border-left:1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
   .seg button.on { background:var(--accent); color:var(--accent-ink); }
   .pick { color:var(--node-understood); } .reason { color:var(--ink-mute); font-style:italic; }
-  .reject { display:grid; gap:8px; margin:12px 0; } .reject label { display:grid; gap:6px; font-size:12px; color:var(--ink-mute); }
+  .reject { display:grid; gap:8px; margin:12px 0; } .reject label { display:grid; gap:6px; font-size:calc(12px * var(--text-scale)); color:var(--ink-mute); }
   .offer, .recommend { padding:12px; border:1px solid var(--accent); border-radius:8px; margin:16px 0; } .offer h2, .recommend h2 { margin-top:0; }
 </style>

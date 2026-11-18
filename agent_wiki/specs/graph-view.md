@@ -227,6 +227,7 @@ Relations live in the text as `[label](node:<id>)` ([domain-model](/specs/domain
 - **GV-61** **Recenter** fits the bounding box of all nodes (including title extents) in the
   viewport with 48 px padding, scale clamped to [0.1, 1], animated over **400 ms** with an
   ease-in-out curve; **instant** under reduced motion. It also runs once when a subject opens.
+  *(Amended 2026-11-17.)* With a filter on (GV-145), it fits the visible nodes only.
 - **GV-62** Below zoom 0.5 titles MAY be hidden (level of detail) while glyphs stay; the
   threshold is a tunable constant. *(Amended 2026-11-17.)* Below it, some titles stay readable, drawn
   at reading size whatever the zoom: the focused node's, the hovered node's, those on the **route** to
@@ -422,6 +423,46 @@ view.
   view (as the layout, GV-12) and writing them would make saves, undo steps and conflicts (ST-24) for
   no content change. Ids that no longer exist are dropped on load; deleting a subject in Gallery drops
   its entry.
+
+# Outline view
+
+- **GV-140** *(Added 2026-11-17.)* A toggle among the graph tools switches Study between the **graph** and an
+  **outline**: the visit's tree as an indented list. The choice is kept **app-wide** in the UI state
+  (`ui.graphView`, `graph`/`outline`), as the layout is (GV-12). The outline lives in the shared graph
+  (`ui/graph/Outline.svelte`), so Choose's survey has it too; the legend, the filters, search and fold-all stay
+  over it, the zoom buttons and the layout toggle go.
+- **GV-141** *(Added 2026-11-17.)* Each row shows the node's state glyph as on the map (the room's glyph,
+  coloured by the room's node-state rules, as in the legend), its title, a `+n` for a folded node (GV-131), and
+  its hook on hover or keyboard focus (and on the focused row). A node with shown children has a fold chevron;
+  rows are indented 20 px per level. It is an ARIA tree: `treeitem`s with their level, `aria-expanded` on foldable
+  rows and `aria-selected` on the focus.
+- **GV-142** *(Added 2026-11-17.)* The keys are the graph's (GV-70): Left = parent, Right = first child (unfolding
+  a folded node), Up/Down = siblings, Home = the root, Enter = the room's Enter (else the panel takes focus). A
+  click focuses the node, which the panel shows.
+- **GV-143** *(Added 2026-11-17.)* The outline lists what the graph would draw: visibility and collapse
+  (GV-120..136) and the filters (GV-145) apply to it alike. Under *focus plus neighbours*, whose rows have no
+  common parent shown, each visible node whose parent is hidden starts its own top-level row.
+- **GV-144** *(Added 2026-11-17.)* On a phone (NW-40) the outline fills the graph side; rows are 40 px high with
+  16 px text, and a tap on a row opens the panel sheet, as a tap on a node does.
+
+# Filters
+
+- **GV-145** *(Added 2026-11-17.)* The legend offers three filters: **Module** (*All modules* or one child of the
+  root: the root and that module's subtree stay), **Hide understood** (Learn: `understood`; Choose: the settled
+  looks, labelled *Hide settled*; an understood node stays while something under it is left, so no shown node is
+  cut from its parent) and **Focus and neighbours** (the focus, its parent, its children and its text-link
+  neighbours, GV-40). They combine. Filtered-out nodes, their tree lines and their text-link lines are **hidden,
+  not dimmed**. The focus always stays visible (GV-122).
+- **GV-146** *(Added 2026-11-17.)* Filters apply on top of visibility and collapse (`ui/graph/graph-filters.ts`
+  works on the drawn ids), never instead of them. The keys move over the visible nodes only: a move whose target
+  is hidden keeps the focus where it is.
+- **GV-147** *(Added 2026-11-17.)* A filter change **does not reheat the simulation**: hidden nodes stay in the
+  layout where they are, and showing them again puts them back in place. The view fits the visible nodes after a
+  change (GV-61).
+- **GV-148** *(Added 2026-11-17.)* With a filter on and the legend folded, the corner says how many nodes the
+  filters hide, with *Clear filters*.
+- **GV-149** *(Added 2026-11-17.)* Filters last for the app session, per subject; they are **not persisted**
+  (neither in the settings nor in the subject), so a relaunch shows the whole map.
 
 # Performance
 

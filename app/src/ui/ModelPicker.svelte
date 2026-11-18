@@ -36,5 +36,5 @@
   {#if invalid}<p class="invalid-model" role="alert">{strings.invalidModel}</p>{/if}{/if}
 <style>
   .custom-model { width:min(400px,100%); }
-  .invalid-model { margin:0; font-size:12px; color:var(--focus); }
+  .invalid-model { margin:0; font-size:calc(12px * var(--text-scale)); color:var(--focus); }
 </style>

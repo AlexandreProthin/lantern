@@ -1,6 +1,7 @@
 import type { Catalogue, SubjectSummary } from './catalogue';
 import type { GraphNode, Tone } from '../core/model';
 import type { InferenceProvider } from './provider';
+import type { LibraryHit } from './library-search';
 export interface ThumbnailGraph {
   rootId: string; nodes: Record<string, Pick<GraphNode, 'id' | 'parents' | 'createdAt' | 'state'>>; omitted: number;
 }
@@ -12,7 +13,12 @@ export interface LibrarySpaces {
   thumbnail(summary: SubjectSummary): Promise<ThumbnailGraph>;
   isRunning(id: string): boolean; /** Opens Settings; `section` as SettingsPanel's nav ids (`provider` by default, `room:<id>` for a room's group). */
   settings(section?: string): void; refresh(): Promise<void>;
+  /** WG-80..83: every subject of the library, both rooms; `here` is false for a hit in another room. */
+  search(query: string): Promise<FoundHit[]>;
+  /** WG-84: opens the hit's subject in its room, focused on its node. */
+  openAt(hit: Pick<LibraryHit, 'room' | 'subjectId' | 'nodeId'>): Promise<void>;
 }
+export interface FoundHit extends LibraryHit { roomName: string; here: boolean }
 /** Same breadth-first order as native thumbnail projection, bounded to WG-41. */
 export function thumbnailGraph(rootId: string, nodes: ThumbnailGraph['nodes']): ThumbnailGraph {
   const children = new Map<string, typeof nodes[string][]>();

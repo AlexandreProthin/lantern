@@ -18,11 +18,12 @@
   import type { RoomDefinition, RoomSession } from './room';
   import { desktopStorage, SubjectPersistence } from './persistence';
   import type { Loaded } from './persistence';
-  import { browserStorage, browserSummaries, browserLibraryState, browserRecordOpen, browserDelete } from './browser-storage';
+  import { browserStorage, browserSubjects, browserSummaries, browserLibraryState, browserRecordOpen, browserDelete } from './browser-storage';
+  import { searchLibrary, type LibraryHit } from './library-search';
   import { Catalogue } from './catalogue';
   import type { SubjectSummary, LibraryState } from './catalogue';
   import { thumbnailGraph } from './library-spaces';
-  import type { LibrarySpaces, ThumbnailGraph } from './library-spaces';
+  import type { FoundHit, LibrarySpaces, ThumbnailGraph } from './library-spaces';
   import { checkedTitle, checkedDirection } from '../core/model';
   import type { Subject, Tone } from '../core/model';
   import { defaultSettings, validateSettings } from './settings';
@@ -33,6 +34,7 @@
   import SettingsPanel from './SettingsPanel.svelte';
   import DebugConsole from './debug/DebugConsole.svelte';
   import Backdrop from './Backdrop.svelte';
+  import { applyAppearance, shown as appearance } from './theme.svelte';
   import TopBar from './TopBar.svelte';
   import FieldPanel from './FieldPanel.svelte';
   import { applyRoomChrome, windowTitle } from './window-chrome';
@@ -227,6 +229,7 @@
     writer.schedule(settings);
     document.documentElement.dataset.reduceMotion = settings.appearance.reduceMotion === 'on' ? 'on' : 'system';
     document.documentElement.dataset.backdrop = settings.appearance.backdrop ? 'on' : 'off';
+    applyAppearance(settings.appearance.textSize, settings.appearance.theme);
     for (const entry of owned.values()) rooms.find(r => r.id === entry.room)?.applySettings(entry.session, settings);
     document.documentElement.dataset.room = room.id;
   }
@@ -362,8 +365,24 @@
       return cached!.value;
     },
     isRunning:id=>!!owned.get(id)?.session.running,
-    settings(section='provider'){settingsSection=section;settingsOpen=true;},refresh:refreshCatalogue
+    settings(section='provider'){settingsSection=section;settingsOpen=true;},refresh:refreshCatalogue,
+    search:searchSubjects,openAt
   };
+  /** WG-80..83: the desktop scans the files (search.rs); the browser build searches its stored subjects. Open
+   *  subjects are flushed first, so a search sees what was just written. A hit in a room this build lacks is left out. */
+  async function searchSubjects(query: string): Promise<FoundHit[]> {
+    for (const entry of owned.values()) { try { await entry.persistence.flush(); } catch { /* the save banner says it */ } }
+    const hits = desktop ? await invoke<LibraryHit[]>('search_library', { library, query }) : searchLibrary(browserSubjects(), query);
+    return hits.flatMap(hit => { const r = rooms.find(x => x.id === hit.room); return r ? [{ ...hit, roomName: r.name, here: r.id === room.id }] : []; });
+  }
+  /** WG-84: the hit's room first (RS-12), then its subject, then its node, which the graph unfolds and centres. */
+  async function openAt(hit: Pick<LibraryHit, 'room' | 'subjectId' | 'nodeId'>) {
+    trace.action(room.id, 'Open search result', { room: hit.room, subjectId: hit.subjectId });
+    if (hit.room !== room.id) await switchRoom(hit.room);
+    if (hit.room !== room.id) return;
+    await open(hit.subjectId);
+    if (session?.subject.id === hit.subjectId && session.subject.rooms[hit.room]?.nodes[hit.nodeId]) session.setFocus(hit.nodeId);
+  }
   async function retrySaves() {
     try { for(const entry of owned.values()) await entry.persistence.flush(); await writer.flush(); saveError=''; } catch(e) {saveError=String(e);}
   }
@@ -470,7 +489,7 @@
   });
 </script>
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
-{#if !loading && settings.appearance.backdrop}<Backdrop {space} room={room.id} reduceSetting={settings.appearance.reduceMotion} />{/if}
+{#if !loading && settings.appearance.backdrop}<Backdrop {space} room={room.id} theme={appearance.theme} reduceSetting={settings.appearance.reduceMotion} />{/if}
 <TopBar {rooms} {room} {space} {subjectCount} title={session?.subject.title ?? null} busy={!!running} {summary} showTokenStats={settings.appearance.showTokenStats} desktop={native} mark={lanternMark}
   {panelOpen} bind:roomMenu bind:fieldWidth {navigate} switchRoom={id=>void switchRoom(id)} openSettings={()=>{settingsSection='general';settingsOpen=true;}} togglePanel={()=>{roomMenu=false;panelOpen=!panelOpen;}} ask={settings.companion.show?undefined:openAsk} bringBack={settingsReadOnly?undefined:bringAmberBack} />
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
@@ -497,5 +516,5 @@
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast.update-notice { top:auto; bottom:18px; display:flex; align-items:center; gap:8px; }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
-  .shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; margin:0; }.shortcuts { overflow:auto; display:grid; align-content:start; gap:10px; }.shortcuts h2 { font-size:15px; margin:0; }.shortcuts button { justify-self:start; }
+  .shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; margin:0; }.shortcuts { overflow:auto; display:grid; align-content:start; gap:10px; }.shortcuts h2 { font-size:calc(15px * var(--text-scale)); margin:0; }.shortcuts button { justify-self:start; }
 </style>

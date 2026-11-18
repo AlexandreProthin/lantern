@@ -4,7 +4,7 @@ use std::net::IpAddr;
 use crate::provider::endpoint::Endpoint;
 
 /// NW-20: the commands a paired device may call through `/api/invoke`. `generate` has its own route.
-pub const ALLOWED: &[&str] = &["default_library", "load_settings", "save_settings", "load_subject", "subject_stamp", "save_subject", "list_subjects",
+pub const ALLOWED: &[&str] = &["default_library", "load_settings", "save_settings", "load_subject", "subject_stamp", "save_subject", "list_subjects", "search_library",
     "record_open", "read_state", "save_companion_state", "save_collapsed", "save_pinned", "append_amber_log", "amber_log_totals", "delete_subject", "subject_thumbnail",
     "import_poc", "provider_status", "cancel_generation", "endpoint_models", "endpoint_model_info", "endpoint_key_status"];
 pub fn allowed(command: &str) -> bool { ALLOWED.contains(&command) }

@@ -139,6 +139,8 @@
       <div class="actions">{#if native}<button onclick={pickFolder}>{strings.changeLibrary}</button>{/if}<button disabled={!settings.developer.updateFolder} onclick={()=>{settings.developer.updateFolder='';changed();}}>{strings.clearFolder}</button></div>
       <p>{strings.updateFolderHint}</p>
     {:else}
+      <label>{strings.theme}<select data-setting="theme" bind:value={settings.appearance.theme} onchange={changed}><option value="dark">{strings.themeDark}</option><option value="light">{strings.themeLight}</option><option value="system">{strings.followSystem}</option></select></label>
+      <label>{strings.textSize}<select data-setting="text-size" bind:value={settings.appearance.textSize} onchange={changed}><option value="default">{strings.textSizeDefault}</option><option value="larger">{strings.textSizeLarger}</option><option value="largest">{strings.textSizeLargest}</option></select></label>
       <label>{strings.reduceMotion}<select bind:value={settings.appearance.reduceMotion} onchange={changed}><option value="system">{strings.followSystem}</option><option value="on">{strings.alwaysReduce}</option></select></label>
       <label class="check"><input type="checkbox" bind:checked={settings.appearance.backdrop} onchange={changed} />{strings.backdrop}</label>
       <label class="check"><input type="checkbox" bind:checked={settings.appearance.showTokenStats} onchange={changed} />{strings.showTokens}</label>
@@ -151,7 +153,7 @@
 </dialog>
 <style>
   .settings { position:fixed; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-surface); width:min(800px,85vw); padding:0; }
-  .settings::backdrop { background:var(--code); opacity:.7; } header { display:flex; justify-content:space-between; align-items:center; padding:10px 14px 10px 24px; border-bottom:1px solid var(--line); } h2 {font-size:18px;}
+  .settings::backdrop { background:var(--code); opacity:.7; } header { display:flex; justify-content:space-between; align-items:center; padding:10px 14px 10px 24px; border-bottom:1px solid var(--line); } h2 {font-size:calc(18px * var(--text-scale));}
   /* SE-1: the sections are a plain list; only the current one is marked (a bar and the ink colour), hover is a tint. */
   .body { display:grid; grid-template-columns:170px 1fr; min-height:400px; }
   nav {display:flex;flex-direction:column;gap:2px;padding:16px 10px;border-right:1px solid var(--line);}
@@ -163,14 +165,14 @@
   /* A lone button keeps its size instead of stretching across the column. */
   fieldset > :global(button), fieldset > :global(a) {justify-self:start;}
   /* A field's name sits above it, small and muted; a checkbox or switch reads on one line, box first. Room menus share it. */
-  section :global(label), .field {display:grid;gap:6px;font-size:13px;color:var(--ink-mute);}
+  section :global(label), .field {display:grid;gap:6px;font-size:calc(13px * var(--text-scale));color:var(--ink-mute);}
   section :global(label) :global(:is(input, select, textarea)), .field :global(:is(input, select, textarea)) {color:var(--ink);}
   /* NW-42: a phone keeps its 16 px fields (app.css). */
-  @media (min-width: 720px) { section :global(label) :global(:is(input, select, textarea)), .field :global(:is(input, select, textarea)) {font-size:14px;} }
+  @media (min-width: 720px) { section :global(label) :global(:is(input, select, textarea)), .field :global(:is(input, select, textarea)) {font-size:calc(14px * var(--text-scale));} }
   /* `.check` names it for browsers without :has() (an older phone browser stacked the box above its label; amended 2026-11-18). */
-  section :global(label.check), section :global(label:has(> input[type='checkbox'], > input[type='radio'])) {display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink);}
+  section :global(label.check), section :global(label:has(> input[type='checkbox'], > input[type='radio'])) {display:flex;align-items:center;gap:10px;font-size:calc(14px * var(--text-scale));color:var(--ink);}
   section :global(label.check > input) {flex:none;margin:0;}
-  section :global(p) {color:var(--ink-mute);font-size:13px;margin:0;} pre {white-space:pre-wrap;} section :global(h3) {font-size:15px;margin:8px 0 0;}
+  section :global(p) {color:var(--ink-mute);font-size:calc(13px * var(--text-scale));margin:0;} pre {white-space:pre-wrap;} section :global(h3) {font-size:calc(15px * var(--text-scale));margin:8px 0 0;}
   section :global(.codex) {display:grid;gap:12px;} section :global(.codex > button) {justify-self:start;} a {color:var(--accent);} .actions {display:flex;gap:4px;flex-wrap:wrap;margin-left:-10px;} .actions :global(button.primary) {margin-left:10px;}
   .confirmation {justify-self:stretch;display:grid;gap:10px;border:1px solid var(--line);border-radius:var(--radius-surface);padding:14px 16px;} .confirmation h3 {margin:0;} .invalid {color:var(--focus);}
   .reset {margin-left:-10px;color:var(--ink-mute);}
@@ -184,6 +186,6 @@
     nav [aria-current='page']::before {left:10px;right:10px;top:auto;bottom:0;width:auto;height:2px;}
     section { max-height:none; padding:16px; }
   }
-  .version {justify-self:start;background:none;border:0;padding:0;color:var(--ink-mute);font-size:13px;font-weight:400;cursor:default;}
+  .version {justify-self:start;background:none;border:0;padding:0;color:var(--ink-mute);font-size:calc(13px * var(--text-scale));font-weight:400;cursor:default;}
   .version:hover:not(:disabled) {background:none;}
 </style>

@@ -48,7 +48,8 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
 
 - **NW-20** Allowed from a remote device: subjects (load, save, list, delete, thumbnails), recents, Amber
   state and log, settings read and save, generation and its cancel, provider status, an endpoint's models
-  and model info, key status (never a key).
+  and model info, key status (never a key). *(Amended 2026-11-17.)* Also the library search
+  ([welcome-gallery](/specs/welcome-gallery.md) WG-83, `search_library`), which only reads.
 - **NW-21** Refused (403): endpoint keys (set, remove), library choice or switch, reveal in Explorer, file
   paths, window state and snapping, updates, the network commands, `import_poc`.
 - **NW-22** The server never takes a path from a remote device: every `library` argument is replaced by
@@ -104,6 +105,13 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
 - **NW-42** Inputs are 16 px or more (no zoom on focus in iOS Safari); the viewport is
   `width=device-width, initial-scale=1, viewport-fit=cover`.
 - **NW-43** The desktop window (1024 px and up) is unchanged.
+- **NW-44** *(Added 2026-11-17.)* **Installable.** `index.html` links a web manifest
+  (`/manifest.webmanifest`, `app/public/`): name *Lantern*, `start_url` `/`, `display: standalone`, background and
+  theme colour `#101827` (the dark `--bg`), icons from the identity's mark on dark (`agent_identity/…/mark-on-dark`)
+  at 192 and 512 px plus a maskable 512 px with a wider margin, and an `apple-touch-icon` at 180 px. The network
+  server serves it like any static file (NW-4), as `application/manifest+json`, so a paired phone can *Add to
+  Home screen* and open Lantern without the browser's bars. There is no service worker: nothing works offline,
+  and the paired cookie (NW-11) still decides what the page can do.
 
 # Generations that survive a dropped connection
 

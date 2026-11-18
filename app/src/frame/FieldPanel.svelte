@@ -103,22 +103,22 @@
   @media (max-width: 719px) {
     .field-panel { left:12px; right:12px; width:auto; transform:none; top:calc(110px + env(safe-area-inset-top)); max-height:calc(100dvh - 124px - env(safe-area-inset-top)); }
   }
-  h3, .head { margin:0; padding:6px 8px 2px; font:11px ui-monospace, Consolas, monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute); }
+  h3, .head { margin:0; padding:6px 8px 2px; font:calc(11px * var(--text-scale)) ui-monospace, Consolas, monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute); }
   .subject-menu { display:grid; gap:10px; padding:4px 8px 12px; border-bottom:1px solid var(--line); margin-bottom:6px; }
   .subject-menu h3 { padding:6px 0 0; }
-  .subject-menu label, .subject-menu .field { display:grid; gap:5px; font-size:13px; color:var(--ink-mute); }
-  .subject-menu :global(label) { color:var(--ink-mute); font-size:13px; }
-  .subject-menu :global(:is(input, select, textarea)) { color:var(--ink); font-size:13px; width:100%; box-sizing:border-box; }
-  .error { color:var(--error-ink); font-size:12px; }
+  .subject-menu label, .subject-menu .field { display:grid; gap:5px; font-size:calc(13px * var(--text-scale)); color:var(--ink-mute); }
+  .subject-menu :global(label) { color:var(--ink-mute); font-size:calc(13px * var(--text-scale)); }
+  .subject-menu :global(:is(input, select, textarea)) { color:var(--ink); font-size:calc(13px * var(--text-scale)); width:100%; box-sizing:border-box; }
+  .error { color:var(--error-ink); font-size:calc(12px * var(--text-scale)); }
   .filter { display:flex; align-items:center; gap:8px; padding:0 8px; margin:2px 0 4px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink-mute); }
-  .filter input { flex:1; border:0; background:none; padding:8px 0; font-size:13px; outline:none; }
+  .filter input { flex:1; border:0; background:none; padding:8px 0; font-size:calc(13px * var(--text-scale)); outline:none; }
   .filter:focus-within { border-color:var(--accent); }
   .glyph { width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:1.3; stroke-linecap:round; stroke-linejoin:round; }
-  .row { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:4px; font-size:13px; cursor:pointer; white-space:nowrap; }
+  .row { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:4px; font-size:calc(13px * var(--text-scale)); cursor:pointer; white-space:nowrap; }
   .row.active { background:color-mix(in srgb, var(--ink) 7%, transparent); }
   .row.current { box-shadow:inset 2px 0 0 var(--accent); }
   .label { overflow:hidden; text-overflow:ellipsis; min-width:0; }
-  .hint { margin-left:auto; font:11px ui-monospace, Consolas, monospace; color:var(--ink-mute); }
+  .hint { margin-left:auto; font:calc(11px * var(--text-scale)) ui-monospace, Consolas, monospace; color:var(--ink-mute); }
   .swatch { width:10px; height:10px; border-radius:50%; flex:none; }
-  .empty { padding:8px; font-size:13px; color:var(--ink-mute); }
+  .empty { padding:8px; font-size:calc(13px * var(--text-scale)); color:var(--ink-mute); }
 </style>

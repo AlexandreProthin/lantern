@@ -193,15 +193,15 @@
   </main>
 {/if}
 <style>
-  .compare { --ink-faint: color-mix(in srgb, var(--ink-mute) 62%, var(--bg)); --band: color-mix(in srgb, var(--surface-2) 60%, transparent); --fill: color-mix(in srgb, var(--ink) 5%, transparent);
-    position: absolute; inset: 0; display: flex; flex-direction: column; font: 400 12px/1.4 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
-  .banner button, .bar button { font: 400 12px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; padding: 3px 10px; }
-  .banner { padding: 7px 16px; font-size: 12px; background: color-mix(in srgb, var(--surface-2) 70%, transparent); border-bottom: 1px solid var(--glass-line); }
+  .compare { --ink-faint:color-mix(in srgb, var(--ink-mute) var(--faint-share), var(--bg)); --band: color-mix(in srgb, var(--surface-2) 60%, transparent); --fill: color-mix(in srgb, var(--ink) 5%, transparent);
+    position: absolute; inset: 0; display: flex; flex-direction: column; font: 400 calc(12px * var(--text-scale))/1.4 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
+  .banner button, .bar button { font: 400 calc(12px * var(--text-scale)) 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; padding: 3px 10px; }
+  .banner { padding: 7px 16px; font-size: calc(12px * var(--text-scale)); background: color-mix(in srgb, var(--surface-2) 70%, transparent); border-bottom: 1px solid var(--glass-line); }
   .banner button { margin-left: 8px; }
   .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 16px; }
-  .bar h1 { margin: 0; font: 350 24px/1.2 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; } .sp { flex: 1; }
-  .research { display: flex; gap: 10px; align-items: center; font-size: 12px; border: 1px solid var(--accent); padding: 3px 4px 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 70%, transparent); }
-  .research button { font-size: 11px; padding: 1px 8px; border-radius: var(--radius-pill); }
+  .bar h1 { margin: 0; font: 350 calc(24px * var(--text-scale))/1.2 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; } .sp { flex: 1; }
+  .research { display: flex; gap: 10px; align-items: center; font-size: calc(12px * var(--text-scale)); border: 1px solid var(--accent); padding: 3px 4px 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 70%, transparent); }
+  .research button { font-size: calc(11px * var(--text-scale)); padding: 1px 8px; border-radius: var(--radius-pill); }
   .spin { display: inline-block; width: 9px; height: 9px; border: 1.5px solid var(--accent); border-radius: 50%; border-right-color: transparent; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(1turn); } }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; border-right-color: var(--accent); border-style: dashed; } .prod.chosen { animation: none; } }
@@ -209,7 +209,7 @@
   :global(:root[data-reduce-motion='on']) .prod.chosen { animation: none; }
   .failed { color: var(--error-ink); }
   .stage { position: relative; flex: 1; min-height: 0; }
-  .emptystate { max-width: 460px; margin: 10vh auto; padding: 0 16px; text-align: center; } .emptystate h2 { font: 350 24px 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; margin: 0 0 8px; } .emptystate p { color: var(--ink-mute); font-size: 13px; }
+  .emptystate { max-width: 460px; margin: 10vh auto; padding: 0 16px; text-align: center; } .emptystate h2 { font: 350 calc(24px * var(--text-scale)) 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; margin: 0 0 8px; } .emptystate p { color: var(--ink-mute); font-size: calc(13px * var(--text-scale)); }
   /* RS-34: the table is a solid surface, not glass over the moving backdrop. */
   .scroll { position: absolute; inset: 0; overflow: auto; padding-bottom: 40px; background: var(--surface); border-top: 1px solid var(--line); }
   table { border-collapse: separate; border-spacing: 0; min-width: 100%; }
@@ -219,20 +219,20 @@
   .cell-btn:focus-visible, .crit-btn:focus-visible, .corner-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
   thead th { position: sticky; top: 0; z-index: 2; background: color-mix(in srgb, var(--surface) 92%, transparent); padding: 6px 8px; min-width: 170px; border-bottom: 1px solid var(--line); }
   thead th.corner { left: 0; z-index: 3; width: 190px; min-width: 190px; padding: 0; } .corner-btn { padding: 6px 8px; }
-  .cnt { display: block; font: 600 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; } .corner small { display: flex; align-items: center; gap: 4px; font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; color: var(--ink-mute); }
-  .pn { display: flex; align-items: center; gap: 5px; font: 600 15px/1.25 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; }
-  .acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 4px; } .acts button { font-size: 11px; padding: 2px 8px; border-radius: var(--radius); } .chosen-l { font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; }
+  .cnt { display: block; font: 600 calc(11px * var(--text-scale)) 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; } .corner small { display: flex; align-items: center; gap: 4px; font: 400 calc(11px * var(--text-scale)) 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; color: var(--ink-mute); }
+  .pn { display: flex; align-items: center; gap: 5px; font: 600 calc(15px * var(--text-scale))/1.25 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; }
+  .acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 4px; } .acts button { font-size: calc(11px * var(--text-scale)); padding: 2px 8px; border-radius: var(--radius); } .chosen-l { font: 400 calc(11px * var(--text-scale)) 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; }
   /* One shape per role (RS-38): Compare's actions are the app's quiet buttons; Choose and Check this row take the accent's colour. */
   .accent { color: var(--accent); }
   th.prod.chosen { background: var(--accent); color: var(--accent-ink); animation: lift 200ms ease-out; } th.prod.chosen .acts button { color: var(--accent-ink); } th.prod.chosen .acts button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-ink) 14%, transparent); }
   @keyframes lift { from { opacity: .45; } }
   .more { font-weight: 400; color: var(--ink-mute); border: 1px dashed var(--line); border-radius: var(--radius); padding: 6px; display: grid; gap: 4px; justify-items: start; }
-  tr.grp th { background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--accent); font: 600 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; border-right: 0; }
+  tr.grp th { background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--accent); font: 600 calc(11px * var(--text-scale)) 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; border-right: 0; }
   tr.grp .w { padding: 3px 8px; position: sticky; left: 0; width: max-content; }
   tbody th.crit { position: sticky; left: 0; z-index: 1; width: 190px; min-width: 190px; max-width: 190px; background: color-mix(in srgb, var(--surface) 88%, transparent); cursor: pointer; }
   tbody th.crit .w { padding: 0; } .crit-btn { padding: 6px 8px; }
-  .crit-btn .why, .crit-btn .sum { display: block; } .crit-btn .tw { display: inline-block; width: 14px; color: var(--accent); } .crit-btn .tw :global(.icon) { vertical-align: -1px; } .crit-btn .cn { display: inline; font: 600 13px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
-  .why, .sum { margin-left: 14px; font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+  .crit-btn .why, .crit-btn .sum { display: block; } .crit-btn .tw { display: inline-block; width: 14px; color: var(--accent); } .crit-btn .tw :global(.icon) { vertical-align: -1px; } .crit-btn .cn { display: inline; font: 600 calc(13px * var(--text-scale)) 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
+  .why, .sum { margin-left: 14px; font: 400 calc(11px * var(--text-scale)) 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
   .why { color: var(--ink-faint); } .sum { color: var(--ink-mute); } .mk { display: inline-flex; align-items: center; gap: 2px; } .mk :global(.icon) { color: var(--focus); }
   tr.crow.banded > th.crit { box-shadow: inset 2px 0 0 var(--accent); }
   tr.crow:hover > * { background: color-mix(in srgb, var(--ink) 4%, transparent); } tr.crow:hover > th.crit { background: color-mix(in srgb, var(--surface-2) 92%, transparent); }
@@ -244,7 +244,7 @@
   td.spare, td.nocrit { cursor: default; } td.nocrit { color: var(--ink-mute); }
   tr.ev > * { background: var(--band); border-bottom: 1px solid color-mix(in srgb, var(--accent) calc(var(--fx, 1) * 100%), var(--glass-line)); cursor: default; }
   tr.ev > th .w, tr.ev > td .w { padding: 6px 8px 10px; }
-  tr.ev > th { position: sticky; left: 0; z-index: 1; } tr.ev th .w { color: var(--ink-mute); font: 400 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; } tr.ev th .w button { display: block; margin-top: 4px; margin-left: -8px; font-size: 11px; padding: 2px 8px; }
+  tr.ev > th { position: sticky; left: 0; z-index: 1; } tr.ev th .w { color: var(--ink-mute); font: 400 calc(11px * var(--text-scale)) 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; } tr.ev th .w button { display: block; margin-top: 4px; margin-left: -8px; font-size: calc(11px * var(--text-scale)); padding: 2px 8px; }
   tr.ev.single > td.has { box-shadow: inset calc(var(--fx, 1) * 2px) 0 0 var(--accent); }
   tr.ev.single > td.has.chosen { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
   tr.ev > td.chosen { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
@@ -254,7 +254,7 @@
   .cards { display: flex; flex-direction: column; background: var(--surface); border-top: 1px solid var(--line); }
   .switch { position: relative; flex: none; display: flex; gap: 6px; align-items: center; overflow-x: auto; scrollbar-width: none; padding: 8px 16px; border-bottom: 1px solid var(--glass-line); }
   .switch::-webkit-scrollbar { display: none; }
-  .switch button { flex: none; display: inline-flex; align-items: center; gap: 5px; max-width: 62vw; min-height: 36px; padding: 6px 14px; border-radius: var(--radius-pill); font: 400 13px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
+  .switch button { flex: none; display: inline-flex; align-items: center; gap: 5px; max-width: 62vw; min-height: 36px; padding: 6px 14px; border-radius: var(--radius-pill); font: 400 calc(13px * var(--text-scale)) 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
   .switch button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .switch button[aria-selected='true'] { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
   .switch button.chosen[aria-selected='true'] { background: var(--accent); color: var(--accent-ink); }
@@ -264,20 +264,20 @@
   .ph { padding: 8px 10px; border: 1px solid var(--glass-line); border-radius: var(--radius); }
   .ph.chosen { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); animation: lift 200ms ease-out; }
   .ph.chosen .acts button { color: var(--accent-ink); }
-  .ph .acts { margin-top: 8px; } .ph .acts button, .more button { font-size: 13px; padding: 6px 14px; }
-  .pcard .more { margin-top: 10px; font-size: 13px; }
-  .pgrp { margin: 16px 0 2px; color: var(--accent); font: 600 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; }
+  .ph .acts { margin-top: 8px; } .ph .acts button, .more button { font-size: calc(13px * var(--text-scale)); padding: 6px 14px; }
+  .pcard .more { margin-top: 10px; font-size: calc(13px * var(--text-scale)); }
+  .pgrp { margin: 16px 0 2px; color: var(--accent); font: 600 calc(11px * var(--text-scale)) 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; }
   .prow { border-bottom: 1px solid var(--glass-line); }
   .prow .cell-btn { padding: 10px 8px; }
-  .prow .cn { display: block; font: 600 13px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
+  .prow .cn { display: block; font: 600 calc(13px * var(--text-scale)) 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
   .prow .why, .prow .sum { display: block; margin-left: 0; max-width: none; }
   .prow .body { display: block; margin-top: 6px; }
   .prow.irr { color: var(--ink-faint); }
   .prow.chosen { box-shadow: inset 2px 0 0 var(--accent); }
   .prow.filling { background: repeating-linear-gradient(135deg, transparent 0 5px, color-mix(in srgb, var(--accent) 10%, transparent) 5px 10px); }
   .prow.item { background: var(--band); box-shadow: inset 2px 0 0 var(--accent); }
-  .prow .cw { padding: 0 8px 12px; } .rowcheck { margin: 0 0 8px; font-size: 12px; padding: 4px 10px; }
-  .pcard .nocrit { color: var(--ink-mute); font-size: 13px; }
+  .prow .cw { padding: 0 8px 12px; } .rowcheck { margin: 0 0 8px; font-size: calc(12px * var(--text-scale)); padding: 4px 10px; }
+  .pcard .nocrit { color: var(--ink-mute); font-size: calc(13px * var(--text-scale)); }
   @media (prefers-reduced-motion: reduce) { .ph.chosen { animation: none; } }
   :global(:root[data-reduce-motion='on']) .ph.chosen { animation: none; }
 </style>

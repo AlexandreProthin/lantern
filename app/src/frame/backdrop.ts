@@ -97,10 +97,12 @@ export function lightAt(x: number, y: number, lights: PlacedLight[], lamp: { x: 
   return L;
 }
 
-/** The tokens a room's stylesheet writes (`:root[data-room='x'] { … }`): where a room fade ends,
- * read from the rules once rather than from the computed style on every frame of the fade. */
-export function roomTokens(room: string, sheets: Iterable<CSSStyleSheet> | ArrayLike<CSSStyleSheet>): Map<string, string> {
-  const out = new Map<string, string>(), marks = [`:root[data-room='${room}']`, `:root[data-room="${room}"]`];
+/** The tokens a room's stylesheet writes (`:root[data-room='x'] { … }`, then `:root[data-theme='light'][data-room='x']`
+ * in the light theme, SE-61): where a room fade ends, read from the rules once rather than from the computed
+ * style on every frame of the fade. */
+export function roomTokens(room: string, sheets: Iterable<CSSStyleSheet> | ArrayLike<CSSStyleSheet>, theme: 'dark' | 'light' = 'dark'): Map<string, string> {
+  const out = new Map<string, string>(), dark = [`:root[data-room='${room}']`, `:root[data-room="${room}"]`];
+  let marks = dark;
   const walk = (rules: CSSRuleList) => {
     for (const rule of Array.from(rules)) {
       const { style, selectorText } = rule as CSSStyleRule;
@@ -110,7 +112,9 @@ export function roomTokens(room: string, sheets: Iterable<CSSStyleSheet> | Array
       } else if ((rule as CSSGroupingRule).cssRules) walk((rule as CSSGroupingRule).cssRules);
     }
   };
-  for (const sheet of Array.from(sheets)) { try { walk(sheet.cssRules); } catch { /* another origin's sheet */ } }
+  const all = () => { for (const sheet of Array.from(sheets)) { try { walk(sheet.cssRules); } catch { /* another origin's sheet */ } } };
+  all();
+  if (theme === 'light') { marks = dark.map(m => m.replace(':root', ":root[data-theme='light']")).concat(dark.map(m => m.replace(':root', ':root[data-theme="light"]'))); all(); }
   return out;
 }
 
@@ -146,6 +150,8 @@ export function mixColors(a: Colors, b: Colors, k: number): Colors {
   for (const key of colorKeys) out[key] = mixRgb(a[key], b[key], k);
   return out;
 }
+/** A light page (the light theme's --bg), where the haze multiplies rather than screens. */
+export const paper = (bg: Rgb) => .2126 * bg[0] + .7152 * bg[1] + .0722 * bg[2] > 128;
 const sameRgb = (a: Rgb, b: Rgb) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 
 type Point = { x: number; y: number };
@@ -191,7 +197,7 @@ export class Backdrop {
     if (!this.started) return;
     if (this.reduced()) { this.fade = null; this.readColors(); this.refresh(); return; }
     const css = getComputedStyle(document.documentElement), room = document.documentElement.dataset.room ?? '';
-    const own = roomTokens(room, document.styleSheets);
+    const own = roomTokens(room, document.styleSheets, document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
     this.fade = { from: this.colors, to: colorsFrom(name => own.get(name) ?? css.getPropertyValue(name)), t0: performance.now() };
     this.wake();
   }
@@ -286,7 +292,8 @@ export class Backdrop {
 
     // The lights' halos over --bg.
     hctx.globalCompositeOperation = 'source-over'; hctx.fillStyle = rgba(colors.bg, 1); hctx.fillRect(0, 0, W, H);
-    hctx.globalCompositeOperation = 'screen';
+    // SE-61: light adds to a dark page; on paper the lights tint it instead, as ink does.
+    hctx.globalCompositeOperation = paper(colors.bg) ? 'multiply' : 'screen';
     // A gradient is transparent beyond its radius, so it fills only its own box: same picture, far less work.
     const pool = (x: number, y: number, r: number, c: Rgb, a: number, mid = false) => {
       r = Math.max(1, r);

@@ -36,7 +36,8 @@ motion are the component's final recipe, and no Welcome UI is built before that 
      Expert, or Custom with a free-text field). Its initial value is the Learn room default
      tone ([settings](/specs/settings.md)); changing it here does not change that default.
   4. **The model picker**, beside the tone picker: the model of the new subject (WG-2).
-  5. **The 3 most recent subjects** as large cards (WG-5).
+  5. **The 3 most recent subjects** as large cards (WG-5). *(Amended 2026-11-17.)* Above them, a field *Search inside
+     your subjects* (WG-80); its results take the cards' place while it holds a search.
   6. ***Browse all***: opens Gallery; shows the total count (*Browse all 14*).
 - **WG-2** The **model** of the new subject MUST be chosen with the model picker: an entry of the
   model list ([settings](/specs/settings.md) SE-48), or a free-text id (validated like
@@ -132,6 +133,7 @@ motion are the component's final recipe, and no Welcome UI is built before that 
 - **WG-54** Filter: a text field matching the subject title, case-insensitive substring, applied
   as you type with a 150 ms debounce; Esc clears it. With a filter that matches nothing, the grid
   shows *No subject matches "<text>"* with a *Clear filter* link.
+  *(Amended 2026-11-17.)* The same text also searches inside every subject (WG-81); its results follow the grid.
 - **WG-55** Sort and filter MUST be kept across space switches for the session and reset on
   restart ([rooms-spaces](/specs/rooms-spaces.md) RS-24).
 
@@ -177,6 +179,36 @@ motion are the component's final recipe, and no Welcome UI is built before that 
 - **WG-70** With no subjects, Gallery shows *No subjects yet* and a button *Start one* that goes to
   Welcome. Toolbar controls are hidden.
 - **WG-71** With a missing library folder, the message of RS-41 replaces the grid.
+
+# Search inside the library
+
+- **WG-80** *(Added 2026-11-17.)* Welcome and the Gallery search **inside every subject of the library, in both rooms**:
+  the subject titles, the node titles, the hooks, and the text the learner can read. A Learn node is searched only
+  when it is shown by progress ([graph-view](/specs/graph-view.md) GV-120: every node above it lit or understood); an
+  `open` node's text is not searched (its title and hook are); Choose shows everything, so everything is searched.
+  Words are matched case- and accent-insensitively (*etude* finds *Étude*); every word must appear in the node
+  (title, hook or text). A subject whose own title matches but none of whose nodes do gives one result on its root.
+- **WG-81** *(Added 2026-11-17.)* Welcome has its own field, *Search inside your subjects*, over the recent cards; the
+  Gallery's filter (WG-54) is the same search. Two characters start it; it runs ~180 ms after typing stops, and an
+  answer that comes back after a newer search is dropped. Esc in Welcome's field clears it and the cards come back.
+- **WG-82** *(Added 2026-11-17.)* Results are **grouped by subject**, subjects in title order; a subject of the other
+  room says so (*in Choose*). Each result shows the **node's title** and **a one-line snippet** around the first word
+  found (the hook for a title match), with the words marked. Down from Welcome's field moves into the results,
+  Up and Down move between them, Up from the first goes back to the field.
+- **WG-83** *(Added 2026-11-17.)* At most **5 results per subject** and **40 in all** (title matches first, then
+  hooks, then text; the root first); at the cap a line says to add a word. On the desktop the search is a Rust command
+  (`search_library`, `src-tauri/src/search.rs`) that reads each subject file once, deserializing only titles, hooks,
+  text, states and parents (no dialogue, no log), takes no storage lock, and skips conflict copies and files it
+  cannot read. The browser build runs the same rules over its stored subjects (`frame/library-search.ts`); both are
+  tested on one set of cases (`frame/library-search.cases.json`). A paired device calls the desktop's command
+  ([network-serving](/specs/network-serving.md) NW-20).
+- **WG-84** *(Added 2026-11-17.)* **Opening a result** opens its subject **focused on its node**: in its own room
+  (switching rooms as RS-12 does when the result is in the other one), in the room's study space, where the graph
+  unfolds what hides the node and centres it as for any focus change.
+- **WG-85** *(Added 2026-11-17.)* Before searching, the frame writes any pending save of an open subject, so a search
+  finds what was just written. Nothing is cached between searches; nothing about a search is stored.
+- **WG-86** *(Added 2026-11-17.)* Nothing found reads *Nothing inside your subjects mentions “…”*; an error reading the
+  library shows the error in place of the results.
 
 # Progress definitions
 

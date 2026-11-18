@@ -1,0 +1,30 @@
+{
+  "comment": "WG-80..86: shared by library-search.test.ts and the Rust search tests (search.rs), so both searches keep the same rules.",
+  "subjects": [
+    { "id": "ocean-tides", "title": "Ocean tides", "rooms": { "learn": { "rootId": "r", "nodes": {
+      "r": { "title": "Ocean tides", "hook": "Why the sea rises twice a day", "content": "Tides come from gravity and rotation.", "state": "lit", "parents": [] },
+      "n1": { "title": "Gravity of the Moon", "hook": "The pull that lifts the sea", "content": "The Moon's gravity pulls the near side of the ocean.\n\nIt also pulls the Earth itself.", "state": "lit", "parents": ["r"] },
+      "n2": { "title": "Spring tides", "hook": "When Sun and Moon align", "content": "Prepared text about perigee and syzygy.", "state": "open", "parents": ["r"] },
+      "n3": { "title": "Perigee hidden", "hook": "Behind an open node", "content": "", "state": "open", "parents": ["n2"] },
+      "n4": { "title": "Étude des marées", "hook": "", "content": "Une étude ancienne.", "state": "understood", "parents": ["r"] }
+    } } } },
+    { "id": "printer", "title": "3D printer", "rooms": { "choose": { "rootId": "c", "nodes": {
+      "c": { "title": "3D printer", "hook": "A printer for cases", "content": "", "state": "lit", "parents": [] },
+      "p1": { "title": "Printer A", "hook": "Quiet and enclosed", "content": "Gravity-fed filament path, under 45 dB.", "state": "candidate", "parents": ["c"] },
+      "p2": { "title": "Printer B", "hook": "", "content": "", "state": "open", "parents": ["p1"] }
+    } } } },
+    { "id": "renamed", "title": "Harmony basics", "rooms": { "learn": { "rootId": "h", "nodes": {
+      "h": { "title": "Jazz", "hook": "Chords and scales", "content": "", "state": "lit", "parents": [] }
+    } } } }
+  ],
+  "cases": [
+    { "query": "moon", "hits": [["ocean-tides", "n1", "title"], ["ocean-tides", "n2", "hook"]] },
+    { "query": "perigee", "hits": [] },
+    { "query": "etude", "hits": [["ocean-tides", "n4", "title"]] },
+    { "query": "gravity", "hits": [["printer", "p1", "content"], ["ocean-tides", "n1", "title"], ["ocean-tides", "r", "content"]] },
+    { "query": "gravity earth", "hits": [["ocean-tides", "n1", "title"]] },
+    { "query": "printer", "hits": [["printer", "c", "title"], ["printer", "p1", "title"], ["printer", "p2", "title"]] },
+    { "query": "harmony", "hits": [["renamed", "h", "subject"]] },
+    { "query": "   ", "hits": [] }
+  ]
+}

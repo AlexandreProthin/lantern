@@ -2,14 +2,14 @@
   import { onMount } from 'svelte';
   import { Backdrop } from './backdrop';
   import { listenBackdrop } from './backdrop-signals';
-  let { space, room, reduceSetting }: { space: string; room: string; reduceSetting: 'system' | 'on' } = $props();
+  let { space, room, theme = 'dark', reduceSetting }: { space: string; room: string; theme?: 'dark' | 'light'; reduceSetting: 'system' | 'on' } = $props();
   let haze: HTMLCanvasElement, dust: HTMLCanvasElement, backdrop: Backdrop | undefined;
   const media = matchMedia('(prefers-reduced-motion: reduce)');
   const reduced = () => media.matches || reduceSetting === 'on';
   $effect(() => { backdrop?.setSpace(space); });
   $effect(() => { reduceSetting; backdrop?.refresh(); });
-  // The frame sets data-room before this runs, so the room's tokens are already in place.
-  $effect(() => { room; backdrop?.recolor(); });
+  // The frame sets data-room and data-theme before this runs, so the room's tokens are already in place.
+  $effect(() => { room; theme; backdrop?.recolor(); });
   onMount(() => {
     backdrop = new Backdrop(haze, dust, reduced);
     backdrop.setSpace(space); backdrop.start(); listenBackdrop(backdrop);

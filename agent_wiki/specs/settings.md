@@ -37,6 +37,8 @@ the settings below only supply their **defaults**.
 | Companion | `companion.tips` | boolean | true | — | immediate; off: no tips and no nudges, the bubble opens on the guide ([companion](/specs/companion.md) CO-21, CO-39) *(Added 2026-11-17.)* |
 | Companion | `companion.model` | string | `claude-haiku-5-5` | an entry of the model list (SE-48) or free-text id, as `provider.defaultModel` | next Ask Amber call (CO-46); effort is always low |
 | Appearance | `appearance.showTokenStats` | boolean | true | — | immediate; hides every token and time figure (node meta line, stats hover, Gallery cards) |
+| Appearance | `appearance.theme` | enum | `dark` | `dark`/`light`/`system`; any other value falls back to `dark` | immediate; `system` follows the operating system's light or dark preference, live (SE-61) *(Added 2026-11-17.)* |
+| Appearance | `appearance.textSize` | enum | `default` | `default`/`larger`/`largest`; any other value falls back to `default` | immediate; scales reading and UI text, not the graph (SE-60) *(Added 2026-11-17.)* |
 
 Everything is stored under the keys above, except the following **UI memory**, which is stored in the same
 file but has no settings control:
@@ -48,6 +50,7 @@ file but has no settings control:
 | `ui.legendCollapsed` | boolean | false | legend state |
 | `ui.lastRoom` | string | `learn` | the room whose Welcome opens at launch |
 | `ui.graphLayout` | `free`/`tree` | `free` | graph layout toggle |
+| `ui.graphView` | `graph`/`outline` | `graph` | Study's graph ↔ outline toggle, app-wide ([graph-view](/specs/graph-view.md) GV-140) *(Added 2026-11-17.)* |
 | `ui.textLinks` | boolean | true | whether the reference links between nodes (links written in the text) are drawn; a checkbox in the graph's controls *(Added 2026-10-18 to match the code.)* |
 | `ui.lastUpdateCheck` | number (ms since epoch) | 0 | last successful update check ([updates](/specs/updates.md) UP-1) |
 | `ui.dismissedUpdate` | string | empty | version whose launch notice the user dismissed (UP-11) |
@@ -98,6 +101,25 @@ The last-opened times and the recents list are **not** in this file: they live i
   *Browse…* buttons are likewise desktop only. A checkbox or switch sits beside its label on every browser (the
   label carries the `check` class, not only the `:has()` rule).
 - **SE-22** The section MUST end with the app version, *Lantern 0.5.0* (the current version), taken at build time from `package.json` (kept equal to `Cargo.toml` and `tauri.conf.json`), followed by the *Check for updates* button and the *Check for updates at launch* checkbox ([updates](/specs/updates.md) UP-3, UP-20).
+
+# Appearance
+
+- **SE-60** *(Added 2026-11-17.)* **Text size.** Appearance offers *Text size* with three steps: *Default*, *Larger*
+  and *Largest*. They scale the UI text by 1, 1.1 and 1.2 and a node's reading text (hook, content, code) by 1,
+  1.15 and 1.3, through two tokens on the document (`--text-scale`, `--reading-scale`, set by `data-text-size`);
+  every font size in the styles is written against them (`app/scripts/scale-font-sizes.mjs` rewrites a plain
+  size, and a unit test fails on one left over). The graph's geometry does not change: node discs, node titles,
+  distances and zoom stay as they are; the graph's tools, search and legend follow the UI text. The browser build
+  applies the stored step before the first paint.
+- **SE-61** *(Added 2026-11-17.)* **Theme.** Appearance offers *Theme*: *Dark* (the default, unchanged), *Light*
+  and *Follow system*, which takes the operating system's `prefers-color-scheme` and follows it while the app runs.
+  The theme is `data-theme` on the document; every room writes a light token set beside its dark one
+  (`:root[data-theme='light'][data-room='…']`, the same token names), and every text pair of the light sets
+  passes WCAG AA (4.5:1: ink, muted ink, accent and the code colours on their grounds; a unit test checks them
+  and that no room lacks a light token). The light theme reaches the frame's backdrop (its lights tint the paper
+  by multiplying instead of screening), Amber (the identity's on-light context, [companion](/specs/companion.md)
+  CO-55), the header mark (its frame in ink), the graph node states (the node tokens of the room's light set) and
+  the browser's `theme-color`.
 
 # Library folder change flow
 

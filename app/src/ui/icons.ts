@@ -33,6 +33,9 @@ export const icons = {
   dot: '<circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"/>',
   ring: '<circle cx="8" cy="8" r="3"/>',
   pin: '<path d="M6 2.5h4M7 2.5v4L4.5 9h7L9 6.5v-4M8 9v4.5"/>',
+  outline: '<path d="M2.5 4h1M6 4h7.5M4.5 8h1M8 8h5.5M4.5 12h1M8 12h5.5"/>',
+  graph: '<circle cx="4" cy="8" r="1.6"/><circle cx="12" cy="4" r="1.6"/><circle cx="12" cy="12" r="1.6"/><path d="m5.5 7.2 5-2.4M5.5 8.8l5 2.4"/>',
+  filter: '<path d="M2.5 3.5h11l-4.3 5v4l-2.4 1v-5z"/>',
   ellipsis: '<circle cx="3.5" cy="8" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r=".9" fill="currentColor" stroke="none"/><circle cx="12.5" cy="8" r=".9" fill="currentColor" stroke="none"/>',
 } as const;
 export type IconName = keyof typeof icons;

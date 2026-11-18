@@ -12,7 +12,7 @@ const SETTINGS: &str = r#"{"format":"lantern-settings/1","library":{"path":"C:\\
 
 #[test]
 fn nw20_21_rights() {
-    for c in ["load_subject", "subject_stamp", "save_subject", "list_subjects", "delete_subject", "load_settings", "save_settings", "provider_status", "endpoint_key_status"] { assert!(rights::allowed(c), "{c}"); }
+    for c in ["load_subject", "subject_stamp", "save_subject", "list_subjects", "search_library", "delete_subject", "load_settings", "save_settings", "provider_status", "endpoint_key_status"] { assert!(rights::allowed(c), "{c}"); }
     for c in ["set_endpoint_key", "remove_endpoint_key", "pick_library", "switch_library", "validate_library", "reveal_subject", "reveal_library", "subject_file",
         "save_window_state", "snap_layouts", "open_external", "check_update", "install_update", "network_set", "network_pair", "network_forget_devices", "generate"] {
         assert!(!rights::allowed(c), "{c}");
@@ -118,6 +118,17 @@ fn nw4_index_is_marked_and_tauri_csp_dropped() {
     let out = server::mark_index(html);
     assert!(out.contains(r#"<head><meta name="lantern-remote" content="1"><title>"#));
     assert!(!out.contains("Content-Security-Policy"));
+}
+
+#[test]
+fn nw44_manifest_and_icons_have_their_types() {
+    assert_eq!(server::mime("/manifest.webmanifest"), "application/manifest+json");
+    assert_eq!(server::mime("/icons/icon-192.png"), "image/png");
+    // The manifest and its icons are in the built frontend, so the server finds them (NW-4).
+    let public = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../public");
+    let manifest: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(public.join("manifest.webmanifest")).unwrap()).unwrap();
+    assert_eq!(manifest["display"], "standalone");
+    for icon in manifest["icons"].as_array().unwrap() { assert!(public.join(icon["src"].as_str().unwrap().trim_start_matches('/')).is_file()); }
 }
 
 #[tokio::test]

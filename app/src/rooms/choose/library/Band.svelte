@@ -10,7 +10,7 @@
 </script>
 <div class="top" data-s={status} class:ready={card?.ready} class:lifted><span class="st">{text.status[status]}</span><span class="when" title={exactDate(openedAt)}>{openedAt ? text.opened(relativeDate(openedAt)) : 'not opened yet'}</span></div>
 <style>
-  .top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 20px;border-radius:12px 12px 0 0;font:11px/1.45 var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--accent);border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 20px;border-radius:12px 12px 0 0;font:calc(11px * var(--text-scale))/1.45 var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--accent);border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
   .lifted{padding:10px 22px;border-radius:14px 14px 0 0}
   .st{display:inline-flex;align-items:center;gap:6px;font-weight:600}.st:before{content:'';width:7px;height:7px;border-radius:50%;box-sizing:border-box;border:1px dashed var(--accent)}
   .when{color:var(--ink-faint);white-space:nowrap}

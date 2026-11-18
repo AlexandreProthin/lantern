@@ -31,7 +31,7 @@
 <style>
   .pair { min-height:100dvh; display:grid; place-items:center; padding:16px; box-sizing:border-box; color:var(--ink); }
   form { display:grid; gap:16px; width:min(380px,100%); background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px; box-sizing:border-box; }
-  h1 { font-size:20px; margin:0; } p { color:var(--ink-mute); font-size:14px; margin:0; } label { display:grid; gap:8px; }
-  input { font-size:24px; letter-spacing:.12em; text-transform:uppercase; padding:10px 12px; }
-  button { font-size:16px; padding:10px; } .invalid { color:var(--focus); }
+  h1 { font-size:calc(20px * var(--text-scale)); margin:0; } p { color:var(--ink-mute); font-size:calc(14px * var(--text-scale)); margin:0; } label { display:grid; gap:8px; }
+  input { font-size:calc(24px * var(--text-scale)); letter-spacing:.12em; text-transform:uppercase; padding:10px 12px; }
+  button { font-size:calc(16px * var(--text-scale)); padding:10px; } .invalid { color:var(--focus); }
 </style>

@@ -38,21 +38,21 @@
   </div>
 </div>
 <style>
-  .card { font: 400 11px/1.35 var(--font-small, 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif); }
+  .card { font: 400 calc(11px * var(--text-scale))/1.35 var(--font-small, 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif); }
   .ch { display: flex; gap: 8px; align-items: baseline; color: var(--ink-mute); margin-bottom: 4px; }
-  .ch b { font: 600 12px var(--font-text, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif); color: var(--ink); }
+  .ch b { font: 600 calc(12px * var(--text-scale)) var(--font-text, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif); color: var(--ink); }
   .ch { align-items: center; } .ch .fold { margin-left: auto; width: 22px; height: 22px; padding: 0; }
   .mute { color: var(--ink-mute); }
   .yours, .note, .pricenote { margin: 3px 0; }
   .note { border-left: 2px solid var(--focus); padding-left: 5px; }
   .pricenote { color: var(--ink-mute); }
   .src { padding: 3px 0; border-bottom: 1px solid var(--glass-line); display: grid; }
-  .sv { font: 400 12px/1.35 var(--font-text, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif); overflow-wrap: anywhere; }
+  .sv { font: 400 calc(12px * var(--text-scale))/1.35 var(--font-text, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif); overflow-wrap: anywhere; }
   .meta { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; color: var(--ink-mute); }
   .src.sponsored { color: var(--ink-faint); } .src.sponsored .sv { text-decoration: line-through; }
   .ed { display: grid; gap: 3px; margin-top: 6px; } .row { display: flex; flex-wrap: wrap; gap: 3px; margin-left: -8px; }
-  .edit { border: 0; border-bottom: 1px dashed var(--glass-line); border-radius: 0; background: transparent; padding: 1px 0; width: 100%; font: 400 12px var(--font-text, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif); color: var(--ink); caret-color: var(--accent); }
+  .edit { border: 0; border-bottom: 1px dashed var(--glass-line); border-radius: 0; background: transparent; padding: 1px 0; width: 100%; font: 400 calc(12px * var(--text-scale)) var(--font-text, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif); color: var(--ink); caret-color: var(--accent); }
   .edit:focus { border-bottom-color: var(--accent); outline: none; } .edit::placeholder { color: var(--ink-faint); }
-  button { font: 400 11px var(--font-small, 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif); padding: 2px 8px; }
+  button { font: 400 calc(11px * var(--text-scale)) var(--font-small, 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif); padding: 2px 8px; }
   .accent { color: var(--accent); }
 </style>

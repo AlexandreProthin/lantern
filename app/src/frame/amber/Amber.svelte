@@ -6,6 +6,7 @@
   import { CompanionDrawing } from './drawing';
   import type { Pose } from '../../assets/identity/companion/lantern';
   import { reducedMotion } from '../topbar';
+  import { shown as appearance } from '../theme.svelte';
   import type { AmberChat } from './chat';
   import type { AmberState } from './state';
   import { markNudgeSeen, markTipSeen, nextTip, setSpot, spotOf } from './state';
@@ -152,7 +153,8 @@
   });
   // CO-55: the identity's warm flame and body; the halo and the light on the frame follow the room's --amber-* tokens,
   // and the frame's colour the identity's token set for the room's surface (its `companion.surface`).
-  const surface = $derived(room.companion?.surface ?? 'neutral');
+  // SE-61: in the light theme every room uses the identity's on-light context.
+  const surface = $derived(appearance.theme === 'light' ? 'light' : room.companion?.surface ?? 'neutral');
   // The drawing is put in once per surface; a pose only sets the attributes it moves (drawing.ts). The flame's clock is
   // bucketed to about 30 frames a second, so a living flame redraws at most that often; only the position runs every frame.
   const poseKey = (z: Pose) => [z.x, z.y, z.angle, z.feet, z.step, z.gaze, z.lid, z.line, z.pivot, z.flare ?? 0].map(v => v.toFixed(2)).join() + ':' + Math.floor((z.flameTime ?? 0) / 33);
@@ -450,8 +452,8 @@
   .hit { position:absolute; inset:0; } .hit path { fill:transparent; pointer-events:visiblePainted; }
   .amber:hover:not(:disabled), .amber:active { background:none; border:0; box-shadow:none; }
   .amber:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
-  .bubble { position:fixed; z-index:9; display:grid; gap:10px; padding:16px 18px; box-sizing:border-box; max-height:min(70vh,560px); overflow:auto; font-size:14px; line-height:1.5; }
-  .say { position:fixed; z-index:9; display:grid; gap:6px; padding:12px 16px; box-sizing:border-box; max-height:min(60vh,480px); overflow:auto; font-size:14px; line-height:1.5; transition:opacity .4s; }
+  .bubble { position:fixed; z-index:9; display:grid; gap:10px; padding:16px 18px; box-sizing:border-box; max-height:min(70vh,560px); overflow:auto; font-size:calc(14px * var(--text-scale)); line-height:1.5; }
+  .say { position:fixed; z-index:9; display:grid; gap:6px; padding:12px 16px; box-sizing:border-box; max-height:min(60vh,480px); overflow:auto; font-size:calc(14px * var(--text-scale)); line-height:1.5; transition:opacity .4s; }
   /* Amber's bubbles live: the outline slowly changes shape and the light of the flame breathes along its edge. */
   .living, .tail { --rim:color-mix(in srgb, var(--amber-halo, #ffac38) 30%, var(--line)); background:var(--surface); border:1px solid var(--rim); }
   .living { border-radius:22px 28px 24px 30px / 26px 22px 30px 24px; box-shadow:0 0 22px color-mix(in srgb, var(--amber-halo, #ffac38) 12%, transparent), 0 12px 30px rgba(0,0,0,.35);
@@ -470,11 +472,11 @@
   /* Beside Amber (CO-20, amended 2026-11-17): the tail on the bubble's side, pointing to it. */
   .tail.right { margin-left:-7px; border-color:var(--rim); border-left-color:transparent; border-bottom-color:transparent; border-radius:0 4px 0 0; }
   .tail.left { margin-left:-7px; border-color:var(--rim); border-right-color:transparent; border-top-color:transparent; border-radius:0 0 0 4px; }
-  .say.fading, .tail.fading { opacity:0; } .say p { margin:0; } .say .notes { white-space:pre-wrap; color:var(--ink-mute); font-size:13px; }
-  .say .quiet { justify-self:start; background:none; border:0; padding:0; font-size:13px; color:var(--accent); }
+  .say.fading, .tail.fading { opacity:0; } .say p { margin:0; } .say .notes { white-space:pre-wrap; color:var(--ink-mute); font-size:calc(13px * var(--text-scale)); }
+  .say .quiet { justify-self:start; background:none; border:0; padding:0; font-size:calc(13px * var(--text-scale)); color:var(--accent); }
   @media (prefers-reduced-motion: reduce) { .say, .tail { transition:none; } .living { animation:none; } }
-  .bubble:focus { outline:none; } .tip { margin:0; } h3 { margin:0; font-size:14px; font-weight:600; }
-  .row { display:flex; gap:8px; flex-wrap:wrap; } .row button { font-size:13px; } .row [aria-pressed='true'] { border-color:var(--accent); }
+  .bubble:focus { outline:none; } .tip { margin:0; } h3 { margin:0; font-size:calc(14px * var(--text-scale)); font-weight:600; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; } .row button { font-size:calc(13px * var(--text-scale)); } .row [aria-pressed='true'] { border-color:var(--accent); }
   /* RS-38: Amber's menu is the app's menu (app.css .menu-surface). */
   .menu { position:fixed; z-index:9; gap:2px; min-width:220px; max-height:60vh; overflow:auto; }
   .menu button:focus { background:var(--hover); outline:none; } .menu [aria-checked='true'] { color:var(--accent); }

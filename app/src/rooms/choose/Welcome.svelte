@@ -56,11 +56,11 @@
 {/snippet}
 <Welcome {visible} {settings} {library} {revision} {navigate} {room} {extra} {card} />
 <style>
-  .locale{margin:0;text-align:center;font:11px var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--ink-faint)}
+  .locale{margin:0;text-align:center;font:calc(11px * var(--text-scale)) var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--ink-faint)}
   .locale button{background:none;border:0;padding:0;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:3px}.locale button:hover{color:var(--accent)}
   .card{position:relative;display:flex;flex-direction:column;gap:12px;padding:0 0 16px;border-radius:12px;min-width:0;text-align:left;color:inherit;font-family:var(--font-text,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif);background:var(--glass);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-line);opacity:.7;transition:opacity .2s,border-color .2s}
   .card:hover,.card:focus-visible{opacity:1;border-color:color-mix(in srgb,var(--accent) 35%,transparent)}
-  .ttl{margin:6px 20px 0;font:400 13px/1.45 var(--font-text,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif);color:var(--ink-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mid{margin:0 20px;min-width:0}
-  .foot{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 20px;border-top:1px solid var(--glass-line);padding-top:10px;font:11px/1.45 var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--ink-faint)}
-  .stats{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cont{flex:0 0 auto;font-size:12px;color:var(--ink-mute);text-decoration:underline;text-underline-offset:3px}
+  .ttl{margin:6px 20px 0;font:400 calc(13px * var(--text-scale))/1.45 var(--font-text,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif);color:var(--ink-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mid{margin:0 20px;min-width:0}
+  .foot{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 20px;border-top:1px solid var(--glass-line);padding-top:10px;font:calc(11px * var(--text-scale))/1.45 var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--ink-faint)}
+  .stats{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cont{flex:0 0 auto;font-size:calc(12px * var(--text-scale));color:var(--ink-mute);text-decoration:underline;text-underline-offset:3px}
 </style>

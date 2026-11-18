@@ -18,8 +18,8 @@
   <div class="pick ready"><span class="verb">{text.noPickYet}</span> <b>{text.ready}</b> <span class="price">· {text.readyNote}</span>{#if running}<span class="run">{text.generating}</span>{/if}</div>
 {/if}
 <style>
-  .pick{font:600 18px/1.25 var(--font-display,'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif);color:var(--ink-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  b{font-weight:600;color:var(--ink)}.verb{display:block;font:400 11px/1.45 var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--ink-faint)}
-  .price{font:400 13px var(--font-text,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif);color:var(--ink-mute)}.run{font:400 12px var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--ink-mute)}.run:before{content:' · '}
+  .pick{font:600 calc(18px * var(--text-scale))/1.25 var(--font-display,'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif);color:var(--ink-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  b{font-weight:600;color:var(--ink)}.verb{display:block;font:400 calc(11px * var(--text-scale))/1.45 var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--ink-faint)}
+  .price{font:400 calc(13px * var(--text-scale)) var(--font-text,'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif);color:var(--ink-mute)}.run{font:400 calc(12px * var(--text-scale)) var(--font-small,'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif);color:var(--ink-mute)}.run:before{content:' · '}
   .ready b{color:var(--accent)}.ready b:before{content:'◆ ';font-size:.8em}.back b{text-decoration:line-through;text-decoration-thickness:1px;color:var(--ink-mute);font-weight:350}
 </style>

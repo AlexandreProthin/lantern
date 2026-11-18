@@ -25,3 +25,27 @@
   color-scheme: dark;
 }
 :root[data-room='choose'] { --code-keyword:#5cc6bd; --code-string:#a6d189; --code-number:#d4a5e8; --code-function:#8cc4ec; --code-type:#7fd4c8; --code-attr:#f2a97f; --code-comment:#7d8698; }
+/* SE-61: the light theme's teal room on the same paper as Learn's (AA for every text pair). */
+:root[data-theme='light'][data-room='choose'] {
+  --bg: #f6f1e8;
+  --surface: #fffcf6;
+  --surface-2: #dcefeb;
+  --ink: #1f2633;
+  --ink-mute: #565c69;
+  --line: #d3d0c4;
+  --accent: #0d6b64;
+  --amber-halo: #5cc6bd;
+  --amber-lit-near: #4f8f88;
+  --amber-lit-far: #2f5753;
+  --accent-ink: #ffffff;
+  --focus: #0a5752;
+  --node-open: #7f8592;
+  --node-lit: #17948a;
+  --node-understood: #0f746c;
+  --glow-near: rgba(26, 158, 147, 0.28);
+  --glow-far: rgba(26, 158, 147, 0.12);
+  --path-muted: #a9c9c3;
+  --code: #f1ebe0;
+  color-scheme: light;
+}
+:root[data-theme='light'][data-room='choose'] { --code-keyword:#0d6b64; --code-string:#3d6b1f; --code-number:#7b3fa0; --code-function:#1f5f99; --code-type:#146b63; --code-attr:#9a4a14; --code-comment:#646b78; }

@@ -203,7 +203,7 @@
     --dc-running:#e8c26a; --dc-ok:#7ee787; --dc-tool:#d2a8ff; --dc-select:#1c2938; --dc-hover:#172130;
     position:relative; z-index:1; flex-shrink:0; display:flex; flex-direction:column; min-height:0; box-sizing:border-box;
     background:var(--dc-bg); color:var(--dc-ink); border-top:1px solid var(--dc-line); color-scheme:dark;
-    font:12px/1.5 ui-monospace, 'Cascadia Mono', 'Cascadia Code', Consolas, 'Courier New', monospace;
+    font:calc(12px * var(--text-scale))/1.5 ui-monospace, 'Cascadia Mono', 'Cascadia Code', Consolas, 'Courier New', monospace;
   }
   .grip { position:absolute; top:-4px; left:0; right:0; height:8px; cursor:ns-resize; z-index:2; touch-action:none; }
   .grip:hover, .grip:focus-visible { background:color-mix(in srgb, var(--dc-link) 35%, transparent); outline:none; }

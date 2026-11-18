@@ -35,16 +35,16 @@
   </dl>
 </section>
 <style>
-  h2 { font-size:13px; color:var(--ink-mute); font-weight:500; margin:20px 0 10px; }
+  h2 { font-size:calc(13px * var(--text-scale)); color:var(--ink-mute); font-weight:500; margin:20px 0 10px; }
   dl { margin:0; display:grid; gap:14px; } .fact { display:grid; gap:6px; }
   .fact + .fact { border-top:1px solid var(--line); padding-top:14px; }
-  dt { font-size:15px; font-weight:600; color:var(--ink); } dd { margin:0; display:grid; gap:3px; }
-  .value { font-size:14px; }
-  .src { font-size:11px; color:var(--ink-mute); display:flex; gap:6px; flex-wrap:wrap; align-items:baseline; }
-  .tag { font-weight:500; font-size:10px; border:1px solid var(--line); border-radius:6px; padding:0 5px; color:var(--ink); }
+  dt { font-size:calc(15px * var(--text-scale)); font-weight:600; color:var(--ink); } dd { margin:0; display:grid; gap:3px; }
+  .value { font-size:calc(14px * var(--text-scale)); }
+  .src { font-size:calc(11px * var(--text-scale)); color:var(--ink-mute); display:flex; gap:6px; flex-wrap:wrap; align-items:baseline; }
+  .tag { font-weight:500; font-size:calc(10px * var(--text-scale)); border:1px solid var(--line); border-radius:6px; padding:0 5px; color:var(--ink); }
   .src[data-kind='opinion'] .tag, .src[data-kind='model'] .tag { color:var(--ink-mute); }
   .src[data-kind='sponsored'] { text-decoration:line-through; } .src[data-kind='sponsored'] em { text-decoration:none; font-style:normal; }
   .src a { color:var(--accent); } .date { color:var(--ink-mute); }
-  .price-note { font-size:11px; color:var(--ink-mute); font-style:italic; }
-  .none { color:var(--ink-mute); font-size:12px; margin:0; }
+  .price-note { font-size:calc(11px * var(--text-scale)); color:var(--ink-mute); font-style:italic; }
+  .none { color:var(--ink-mute); font-size:calc(12px * var(--text-scale)); margin:0; }
 </style>
