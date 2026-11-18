@@ -24,7 +24,7 @@ Order decided 2026-09-27: README → PoC → OKF wiki → specs + v0.1.0 plan.
 | 9 | v0.4.0, plan in [v0-4-0](/plans/v0-4-0.md): Amber, the companion, with the new top bar built alongside (`claude/lantern-top-bar`) | released 2026-10-17 |
 | 10 | Custom endpoints: models beyond Claude Code, local servers first (Ollama, llama.cpp), then cloud APIs (NVIDIA first); spec [custom-endpoints](/specs/custom-endpoints.md) | released as v0.5.0 2026-10-18 (local and cloud together, CE-5); plans [custom-endpoints-local](/plans/custom-endpoints-local.md) and [custom-endpoints-cloud](/plans/custom-endpoints-cloud.md) |
 | 11 | Serve over the network: a Settings toggle serving Lantern over HTTPS on the LAN to a phone or another PC; spec [network-serving](/specs/network-serving.md) | merged 2026-10-23 (`63b7ba2`), released in v0.6.0 2026-11-01; plan [serve-over-network](/plans/serve-over-network.md) |
-| 12 | v0.8.0, plan in [v0-8-0](/plans/v0-8-0.md): the November 2026 review (performance, design, Amber, physics, mobile, features) | in progress |
+| 12 | v0.8.0, plan in [v0-8-0](/plans/v0-8-0.md): the November 2026 review (performance, design, Amber, physics, mobile, features) | merged on `master` 2026-11-18, version 0.8.0 built and ready to tag (the signed build, `latest.json` and the tag stay with the user) |
 | 13 | Next | not scheduled; candidates in the [backlog](/plans/backlog.md): the Think, Explore and Interview rooms, export a subject |
 
 # Inputs to the specs
