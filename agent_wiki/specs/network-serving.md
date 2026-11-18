@@ -85,6 +85,13 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
 - **NW-42** Inputs are 16 px or more (no zoom on focus in iOS Safari); the viewport is
   `width=device-width, initial-scale=1, viewport-fit=cover`.
 - **NW-43** The desktop window (1024 px and up) is unchanged.
+- **NW-44** *(Added 2026-11-17.)* **Installable.** `index.html` links a web manifest
+  (`/manifest.webmanifest`, `app/public/`): name *Lantern*, `start_url` `/`, `display: standalone`, background and
+  theme colour `#101827` (the dark `--bg`), icons from the identity's mark on dark (`agent_identity/…/mark-on-dark`)
+  at 192 and 512 px plus a maskable 512 px with a wider margin, and an `apple-touch-icon` at 180 px. The network
+  server serves it like any static file (NW-4), as `application/manifest+json`, so a paired phone can *Add to
+  Home screen* and open Lantern without the browser's bars. There is no service worker: nothing works offline,
+  and the paired cookie (NW-11) still decides what the page can do.
 
 # Generations that survive a dropped connection
 

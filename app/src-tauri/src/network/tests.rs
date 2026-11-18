@@ -120,6 +120,17 @@ fn nw4_index_is_marked_and_tauri_csp_dropped() {
     assert!(!out.contains("Content-Security-Policy"));
 }
 
+#[test]
+fn nw44_manifest_and_icons_have_their_types() {
+    assert_eq!(server::mime("/manifest.webmanifest"), "application/manifest+json");
+    assert_eq!(server::mime("/icons/icon-192.png"), "image/png");
+    // The manifest and its icons are in the built frontend, so the server finds them (NW-4).
+    let public = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../public");
+    let manifest: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(public.join("manifest.webmanifest")).unwrap()).unwrap();
+    assert_eq!(manifest["display"], "standalone");
+    for icon in manifest["icons"].as_array().unwrap() { assert!(public.join(icon["src"].as_str().unwrap().trim_start_matches('/')).is_file()); }
+}
+
 #[tokio::test]
 async fn nw_50_a_job_replays_from_any_line_and_follows_until_its_last() {
     use futures_util::StreamExt;

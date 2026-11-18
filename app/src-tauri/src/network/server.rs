@@ -232,8 +232,10 @@ fn ndjson(lines: impl futures_util::Stream<Item = Bytes> + Send + Sync + 'static
     r
 }
 
-fn mime(path: &str) -> &'static str {
+pub fn mime(path: &str) -> &'static str {
     match path.rsplit('.').next().unwrap_or("") {
+        // NW-44: the web manifest that makes Lantern installable on a phone.
+        "webmanifest" => "application/manifest+json",
         "html" => "text/html; charset=utf-8", "js" | "mjs" => "text/javascript; charset=utf-8", "css" => "text/css; charset=utf-8",
         "json" => "application/json", "svg" => "image/svg+xml", "png" => "image/png", "ico" => "image/x-icon", "webp" => "image/webp",
         "woff2" => "font/woff2", "woff" => "font/woff", "ttf" => "font/ttf", "txt" => "text/plain; charset=utf-8", "wasm" => "application/wasm",
@@ -263,7 +265,7 @@ fn asset(app: &AppHandle, path: &str) -> Response<Body> {
     let path = if path == "/" { "/index.html" } else { path };
     let found = load_asset(app, path).or_else(|| if path.rsplit('/').next().is_some_and(|f| !f.contains('.')) { load_asset(app, "/index.html") } else { None });
     let Some((bytes, kind)) = found else { return full(StatusCode::NOT_FOUND, "text/plain; charset=utf-8", "Not found") };
-    let kind = if kind.is_empty() || kind == "application/octet-stream" { mime(path).to_string() } else { kind };
+    let kind = if kind.is_empty() || kind == "application/octet-stream" || path.ends_with(".webmanifest") { mime(path).to_string() } else { kind };
     if kind.starts_with("text/html") {
         let mut r = full(StatusCode::OK, "text/html; charset=utf-8", mark_index(&String::from_utf8_lossy(&bytes)));
         r.headers_mut().insert(header::CACHE_CONTROL, "no-store".parse().unwrap()); return r;
