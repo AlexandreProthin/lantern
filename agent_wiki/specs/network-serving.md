@@ -79,7 +79,8 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
     *Details* button in the bottom bar, and closed by *Graph* (with a drawn back chevron, *amended 2026-11-17*,
     [rooms-spaces](/specs/rooms-spaces.md) RS-38) or Esc;
   - the field panel, Settings (tabs in a row) and every dialog use the whole width; the graph legend
-    starts folded; the Choose rail is a horizontal bar; the compare grid is one column.
+    starts folded; the Choose rail is a horizontal bar; ~~the compare grid is one column~~ Compare is a card per
+    product (*amended 2026-11-18*, below).
   - *(Amended 2026-11-18, the mobile review at 390 × 844 and 360 × 740 with touch.)* Amber rests by default
     at the bottom right of the space, clear of the graph tools; it hangs only where the user puts it, its rope
     tied under the measured two-row header; its bubble fits the screen's width; a tap opens it; it is not
@@ -87,7 +88,8 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
     CO-15, CO-20). Welcome's *Carry the lantern in* sits under the field, so the whole question shows
     ([welcome-gallery](/specs/welcome-gallery.md) WG-10). The Choose rail is a bar of two rows, the status and
     *Recommend* above the four counters in equal columns, so every counter shows ([choose-room](/specs/choose-room.md)
-    CR-14).
+    CR-14). Compare shows a card per product, criteria as rows with the same cells, marks and actions, reached by a
+    switcher of the products' names or a horizontal swipe that snaps to a card (CR-50, CR-51).
 - **NW-41** Touch: pan and pinch on the graph (d3-zoom), tap to open a node, a long press opens the node
   menu that a right-click opens on the desktop; graph controls are 40 px. No action depends on hover alone.
 - **NW-42** Inputs are 16 px or more (no zoom on focus in iOS Safari); the viewport is

@@ -204,4 +204,52 @@ for (const size of PHONES) test.describe(`a ${size.width} × ${size.height} phon
     }
     expect(await noSideScroll(page)).toBe(true);
   });
+
+  test('NW-40, CR-50, CR-51: Compare is a card per product, criteria as rows with the same cells, marks and actions; the switcher or a swipe reaches each', async ({ page }) => {
+    await greeted(page);
+    await seed(page, chooseBoard(), { ui: { lastRoom: 'choose' } });
+    await page.goto('/?study=1&resume=1');
+    await page.getByRole('button', { name: 'Compare', exact: true }).tap();
+    const compare = page.locator('main.compare'), deck = compare.locator('.deck'), tabs = compare.getByRole('tab');
+    await expect(compare.locator('table')).toHaveCount(0);
+    await expect(tabs).toHaveText(['Bambu Lab P1S Combo', 'Prusa Core One', 'Creality K1C']);
+    await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
+    const cards = compare.getByRole('tabpanel'), d = (await deck.boundingBox())!;
+    await expect(cards).toHaveCount(3);
+    // One card fills the width; criteria are its rows, grouped Must then Nice to have, each with the row's summary and the cell.
+    const first = cards.first(), c = (await first.boundingBox())!;
+    expect(Math.abs(c.width - d.width)).toBeLessThan(1); expect(Math.abs(c.x - d.x)).toBeLessThan(1);
+    await expect(first.locator('.pgrp')).toHaveText(['Must', 'Nice to have']);
+    await expect(first.locator('.prow .cn')).toHaveText(['Price', 'Build volume', 'Noise', 'Enclosure']);
+    await expect(first.locator('.prow[data-status="edited"]')).toContainText('45 dB');
+    await expect(first.locator('.prow').nth(1).locator('.sum [role="img"]')).toHaveCount(2);
+    expect(await noSideScroll(page)).toBe(true);
+    // The switcher shows another product's card.
+    await tabs.nth(1).tap();
+    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect.poll(async () => Math.abs((await cards.nth(1).boundingBox())!.x - d.x)).toBeLessThan(1);
+    await expect(cards.nth(1).locator('.prow[data-status="disagree"]')).toContainText('250 mm');
+    // A tap on a row opens its evidence card with the same actions; Choose marks the product.
+    const row = cards.nth(1).locator('.prow').filter({ hasText: 'Build volume' });
+    await row.locator('.cell-btn').tap();
+    await expect(row.getByTestId('card')).toBeVisible();
+    await expect(row.getByRole('button', { name: 'Save as mine' })).toBeVisible();
+    await expect(row.getByRole('button', { name: 'Check this' })).toBeVisible();
+    await row.locator('.cell-btn').tap();
+    await expect(row.getByTestId('card')).toHaveCount(0);
+    await cards.nth(1).getByRole('button', { name: 'Choose', exact: true }).tap();
+    await expect(cards.nth(1).getByRole('button', { name: 'Un-choose' })).toBeVisible();
+    await expect(tabs.nth(1)).toHaveClass(/chosen/);
+    // A horizontal swipe moves to the next card, and the switcher follows.
+    const session = await page.context().newCDPSession(page);
+    const sx = Math.round(d.x + d.width * .8), sy = Math.round(d.y + 200), steps = 8;
+    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: sx, y: sy }] });
+    for (let i = 1; i <= steps; i++) await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: sx - d.width * .6 * i / steps, y: sy }] });
+    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
+    // CDP's touch end does not end the gesture as a finger does; a 1 px nudge lets the deck settle on its snap point.
+    await deck.evaluate(e => e.scrollBy({ left: 1 }));
+    await expect.poll(() => deck.evaluate(e => e.scrollLeft === 2 * e.clientWidth)).toBe(true);
+    await expect(cards.nth(2).locator('.prow[data-status="none"]')).toHaveCount(1);
+  });
 });
