@@ -85,7 +85,9 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
     tied under the measured two-row header; its bubble fits the screen's width; a tap opens it; it is not
     drawn while the panel sheet covers the graph ([companion](/specs/companion.md) CO-10, CO-11, CO-12,
     CO-15, CO-20). Welcome's *Carry the lantern in* sits under the field, so the whole question shows
-    ([welcome-gallery](/specs/welcome-gallery.md) WG-10).
+    ([welcome-gallery](/specs/welcome-gallery.md) WG-10). The Choose rail is a bar of two rows, the status and
+    *Recommend* above the four counters in equal columns, so every counter shows ([choose-room](/specs/choose-room.md)
+    CR-14).
 - **NW-41** Touch: pan and pinch on the graph (d3-zoom), tap to open a node, a long press opens the node
   menu that a right-click opens on the desktop; graph controls are 40 px. No action depends on hover alone.
 - **NW-42** Inputs are 16 px or more (no zoom on focus in iOS Safari); the viewport is

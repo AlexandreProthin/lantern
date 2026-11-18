@@ -55,6 +55,10 @@ DM-4).
   panel cannot be dragged wider in Choose. *Check this* is on the node, not on each reply (the shared panel has
   no per-turn actions yet); a need or criterion reads *Not explained yet* until *Explain*. *Delete* is disabled
   on a subtree that holds the chosen product.
+  *(Amended 2026-11-18, the mobile review, [network-serving](/specs/network-serving.md) NW-40.)* On a phone the rail is
+  a bar under the graph in two rows: the title, the status and what is missing, with *Recommend* at the right; then
+  the four counters in equal columns, each label on one line (a long pick title ends in …). No counter sits under
+  *Recommend*.
 - **CR-12** Welcome and Gallery are the room's own ([spaces-per-room-no-home](/decisions/spaces-per-room-no-home.md)):
   Welcome starts a new choice (*What do you want to choose?*) or continues one of the 3 most recent
   Choose subjects; Gallery lists the Choose subjects with their status (CR-24).

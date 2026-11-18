@@ -185,4 +185,23 @@ for (const size of PHONES) test.describe(`a ${size.width} × ${size.height} phon
     await expect(carry).toBeEnabled();
     expect(await noSideScroll(page)).toBe(true);
   });
+
+  test('NW-40, CR-14: Choose\'s rail is a bar of two rows; every counter shows in full, none under Recommend', async ({ page }) => {
+    await greeted(page);
+    await seed(page, chooseBoard(), { ui: { lastRoom: 'choose' } });
+    await page.goto('/?study=1&resume=1');
+    const rail = page.locator('.rail'), rec = rail.locator('.rec');
+    await expect(rec).toBeVisible();
+    await expect(rail.locator('[data-counter]')).toHaveCount(4);
+    const r = (await rec.boundingBox())!, bar = (await rail.boundingBox())!;
+    expect(bar.y + bar.height).toBeLessThanOrEqual(size.height + .5);
+    for (const key of ['needs', 'must', 'shortlist', 'pick']) {
+      const counter = rail.locator(`[data-counter="${key}"]`), c = (await counter.boundingBox())!;
+      expect(c.x).toBeGreaterThanOrEqual(0); expect(c.x + c.width).toBeLessThanOrEqual(size.width);
+      expect(overlap(c, r)).toBe(false);
+      // Its number is the topmost thing where it is drawn.
+      await expect.poll(() => counter.locator("b").evaluate(b => { const q = b.getBoundingClientRect(), e = document.elementFromPoint(q.x + 4, q.y + q.height / 2); return b.contains(e) || `${e?.tagName}.${e?.className}`; })).toBe(true);
+    }
+    expect(await noSideScroll(page)).toBe(true);
+  });
 });
