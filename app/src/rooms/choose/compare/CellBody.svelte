@@ -27,10 +27,10 @@
 {/if}
 <style>
   span { display: block; }
-  .v { font: 600 13px/1.3 var(--font-text, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif); overflow-wrap: anywhere; }
+  .v { font: 600 calc(13px * var(--text-scale))/1.3 var(--font-text, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif); overflow-wrap: anywhere; }
   .v.none { font-weight: 400; font-style: italic; color: var(--ink-mute); }
   .mark { display: inline; margin-right: 3px; color: var(--focus); }
-  .line, .note, .tagline { font: 400 11px/1.35 var(--font-small, 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif); }
+  .line, .note, .tagline { font: 400 calc(11px * var(--text-scale))/1.35 var(--font-small, 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif); }
   .line { color: var(--ink-mute); }
   .note { margin-top: 3px; border-left: 2px solid var(--focus); padding-left: 5px; }
   .srcs { display: flex; flex-wrap: wrap; gap: 2px 6px; margin-top: 3px; align-items: center; }

@@ -31,5 +31,5 @@
 <label>{text.currency}<select value={locale.currency} onchange={e => { setLocale(visit, { ...locale, currency: e.currentTarget.value }); changed(true); }}>{#each currencies as c}<option value={c}>{c}</option>{/each}</select></label>
 <small>{text.localeHint}</small>
 <style>
-  label { display:grid; gap:5px; }.note { width:min(360px,70vw); resize:vertical; }.count { color:var(--ink-mute); font-size:12px; }.count.over { color:var(--error-ink); }small { color:var(--ink-mute); font-size:12px; }
+  label { display:grid; gap:5px; }.note { width:min(360px,70vw); resize:vertical; }.count { color:var(--ink-mute); font-size:calc(12px * var(--text-scale)); }.count.over { color:var(--error-ink); }small { color:var(--ink-mute); font-size:calc(12px * var(--text-scale)); }
 </style>

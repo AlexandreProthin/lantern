@@ -64,12 +64,12 @@
 {/if}
 {#if error}<p class="invalid" role="alert">{error}</p>{/if}
 <style>
-  p { color:var(--ink-mute); font-size:13px; margin:0; } h3 { font-size:15px; margin:8px 0 0; } a { color:var(--accent); } label { display:grid; gap:8px; } .invalid { color:var(--focus); }
+  p { color:var(--ink-mute); font-size:calc(13px * var(--text-scale)); margin:0; } h3 { font-size:calc(15px * var(--text-scale)); margin:8px 0 0; } a { color:var(--accent); } label { display:grid; gap:8px; } .invalid { color:var(--focus); }
   label:has(input[type='checkbox']) { display:flex; gap:8px; align-items:center; }
   .row { display:flex; gap:8px; align-items:end; flex-wrap:wrap; } .row label { width:120px; } .row input { width:100%; box-sizing:border-box; }
   .row button { min-height:38px; }
-  .field { display:grid; gap:8px; } code { font-size:12px; word-break:break-all; color:var(--ink); }
+  .field { display:grid; gap:8px; } code { font-size:calc(12px * var(--text-scale)); word-break:break-all; color:var(--ink); }
   .pairing { display:flex; gap:16px; align-items:center; flex-wrap:wrap; } .qr { width:220px; height:220px; background:#fff; border-radius:8px; overflow:hidden; } .qr :global(svg) { display:block; width:100%; height:100%; }
-  .pairing div { display:grid; gap:8px; } .code { font-size:28px; letter-spacing:.12em; color:var(--accent); }
-  ul { margin:0; padding-left:18px; color:var(--ink); font-size:13px; } li span { color:var(--ink-mute); }
+  .pairing div { display:grid; gap:8px; } .code { font-size:calc(28px * var(--text-scale)); letter-spacing:.12em; color:var(--accent); }
+  ul { margin:0; padding-left:18px; color:var(--ink); font-size:calc(13px * var(--text-scale)); } li span { color:var(--ink-mute); }
 </style>

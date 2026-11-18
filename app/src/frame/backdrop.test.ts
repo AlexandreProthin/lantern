@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { atRest, backdropLayers, backdropLights, backdropMotion, colorsFrom, createMotes, cssEase, envelope, LIT_LIFE_S, mixColors, mixRgb,
-  parseColor, placeLights, presetFor, roomTokens, type Rgb, type View } from './backdrop';
+  paper, parseColor, placeLights, presetFor, roomTokens, type Rgb, type View } from './backdrop';
 import { defaultSettings, validateSettings } from './settings';
 
 const view: View = { w: 1000, h: 800, panX: 0, panY: 0, zoom: 1, px: .5, py: .5 };
@@ -90,4 +90,17 @@ test('RS-34: the backdrop setting defaults on and rejects non-booleans', () => {
   expect(defaultSettings().appearance.backdrop).toBe(true);
   expect(validateSettings({ appearance: { backdrop: false } }).appearance.backdrop).toBe(false);
   expect(validateSettings({ appearance: { backdrop: 'no' } }).appearance.backdrop).toBe(true);
+});
+
+test('SE-61: in the light theme the room’s light rule overrides its dark one, and the haze tints paper', () => {
+  const rule = (selectorText: string, values: Record<string, string>) => ({ selectorText,
+    style: Object.assign(Object.keys(values), { getPropertyValue: (name: string) => values[name] ?? '' }) });
+  const sheet = { cssRules: [
+    rule(":root[data-theme='light'][data-room='learn']", { '--bg': '#f6f1e8' }),
+    rule(":root[data-room='learn']", { '--accent': '#e8b66e', '--bg': '#101827' })
+  ] } as unknown as CSSStyleSheet;
+  expect(roomTokens('learn', [sheet]).get('--bg')).toBe('#101827');
+  const light = roomTokens('learn', [sheet], 'light');
+  expect(light.get('--bg')).toBe('#f6f1e8'); expect(light.get('--accent')).toBe('#e8b66e');
+  expect(paper([246, 241, 232])).toBe(true); expect(paper([16, 24, 39])).toBe(false);
 });

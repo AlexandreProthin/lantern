@@ -46,7 +46,7 @@
 {/if}
 <textarea bind:this={field} bind:value={draft} rows="2" aria-label={strings.askAmber} placeholder={strings.askAmberPlaceholder} onkeydown={key}></textarea>
 <style>
-  .log { overflow:auto; display:grid; gap:8px; min-height:0; font-size:14px; line-height:1.5; }
+  .log { overflow:auto; display:grid; gap:8px; min-height:0; font-size:calc(14px * var(--text-scale)); line-height:1.5; }
   .you { color:var(--ink-mute); margin:0; } .you q { font-style:italic; } .amber :global(p) { margin:0 0 6px; } .thinking { color:var(--accent); margin:0; }
   .error { display:grid; gap:6px; color:var(--error-ink); } .error p { margin:0; } .actions { display:flex; gap:8px; }
   textarea { resize:none; width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit; }

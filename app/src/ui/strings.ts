@@ -79,7 +79,7 @@ export const strings = {
   newSubjectsHint: 'Applies to new subjects.', contextBudgetHint: 'Applies to the map in your next generation. The CLI baseline is separate.',
   collapseGraph: 'Collapse graph', collapsePanel: 'Collapse panel', restoreGraph: 'Restore graph', restorePanel: 'Restore panel', openPanel: 'Details', backToGraph: 'Graph',
   general: 'General', provider: 'Provider', appearance: 'Appearance', defaultModel: 'Default model', defaultEffort: 'Default effort',
-  libraryFolder: 'Library folder', reduceMotion: 'Reduce motion', followSystem: 'Follow system', alwaysReduce: 'Always reduce',
+  libraryFolder: 'Library folder', reduceMotion: 'Reduce motion', followSystem: 'Follow system', theme: 'Theme', themeDark: 'Dark', themeLight: 'Light', textSize: 'Text size', textSizeDefault: 'Default', textSizeLarger: 'Larger', textSizeLargest: 'Largest', alwaysReduce: 'Always reduce',
   shortcuts: 'Keyboard shortcuts', close: 'Close', settingsRecovered: 'Unreadable settings were backed up and reset to defaults.',
   libraryUnavailable: 'Your library folder is unavailable.', openConflict: 'Open conflict copy',
   checkAgain: 'Check again', testProvider: 'Test', notTested: 'Not tested yet',

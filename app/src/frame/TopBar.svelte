@@ -101,8 +101,10 @@
   .mark-art, .mark-art :global(svg) { display:block; width:26px; height:26px; }
   /* RS-53: the flame is the mark's only path with its own fill; it takes the room's accent. */
   .mark-art :global(path[fill]) { fill:var(--accent); }
+  /* SE-61: the frame is drawn in ink on paper, as the identity's on-light mark. */
+  :global(:root[data-theme='light']) .mark-art :global(g) { fill:var(--ink); }
   .capsule { position:relative; z-index:1; flex:none; display:flex; align-items:center; height:36px; box-sizing:border-box; padding:0 4px; border:1px solid var(--line); border-radius:18px; }
-  .capsule button, .capsule .room { height:34px; padding:0 9px; font-size:13px; display:inline-flex; align-items:center; white-space:nowrap; transition:color .12s; }
+  .capsule button, .capsule .room { height:34px; padding:0 9px; font-size:calc(13px * var(--text-scale)); display:inline-flex; align-items:center; white-space:nowrap; transition:color .12s; }
   .room { color:var(--ink); }
   .room.menu { gap:5px; } .room.menu :global(.icon) { color:var(--ink-mute); }
   .sep { width:1px; height:18px; background:var(--line); flex:none; }
@@ -128,22 +130,22 @@
   header .subject-field { position:absolute; left:50%; top:11px; transform:translateX(-50%); width:var(--field); height:34px; box-sizing:border-box; display:flex; align-items:center; gap:8px; padding:0 14px;
     border:1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-radius:17px; background:color-mix(in srgb, var(--accent) 6%, var(--bg)); color:var(--ink); cursor:pointer; transition:border-color .18s ease; }
   header .subject-field:hover:not(:disabled) { border-color:color-mix(in srgb, var(--accent) 70%, transparent); background:color-mix(in srgb, var(--accent) 6%, var(--bg)); }
-  .title { font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
-  .placeholder { font-size:13px; color:var(--ink-mute); }
-  .kbd { margin-left:auto; flex:none; font:11px ui-monospace, Consolas, monospace; color:var(--accent); }
+  .title { font-size:calc(13px * var(--text-scale)); font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+  .placeholder { font-size:calc(13px * var(--text-scale)); color:var(--ink-mute); }
+  .kbd { margin-left:auto; flex:none; font:calc(11px * var(--text-scale)) ui-monospace, Consolas, monospace; color:var(--accent); }
   /* RS-25: the busy dot pulses after the title while a generation runs. */
   .busy-dot { flex:none; width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 1.8s ease-in-out infinite; }
   @keyframes pulse { 50% { opacity:.35; } }
   /* Empty bar space drags the window and keeps the stats and the window controls flush right. */
   .spacer { flex:1; align-self:stretch; min-width:0; }
-  .stats { font-size:12px; color:var(--ink-mute); white-space:nowrap; display:inline-block; overflow:hidden; }
+  .stats { font-size:calc(12px * var(--text-scale)); color:var(--ink-mute); white-space:nowrap; display:inline-block; overflow:hidden; }
   .stats.folded { max-width:0; visibility:hidden; }
   /* NW-40: on a phone the bar takes two rows: the mark and the capsule, then the subject field across the width. */
   @media (max-width: 719px) {
     header { height:auto; flex-wrap:wrap; row-gap:8px; gap:10px; padding:max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left)); }
     .capsule { min-width:0; } .capsule button, .capsule .room { height:40px; padding:0 8px; } .capsule { height:42px; border-radius:21px; }
     header .subject-field { position:static; transform:none; order:5; flex:1 0 100%; width:auto; height:40px; border-radius:20px; }
-    .title, .placeholder { font-size:15px; }
+    .title, .placeholder { font-size:calc(15px * var(--text-scale)); }
     .kbd, .stats, .spacer, .drag-strip { display:none; }
   }
   @media (prefers-reduced-motion: reduce) { .marker, .dot, .subject-field, .capsule button { transition:none; } .busy-dot { animation:none; } }

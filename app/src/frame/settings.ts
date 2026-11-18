@@ -1,5 +1,14 @@
 import type { Effort } from '../core/model';
 import { endpointsOf, type EndpointConfig } from './endpoints';
+/** SE-60: text size steps; SE-61: the colour theme ('system' follows the operating system's light or dark). */
+export const textSizes = ['default', 'larger', 'largest'] as const;
+export type TextSize = typeof textSizes[number];
+export const themes = ['dark', 'light', 'system'] as const;
+export type Theme = typeof themes[number];
+/** SE-61: the theme the page shows: 'system' resolves with the operating system's preference. */
+export function resolveTheme(theme: Theme, systemLight: boolean): 'dark' | 'light' {
+  return theme === 'light' || (theme === 'system' && systemLight) ? 'light' : 'dark';
+}
 /** SE-12: each room checks its own group, stored under its id. */
 export interface RoomSettingsSpec { id: string; settings: { defaults: Record<string, unknown>; validate: (stored: Record<string, unknown>) => Record<string, unknown> } }
 export interface Settings {
@@ -8,21 +17,21 @@ export interface Settings {
   provider: { defaultModel: string; defaultEffort: Effort; endpoints?: EndpointConfig[];
     /** CE-58: Codex models in the pickers; absent means off, and *Reset* keeps it, as it keeps the endpoints. */
     codex?: boolean; [key: string]: unknown };
-  appearance: { reduceMotion: 'system' | 'on'; backdrop: boolean; showTokenStats: boolean; [key: string]: unknown };
+  appearance: { reduceMotion: 'system' | 'on'; backdrop: boolean; showTokenStats: boolean; textSize: TextSize; theme: Theme; [key: string]: unknown };
   updates: { checkAtLaunch: boolean; [key: string]: unknown };
   /** DC-1, DC-11, DC-40, DC-42: the debug console. */
   developer: { updateFolder: string; debug: boolean; logFolder: string; record: boolean; consoleHeight: number; consoleCollapsed: boolean; [key: string]: unknown };
   /** SE-11, CO-1, CO-46: Amber on or off, and its model (effort is always low). */
   /** CO-1; `tips` (CO-21, CO-39, added 2026-11-17): Amber's tips and nudges. */
   companion: { show: boolean; model: string; tips: boolean; [key: string]: unknown };
-  ui: { studySplitPercent: number; studyCollapsed: 'none' | 'graph' | 'panel'; legendCollapsed: boolean; lastRoom: string; graphLayout: 'free' | 'tree'; textLinks: boolean; lastUpdateCheck: number; dismissedUpdate: string; [key: string]: unknown };
+  ui: { studySplitPercent: number; studyCollapsed: 'none' | 'graph' | 'panel'; legendCollapsed: boolean; lastRoom: string; graphLayout: 'free' | 'tree'; graphView: 'graph' | 'outline'; textLinks: boolean; lastUpdateCheck: number; dismissedUpdate: string; [key: string]: unknown };
   [key: string]: unknown;
 }
 export function defaultSettings(library = '', name = '', rooms: readonly RoomSettingsSpec[] = []): Settings {
   return { ...Object.fromEntries(rooms.map(room => [room.id, { ...room.settings.defaults }])), format: 'lantern-settings/1', library: { path: library }, user: { displayName: name }, provider: { defaultModel: 'opus', defaultEffort: 'medium' },
-    appearance: { reduceMotion: 'system', backdrop: true, showTokenStats: true },
+    appearance: { reduceMotion: 'system', backdrop: true, showTokenStats: true, textSize: 'default', theme: 'dark' },
     updates: { checkAtLaunch: true }, developer: { updateFolder: '', debug: false, logFolder: '', record: false, consoleHeight: 280, consoleCollapsed: false }, companion: { show: true, model: 'claude-haiku-5-5', tips: true },
-    ui: { studySplitPercent: 44, studyCollapsed: 'none', legendCollapsed: false, lastRoom: rooms[0]?.id ?? '', graphLayout: 'free', textLinks: true, lastUpdateCheck: 0, dismissedUpdate: '' } };
+    ui: { studySplitPercent: 44, studyCollapsed: 'none', legendCollapsed: false, lastRoom: rooms[0]?.id ?? '', graphLayout: 'free', graphView: 'graph', textLinks: true, lastUpdateCheck: 0, dismissedUpdate: '' } };
 }
 export function validateSettings(input: unknown, defaults = defaultSettings(), rooms: readonly RoomSettingsSpec[] = []): Settings {
   const raw = input && typeof input === 'object' && !Array.isArray(input) ? input as Record<string, any> : {};
@@ -52,9 +61,12 @@ export function validateSettings(input: unknown, defaults = defaultSettings(), r
   if (!['system','on'].includes(a.reduceMotion)) a.reduceMotion = 'system';
   if (typeof a.backdrop !== 'boolean') a.backdrop = defaults.appearance.backdrop;
   if (typeof a.showTokenStats !== 'boolean') a.showTokenStats = defaults.appearance.showTokenStats;
+  if (!(textSizes as readonly unknown[]).includes(a.textSize)) a.textSize = 'default';
+  if (!(themes as readonly unknown[]).includes(a.theme)) a.theme = 'dark';
   if (typeof u.studySplitPercent !== 'number' || u.studySplitPercent < 20 || u.studySplitPercent > 80) u.studySplitPercent = 44;
   if (!['none','graph','panel'].includes(u.studyCollapsed)) u.studyCollapsed = 'none';
   if (!['free','tree'].includes(u.graphLayout)) u.graphLayout = 'free';
+  if (!['graph','outline'].includes(u.graphView)) u.graphView = 'graph';
   if (typeof u.legendCollapsed !== 'boolean') u.legendCollapsed = false;
   if (typeof u.textLinks !== 'boolean') u.textLinks = true;
   if (typeof up.checkAtLaunch !== 'boolean') up.checkAtLaunch = true;

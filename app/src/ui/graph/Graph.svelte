@@ -1014,7 +1014,7 @@
   /* While the view moves, the edges are their own layer: the world's layer is not cut up anew on every step. */
   .world.moving .edges { will-change: transform; }
   .degraded .node .disc { box-shadow:none; }
-  .large-notice { position:absolute; top:60px; left:20px; color:var(--ink-mute); font-size:12px; }
+  .large-notice { position:absolute; top:60px; left:20px; color:var(--ink-mute); font-size:calc(12px * var(--text-scale)); }
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
   .node {
     position: absolute;
@@ -1118,24 +1118,24 @@
   .layout-controls { left:auto; right:20px; }
   /* RS-38: the graph tools are the app's icon buttons (circles, solid surface). */
   .search { display:flex; align-items:center; gap:6px; height:32px; box-sizing:border-box; padding:0 2px 0 12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-pill); }
-  .search input { width:200px; border:0; padding:0; background:none; color:var(--ink); font-size:13px; outline:none; box-shadow:none; }
-  .search-count { font-size:12px; color:var(--ink-mute); white-space:nowrap; }
+  .search input { width:200px; border:0; padding:0; background:none; color:var(--ink); font-size:calc(13px * var(--text-scale)); outline:none; box-shadow:none; }
+  .search-count { font-size:calc(12px * var(--text-scale)); color:var(--ink-mute); white-space:nowrap; }
   .search .icon-button { width:26px; height:26px; }
 
   .corner { position:absolute; left:16px; bottom:12px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; max-width:calc(100% - 170px); }
-  .file-row { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--ink-mute); }
+  .file-row { display:flex; align-items:center; gap:10px; font-size:calc(12px * var(--text-scale)); color:var(--ink-mute); }
   .file-note { color:var(--accent); }
   .legend {
     display: flex;
     gap: 14px;
-    font-size: 12px;
+    font-size:calc(12px * var(--text-scale));
     color: var(--ink-mute);
     pointer-events: auto; flex-wrap:wrap; align-items:center;
   }
   /* RS-35: open, the legend has its own ground, so the map never shows through its rows. */
   .legend.shown { padding:6px 12px 6px 0; border-radius:var(--radius-surface); background:var(--surface); box-shadow:0 0 0 1px var(--line); }
   /* RS-35: folded, the legend is one chip (a pill). */
-  .legend-chip { padding:3px 12px; font-size:12px; font-weight:400; color:var(--ink-mute); background:var(--surface); border-color:var(--line); border-radius:var(--radius-pill); }
+  .legend-chip { padding:3px 12px; font-size:calc(12px * var(--text-scale)); font-weight:400; color:var(--ink-mute); background:var(--surface); border-color:var(--line); border-radius:var(--radius-pill); }
   .legend.shown .legend-chip { background:none; border-color:transparent; }
   .open-file { align-self:flex-start; }
   .legend .text-links { gap:6px; }
@@ -1145,10 +1145,10 @@
   @media (max-width: 719px) {
     .controls { right:12px; top:12px; } .controls > button, .zoom-controls button { width:40px; height:40px; }
     .zoom-controls { right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); }
-    .search { height:40px; border-radius:20px; } .search input { width:min(46vw, 200px); font-size:16px; }
+    .search { height:40px; border-radius:20px; } .search input { width:min(46vw, 200px); font-size:calc(16px * var(--text-scale)); }
     .corner { left:12px; bottom:calc(12px + env(safe-area-inset-bottom)); max-width:calc(100% - 180px); }
-    .legend-chip, .open-file { padding:8px 14px; font-size:13px; }
-    .node-menu > button { padding:12px 14px; font-size:15px; }
+    .legend-chip, .open-file { padding:8px 14px; font-size:calc(13px * var(--text-scale)); }
+    .node-menu > button { padding:12px 14px; font-size:calc(15px * var(--text-scale)); }
   }
   @media (prefers-reduced-motion: reduce) {
     .node .disc, .node .name { animation:none !important; }

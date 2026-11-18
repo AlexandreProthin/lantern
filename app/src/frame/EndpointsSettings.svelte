@@ -183,11 +183,11 @@
 {/if}
 <div class="actions"><select aria-label={strings.addEndpoint} bind:value={addPreset} disabled={disabled || !!pending}>{#each PRESETS as p}<option value={p}>{strings.presetNames[p]}</option>{/each}</select><button disabled={disabled || !!pending} onclick={add}>{strings.addEndpoint}</button></div>
 <style>
-  h3 { font-size: 15px; margin-top: 8px; } .endpoint { display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
-  .row { display: flex; gap: 8px; align-items: end; } .grow { flex: 1; } .preset { color: var(--ink-mute); font-size: 13px; padding-bottom: 6px; }
+  h3 { font-size: calc(15px * var(--text-scale)); margin-top: 8px; } .endpoint { display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .row { display: flex; gap: 8px; align-items: end; } .grow { flex: 1; } .preset { color: var(--ink-mute); font-size: calc(13px * var(--text-scale)); padding-bottom: 6px; }
   label { display: grid; gap: 6px; } .check { display: flex; gap: 8px; align-items: center; } .inline { display: flex; gap: 8px; align-items: center; }
-  table { border-collapse: collapse; font-size: 13px; } th { text-align: left; color: var(--ink-mute); font-weight: normal; padding: 2px 8px 2px 0; } td { padding: 2px 8px 2px 0; }
-  td input[type='number'] { width: 9ch; } p { color: var(--ink-mute); font-size: 13px; margin: 0; } pre { white-space: pre-wrap; } .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  table { border-collapse: collapse; font-size: calc(13px * var(--text-scale)); } th { text-align: left; color: var(--ink-mute); font-weight: normal; padding: 2px 8px 2px 0; } td { padding: 2px 8px 2px 0; }
+  td input[type='number'] { width: 9ch; } p { color: var(--ink-mute); font-size: calc(13px * var(--text-scale)); margin: 0; } pre { white-space: pre-wrap; } .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .key { display: grid; gap: 6px; } .confirm { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
   .confirm p { color: var(--ink); }
 </style>

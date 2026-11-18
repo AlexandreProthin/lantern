@@ -23,6 +23,32 @@
   --amber-lit-far: #86624a;
   color-scheme: dark;
 }
+/* SE-61: the light theme (Settings → Appearance → Theme): warm paper under the same amber lamp. The dark
+   tokens above are the design's and stay as they are; every pair used for text here passes WCAG AA
+   (ink 13.5:1, ink-mute 6:1, accent 5.1:1 on --bg; white on --accent 5.8:1; the code colours 4.5:1 or more). */
+:root[data-theme='light'][data-room='learn'] {
+  --bg: #f6f1e8;
+  --surface: #fffcf6;
+  --surface-2: #f0e4d0;
+  --ink: #1f2633;
+  --ink-mute: #565c69;
+  --line: #d8cfbf;
+  --accent: #965605;
+  --accent-ink: #ffffff;
+  --focus: #7a4300;
+  --node-open: #7f8592;
+  --node-lit: #bf7709;
+  --node-understood: #a8650b;
+  --glow-near: rgba(214, 135, 22, 0.30);
+  --glow-far: rgba(214, 135, 22, 0.13);
+  --path-muted: #c9b48f;
+  --code: #f1ebe0;
+  /* CO-55: the identity's on-light tokens for the frame's light; the flame and body never change. */
+  --amber-halo: #ffac38;
+  --amber-lit-near: #9a6a44;
+  --amber-lit-far: #5e3f2a;
+  color-scheme: light;
+}
 
 /* Room switch: the tokens that differ between rooms are registered colours, so they fade
    instead of snapping. The frame sets data-room-fade on the first switch, never at launch. */
@@ -69,6 +95,19 @@
   --hover: color-mix(in srgb, var(--ink) 8%, transparent);
   --press: color-mix(in srgb, var(--ink) 12%, transparent);
   --menu-shadow: 0 12px 32px color-mix(in srgb, var(--bg) 70%, transparent);
+  /* SE-60: text size. UI text follows --text-scale and node content --reading-scale (scripts/scale-font-sizes.mjs
+     keeps every font size in calc()); the graph's discs, titles and distances do not change. */
+  --text-scale: 1;
+  --reading-scale: 1;
+  /* The quiet hint colour (`--ink-faint` in the rooms) is this share of --ink-mute over --bg. */
+  --faint-share: 62%;
+}
+:root[data-text-size='larger'] { --text-scale: 1.1; --reading-scale: 1.15; }
+:root[data-text-size='largest'] { --text-scale: 1.2; --reading-scale: 1.3; }
+/* SE-61: on paper a shadow is dark, and the faint hints stay readable (4.5:1). */
+:root[data-theme='light'] {
+  --menu-shadow: 0 12px 32px rgba(31, 38, 51, 0.16);
+  --faint-share: 88%;
 }
 
 html,
@@ -77,7 +116,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-ui);
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale));
 }
 
 /* Level 2, the default: a quiet text button for secondary actions. */
@@ -154,7 +193,7 @@ button.icon-button.bare:hover:not(:disabled) {
 /* A small quiet button inside text (edit, previous version, show all). */
 button.link {
   padding: 2px 4px;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale));
   font-weight: 400;
   color: var(--ink-mute);
 }
@@ -195,7 +234,7 @@ button.link:hover:not(:disabled) {
   gap: 10px;
   text-align: left;
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   font-weight: 400;
   border-radius: 6px;
 }
@@ -215,6 +254,9 @@ button.link:hover:not(:disabled) {
 :root[data-room="learn"] { --error:#d86a5a; --error-ink:#f0a598; }
 /* Code tokens (NP-70): distinct hues on --code, at least 9:1 (comments 5:1, deliberately quieter). */
 :root[data-room="learn"] { --code-keyword:#e8b66e; --code-string:#a6d189; --code-number:#d4a5e8; --code-function:#8cc4ec; --code-type:#7fd4c8; --code-attr:#f2a97f; --code-comment:#7d8698; }
+/* SE-61: the light theme's error and code colours, each at least 4.5:1 on --code and --bg. */
+:root[data-theme='light'][data-room] { --error:#b4382a; --error-ink:#9e2b1e; }
+:root[data-theme='light'][data-room="learn"] { --code-keyword:#8a4f00; --code-string:#3d6b1f; --code-number:#7b3fa0; --code-function:#1f5f99; --code-type:#146b63; --code-attr:#9a4a14; --code-comment:#646b78; }
 /* Fields: one radius, the room's tokens; checkboxes, switches, radios and selects drawn, not the browser's. */
 input:where(:not([type='checkbox'], [type='radio'], [type='range'])), textarea, select {
   font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 10px;
@@ -254,7 +296,7 @@ label:has(> input[type='checkbox'], > input[type='radio']) { display: flex; alig
 /* NW-40, NW-42: on a phone, fields are at least 16 px (no zoom on focus) and every dialog uses
    the whole width. Desktop windows (1024 px and up) never match. */
 @media (max-width: 719px) {
-  input, textarea, select { font-size:16px; }
+  input, textarea, select { font-size:calc(16px * var(--text-scale)); }
   dialog:not(.settings) { max-width:calc(100vw - 24px) !important; box-sizing:border-box; }
   dialog .compare { grid-template-columns:1fr !important; }
 }

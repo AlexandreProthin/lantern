@@ -72,37 +72,37 @@
   {#if b.status === 'exploring'}<button class="rec" class:on={stage === 'ready'} bind:this={rec} disabled={busy} onclick={recommend}>{stage === 'ready' ? t.recommendReady : t.recommend}</button>{/if}
 </aside>
 <style>
-  .rail { --ink-faint:color-mix(in srgb, var(--ink-mute) 62%, var(--bg)); position:relative; flex:0 0 88px; width:88px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; z-index:3;
+  .rail { --ink-faint:color-mix(in srgb, var(--ink-mute) var(--faint-share), var(--bg)); position:relative; flex:0 0 88px; width:88px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; z-index:3;
     background:var(--surface); border-left:2px solid var(--accent); font-family:'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; }
   .open { all:unset; box-sizing:border-box; flex:1; min-height:0; display:flex; flex-direction:column; align-items:stretch; gap:22px; padding:18px 8px; text-align:center; cursor:pointer; }
   .open:hover { background:color-mix(in srgb, var(--ink) 5%, transparent); }
   .open:focus-visible { outline:1px solid var(--focus); outline-offset:-3px; }
-  .ttl { font:600 11px var(--font-small, 'Segoe UI Variable Small','Segoe UI',sans-serif); color:var(--accent); }
-  .st { font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; border:0; padding:0; color:var(--accent); display:block; }
+  .ttl { font:600 calc(11px * var(--text-scale)) var(--font-small, 'Segoe UI Variable Small','Segoe UI',sans-serif); color:var(--accent); }
+  .st { font:400 calc(11px * var(--text-scale)) 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; border:0; padding:0; color:var(--accent); display:block; }
   .st[data-s='ready'] { background:color-mix(in srgb, var(--accent) 18%, transparent); border-radius:999px; }
   .st[data-s='decided'] { background:var(--surface-2); color:var(--focus); border-radius:999px; }
   .st[data-s='bought'] { background:var(--accent); color:var(--accent-ink); border-radius:999px; }
   .ctr { position:relative; display:block; }
-  .ctr b { display:block; font:350 30px/1.1 'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif; letter-spacing:-.01em; font-variant-numeric:tabular-nums; color:var(--accent); }
-  .ctr b :global(.faint) { font-size:15px; color:var(--ink-faint); } .ctr b :global(.tick) { width:26px; height:26px; stroke-width:1.6; vertical-align:-3px; }
-  .ctr small { display:block; margin-top:6px; font:400 11px/1.3 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); overflow-wrap:anywhere; }
+  .ctr b { display:block; font:350 calc(30px * var(--text-scale))/1.1 'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif; letter-spacing:-.01em; font-variant-numeric:tabular-nums; color:var(--accent); }
+  .ctr b :global(.faint) { font-size:calc(15px * var(--text-scale)); color:var(--ink-faint); } .ctr b :global(.tick) { width:26px; height:26px; stroke-width:1.6; vertical-align:-3px; }
+  .ctr small { display:block; margin-top:6px; font:400 calc(11px * var(--text-scale))/1.3 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); overflow-wrap:anywhere; }
   .ctr.miss b { color:var(--ink); }
   .ctr.miss b::before { content:''; display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--focus); vertical-align:middle; margin:0 5px 0 -10px; }
-  .tip { display:none; position:absolute; right:calc(100% + 10px); top:0; width:230px; box-sizing:border-box; text-align:left; z-index:5; padding:12px 14px; font:400 12px/1.65 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;
+  .tip { display:none; position:absolute; right:calc(100% + 10px); top:0; width:230px; box-sizing:border-box; text-align:left; z-index:5; padding:12px 14px; font:400 calc(12px * var(--text-scale))/1.65 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;
     background:var(--surface); border:1px solid var(--line); color:var(--ink); box-shadow:0 10px 30px color-mix(in srgb, var(--code) 70%, transparent); }
   .tip span { display:block; }
   .ctr:hover .tip { display:block; }
   .gap { flex:1; }
-  .miss-n { font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); }
+  .miss-n { font:400 calc(11px * var(--text-scale)) 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); }
   /* RS-38: Recommend is a quiet accent button until the board is ready, then the filled primary; nothing glows. */
-  .rec { margin:0 5px 18px; font:600 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:6px 2px; white-space:nowrap; color:var(--accent); }
+  .rec { margin:0 5px 18px; font:600 calc(11px * var(--text-scale)) 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:6px 2px; white-space:nowrap; color:var(--accent); }
   .rec.on { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
   .rec.on:hover:not(:disabled) { background:color-mix(in srgb, var(--accent) 86%, var(--ink)); }
   /* NW-40: on a phone the rail is a bar under the graph; its counters run in a row. */
   @media (max-width: 719px) {
     .rail { flex:none; width:100%; height:auto; flex-direction:row; align-items:center; border-left:0; border-top:2px solid var(--accent); padding-bottom:env(safe-area-inset-bottom); }
     .open { flex-direction:row; align-items:center; gap:14px; padding:8px 12px; overflow-x:auto; scrollbar-width:none; text-align:left; }
-    .ctr { flex:none; } .ctr b { font-size:20px; } .ctr small { margin-top:2px; font-size:10px; } .gap, .spine-run, .tip { display:none !important; }
+    .ctr { flex:none; } .ctr b { font-size:calc(20px * var(--text-scale)); } .ctr small { margin-top:2px; font-size:calc(10px * var(--text-scale)); } .gap, .spine-run, .tip { display:none !important; }
     .rec { flex:none; margin:0 12px 0 0; padding:8px 12px; }
   }
   .spine-run { position:absolute; left:-2px; top:0; bottom:0; width:2px; background:var(--focus); transform-origin:50% 100%; pointer-events:none; box-shadow:0 0 8px var(--glow-near); opacity:0; }

@@ -144,56 +144,56 @@
   </div>
 </section>
 <style>
-  .board-sheet { --ink-faint:color-mix(in srgb, var(--ink-mute) 62%, var(--bg)); position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; min-height:0; overflow:hidden;
-    background:var(--surface); border-top:2px solid var(--accent); font:400 13px/1.45 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; }
+  .board-sheet { --ink-faint:color-mix(in srgb, var(--ink-mute) var(--faint-share), var(--bg)); position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; min-height:0; overflow:hidden;
+    background:var(--surface); border-top:2px solid var(--accent); font:400 calc(13px * var(--text-scale))/1.45 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; }
   .sheet { flex:1; overflow:auto; padding:32px 40px 80px; }
   .top { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; } .sp { flex:1; }
-  h2 { margin:0; font:350 24px/1.2 'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif; letter-spacing:-.01em; color:var(--ink); }
+  h2 { margin:0; font:350 calc(24px * var(--text-scale))/1.2 'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif; letter-spacing:-.01em; color:var(--ink); }
   /* RS-34, RS-38: a solid sheet; buttons take the app's one radius, the rank choice is a pill, nothing glows. */
-  .top button, .missing button, .small { font:500 12px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; padding:6px 12px; }
+  .top button, .missing button, .small { font:500 calc(12px * var(--text-scale)) 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; padding:6px 12px; }
   .top button[data-close] { display:inline-flex; align-items:center; gap:6px; color:var(--ink-mute); } .top button[data-close]:hover { color:var(--ink); }
-  .small { padding:2px 10px; font-size:11px; }
+  .small { padding:2px 10px; font-size:calc(11px * var(--text-scale)); }
   .top button[data-rec]:not(.on) { color:var(--accent); }
   .top button[data-rec].on { font-weight:600; }
-  .st { border:1px solid var(--accent); border-radius:var(--radius-pill); padding:1px 10px; font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--accent); }
+  .st { border:1px solid var(--accent); border-radius:var(--radius-pill); padding:1px 10px; font:400 calc(11px * var(--text-scale)) 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--accent); }
   .st[data-s='ready'] { background:color-mix(in srgb, var(--accent) 18%, transparent); } .st[data-s='decided'] { background:var(--surface-2); color:var(--focus); border-color:var(--focus); }
   .st[data-s='bought'] { background:var(--accent); color:var(--accent-ink); }
-  .research { display:flex; gap:12px; align-items:center; margin:14px 0 0; color:var(--focus); } .research button { font-size:12px; padding:2px 10px; }
-  .missing { margin:14px 0 34px; font:400 13px/1.65 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; color:var(--ink); }
+  .research { display:flex; gap:12px; align-items:center; margin:14px 0 0; color:var(--focus); } .research button { font-size:calc(12px * var(--text-scale)); padding:2px 10px; }
+  .missing { margin:14px 0 34px; font:400 calc(13px * var(--text-scale))/1.65 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; color:var(--ink); }
   .missing b { font-weight:600; color:var(--focus); margin-right:6px; }
   .missing span { text-decoration:underline; text-decoration-color:var(--focus); text-underline-offset:4px; } .missing span::after { content:' · '; color:var(--ink-faint); display:inline-block; text-decoration:none; } .missing span:last-of-type::after { content:''; }
   .missing button { margin-left:10px; }
   .error { color:var(--error-ink); }
   .cols { display:grid; grid-template-columns:1fr 1fr; gap:0; }
   .cols .card + .card { border-left:1px solid color-mix(in srgb, var(--accent) 30%, transparent); padding-left:36px; } .cols .card:first-child { padding-right:36px; }
-  h3 { margin:0 0 18px; font:600 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--accent); display:flex; gap:10px; align-items:center; }
-  .mute { color:var(--ink-mute); font-size:12px; } .faint { color:var(--ink-faint); }
-  .note { display:grid; gap:4px; margin-bottom:20px; } .note .q { font:400 12px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); }
-  textarea, input { box-sizing:border-box; width:100%; background:transparent; color:var(--ink); border:0; border-bottom:1px solid var(--line); font:400 15px/1.35 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; padding:4px 0; border-radius:0; outline:none; resize:vertical; box-shadow:none; }
+  h3 { margin:0 0 18px; font:600 calc(11px * var(--text-scale)) 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--accent); display:flex; gap:10px; align-items:center; }
+  .mute { color:var(--ink-mute); font-size:calc(12px * var(--text-scale)); } .faint { color:var(--ink-faint); }
+  .note { display:grid; gap:4px; margin-bottom:20px; } .note .q { font:400 calc(12px * var(--text-scale)) 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); }
+  textarea, input { box-sizing:border-box; width:100%; background:transparent; color:var(--ink); border:0; border-bottom:1px solid var(--line); font:400 calc(15px * var(--text-scale))/1.35 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; padding:4px 0; border-radius:0; outline:none; resize:vertical; box-shadow:none; }
   textarea:focus, input:focus { border-bottom-color:var(--accent); box-shadow:none; }
-  .need { display:grid; padding:0 0 16px; } .need .q { font:400 12px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); text-align:left; }
+  .need { display:grid; padding:0 0 16px; } .need .q { font:400 calc(12px * var(--text-scale)) 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-mute); text-align:left; }
   .need .edit { border-bottom-color:transparent; } .need .edit:hover { border-bottom-color:var(--glass-line); } .need .edit:focus { border-bottom-color:var(--accent); }
   .need.open .q { color:var(--focus); } .need.open .q::before { content:''; display:inline-block; width:6px; height:6px; margin-right:6px; border:1.3px solid currentColor; border-radius:50%; vertical-align:1px; }
   .link { all:unset; cursor:pointer; box-sizing:border-box; } .link:hover { text-decoration:underline; text-underline-offset:3px; } .link:focus-visible { outline:1px solid var(--focus); outline-offset:2px; }
-  .grp { margin-bottom:22px; } .grp h4 { margin:0 0 8px; font:600 15px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; color:var(--ink); } .grp.must h4 { color:var(--accent); }
+  .grp { margin-bottom:22px; } .grp h4 { margin:0 0 8px; font:600 calc(15px * var(--text-scale)) 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; color:var(--ink); } .grp.must h4 { color:var(--accent); }
   .grp.irr { opacity:.5; }
-  .crit { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0; font-size:13px; } .crit .why { display:block; font:400 11px/1.35 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-faint); margin-top:2px; }
+  .crit { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0; font-size:calc(13px * var(--text-scale)); } .crit .why { display:block; font:400 calc(11px * var(--text-scale))/1.35 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; color:var(--ink-faint); margin-top:2px; }
   .seg { display:inline-flex; border:1px solid var(--accent); border-radius:var(--radius-pill); overflow:hidden; flex:none; }
-  .seg button { border:0; border-radius:0; background:transparent; color:var(--ink-mute); font:400 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:3px 10px; }
+  .seg button { border:0; border-radius:0; background:transparent; color:var(--ink-mute); font:400 calc(11px * var(--text-scale)) 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:3px 10px; }
   .seg button + button { border-left:1px solid color-mix(in srgb, var(--accent) 40%, transparent); } .seg button.on { background:var(--accent); color:var(--accent-ink); }
   .short { margin-top:40px; border-top:1px solid color-mix(in srgb, var(--accent) 30%, transparent); padding-top:26px; }
   .prods { display:grid; }
   .prod { display:grid; grid-template-columns:minmax(140px, 1fr) 2fr auto auto; align-items:baseline; gap:18px; padding:14px 0; border-bottom:1px solid var(--glass-line); }
-  .prod .name { font:350 18px/1.2 'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif; color:var(--ink); } .prod.shortlisted .name, .prod.chosen .name { font-weight:600; }
-  .prod .mute, .prod .faint { font:400 12px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; }
-  .prod .acts { display:flex; gap:6px; flex-wrap:wrap; } .prod .acts button { font:500 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:4px 10px; }
-  .prod .reject { grid-column:1 / -1; display:flex; gap:8px; align-items:center; } .prod .reject input { flex:1; font-size:13px; } .prod .reject button { font-size:11px; }
+  .prod .name { font:350 calc(18px * var(--text-scale))/1.2 'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif; color:var(--ink); } .prod.shortlisted .name, .prod.chosen .name { font-weight:600; }
+  .prod .mute, .prod .faint { font:400 calc(12px * var(--text-scale)) 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; }
+  .prod .acts { display:flex; gap:6px; flex-wrap:wrap; } .prod .acts button { font:500 calc(11px * var(--text-scale)) 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:4px 10px; }
+  .prod .reject { grid-column:1 / -1; display:flex; gap:8px; align-items:center; } .prod .reject input { flex:1; font-size:calc(13px * var(--text-scale)); } .prod .reject button { font-size:calc(11px * var(--text-scale)); }
   .prod.chosen { background:var(--accent); color:var(--accent-ink); border-radius:10px; padding:14px 16px; margin:8px 0; border-bottom-color:transparent; }
   .prod.chosen .name { color:var(--accent-ink); } .prod.chosen .name::before { content:''; display:inline-block; width:8px; height:8px; margin-right:8px; border-radius:50%; background:currentColor; vertical-align:2px; }
   .done { display:inline-flex; align-items:center; gap:5px; }
   .prod.chosen .mute, .prod.chosen .faint { color:color-mix(in srgb, var(--accent-ink) 75%, var(--accent)); }
   .prod.chosen button:not(.link) { color:var(--accent-ink); } .prod.chosen button:not(.link):hover:not(:disabled) { background:color-mix(in srgb, var(--accent-ink) 14%, transparent); }
   .prod.chosen button.on { background:var(--accent-ink); color:var(--accent); }
-  .rej { margin-top:14px; font:400 12px 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; color:var(--ink-faint); }
+  .rej { margin-top:14px; font:400 calc(12px * var(--text-scale)) 'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif; color:var(--ink-faint); }
   @media (max-width:719px) { .cols { grid-template-columns:1fr; } .cols .card + .card { border-left:0; padding-left:0; } .cols .card:first-child { padding-right:0; } .prod { grid-template-columns:1fr; gap:4px; } .sheet { padding:20px; } }
 </style>

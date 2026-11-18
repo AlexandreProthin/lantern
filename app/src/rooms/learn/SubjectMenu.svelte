@@ -56,5 +56,5 @@
   label { display:grid; gap:5px; }
   .progress { display:flex; flex-wrap:wrap; gap:6px; }
   .confirm { display:grid; gap:8px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface-2); max-width:min(360px,70vw); }
-  .confirm p { margin:0; color:var(--ink-mute); font-size:12px; } .confirm div { display:flex; gap:6px; justify-content:flex-end; }.direction { width:min(360px,70vw); resize:vertical; }.direction-count { color:var(--ink-mute); font-size:12px; }.direction-count.over { color:var(--error-ink); }
+  .confirm p { margin:0; color:var(--ink-mute); font-size:calc(12px * var(--text-scale)); } .confirm div { display:flex; gap:6px; justify-content:flex-end; }.direction { width:min(360px,70vw); resize:vertical; }.direction-count { color:var(--ink-mute); font-size:calc(12px * var(--text-scale)); }.direction-count.over { color:var(--error-ink); }
 </style>

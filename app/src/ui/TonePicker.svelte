@@ -9,6 +9,6 @@
     onchange={()=>tone=value==='custom'?{custom:''}:value as Tone} />{label}</label>{/each}
 </fieldset>
 <style>
-  .tones{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:0}.tones label{position:relative;padding:5px 10px;font-size:12px;color:var(--ink-mute);border-radius:999px;cursor:pointer}.tones input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.tones label:has(input:checked){background:var(--surface-2);color:var(--node-lit)}.tones label:has(input:focus-visible){outline:2px solid var(--focus)}
+  .tones{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:0}.tones label{position:relative;padding:5px 10px;font-size:calc(12px * var(--text-scale));color:var(--ink-mute);border-radius:999px;cursor:pointer}.tones input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.tones label:has(input:checked){background:var(--surface-2);color:var(--node-lit)}.tones label:has(input:focus-visible){outline:2px solid var(--focus)}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 </style>

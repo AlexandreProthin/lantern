@@ -33,6 +33,7 @@
   import SettingsPanel from './SettingsPanel.svelte';
   import DebugConsole from './debug/DebugConsole.svelte';
   import Backdrop from './Backdrop.svelte';
+  import { applyAppearance, shown as appearance } from './theme.svelte';
   import TopBar from './TopBar.svelte';
   import FieldPanel from './FieldPanel.svelte';
   import { applyRoomChrome, windowTitle } from './window-chrome';
@@ -227,6 +228,7 @@
     writer.schedule(settings);
     document.documentElement.dataset.reduceMotion = settings.appearance.reduceMotion === 'on' ? 'on' : 'system';
     document.documentElement.dataset.backdrop = settings.appearance.backdrop ? 'on' : 'off';
+    applyAppearance(settings.appearance.textSize, settings.appearance.theme);
     for (const entry of owned.values()) rooms.find(r => r.id === entry.room)?.applySettings(entry.session, settings);
     document.documentElement.dataset.room = room.id;
   }
@@ -470,7 +472,7 @@
   });
 </script>
 <svelte:window onkeydown={key} onpointerdowncapture={outside} />
-{#if !loading && settings.appearance.backdrop}<Backdrop {space} room={room.id} reduceSetting={settings.appearance.reduceMotion} />{/if}
+{#if !loading && settings.appearance.backdrop}<Backdrop {space} room={room.id} theme={appearance.theme} reduceSetting={settings.appearance.reduceMotion} />{/if}
 <TopBar {rooms} {room} {space} {subjectCount} title={session?.subject.title ?? null} busy={!!running} {summary} showTokenStats={settings.appearance.showTokenStats} desktop={native} mark={lanternMark}
   {panelOpen} bind:roomMenu bind:fieldWidth {navigate} switchRoom={id=>void switchRoom(id)} openSettings={()=>{settingsSection='general';settingsOpen=true;}} togglePanel={()=>{roomMenu=false;panelOpen=!panelOpen;}} ask={settings.companion.show?undefined:openAsk} bringBack={settingsReadOnly?undefined:bringAmberBack} />
 {#if banner}<div class="banner" role="alert">{banner}<button onclick={()=>banner=''}>{strings.close}</button></div>{/if}
@@ -497,5 +499,5 @@
   .spaces { flex:1; min-height:0; overflow:hidden; }.banner { display:flex; align-items:center; gap:12px; background:var(--surface-2); padding:8px 16px; }.banner.error { color:var(--error-ink); }
   .toast.update-notice { top:auto; bottom:18px; display:flex; align-items:center; gap:8px; }
   .toast { position:fixed; right:18px; top:70px; max-width:520px; padding:12px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; z-index:8; }
-  .shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; margin:0; }.shortcuts { overflow:auto; display:grid; align-content:start; gap:10px; }.shortcuts h2 { font-size:15px; margin:0; }.shortcuts button { justify-self:start; }
+  .shortcuts { position:fixed; inset:15% 20%; z-index:20; padding:24px; background:var(--surface); border:1px solid var(--line); border-radius:12px; }.shortcuts pre { white-space:pre-wrap; margin:0; }.shortcuts { overflow:auto; display:grid; align-content:start; gap:10px; }.shortcuts h2 { font-size:calc(15px * var(--text-scale)); margin:0; }.shortcuts button { justify-self:start; }
 </style>

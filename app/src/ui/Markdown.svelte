@@ -61,7 +61,7 @@
   .md :global(th), .md :global(td) { padding:6px 10px; border:1px solid var(--line); }
   .md :global(blockquote) { border-left:2px solid var(--line); margin-left:0; padding-left:16px; color:var(--ink-mute); }
   .md :global(.code-block) { position:relative; }
-  .md :global([data-copy]) { position:absolute; right:4px; top:4px; font:400 11px var(--font-ui); color:var(--ink-mute); padding:2px 8px; }
+  .md :global([data-copy]) { position:absolute; right:4px; top:4px; font:400 calc(11px * var(--text-scale)) var(--font-ui); color:var(--ink-mute); padding:2px 8px; }
   .md :global(pre) { border-radius:var(--radius); }
   .md :global(.math-error) { color:var(--error-ink); }
   .md :global(.hljs-keyword),.md :global(.hljs-selector-tag),.md :global(.hljs-meta .hljs-keyword) {color:var(--code-keyword);}

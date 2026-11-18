@@ -18,5 +18,5 @@
 <style>
   .ask { position:fixed; right:16px; top:68px; z-index:15; width:min(400px,calc(100vw - 32px)); max-height:min(70vh,560px); display:flex; flex-direction:column; gap:10px; padding:14px 16px 16px;
     background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-surface); box-shadow:var(--menu-shadow); }
-  header { display:flex; align-items:center; justify-content:space-between; } h2 { font-size:14px; font-weight:600; margin:0; } header button { width:26px; height:26px; margin-right:-6px; }
+  header { display:flex; align-items:center; justify-content:space-between; } h2 { font-size:calc(14px * var(--text-scale)); font-weight:600; margin:0; } header button { width:26px; height:26px; margin-right:-6px; }
 </style>

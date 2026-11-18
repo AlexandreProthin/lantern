@@ -19,3 +19,23 @@
   color-scheme: dark;
 }
 :root[data-room='sample'] { --error:#d86a5a; --error-ink:#f0a598; }
+/* SE-61: the sample room in the light theme. */
+:root[data-theme='light'][data-room='sample'] {
+  --bg: #f6f1e8;
+  --surface: #fffcf6;
+  --surface-2: #ece6e2;
+  --ink: #1f2633;
+  --ink-mute: #565c69;
+  --line: #d8cfbf;
+  --accent: #0b6e6d;
+  --accent-ink: #ffffff;
+  --focus: #7a4300;
+  --node-open: #7f8592;
+  --node-lit: #bf7709;
+  --node-understood: #0b6e6d;
+  --glow-near: rgba(214, 135, 22, 0.30);
+  --glow-far: rgba(214, 135, 22, 0.13);
+  --path-muted: #c9b48f;
+  --code: #f1ebe0;
+  color-scheme: light;
+}

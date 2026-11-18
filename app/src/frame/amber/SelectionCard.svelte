@@ -34,7 +34,7 @@
 </div>
 <style>
   .card { position:fixed; z-index:14; display:grid; gap:8px; padding:12px 14px; box-sizing:border-box; background:var(--surface); border:1px solid var(--line); border-radius:10px;
-    box-shadow:0 10px 28px rgba(0,0,0,.35); font-size:14px; line-height:1.5; max-height:min(50vh,420px); overflow:auto; }
+    box-shadow:0 10px 28px rgba(0,0,0,.35); font-size:calc(14px * var(--text-scale)); line-height:1.5; max-height:min(50vh,420px); overflow:auto; }
   .card:focus { outline:none; }
   q { color:var(--ink-mute); font-style:italic; } .answer :global(p) { margin:0 0 6px; } .thinking { color:var(--accent); margin:0; }
   .error { display:grid; gap:4px; color:var(--error-ink); } .error p { margin:0; } .actions { display:flex; gap:8px; justify-content:flex-end; }
