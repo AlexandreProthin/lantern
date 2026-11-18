@@ -181,6 +181,7 @@ fn blocking(app: &AppHandle, command: &str, args: Value, settings: Value) -> Res
         "subject_stamp" => to(commands::subject_stamp(arg(&args, "library")?, arg(&args, "id")?)),
         "save_subject" => to(commands::save_subject(arg(&args, "library")?, arg(&args, "subject")?, arg(&args, "expected")?, arg(&args, "dirty")?, lock())),
         "list_subjects" => to(commands::list_subjects(app.clone(), arg(&args, "library")?, lock())),
+        "search_library" => to(commands::search_library(arg(&args, "library")?, arg(&args, "query")?, arg(&args, "limit")?)),
         "record_open" => to(commands::record_open(app.clone(), arg(&args, "id")?, arg(&args, "at")?, lock())),
         "read_state" => to(commands::read_state(app.clone(), lock())),
         "save_companion_state" => to(commands::save_companion_state(app.clone(), arg(&args, "companion")?, lock())),

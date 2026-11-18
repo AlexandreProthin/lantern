@@ -48,7 +48,8 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
 
 - **NW-20** Allowed from a remote device: subjects (load, save, list, delete, thumbnails), recents, Amber
   state and log, settings read and save, generation and its cancel, provider status, an endpoint's models
-  and model info, key status (never a key).
+  and model info, key status (never a key). *(Amended 2026-11-17.)* Also the library search
+  ([welcome-gallery](/specs/welcome-gallery.md) WG-83, `search_library`), which only reads.
 - **NW-21** Refused (403): endpoint keys (set, remove), library choice or switch, reveal in Explorer, file
   paths, window state and snapping, updates, the network commands, `import_poc`.
 - **NW-22** The server never takes a path from a remote device: every `library` argument is replaced by

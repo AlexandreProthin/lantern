@@ -13,6 +13,7 @@
   import ModelPicker from './ModelPicker.svelte';
   import { errorMessage } from './error-message';
   import TonePicker from './TonePicker.svelte';
+  import LibrarySearch from './LibrarySearch.svelte';
   import { WelcomeEmbers } from './embers';
   import { demoPrefill } from '../demo/prefill';
   import type { WelcomeRoomView, WelcomeSnippets, WelcomeStarter } from './welcome-types';
@@ -27,6 +28,13 @@
   let motion:WelcomeEmbers|undefined,arrived=false,osReduced=$state(false);
   // WG-9/10: the direction lives in the same capsule as the subject.
   let direction=$state(''),open=$state(false),focused=$state(false),capsule:Capsule|undefined;
+  // WG-80: the shelf's search inside every subject; two letters replace the cards with its results.
+  let find=$state(''),findField=$state<HTMLInputElement>(),results=$state<LibrarySearch>();
+  const finding=$derived(find.trim().length>=2);
+  function findKey(e:KeyboardEvent){
+    if(e.key==='Escape'&&find){e.preventDefault();e.stopPropagation();find='';}
+    else if(e.key==='ArrowDown'&&finding){if(results?.focusFirst())e.preventDefault();}
+  }
   let ask:HTMLFormElement,cap:HTMLDivElement,top:HTMLDivElement,dock:HTMLSpanElement,lower:HTMLDivElement,hair:HTMLDivElement,dirField:HTMLTextAreaElement,wrap:HTMLDivElement,hint:HTMLSpanElement;
   const suggestions=untrack(()=>room.suggestions?.(library.provider,()=>suggestionRevision++));
   const thinking=$derived.by(()=>{suggestionRevision;return suggestions?.running??false;});
@@ -138,11 +146,13 @@
     {#if !ready}<div class="inline-msg">{labels.cliNotReady} <button onclick={() => library.settings()}>{strings.settings}</button></div>{/if}
     {#if !available}<p class="libmsg">{labels.libraryUnavailable}</p>
     {:else if recent.length}<section class="shelf" class:wide={!!room.shelfWidth} style={room.shelfWidth?`--shelf:${room.shelfWidth}px`:undefined} aria-label={labels.recent}>
-      <h2>{labels.recent}</h2><div class="cards">
+      <h2>{labels.recent}</h2>
+      <input class="find" type="search" bind:this={findField} bind:value={find} aria-label={strings.searchLibrary} placeholder={strings.searchLibrary} maxlength="120" onkeydown={findKey} />
+      {#if finding}<LibrarySearch bind:this={results} {library} query={find} active={visible} exit={()=>findField?.focus()} />{:else}<div class="cards">
         {#each recent as summary (summary.id)}{#if card}{@render card(summary,{open:()=>void library.open(summary.id),light:(a,b)=>void motion?.travel(a,b)})}{:else}<button class="card" onmouseenter={hover} onclick={()=>library.open(summary.id)}>
           {@render visual?.(summary)}<h3>{summary.title}</h3><div class="meta"><b>{@render figure?.(summary)}</b><span title={exactDate(library.catalogue.state.lastOpenedAt[summary.id])}>{relativeDate(library.catalogue.state.lastOpenedAt[summary.id])}</span></div><span class="cont">{labels.continue}</span>
         </button>{/if}{/each}
-      </div><button class="browse" onclick={()=>navigate('gallery')}>{strings.browseAll(total)}</button>
+      </div>{/if}<button class="browse" onclick={()=>navigate('gallery')}>{strings.browseAll(total)}</button>
     </section>{/if}
   </div>
 </main>
@@ -172,6 +182,7 @@
   .model{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;font-size:calc(11px * var(--text-scale));color:var(--ink-mute)}.model :global(select){border:0;background:transparent;color:var(--ink-mute);font-size:calc(12px * var(--text-scale));padding:5px 6px}.model :global(option){background:var(--surface)}textarea{width:min(400px,100%)}.suggest,.browse{border:0;background:transparent;font-size:calc(12px * var(--text-scale));color:var(--ink-mute);padding:2px}.suggest{text-decoration:underline;text-underline-offset:3px}.suggest:hover:not(:disabled),.browse:hover{color:var(--accent)}
   .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.chipbtn{text-align:left;display:flex;flex-direction:column;gap:3px;max-width:220px;padding:8px 12px;border:1px solid var(--line);border-radius:var(--radius-surface);background:var(--surface);animation:appear 200ms both;animation-delay:var(--delay)}.chipbtn:hover:not(:disabled){background:var(--surface-2);border-color:color-mix(in srgb,var(--ink-mute) 45%,var(--line))}.chipbtn b{font-size:calc(14px * var(--text-scale));font-weight:600}.chipbtn span{font-size:calc(12px * var(--text-scale));color:var(--ink-mute);line-height:1.4}.inline-msg{text-align:center;font-size:calc(12px * var(--text-scale));color:var(--ink-mute)}.inline-msg button{margin-left:8px;font-size:calc(12px * var(--text-scale))}.libmsg{padding:24px;text-align:center;border:1px dashed var(--line);color:var(--ink-mute)}
   .shelf.wide{width:min(var(--shelf),calc(100vw - 32px));align-self:center}.shelf{margin-top:15vh;display:flex;flex-direction:column;gap:18px}.shelf h2{margin:0;text-align:center;font-size:calc(11px * var(--text-scale));font-weight:600;color:var(--ink-faint)}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}.card{display:flex;flex-direction:column;gap:10px;padding:0;border:0;background:transparent;text-align:left;opacity:.7}.card:hover,.card:focus-visible{opacity:1}.card h3{font-size:calc(16px * var(--text-scale));font-weight:600;margin:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.meta{display:flex;justify-content:space-between;gap:8px;width:100%;font-size:calc(12px * var(--text-scale));color:var(--ink-faint);font-variant-numeric:tabular-nums}.meta b{font-weight:400;color:var(--ink-mute)}.cont{font-size:calc(12px * var(--text-scale));color:var(--ink-mute);text-decoration:underline;text-underline-offset:3px}.browse{align-self:center;padding:6px}
+  .find{align-self:center;width:min(360px,100%);box-sizing:border-box;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);caret-color:var(--accent);font-size:calc(13px * var(--text-scale));text-align:center}.find:focus{outline:none;border-color:color-mix(in srgb,var(--accent) 60%,var(--line));text-align:left}.find:not(:placeholder-shown){text-align:left}.find::placeholder{color:var(--ink-faint)}
   .starters{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 16px 6px 0}.shint{font-size:calc(11px * var(--text-scale));color:var(--ink-faint);margin-right:2px}.starter{border:1px dashed var(--line);border-radius:999px;background:transparent;color:var(--ink-mute);padding:3px 10px;font-size:calc(12px * var(--text-scale));animation:appear 200ms both;animation-delay:var(--delay)}.starter:hover{border-color:var(--accent);color:var(--accent)}
   button,input{transition:color 180ms ease-out,opacity 180ms ease-out,box-shadow 180ms ease-out,background 180ms ease-out}.embers{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
   @keyframes underline{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}

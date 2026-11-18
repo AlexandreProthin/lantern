@@ -28,6 +28,11 @@ pub fn save_subject(library: PathBuf, subject: Value, expected: Option<Stamp>, d
 pub fn list_subjects(app: AppHandle, library: PathBuf, lock: State<StorageLock>) -> Result<Vec<Value>, String> {
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::list_subjects(&library, &config(&app)?)
 }
+/// WG-83: a read-only scan of the subject files, capped; it takes no lock, as a save replaces a file whole.
+#[tauri::command]
+pub fn search_library(library: PathBuf, query: String, limit: Option<usize>) -> Result<Vec<Value>, String> {
+    crate::search::search_library(&library, &query, limit.unwrap_or(crate::search::SEARCH_LIMIT).min(crate::search::SEARCH_LIMIT))
+}
 #[tauri::command]
 pub fn record_open(app: AppHandle, id: String, at: String, lock: State<StorageLock>) -> Result<AppState, String> {
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::record_open(&config(&app)?, &id, &at)

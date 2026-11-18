@@ -18,11 +18,12 @@
   import type { RoomDefinition, RoomSession } from './room';
   import { desktopStorage, SubjectPersistence } from './persistence';
   import type { Loaded } from './persistence';
-  import { browserStorage, browserSummaries, browserLibraryState, browserRecordOpen, browserDelete } from './browser-storage';
+  import { browserStorage, browserSubjects, browserSummaries, browserLibraryState, browserRecordOpen, browserDelete } from './browser-storage';
+  import { searchLibrary, type LibraryHit } from './library-search';
   import { Catalogue } from './catalogue';
   import type { SubjectSummary, LibraryState } from './catalogue';
   import { thumbnailGraph } from './library-spaces';
-  import type { LibrarySpaces, ThumbnailGraph } from './library-spaces';
+  import type { FoundHit, LibrarySpaces, ThumbnailGraph } from './library-spaces';
   import { checkedTitle, checkedDirection } from '../core/model';
   import type { Subject, Tone } from '../core/model';
   import { defaultSettings, validateSettings } from './settings';
@@ -364,8 +365,24 @@
       return cached!.value;
     },
     isRunning:id=>!!owned.get(id)?.session.running,
-    settings(section='provider'){settingsSection=section;settingsOpen=true;},refresh:refreshCatalogue
+    settings(section='provider'){settingsSection=section;settingsOpen=true;},refresh:refreshCatalogue,
+    search:searchSubjects,openAt
   };
+  /** WG-80..83: the desktop scans the files (search.rs); the browser build searches its stored subjects. Open
+   *  subjects are flushed first, so a search sees what was just written. A hit in a room this build lacks is left out. */
+  async function searchSubjects(query: string): Promise<FoundHit[]> {
+    for (const entry of owned.values()) { try { await entry.persistence.flush(); } catch { /* the save banner says it */ } }
+    const hits = desktop ? await invoke<LibraryHit[]>('search_library', { library, query }) : searchLibrary(browserSubjects(), query);
+    return hits.flatMap(hit => { const r = rooms.find(x => x.id === hit.room); return r ? [{ ...hit, roomName: r.name, here: r.id === room.id }] : []; });
+  }
+  /** WG-84: the hit's room first (RS-12), then its subject, then its node, which the graph unfolds and centres. */
+  async function openAt(hit: Pick<LibraryHit, 'room' | 'subjectId' | 'nodeId'>) {
+    trace.action(room.id, 'Open search result', { room: hit.room, subjectId: hit.subjectId });
+    if (hit.room !== room.id) await switchRoom(hit.room);
+    if (hit.room !== room.id) return;
+    await open(hit.subjectId);
+    if (session?.subject.id === hit.subjectId && session.subject.rooms[hit.room]?.nodes[hit.nodeId]) session.setFocus(hit.nodeId);
+  }
   async function retrySaves() {
     try { for(const entry of owned.values()) await entry.persistence.flush(); await writer.flush(); saveError=''; } catch(e) {saveError=String(e);}
   }

@@ -12,7 +12,7 @@ const SETTINGS: &str = r#"{"format":"lantern-settings/1","library":{"path":"C:\\
 
 #[test]
 fn nw20_21_rights() {
-    for c in ["load_subject", "subject_stamp", "save_subject", "list_subjects", "delete_subject", "load_settings", "save_settings", "provider_status", "endpoint_key_status"] { assert!(rights::allowed(c), "{c}"); }
+    for c in ["load_subject", "subject_stamp", "save_subject", "list_subjects", "search_library", "delete_subject", "load_settings", "save_settings", "provider_status", "endpoint_key_status"] { assert!(rights::allowed(c), "{c}"); }
     for c in ["set_endpoint_key", "remove_endpoint_key", "pick_library", "switch_library", "validate_library", "reveal_subject", "reveal_library", "subject_file",
         "save_window_state", "snap_layouts", "open_external", "check_update", "install_update", "network_set", "network_pair", "network_forget_devices", "generate"] {
         assert!(!rights::allowed(c), "{c}");
