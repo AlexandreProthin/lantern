@@ -18,6 +18,8 @@ export const strings = {
   oneProduct: (names: string[], more: number) => names.length
     ? `Shortlist more to compare: ${names.join(', ')}${more ? ` and ${more} more` : ''} ${names.length + more === 1 ? 'is a candidate' : 'are candidates'} in the Survey.`
     : 'Shortlist more products in the Survey to compare them.',
+  /** NW-40: on a phone each product is a card; the switcher names them. */
+  products: 'Shortlisted products',
   openSurvey: 'Open the Survey', emptyTitle: 'Nothing to compare yet', emptyBody: 'Shortlist products in the Survey: each one becomes a column here, filled with sourced values.',
   noCriteria: 'No ranked criteria yet. Mark criteria Must or Nice to have in the Survey to compare on them.',
   kinds: { manufacturer: 'manufacturer', measured: 'measured', shop: 'shop', opinion: 'opinion', sponsored: 'sponsored', model: 'model knowledge' },

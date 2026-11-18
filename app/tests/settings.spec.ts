@@ -8,7 +8,8 @@ test('UP-3/4/20: General offers the launch-check switch, and the manual check is
   await expect(launch).toBeChecked();
   await launch.uncheck();
   await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.settings')??'{}').updates?.checkAtLaunch)).toBe(false);
-  await expect(dialog.getByRole('button',{name:'Check for updates',exact:true})).toBeDisabled();
+  // NW-31: the manual check is the desktop app's; the browser build shows no button that cannot work there (2026-11-18).
+  await expect(dialog.getByRole('button',{name:'Check for updates',exact:true})).toHaveCount(0);
   await expect(page.getByText(/is available/)).toHaveCount(0);
   // UP-60: Developer is hidden until five clicks on the version line.
   await expect(dialog.getByRole('button',{name:'Developer',exact:true})).toHaveCount(0);

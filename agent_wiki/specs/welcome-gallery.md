@@ -89,6 +89,10 @@ motion are the component's final recipe, and no Welcome UI is built before that 
   *(Amended 2026-11-17, design review.)* It is the Welcome's one primary; it keeps the pill shape of the capsule it
   docks in. The field has no glow behind it (glow belongs to lit things, [rooms-spaces](/specs/rooms-spaces.md)
   RS-38), and the recent cards show hover by opacity alone.
+  *(Amended 2026-11-18, mobile review.)* On a phone ([network-serving](/specs/network-serving.md) NW-40) the
+  button does not dock inside the capsule, where it cut the question to *What do you w*: the capsule keeps its
+  whole width for the subject and the button sits under it, right-aligned; with the direction open it is at the
+  card's bottom right as on the desktop. The subject field draws no focus box inside the capsule.
 - **WG-11** *Suggest 3 subjects* chips fill the subject only (WG-4); the app never fills the direction. The look and
   motion of WG-9/WG-10 are the `welcome-context` recipe.
 

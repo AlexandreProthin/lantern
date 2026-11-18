@@ -28,7 +28,7 @@
     { key: 'pick', value: b.chosen ? tick : '—', label: b.chosen ? b.chosen.title : t.pickLabel, area: '' },
   ]);
   const els: HTMLElement[] = [];
-  let spine: HTMLElement, chip = $state<HTMLElement>(), rec = $state<HTMLElement>();
+  let spine: HTMLElement, chip = $state<HTMLElement>(), rec = $state<HTMLElement>(), recWidth = $state(0);
   let previous: { values: string[]; html: string[]; stage: string; status: string } | null = null;
   // Motion of the recipe, on changes only: counters roll, the status chip slides, a light runs up the spine when the board becomes complete.
   $effect(() => {
@@ -54,11 +54,11 @@
     el.animate([{ transform: 'translateY(60%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: EASE_OUT });
   }
 </script>
-<aside class="rail" aria-label={t.rail} data-open={open}>
+<aside class="rail" aria-label={t.rail} data-open={open} style:--rec={b.status === 'exploring' ? `${recWidth}px` : '0px'}>
   <span class="spine-run" bind:this={spine}></span>
   <button class="open" aria-expanded={open} aria-label={open ? t.closeBoard : t.openBoard} onclick={toggle}>
-    <span class="ttl">{t.boardTitle}</span>
-    <span class="st" data-s={stage} bind:this={chip}>{t.stages[stage]}</span>
+    <span class="head"><span class="ttl">{t.boardTitle}</span>
+    <span class="st" data-s={stage} bind:this={chip}>{t.stages[stage]}</span></span>
     {#each counters as c, i (c.key)}
       {@const items = c.area ? tip(c.area) : []}
       <span class="ctr" class:miss={items.length} data-counter={c.key}>
@@ -69,7 +69,7 @@
     <span class="gap"></span>
     <span class="miss-n">{miss.length ? t.missingCount(miss.length) : b.chosen ? t.stages[stage] : t.complete}</span>
   </button>
-  {#if b.status === 'exploring'}<button class="rec" class:on={stage === 'ready'} bind:this={rec} disabled={busy} onclick={recommend}>{stage === 'ready' ? t.recommendReady : t.recommend}</button>{/if}
+  {#if b.status === 'exploring'}<button class="rec" class:on={stage === 'ready'} bind:this={rec} bind:offsetWidth={recWidth} disabled={busy} onclick={recommend}>{stage === 'ready' ? t.recommendReady : t.recommend}</button>{/if}
 </aside>
 <style>
   .rail { --ink-faint:color-mix(in srgb, var(--ink-mute) 62%, var(--bg)); position:relative; flex:0 0 88px; width:88px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; z-index:3;
@@ -98,12 +98,19 @@
   .rec { margin:0 5px 18px; font:600 11px 'Segoe UI Variable Small','Segoe UI',system-ui,sans-serif; padding:6px 2px; white-space:nowrap; color:var(--accent); }
   .rec.on { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
   .rec.on:hover:not(:disabled) { background:color-mix(in srgb, var(--accent) 86%, var(--ink)); }
-  /* NW-40: on a phone the rail is a bar under the graph; its counters run in a row. */
+  .head { display:contents; }
+  /* NW-40: on a phone the rail is a bar under the graph in two rows: the title, the stage and what is missing beside
+     Recommend, then the four counters in equal columns, so none hides under the button (amended 2026-11-18). */
   @media (max-width: 719px) {
-    .rail { flex:none; width:100%; height:auto; flex-direction:row; align-items:center; border-left:0; border-top:2px solid var(--accent); padding-bottom:env(safe-area-inset-bottom); }
-    .open { flex-direction:row; align-items:center; gap:14px; padding:8px 12px; overflow-x:auto; scrollbar-width:none; text-align:left; }
-    .ctr { flex:none; } .ctr b { font-size:20px; } .ctr small { margin-top:2px; font-size:10px; } .gap, .spine-run, .tip { display:none !important; }
-    .rec { flex:none; margin:0 12px 0 0; padding:8px 12px; }
+    .rail { flex:none; width:100%; height:auto; display:block; border-left:0; border-top:2px solid var(--accent); padding-bottom:env(safe-area-inset-bottom); }
+    .open { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); column-gap:10px; row-gap:6px; width:100%; padding:8px 12px 10px; text-align:left; }
+    .head { grid-row:1; grid-column:1 / -1; justify-self:start; display:flex; align-items:center; gap:10px; min-height:32px; min-width:0; }
+    .st[data-s] { padding:2px 8px; }
+    .miss-n { grid-row:1; grid-column:1 / -1; justify-self:end; align-self:center; margin-right:calc(var(--rec, 0px) + 10px); white-space:nowrap; }
+    .ctr { grid-row:2; min-width:0; } .ctr b { font-size:20px; } .ctr.miss b::before { margin-left:0; }
+    .ctr small { margin-top:2px; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .gap, .spine-run, .tip { display:none !important; }
+    .rec { position:absolute; top:8px; right:12px; margin:0; padding:7px 12px; }
   }
   .spine-run { position:absolute; left:-2px; top:0; bottom:0; width:2px; background:var(--focus); transform-origin:50% 100%; pointer-events:none; box-shadow:0 0 8px var(--glow-near); opacity:0; }
 </style>

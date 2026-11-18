@@ -52,13 +52,22 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
   clear of what the space keeps uncovered** (its room's `companion.avoid`, CO-20): in Study and Choose's
   Survey, the right of the graph, left of the graph's tools and the reading panel; where nothing is clear
   (a phone), at the rightmost position as before.
+  *(Amended 2026-11-18.)* On a **phone** (NW-40) the two-row header leaves no room to hang over the graph:
+  unless moved there, Amber **rests** by default, on the rightmost resting position whose box is clear of what
+  the space keeps uncovered (in Study and the Survey, the bottom right of the graph, above the zoom buttons).
+  While the panel sheet covers the space (three quarters of it or more), Amber is not drawn; it comes back to
+  its spot when the sheet closes.
 - **CO-11** Hanging, Amber sits at one of **10 predefined positions**, equally spaced along the header's
   width; it snaps to the nearest one and never hangs over the window controls. The rope is 0 to 160 px
   long. *(r9)*
+  *(Amended 2026-11-18.)* The rope ties on the header's **bottom line as laid out**, measured (56 px on the
+  desktop, the two-row header's on a phone): a hanging Amber is never drawn under the header nor over its
+  controls, and a tap on it reaches it.
 - **CO-12** The user can **grab Amber and move it**. While it is dragged within the top quarter of the
   window height, the rope extends and retracts to follow it until it snaps back to hanging; let go
   there, it settles with a simulated swing. The rope is drawn and simulated, never a straight static
   line. *(r8, r9)*
+  *(Amended 2026-11-18.)* Held, Amber stays under the measured header and inside the window.
 - **CO-13** Amber can also rest at the **bottom**. Each space gets its bottom resting positions from its
   room definition (RS-3); the default is the two bottom corners of the space. Study has three: left and
   right of the graph view, and the bottom right of the reading panel. *(r8, r9)*
@@ -66,7 +75,8 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
   **flies** (*heat and lift*) or **falls** (*descent and landing*, landing on its feet smoothly) to the
   nearest. *(r8, r9)*
 - **CO-15** Its spot is remembered **per space** and kept across restarts, in the app state file
-  (SE-50). *(r9)*
+  (SE-50). *(r9)* *(Amended 2026-11-18.)* A phone layout keeps its own spot per space (`learn/study:phone`),
+  apart from the desktop's, since a paired phone shares the desktop's state file.
 - **CO-16** Amber's menu has **Move to…**, listing the hanging and resting positions of the current
   space, with the same result as dragging. *(r9)*
 - **CO-17** Clicks outside Amber's drawn shape and rope pass through to what is underneath; it never
@@ -92,6 +102,9 @@ and 9, the same day. Every rule here is in the first version (r9: nothing was le
   slid sideways if needed; else **beside** it, level with it, its tail on that side; else at the clear place
   nearest to Amber. Its real height is measured, and the header's height is an input of the placement (56 px
   today). Phone widths keep the previous placement (not solved there).
+  *(Amended 2026-11-18.)* The header's height is measured (two rows on a phone). On a phone the bubble is at
+  most the screen's width less 8 px on each side (the greeting too) and, Amber resting above the zoom
+  buttons, opens above it, clear of the graph tools.
 - **CO-21** **Tips** are predefined, never generated, written in the strings module (PQ-4). Each click
   of *Next tip*, or each new opening, shows the next one, tips not yet seen first; the seen ones are
   remembered in the app state file. *(user; r8)*

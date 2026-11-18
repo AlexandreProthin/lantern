@@ -12,7 +12,8 @@
   import { NUDGE_MS, NUDGE_QUIET, draftOf, pickNudge, stillHolds, typingNow } from './nudge';
   import { DOZE_AFTER, REACTION_MS, flareAt, glimpse, lookToward, reaction } from './react';
   import type { Glimpse, Reaction } from './react';
-  import { AMBER_H, AMBER_W, BAR, TIE_X, TIE_Y, bubbleBox, defaultHang, dropTarget, hangSpots, hintPoint, restSpots, spotById } from './place';
+  import { AMBER_H, AMBER_W, BAR, TIE_X, TIE_Y, bubbleBox, covered, defaultHang, dropTarget, hangSpots, hintPoint, phoneRest, restSpots, spotById } from './place';
+  import { phone } from '../../ui/phone.svelte';
   import type { BubbleBox, Rect, Spot } from './place';
   import { Rope, STEP, flightDuration, flightPoint } from './rope';
   import { LANDING_SETTLE, RETRACT, actDone, compose, dangle, endsStanding, flightBase, grabbedBase, hangingBase, lookAt, restingBase, startAct } from './motion';
@@ -62,46 +63,60 @@
   $effect(() => () => clearTimeout(sayTimer));
   /** What Amber says now: the waiting line first (CO-35), else the greeting, else a nudge (CO-37); nothing while its bubble or menu is open. */
   const saying = $derived(waiting ? 'waiting' : greeting && shownGreeting === greeting ? 'greeting' : nudge ? 'nudge' : null);
-  const BUBBLE_W = 340, SAY_W = 300, CONTROLS = 138, GRAB = 5, SWING_MAX = 6000, THROW = 6;
+  const CONTROLS = 138, GRAB = 5, SWING_MAX = 6000, THROW = 6;
   /** CO-17: the lantern's silhouette (loop, frame and the flame inside it, in the actor's units) takes the pointer; the halo around it does not. */
   const HIT = 'M42 3 H58 V22 C70 34 86 47 86 65 C86 79 81 89 77 99 H23 C19 89 14 79 14 65 C14 47 30 34 42 22 Z';
   let width = $state(innerWidth), height = $state(innerHeight), bubble = $state(false), mode = $state<'tip' | 'guide'>('tip'), tipId = $state<string>(), menu = $state<null | 'main' | 'move'>(null);
   let button = $state<HTMLButtonElement>(), bubbleEl = $state<HTMLElement>(), menuEl = $state<HTMLElement>(), askChat = $state<ReturnType<typeof AskChat>>();
   const uid = `amber-${Math.random().toString(36).slice(2, 8)}`;
 
+  // NW-40: on a phone the bubble and the greeting fit the screen's width, 8 px from each edge.
+  const BUBBLE_W = $derived(Math.min(340, width - 16)), SAY_W = $derived(Math.min(300, width - 16));
+  // CO-11 (amended 2026-11-18): the rope ties on the header's bottom edge as laid out (56 px on the desktop; on a phone
+  // the header takes two rows, NW-40), so a hanging Amber is never drawn under the header nor over its controls.
+  let bar = $state(BAR);
   // CO-11, CO-13: the hanging spots along the bar, and this space's resting spots measured from the page.
-  const hangs = $derived(hangSpots(width, desktop ? CONTROLS : 0, strings.amberSpotHang));
-  let rests = $state.raw<Spot[]>([]), avoid = $state.raw<Rect[]>([]), measured = $state(false);
+  const hangs = $derived(hangSpots(width, desktop ? CONTROLS : 0, strings.amberSpotHang, bar));
+  let rests = $state.raw<Spot[]>([]), avoid = $state.raw<Rect[]>([]), measured = $state(false), hidden = $state(false);
   const avoiding = $derived(room.companion?.avoid?.[space] ?? []);
+  const round = (r: DOMRect): Rect => ({ left: Math.round(r.left), top: Math.round(r.top), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) });
   function measure() {
     const spaces = document.querySelector('.spaces'); if (!spaces) return;
+    // The header's bottom line is the bar (56 on the desktop, under its 1 px border).
+    const header = document.querySelector('header'), measuredBar = header ? Math.max(BAR, Math.round(header.getBoundingClientRect().bottom) - 1) : BAR;
+    if (measuredBar !== bar) bar = measuredBar;
     const find = (selector: string) => { for (const el of document.querySelectorAll(selector)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return r; } return null; };
-    const next = restSpots(room.companion?.rests?.[space], find, spaces.getBoundingClientRect(), { left: strings.amberRestLeft, right: strings.amberRestRight });
+    const area = spaces.getBoundingClientRect(), next = restSpots(room.companion?.rests?.[space], find, area, { left: strings.amberRestLeft, right: strings.amberRestRight });
     if (JSON.stringify(next) !== JSON.stringify(rests)) rests = next;
     // CO-20: what the bubble keeps clear of, as laid out now.
-    const shown = avoiding.flatMap(selector => [...document.querySelectorAll(selector)]).map(el => el.getBoundingClientRect()).filter(r => r.width && r.height)
-      .map(r => ({ left: Math.round(r.left), top: Math.round(r.top), right: Math.round(r.right), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) }));
+    const shown = avoiding.flatMap(selector => [...document.querySelectorAll(selector)]).map(el => el.getBoundingClientRect()).filter(r => r.width && r.height).map(round);
     if (JSON.stringify(shown) !== JSON.stringify(avoid)) avoid = shown;
+    // NW-40: on a phone, while the panel sheet covers the space, Amber waits out of sight.
+    const out = phone.current && covered(round(area), shown);
+    if (out !== hidden) { hidden = out; if (out) { closeBubble(); menu = null; } }
     // The space draws its parts after Amber (Study's graph once the subject is in): measure again when they appear or resize.
     const anchors = [...(room.companion?.rests?.[space] ?? []).map(spec => spec.anchor), ...avoiding].flatMap(selector => [...document.querySelectorAll(selector)]);
     if (!measured || anchors.length !== observed) {
       observer?.disconnect(); observer = new ResizeObserver(() => remeasure());
-      observer.observe(spaces); for (const el of anchors) observer.observe(el); observed = anchors.length;
+      observer.observe(spaces); if (header) observer.observe(header); for (const el of anchors) observer.observe(el); observed = anchors.length;
       mutations?.disconnect(); mutations = new MutationObserver(() => remeasure()); mutations.observe(spaces, { childList: true, subtree: true });
     }
     measured = true;
   }
   let observer: ResizeObserver | undefined, mutations: MutationObserver | undefined, observed = -1, pendingMeasure = 0;
   function remeasure() { cancelAnimationFrame(pendingMeasure); pendingMeasure = requestAnimationFrame(measure); }
-  $effect(() => { space; room; width; height; measured = false; observed = -1; void tick().then(remeasure); return () => { observer?.disconnect(); mutations?.disconnect(); cancelAnimationFrame(pendingMeasure); }; });
+  $effect(() => { space; room; width; height; phone.current; measured = false; observed = -1; void tick().then(remeasure); return () => { observer?.disconnect(); mutations?.disconnect(); cancelAnimationFrame(pendingMeasure); }; });
   const spots = $derived([...hangs, ...rests]);
-  const saved = $derived(spotOf(amberState, room.id, space));
-  // CO-10 (amended 2026-11-17): unless moved, Amber hangs at the rightmost spot clear of what the space keeps uncovered.
-  const spot = $derived(spotById(spots, saved, defaultHang(hangs, avoid)));
+  // CO-15 (amended 2026-11-18): a phone keeps its own spot per space (`learn/study:phone`), apart from the desktop's.
+  const spotSpace = $derived(phone.current ? `${space}:phone` : space);
+  const saved = $derived(spotOf(amberState, room.id, spotSpace));
+  // CO-10 (amended 2026-11-17): unless moved, Amber hangs at the rightmost spot clear of what the space keeps uncovered;
+  // (amended 2026-11-18) on a phone it rests, on the rightmost resting spot clear of them.
+  const spot = $derived(spotById(spots, saved, (phone.current ? phoneRest(rests, avoid) : undefined) ?? defaultHang(hangs, avoid)));
   let gaveUp = $state(false);
   $effect(() => { space; room; gaveUp = false; const t = setTimeout(() => gaveUp = true, 1500); return () => clearTimeout(t); });
   // Until the space is measured, a saved resting spot, or the default of a space with parts to avoid, waits rather than flashing elsewhere.
-  const layoutPending = $derived(saved?.startsWith('rest-') ? !rests.some(r => r.id === saved) : !saved && avoiding.length > 0 && !avoid.length);
+  const layoutPending = $derived(saved?.startsWith('rest-') ? !rests.some(r => r.id === saved) : !saved && (phone.current ? !rests.length : avoiding.length > 0 && !avoid.length));
   const ready = $derived(!layoutPending || (measured && gaveUp));
 
   // Motion: still at the spot, held by the hand, swinging on the rope, or flying or falling to a spot.
@@ -127,7 +142,7 @@
       base = flightBase(m.mode, u); left = p.x; top = p.y; hanging = false;
     } else {
       hanging = spot.kind === 'hang'; base = hanging ? hangingBase() : restingBase(); left = spot.left; top = spot.top;
-      rope = hanging ? `M${spot.anchorX} ${BAR} L${spot.anchorX} ${spot.top + TIE_Y}` : null;
+      rope = hanging ? `M${spot.anchorX} ${spot.anchorY} L${spot.anchorX} ${spot.top + TIE_Y}` : null;
     }
     // CO-45: lean toward the selection card (hanging from the loop, the body swings toward it; standing, it tips).
     const leanDeg = leanSign * 6 * (hanging ? -1 : 1);
@@ -192,13 +207,13 @@
   }
   let lastNow = 0;
   function run() { if (!raf && !document.hidden) { lastNow = 0; raf = requestAnimationFrame(loop); } }
-  function commit(to: Spot) { motion = { kind: 'still' }; saveState(setSpot(amberState, room.id, space, to.id)); run(); }
+  function commit(to: Spot) { motion = { kind: 'still' }; saveState(setSpot(amberState, room.id, spotSpace, to.id)); run(); }
   /** CO-14, CO-16: go to a spot: straight with reduced motion (CO-56), else a swing onto a rope or a flight or fall. */
   function goTo(to: Spot, from = { x: view.left, y: view.top }, rope: Rope | null = null, velocity = { x: 0, y: 0 }) {
     if (reducedMotion()) { commit(to); return; }
     if (to.kind === 'hang' && from.y + TIE_Y < height / 4) {
-      const r = rope ?? new Rope({ x: to.anchorX, y: BAR }, { x: from.x + TIE_X, y: from.y + TIE_Y });
-      r.anchor = { x: to.anchorX, y: BAR }; r.release(Math.max(1, to.rope), velocity);
+      const r = rope ?? new Rope({ x: to.anchorX, y: to.anchorY }, { x: from.x + TIE_X, y: from.y + TIE_Y });
+      r.anchor = { x: to.anchorX, y: to.anchorY }; r.release(Math.max(1, to.rope), velocity);
       motion = { kind: 'swing', rope: r, to, start: performance.now(), acc: 0 }; run(); return;
     }
     const goal = { x: to.left, y: to.top };
@@ -228,11 +243,12 @@
       motion = { kind: 'drag', left: view.left, top: view.top, vx: 0, vy: 0, at: performance.now(), rope: null };
     }
     const m = motion as Extract<Motion, { kind: 'drag' }>;
-    const left = Math.max(0, Math.min(width - AMBER_W, e.clientX - grab.dx)), top = Math.max(BAR - TIE_Y, Math.min(height - AMBER_H, e.clientY - grab.dy));
+    // CO-12: held, Amber stays under the header (its measured bar) and inside the window.
+    const left = Math.max(0, Math.min(width - AMBER_W, e.clientX - grab.dx)), top = Math.max(bar - TIE_Y, Math.min(height - AMBER_H, e.clientY - grab.dy));
     const tie = { x: left + TIE_X, y: top + TIE_Y }, near = dropTarget(hangs, [], left, top, height);
     // Within the top quarter the rope lengthens and shortens to follow; lower down Amber is off its rope.
     let rope = m.rope;
-    if (tie.y < height / 4) { if (!rope) rope = new Rope({ x: near.anchorX, y: BAR }, tie); rope.hold(tie, { x: near.anchorX, y: BAR }); } else rope = null;
+    if (tie.y < height / 4) { if (!rope) rope = new Rope({ x: near.anchorX, y: bar }, tie); rope.hold(tie, { x: near.anchorX, y: bar }); } else rope = null;
     // The hand's speed in px per ms, smoothed, for the throw on release.
     const now = performance.now(), dt = Math.max(8, now - m.at), k = .4;
     hand = hand * (1 - k) + (left - m.left) / dt * k;
@@ -257,8 +273,8 @@
   const guide = $derived(room.companion?.guide[space] ?? []);
   // CO-20: the bubble's and the greeting's boxes keep clear of the space's panel and tools (their heights as drawn).
   let bubbleH = $state(230), sayH = $state(80);
-  const box = $derived(bubbleBox(spot, { width, height }, { width: BUBBLE_W, height: bubbleH }, avoid));
-  const sayBox = $derived(bubbleBox(spot, { width, height }, { width: SAY_W, height: sayH }, avoid));
+  const box = $derived(bubbleBox(spot, { width, height, bar }, { width: BUBBLE_W, height: bubbleH }, avoid));
+  const sayBox = $derived(bubbleBox(spot, { width, height, bar }, { width: SAY_W, height: sayH }, avoid));
   /** The bubble's tail, on the edge facing Amber: under (over) its centre, or level with it on a side; clear of the rounded corners. */
   function tailOf(at: BubbleBox, w: number, h: number) {
     if (at.tail === 'left' || at.tail === 'right') {
@@ -373,7 +389,7 @@
     {/each}
   </svg>
 {/if}
-{#if ready}
+{#if ready && !hidden}
 {#if view.rope}<svg class="rope" aria-hidden="true" width={width} height={height}><path d={view.rope} /></svg>{/if}
 <button bind:this={button} class="amber" class:held={motion.kind === 'drag'} data-spot={spot.id} data-motion={motion.kind} data-act={act ? act.gesture : ''} data-mood={dozing ? 'doze' : reacting?.kind ?? ''} aria-label={strings.amberName} title={strings.amberTitle} aria-haspopup="dialog" aria-expanded={bubble}
   style:left={`${view.left}px`} style:top={`${view.top}px`} style:width={`${AMBER_W}px`} style:height={`${AMBER_H}px`}
@@ -381,7 +397,7 @@
   onpointerover={() => { if (!hovered) { hovered = true; if (!act) play(GESTURE.rest); } }} onpointerout={e => { if (!button?.contains(e.relatedTarget as Node)) hovered = false; }}
   onfocus={() => { if (!act) play(GESTURE.rest); }} onpointerdown={down} onclick={click} oncontextmenu={e => { e.preventDefault(); void openMenu(); }} onkeydown={buttonKey}><span class="art" bind:this={art}></span><svg class="hit" viewBox="-20 -24 140 148" aria-hidden="true"><path d={HIT} /></svg></button>
 {/if}
-{#if saying && ready && !bubble && !menu && motion.kind === 'still'}{@const at = sayBox}{@const t = tailOf(at, SAY_W, sayH)}
+{#if saying && ready && !hidden && !bubble && !menu && motion.kind === 'still'}{@const at = sayBox}{@const t = tailOf(at, SAY_W, sayH)}
   <div class="tail {t.kind}" class:fading={sayFading} aria-hidden="true" style:left={`${t.left}px`} style:top={t.top !== undefined ? `${t.top}px` : undefined} style:bottom={t.bottom !== undefined ? `${t.bottom}px` : undefined}></div>
   <div class="say living" class:still={reduced} class:fading={sayFading} role="status" aria-live="polite" data-testid="amber-says" data-kind={saying} bind:offsetHeight={sayH} style:left={`${at.left}px`} style:top={at.top !== undefined ? `${at.top}px` : undefined} style:bottom={at.bottom !== undefined ? `${at.bottom}px` : undefined} style:width={`${SAY_W}px`}
     onpointerenter={() => { if (saying === 'greeting') pauseFade(); else if (saying === 'nudge') { clearTimeout(nudgeFade); nudgeFading = false; } }}

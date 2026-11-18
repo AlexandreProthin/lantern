@@ -55,6 +55,10 @@ DM-4).
   panel cannot be dragged wider in Choose. *Check this* is on the node, not on each reply (the shared panel has
   no per-turn actions yet); a need or criterion reads *Not explained yet* until *Explain*. *Delete* is disabled
   on a subtree that holds the chosen product.
+  *(Amended 2026-11-18, the mobile review, [network-serving](/specs/network-serving.md) NW-40.)* On a phone the rail is
+  a bar under the graph in two rows: the title, the status and what is missing, with *Recommend* at the right; then
+  the four counters in equal columns, each label on one line (a long pick title ends in …). No counter sits under
+  *Recommend*.
 - **CR-12** Welcome and Gallery are the room's own ([spaces-per-room-no-home](/decisions/spaces-per-room-no-home.md)):
   Welcome starts a new choice (*What do you want to choose?*) or continues one of the 3 most recent
   Choose subjects; Gallery lists the Choose subjects with their status (CR-24).
@@ -239,6 +243,13 @@ DM-4).
   and *Check this row* are quiet buttons in `--accent`, *Fill Compare* is the primary while cells are empty; source tags
   are pills. On the board, buttons take the app's radius, the rank segments are a pill, *Recommend* is a quiet
   `--accent` button until the board is ready and then the filled primary, without the glow it had.
+  *(Amended 2026-11-18, the mobile review, [network-serving](/specs/network-serving.md) NW-40.)* On a phone the ledger
+  is **a card per product**: the product's name with *Choose* / *Remove* (or *Chosen* with *Un-choose*), then the
+  criteria as rows grouped *Must*, *Nice to have* and, when shown, *Irrelevant*, each with why it matters, the row's
+  summary and the same cell inline (value, sources, ≠, ?, *yours*). A tap on a row unfolds that cell's evidence card,
+  with the same actions; *unfold all evidence* moves to the toolbar and opens every row's card, with *Check this row*. A
+  switcher of the products' names, above the cards, and a horizontal swipe that snaps to a card reach the others; the
+  switcher follows the swipe. The desktop table is unchanged.
 
 # Recommendation
 

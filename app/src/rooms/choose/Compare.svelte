@@ -10,7 +10,8 @@
   import { chooseSettings } from './settings';
   import { candidatesOf, clickAll, clickCell, clickRow, columnsOf, irrelevantCount, keepOpen, nothingOpen, rowsOf, rowSummary, slotKey, splitKey, fillKey } from './compare/model';
   import type { CardActions, Open } from './compare/model';
-  import { ColumnFlip, cardFx, keep, rowFx, valueFx } from './compare/motion';
+  import { ColumnFlip, cardFx, keep, reduced, rowFx, valueFx } from './compare/motion';
+  import { phone } from '../../ui/phone.svelte';
   import { strings } from './compare/strings';
   import Card from './compare/Card.svelte';
   import CellBody from './compare/CellBody.svelte';
@@ -49,7 +50,27 @@
   const flip = new ColumnFlip(() => scroller ? [...scroller.querySelectorAll<HTMLElement>('thead th')] : []);
   $effect.pre(() => { cur; untrack(() => flip.before()); });
   $effect(() => { cur; untrack(() => flip.after()); });
+
+  /** NW-40 on a phone: one card per product, reached by the switcher or a horizontal swipe that snaps to a card. */
+  let deck = $state<HTMLElement | null>(null), switcher = $state<HTMLElement | null>(null), at = $state(0);
+  const shown = $derived(view ? Math.max(0, Math.min(at, view.cols.length - 1)) : 0);
+  const cardAt = (i: number) => deck?.children[i] as HTMLElement | undefined;
+  const showCard = (i: number) => { at = i; const c = cardAt(i); if (deck && c) deck.scrollTo({ left: c.offsetLeft, behavior: reduced() ? 'instant' : 'smooth' }); };
+  const swiped = () => { if (deck?.clientWidth) at = Math.round(deck.scrollLeft / deck.clientWidth); };
+  /** The switcher keeps the shown product's name in view (a swipe can reach one whose tab is off the edge). */
+  $effect(() => {
+    const tab = switcher?.children[shown] as HTMLElement | undefined;
+    if (!switcher || !tab) return;
+    const left = tab.offsetLeft - 16, right = tab.offsetLeft + tab.offsetWidth + 16 - switcher.clientWidth;
+    if (switcher.scrollLeft > left) switcher.scrollTo({ left }); else if (switcher.scrollLeft < right) switcher.scrollTo({ left: right });
+  });
+  const statusOf = (cell: Cell | undefined, filling: boolean) => filling ? 'filling' : cell ? (cell.user ? 'edited' : cell.value === null ? 'none' : cell.disagree ? 'disagree' : 'ok') : 'empty';
 </script>
+{#snippet summary(text: string)}{#each summaryParts(text) as part, i}{i ? ' · ' : ''}{#if part.mark}<span class="mk" role="img" aria-label={`${part.n} ${strings.marks[part.mark]}`}><Icon name={markIcons[part.mark]} size={11} />{part.n}</span>{:else}{part.text}{/if}{/each}{/snippet}
+{#snippet productActions(id: string, chosen: boolean)}
+  {#if chosen}<span class="chosen-l">{strings.chosen}</span><button onclick={() => guard(() => choose!.unchoose(id))}>{strings.unchoose}</button>
+  {:else}<button class="accent" onclick={() => guard(() => choose!.choose(id))}>{strings.choose}</button><button onclick={() => guard(() => choose!.unshortlist(id))}>{strings.remove}</button>{/if}
+{/snippet}
 {#snippet band(rowId: string, title: string, price: boolean, full: boolean)}
   <tr class="ev" class:full class:single={!full} in:rowFx out:rowFx={{ out: true }} use:keep>
     <th class="evh"><div class="w">{#if full}{strings.evidenceFor(title)}{#if web}<button class="accent" disabled={busy} onclick={() => guard(() => choose!.run('check', rowId))}>{strings.checkRow}</button>{/if}{/if}</div></th>
@@ -80,9 +101,49 @@
         <span class="sp"></span>
         {#if view.irr}<button class:on={showIrr} aria-pressed={showIrr} onclick={() => { noHover = true; showIrr = !showIrr; }}>{showIrr ? strings.hideIrrelevant(view.irr) : strings.showIrrelevant(view.irr)}</button>{/if}
         {#if view.cols.length}<button class:primary={view.empty} disabled={!view.empty} onclick={() => choose!.fillCompare()}>{strings.fillCompare}</button>{/if}
+        {#if phone.current && view.rowIds.length}<button class="all" data-all aria-expanded={allOpen} aria-label={allOpen ? strings.foldAllLabel : strings.unfoldAllLabel} onclick={() => go(clickAll(cur, view!.rowIds))}><Icon name={allOpen ? 'foldAll' : 'unfoldAll'} size={12} />{allOpen ? strings.foldAll : strings.unfoldAll}</button>{/if}
       </div>
       {#if !view.cols.length}
         <div class="stage"><div class="emptystate"><h2>{strings.emptyTitle}</h2><p>{strings.emptyBody}</p><button class="primary" onclick={() => navigate('survey')}>{strings.openSurvey}</button></div></div>
+      {:else if phone.current}
+        <div class="stage cards">
+          <div class="switch" bind:this={switcher} role="tablist" aria-label={strings.products}>
+            {#each view.cols as p, i (p.id)}
+              <button role="tab" aria-selected={i === shown} aria-controls={`card-${p.id}`} class:chosen={p.id === view.chosenId} onclick={() => showCard(i)}>{#if p.id === view.chosenId}<Icon name="check" size={12} />{/if}<span>{p.title}</span></button>
+            {/each}
+          </div>
+          <div class="deck" bind:this={deck} onscroll={swiped}>
+            {#each view.cols as p (p.id)}
+              {@const chosen = p.id === view.chosenId}
+              <div class="pcard" id={`card-${p.id}`} role="tabpanel" aria-label={p.title} data-product={p.id}>
+                <div class="ph" class:chosen><span class="pn">{#if chosen}<Icon name="check" />{/if}{p.title}</span>
+                  <div class="acts">{@render productActions(p.id, chosen)}</div></div>
+                {#if view.cols.length === 1}<div class="more">{strings.oneProduct(view.candidates.slice(0, 3).map(c => c.title), Math.max(0, view.candidates.length - 3))}
+                  <button onclick={() => navigate('survey')}>{strings.openSurvey}</button></div>{/if}
+                {#each view.groups as g (g.state)}
+                  <h3 class="pgrp">{strings.groups[g.state]}</h3>
+                  {#each g.rows as r (r.id)}
+                    {@const k = slotKey(p.id, r.id)}
+                    {@const cell = cellOf(p.id, r.id)}
+                    {@const filling = view.filling.has(fillKey(p.id, r.id))}
+                    {@const full = cur.rows.includes(r.id)}
+                    {@const open = full || cur.item === k}
+                    <div class="prow" class:irr={g.state === 'irrelevant'} class:chosen class:filling class:item={open} data-cell={k} data-status={statusOf(cell, filling)}>
+                      <button class="cell-btn" aria-expanded={open} onclick={() => go(clickCell(cur, k))} onkeydown={e => { if (e.key === 'Escape' && cur.item) go(nothingOpen); }}>
+                        <span class="cn">{r.title}</span>{#if r.why}<span class="why">{r.why}</span>{/if}
+                        <span class="sum">{@render summary(rowSummary(view.cols, r.id, view.filling))}</span>
+                        {#key `${filling}|${cell?.at}|${cell?.user?.at}`}<span class="body" in:valueFx><CellBody {cell} {filling} price={r.price} /></span>{/key}</button>
+                      {#if open}<div class="cw" in:cardFx out:cardFx={{ out: true }}>
+                        {#if full && web}<button class="accent rowcheck" disabled={busy} onclick={() => guard(() => choose!.run('check', r.id))}>{strings.checkRow}</button>{/if}
+                        <Card product={p.title} criterion={r.title} {cell} {filling} price={r.price} {web} {busy} single={!full} act={actions(p.id, r.id)} /></div>{/if}
+                    </div>
+                  {/each}
+                {/each}
+                {#if !view.groups.length}<p class="nocrit">{strings.noCriteria}</p>{/if}
+              </div>
+            {/each}
+          </div>
+        </div>
       {:else}
         <div class="stage"><div class="scroll" bind:this={scroller} onpointermove={() => noHover = false} role="presentation">
           <table role="grid" class:nohover={noHover}>
@@ -92,8 +153,7 @@
               {#each view.cols as p (p.id)}
                 {@const chosen = p.id === view.chosenId}
                 <th class="prod" class:chosen scope="col" data-product={p.id}><span class="pn">{#if chosen}<Icon name="check" />{/if}{p.title}</span>
-                  <div class="acts">{#if chosen}<span class="chosen-l">{strings.chosen}</span><button onclick={() => guard(() => choose!.unchoose(p.id))}>{strings.unchoose}</button>
-                    {:else}<button class="accent" onclick={() => guard(() => choose!.choose(p.id))}>{strings.choose}</button><button onclick={() => guard(() => choose!.unshortlist(p.id))}>{strings.remove}</button>{/if}</div></th>
+                  <div class="acts">{@render productActions(p.id, chosen)}</div></th>
               {/each}
               {#if view.cols.length === 1}
                 <th class="prod more-h" scope="col"><div class="more">{strings.oneProduct(view.candidates.slice(0, 3).map(c => c.title), Math.max(0, view.candidates.length - 3))}
@@ -110,12 +170,12 @@
                     <th class="crit" scope="row" data-row={r.id} onclick={() => go(clickRow(cur, r.id))}><div class="w">
                       <button class="crit-btn" aria-expanded={full} onkeydown={e => key(e, () => go(clickRow(cur, r.id)))}>
                         <span class="tw"><Icon name={full ? 'chevronDown' : 'chevronRight'} size={12} /></span><span class="cn">{r.title}</span>{#if r.why}<span class="why" title={r.why}>{r.why}</span>{/if}
-                        <span class="sum">{#each summaryParts(rowSummary(view.cols, r.id, view.filling)) as part, i}{i ? ' · ' : ''}{#if part.mark}<span class="mk" role="img" aria-label={`${part.n} ${strings.marks[part.mark]}`}><Icon name={markIcons[part.mark]} size={11} />{part.n}</span>{:else}{part.text}{/if}{/each}</span></button></div></th>
+                        <span class="sum">{@render summary(rowSummary(view.cols, r.id, view.filling))}</span></button></div></th>
                     {#each view.cols as p (p.id)}
                       {@const k = slotKey(p.id, r.id)}
                       {@const cell = cellOf(p.id, r.id)}
                       {@const filling = view.filling.has(fillKey(p.id, r.id))}
-                      <td class:chosen={p.id === view.chosenId} class:filling class:item={cur.item === k} data-cell={k} data-status={filling ? 'filling' : cell ? (cell.user ? 'edited' : cell.value === null ? 'none' : cell.disagree ? 'disagree' : 'ok') : 'empty'}
+                      <td class:chosen={p.id === view.chosenId} class:filling class:item={cur.item === k} data-cell={k} data-status={statusOf(cell, filling)}
                         onclick={() => go(clickCell(cur, k))}><div class="w">
                         <button class="cell-btn" aria-expanded={full || cur.item === k} onkeydown={e => { key(e, () => go(clickCell(cur, k))); if (e.key === 'Escape' && cur.item) go(nothingOpen); }}>
                           {#key `${filling}|${cell?.at}|${cell?.user?.at}`}<span class="body" in:valueFx><CellBody {cell} {filling} price={r.price} /></span>{/key}</button></div></td>
@@ -188,4 +248,36 @@
   tr.ev.single > td.has { box-shadow: inset calc(var(--fx, 1) * 2px) 0 0 var(--accent); }
   tr.ev.single > td.has.chosen { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
   tr.ev > td.chosen { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
+  /* NW-40 on a phone (amended 2026-11-18): a card per product, criteria as rows, the same cell, marks and actions; the
+     switcher and a horizontal swipe that snaps to a card reach the others. The table above is the desktop's, unchanged. */
+  .bar .all { display: inline-flex; align-items: center; gap: 5px; }
+  .cards { display: flex; flex-direction: column; background: var(--surface); border-top: 1px solid var(--line); }
+  .switch { position: relative; flex: none; display: flex; gap: 6px; align-items: center; overflow-x: auto; scrollbar-width: none; padding: 8px 16px; border-bottom: 1px solid var(--glass-line); }
+  .switch::-webkit-scrollbar { display: none; }
+  .switch button { flex: none; display: inline-flex; align-items: center; gap: 5px; max-width: 62vw; min-height: 36px; padding: 6px 14px; border-radius: var(--radius-pill); font: 400 13px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
+  .switch button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .switch button[aria-selected='true'] { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .switch button.chosen[aria-selected='true'] { background: var(--accent); color: var(--accent-ink); }
+  .deck { position: relative; flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+  .deck::-webkit-scrollbar { display: none; }
+  .pcard { flex: 0 0 100%; box-sizing: border-box; min-width: 0; overflow-y: auto; scroll-snap-align: start; scroll-snap-stop: always; padding: 12px 16px calc(48px + env(safe-area-inset-bottom)); }
+  .ph { padding: 8px 10px; border: 1px solid var(--glass-line); border-radius: var(--radius); }
+  .ph.chosen { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); animation: lift 200ms ease-out; }
+  .ph.chosen .acts button { color: var(--accent-ink); }
+  .ph .acts { margin-top: 8px; } .ph .acts button, .more button { font-size: 13px; padding: 6px 14px; }
+  .pcard .more { margin-top: 10px; font-size: 13px; }
+  .pgrp { margin: 16px 0 2px; color: var(--accent); font: 600 11px 'Segoe UI Variable Small', 'Segoe UI', system-ui, sans-serif; }
+  .prow { border-bottom: 1px solid var(--glass-line); }
+  .prow .cell-btn { padding: 10px 8px; }
+  .prow .cn { display: block; font: 600 13px 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; }
+  .prow .why, .prow .sum { display: block; margin-left: 0; max-width: none; }
+  .prow .body { display: block; margin-top: 6px; }
+  .prow.irr { color: var(--ink-faint); }
+  .prow.chosen { box-shadow: inset 2px 0 0 var(--accent); }
+  .prow.filling { background: repeating-linear-gradient(135deg, transparent 0 5px, color-mix(in srgb, var(--accent) 10%, transparent) 5px 10px); }
+  .prow.item { background: var(--band); box-shadow: inset 2px 0 0 var(--accent); }
+  .prow .cw { padding: 0 8px 12px; } .rowcheck { margin: 0 0 8px; font-size: 12px; padding: 4px 10px; }
+  .pcard .nocrit { color: var(--ink-mute); font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { .ph.chosen { animation: none; } }
+  :global(:root[data-reduce-motion='on']) .ph.chosen { animation: none; }
 </style>

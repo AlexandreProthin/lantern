@@ -68,6 +68,10 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
 - **NW-31** On a remote device the window controls, window memory, close handling, update check, library
   picker, *Open file*, *Reveal* and *Copy path*, endpoint editing and keys, and *Settings → Network* are
   hidden, or shown with a hint that they live on the desktop app. External links open in a new tab.
+  *(Amended 2026-11-18, the mobile review.)* Hidden, not disabled: Settings shows no button a remote device cannot
+  use. The library path and its actions give way to a line saying the library and updates are managed on the computer
+  running Lantern; the endpoint editors give way to the line that they are changed there
+  ([settings](/specs/settings.md) SE-21, [updates](/specs/updates.md) UP-20).
 - **NW-32** A 401 (devices forgotten) reloads the page, which brings back the pairing screen.
 
 # Phone layout
@@ -79,9 +83,24 @@ Two devices writing the same subject meet the existing file stamp check (`save_s
     *Details* button in the bottom bar, and closed by *Graph* (with a drawn back chevron, *amended 2026-11-17*,
     [rooms-spaces](/specs/rooms-spaces.md) RS-38) or Esc;
   - the field panel, Settings (tabs in a row) and every dialog use the whole width; the graph legend
-    starts folded; the Choose rail is a horizontal bar; the compare grid is one column.
+    starts folded; the Choose rail is a horizontal bar; ~~the compare grid is one column~~ Compare is a card per
+    product (*amended 2026-11-18*, below).
+  - *(Amended 2026-11-18, the mobile review at 390 × 844 and 360 × 740 with touch.)* Amber rests by default
+    at the bottom right of the space, clear of the graph tools; it hangs only where the user puts it, its rope
+    tied under the measured two-row header; its bubble fits the screen's width; a tap opens it; it is not
+    drawn while the panel sheet covers the graph ([companion](/specs/companion.md) CO-10, CO-11, CO-12,
+    CO-15, CO-20). Welcome's *Carry the lantern in* sits under the field, so the whole question shows
+    ([welcome-gallery](/specs/welcome-gallery.md) WG-10). The Choose rail is a bar of two rows, the status and
+    *Recommend* above the four counters in equal columns, so every counter shows ([choose-room](/specs/choose-room.md)
+    CR-14). Compare shows a card per product, criteria as rows with the same cells, marks and actions, reached by a
+    switcher of the products' names or a horizontal swipe that snaps to a card (CR-50, CR-51). In Settings each
+    checkbox sits beside its label, and no disabled button shows that cannot work on the device (NW-31).
 - **NW-41** Touch: pan and pinch on the graph (d3-zoom), tap to open a node, a long press opens the node
   menu that a right-click opens on the desktop; graph controls are 40 px. No action depends on hover alone.
+  *(Amended 2026-11-18, the mobile review.)* On a touch screen (`pointer: coarse`) every node takes a finger however
+  far the map is zoomed out: an invisible hit circle on its disc, at least 36 px on screen (sized from the zoom),
+  outside the layout, so the drawn disc, the title and the positions do not change. A phone's fit never goes below
+  the scale where titles hide (NW-40), so a fitted big map shows readable titles around the focused node.
 - **NW-42** Inputs are 16 px or more (no zoom on focus in iOS Safari); the viewport is
   `width=device-width, initial-scale=1, viewport-fit=cover`.
 - **NW-43** The desktop window (1024 px and up) is unchanged.
