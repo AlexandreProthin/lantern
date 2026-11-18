@@ -48,12 +48,14 @@ test('NW-40, NW-42: Settings fills a phone screen and its fields are 16 px', asy
   expect(await noSideScroll(page)).toBe(true);
 });
 
-/** The screen centre of the node drawn farthest from the graph's centre: a wrong zoom pivot moves it most. */
+/** The screen centre of the node drawn farthest from the graph's centre: a wrong zoom pivot moves it most.
+ *  Only a node the pointer reaches counts (Amber's greeting bubble may lie over one and take the wheel). */
 async function farNode(page: Page) {
   return page.evaluate(() => {
-    const host = document.querySelector('.graph')!.getBoundingClientRect(), cx = host.left + host.width / 2, cy = host.top + host.height / 2;
+    const graph = document.querySelector('.graph')!, host = graph.getBoundingClientRect(), cx = host.left + host.width / 2, cy = host.top + host.height / 2;
     const at = (n: Element) => { const r = n.getBoundingClientRect(); return { id: n.getAttribute('data-id')!, x: r.left + r.width / 2, y: r.top + r.height / 2 }; };
-    return [...document.querySelectorAll('.node[data-id]')].map(at).sort((a, b) => Math.hypot(b.x - cx, b.y - cy) - Math.hypot(a.x - cx, a.y - cy))[0];
+    const reached = (p: { x: number; y: number }) => graph.contains(document.elementFromPoint(p.x, p.y));
+    return [...document.querySelectorAll('.node[data-id]')].map(at).filter(reached).sort((a, b) => Math.hypot(b.x - cx, b.y - cy) - Math.hypot(a.x - cx, a.y - cy))[0];
   });
 }
 const nodeAt = (page: Page, id: string) => page.locator(`.node[data-id="${id}"]`).evaluate(n => { const r = n.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
