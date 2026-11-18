@@ -12,4 +12,13 @@ export const graphMotion = {
   , SETTLE_TICKS:300, GROW_ALPHA:.3, GROW_MANY:6, GROW_ALPHA_MANY:.6
   // Only the new nodes move while they find their seats (GV-14): they come to rest about twice as fast as a full layout.
   , SEAT_DECAY:.06
+  // GV-15: boxes (disc and title) keep at least this far apart, across and down.
+  , label: { gapX: 12, gapY: 8, power: 8 }
+  // GV-15: links from the subject to its modules are long and links inside a module short, so modules read as groups;
+  // a link is longer by `perDescendant` × √(nodes under its end), so a big branch has room. A module pushes harder than a leaf.
+  , cluster: { module: 160, inner: 50, perDescendant: 55, moduleCharge: -2000, leafCharge: -150, branchCharge: -800 }
+  // GV-16: an opening map comes in from its centre, a depth at a time, in about half a second.
+  , OPEN_REVEAL_MS: 520, OPEN_REVEAL_NODE_MS: 260
+  // GV-17: a press moves this far before it becomes a drag; a touch first rests this long on the node.
+  , DRAG_THRESHOLD: 5, DRAG_HOLD_MS: 300, DRAG_ALPHA: .3
 } as const;

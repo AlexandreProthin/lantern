@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import { forceSimulation } from 'd3-force';
 import { seatForce, type Body } from './seat-force';
 import { graphMotion } from './graphMotion';
+import { labelBox, estimateWidth, overlaps } from './label-force';
 
 const options = { charge: graphMotion.charge, collide: graphMotion.collide, linkDistance: graphMotion.linkDistance, linkStrength: .8, centre: .02 };
 
@@ -43,4 +44,18 @@ test('GV-14: a new node on top of another is pushed off it, whichever way', () =
   for (let i = 0; i < 40; i++) sim.tick();
   expect(Math.hypot(b.x ?? 0, b.y ?? 0)).toBeGreaterThan(44);
   expect([a.x, a.y]).toEqual([0, 0]);
+});
+
+test('GV-15/GV-17: seated on title boxes, with per-node charge and link lengths; a held (fixed) node stays under the pointer', () => {
+  const { all, fresh, links } = map();
+  const box = labelBox('Concept number 12 of the course', estimateWidth);
+  const held: Body = { id: 'held', x: 400, y: 0, fx: 400, fy: 0 };
+  const bodies = [...all, held], before = all.filter(b => !fresh.includes(b)).map(b => [b.x, b.y]);
+  const sim = forceSimulation([...fresh, held] as never[]).alphaDecay(graphMotion.SEAT_DECAY).alpha(graphMotion.GROW_ALPHA).stop()
+    .force('seat', seatForce(() => bodies, () => links, { ...options, charge: () => -300, box: () => box, linkDistance: () => 90 }));
+  for (let i = 0; i < 200 && sim.alpha() > sim.alphaMin(); i++) sim.tick();
+  expect(all.filter(b => !fresh.includes(b)).map(b => [b.x, b.y])).toEqual(before);
+  expect([held.x, held.y]).toEqual([400, 0]);
+  for (const n of fresh) for (const other of bodies) if (other !== n)
+    expect(overlaps(n.x ?? 0, n.y ?? 0, box, other.x ?? 0, other.y ?? 0, box)).toBe(false);
 });
