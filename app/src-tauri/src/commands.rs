@@ -45,6 +45,10 @@ pub fn save_collapsed(app: AppHandle, id: String, nodes: Vec<String>, lock: Stat
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::save_collapsed(&config(&app)?, &id, &nodes)
 }
 #[tauri::command]
+pub fn save_pinned(app: AppHandle, id: String, pins: serde_json::Map<String, Value>, lock: State<StorageLock>) -> Result<(), String> {
+    let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::save_pinned(&config(&app)?, &id, &pins)
+}
+#[tauri::command]
 pub fn append_amber_log(app: AppHandle, record: Value, lock: State<StorageLock>) -> Result<(), String> {
     let _guard = lock.0.lock().map_err(|e| e.to_string())?; storage::append_amber_log(&config(&app)?, &record)
 }

@@ -132,6 +132,26 @@ fn collapsed_nodes_are_kept_per_subject_with_the_other_keys_and_go_with_an_empty
     assert!(save_collapsed(config.path(),"tides-k3f9",&["bad\u{7}id".into()]).is_err());
 }
 #[test]
+fn pinned_nodes_are_kept_per_subject_beside_the_folds_and_go_with_an_empty_map() {
+    let config=tempfile::tempdir().unwrap();
+    let pins=|v:Value| v.as_object().unwrap().clone();
+    save_collapsed(config.path(),"tides-k3f9",&["m3".into()]).unwrap();
+    save_pinned(config.path(),"tides-k3f9",&pins(json!({"m3":[120.5,-40.0]}))).unwrap();
+    save_pinned(config.path(),"llm-course",&pins(json!({"root-1":[0,0]}))).unwrap();
+    let state=read_state(config.path()).unwrap();
+    assert_eq!(state.extra["pinned"]["tides-k3f9"],json!({"m3":[120.5,-40.0]}));assert_eq!(state.extra["collapsed"]["tides-k3f9"],json!(["m3"]));
+    save_pinned(config.path(),"tides-k3f9",&pins(json!({}))).unwrap();
+    let state=read_state(config.path()).unwrap();
+    assert!(state.extra["pinned"].get("tides-k3f9").is_none());assert_eq!(state.extra["pinned"]["llm-course"],json!({"root-1":[0,0]}));
+    save_pinned(config.path(),"llm-course",&pins(json!({}))).unwrap();
+    assert!(read_state(config.path()).unwrap().extra.get("pinned").is_none());
+    assert!(save_pinned(config.path(),"../escape",&pins(json!({"a":[1,2]}))).is_err());
+    assert!(save_pinned(config.path(),"tides-k3f9",&pins(json!({"":[1,2]}))).is_err());
+    assert!(save_pinned(config.path(),"tides-k3f9",&pins(json!({"a":[1]}))).is_err());
+    assert!(save_pinned(config.path(),"tides-k3f9",&pins(json!({"a":["1",2]}))).is_err());
+    assert!(save_pinned(config.path(),"tides-k3f9",&pins(json!({"a":[1e9,2]}))).is_err());
+}
+#[test]
 fn amber_log_appends_lines_and_sums_tokens_skipping_bad_lines() {
     let config=tempfile::tempdir().unwrap();
     assert_eq!(amber_log_totals(config.path()).unwrap(),json!({"input":0,"output":0,"calls":0}));

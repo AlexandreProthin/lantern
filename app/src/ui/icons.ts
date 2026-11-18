@@ -32,6 +32,7 @@ export const icons = {
   unfoldAll: '<path d="m4 6 4-3 4 3M4 10l4 3 4-3"/>',
   dot: '<circle cx="8" cy="8" r="2" fill="currentColor" stroke="none"/>',
   ring: '<circle cx="8" cy="8" r="3"/>',
+  pin: '<path d="M6 2.5h4M7 2.5v4L4.5 9h7L9 6.5v-4M8 9v4.5"/>',
   ellipsis: '<circle cx="3.5" cy="8" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r=".9" fill="currentColor" stroke="none"/><circle cx="12.5" cy="8" r=".9" fill="currentColor" stroke="none"/>',
 } as const;
 export type IconName = keyof typeof icons;
@@ -39,5 +40,5 @@ export type IconName = keyof typeof icons;
 export const actionIcons: Record<string, IconName> = {
   light: 'flame', more: 'branch', find: 'search', own: 'plus', rewrite: 'pencil', dismiss: 'dismiss', restore: 'undo', deadend: 'deadEnd',
   delete: 'trash', explain: 'book', must: 'rank', nice: 'rank', irrelevant: 'rank', shortlist: 'star', reject: 'close', choose: 'check',
-  remove: 'minus', bought: 'bag', unchoose: 'undo', unreject: 'undo', check: 'verify', collapse: 'foldAll', expand: 'unfoldAll',
+  remove: 'minus', bought: 'bag', unchoose: 'undo', unreject: 'undo', check: 'verify', collapse: 'foldAll', expand: 'unfoldAll', unpin: 'pin',
 };
