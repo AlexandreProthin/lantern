@@ -220,6 +220,19 @@ pub fn save_collapsed(config: &Path, id: &str, nodes: &[String]) -> Result<()> {
     if !map.is_empty() { state.extra.insert("collapsed".into(), Value::Object(map)); }
     write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)
 }
+/// GV-17: the graph's pinned nodes per subject id, under `pinned` (node id → [x, y] in the free layout); an empty
+/// map drops the subject's entry. A view state like `collapsed`: it never goes in the subject file.
+pub fn save_pinned(config: &Path, id: &str, pins: &serde_json::Map<String, Value>) -> Result<()> {
+    subject_path(Path::new("."), id)?;
+    let point_ok=|v:&Value| v.as_array().is_some_and(|a| a.len()==2 && a.iter().all(|n| n.as_f64().is_some_and(|f| f.is_finite() && f.abs() < 1e7)));
+    if pins.len() > 10_000 || pins.iter().any(|(n, at)| n.is_empty() || n.chars().count() > 200 || n.chars().any(char::is_control) || !point_ok(at)) { return Err("Invalid pinned nodes".into()); }
+    let mut state=read_state(config)?;
+    if state.format!=state_format() { return Err("Newer app state is read-only".into()); }
+    let mut map=state.extra.remove("pinned").and_then(|v| v.as_object().cloned()).unwrap_or_default();
+    if pins.is_empty() { map.remove(id); } else { map.insert(id.into(), Value::Object(pins.clone())); }
+    if !map.is_empty() { state.extra.insert("pinned".into(), Value::Object(map)); }
+    write_json(&state_path(config), &serde_json::to_value(&state).map_err(io)?)
+}
 /// CO-47: Amber's app-level call log, one JSON record per line, beside `state.json`.
 fn amber_log_path(config: &Path) -> PathBuf { config.join("amber-log.jsonl") }
 pub fn append_amber_log(config: &Path, record: &Value) -> Result<()> {
@@ -322,6 +335,8 @@ pub fn delete_subject(library: &Path, config: &Path, id: &str) -> Result<()> {
     state.last_opened_at.remove(id); state.recents.retain(|s| s != id);
     // GV-136: a deleted subject's folds go with it.
     if let Some(map)=state.extra.get_mut("collapsed").and_then(Value::as_object_mut) { map.remove(id); }
+    // GV-17: and its pins.
+    if let Some(map)=state.extra.get_mut("pinned").and_then(Value::as_object_mut) { map.remove(id); }
     write_json(&state_path(config), &serde_json::to_value(state).map_err(io)?)?;
     let mut cache = read_cache(config); cache.remove(&key);
     write_json(&config.join("summaries.json"), &serde_json::to_value(cache).map_err(io)?)
