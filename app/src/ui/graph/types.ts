@@ -30,6 +30,9 @@ export interface GraphRoomView {
   untitled: string;
   /** GV-120: a node shows its children only when this holds (Learn: lit or understood). Default: every node is shown. */
   opens?: (node: GraphNode) => boolean;
+  /** GV-145: what *Hide understood* hides (default `state === 'understood'`), and the filter's label for the room. */
+  understood?: (node: GraphNode) => boolean;
+  understoodLabel?: string;
   /** GV-57: a node whose text is not shown yet (Learn: open); search matches its title and hook only. */
   sealed?: (node: GraphNode) => boolean;
   menuActions: (visit: RoomVisit, node: GraphNode, running: SceneRunning | null) => MenuAction[];

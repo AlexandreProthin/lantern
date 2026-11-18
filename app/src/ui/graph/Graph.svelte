@@ -37,6 +37,8 @@
   import { childMap, collapsedAncestors, drawnIds, hiddenCounts, nearestShown, shownIds } from '../../core/visibility';
   import { collapseStore } from '../../frame/collapse-store';
   import type { RoomVisit } from '../../core/model';
+  import Outline from './Outline.svelte';
+  import { filterMemory, filtering, modulesOf, visibleIds, type GraphFilters } from './graph-filters';
 
   let { session, room, glyph, legend, revision, settings, preferencesChanged, visible = true, library, linkPreview = null }: GraphSnippets & { library?: LibrarySpaces; linkPreview?: string | null; session: GraphSession; room: GraphRoomView; revision: number; settings: Settings; preferencesChanged: () => void; visible?: boolean } = $props();
 
@@ -126,7 +128,7 @@
   let embersCanvas = $state<HTMLCanvasElement>();
   /** One canvas over the map for every light in motion; the drawn nodes' discs hide what passes under them. */
   const lights = new EmberCanvas(() => embersCanvas, () => ({ x: transform.x + width / 2, y: transform.y + height / 2, k: transform.k, w: width, h: height }),
-    () => view.nodes.filter(n => !n.pending).flatMap(n => { const p = simNodes.get(n.id); return p ? [{ x: p.x ?? 0, y: p.y ?? 0, r: DISC / 2 }] : []; }));
+    () => view.nodes.filter(n => !n.pending && !filteredOut(n.id)).flatMap(n => { const p = simNodes.get(n.id); return p ? [{ x: p.x ?? 0, y: p.y ?? 0, r: DISC / 2 }] : []; }));
   const spawn = new SpawnMotion(() => host, () => edgesSvg, () => !motionReduced() && visible && !document.hidden, lights);
   let panFrame=0;
   /** `transform` is relative to the view's centre (the world is drawn at +width/2, +height/2); d3-zoom's own
@@ -353,6 +355,32 @@
     return room.links?.(session.visit) ?? [];
   });
 
+  // ---- Filters (GV-145..149) and the outline (GV-140..144) -----------------------------------
+  // A filter hides drawn nodes; the simulation keeps them, so nothing moves or warms up when a filter changes.
+  let filters = $state<GraphFilters>(filterMemory.get(untrack(() => session.subject.id)));
+  let filteredSubject = untrack(() => session.subject.id);
+  $effect(() => { const id = session.subject.id; untrack(() => { if (id !== filteredSubject) { filteredSubject = id; filters = filterMemory.get(id); } }); });
+  const understood = (n: RoomVisit['nodes'][string]) => room.understood ? room.understood(n) : n.state === 'understood';
+  const visibleSet = $derived.by(() => { revision; return visibleIds(session.visit, filters, { drawn: projection.drawn, understood, links: references }); });
+  const filteredOut = (id: string) => !!visibleSet && !visibleSet.has(id);
+  const filteredCount = $derived(visibleSet ? [...projection.drawn].filter(id => !visibleSet.has(id)).length : 0);
+  const modules = $derived.by(() => { revision; return modulesOf(session.visit, projection.drawn); });
+  function setFilters(next: Partial<GraphFilters>) {
+    filters = { ...filters, ...next }; filterMemory.set(session.subject.id, filters);
+    // GV-147: the view fits what is left; the layout itself does not move.
+    afterUpdate().then(() => { if (!outlined) reset(); });
+  }
+  function clearFilters() { setFilters({ module: null, hideUnderstood: false, neighbours: false }); }
+  /** The visit the keys move over: drawn, and not filtered out. */
+  function keyVisit(): RoomVisit {
+    const v = drawnVisit(), shown = visibleSet;
+    return shown ? { ...v, nodes: Object.fromEntries(Object.entries(v.nodes).filter(([id]) => shown.has(id))) } : v;
+  }
+  const outlined = $derived(settings.ui.graphView === 'outline');
+  function toggleOutline() { settings.ui.graphView = outlined ? 'graph' : 'outline'; preferencesChanged(); afterUpdate().then(() => focusNode(session.visit.focusId)); }
+  /** The element that stands for a node: its row in the outline, its button on the map. */
+  function focusNode(id: string) { host?.querySelector<HTMLElement>(`${outlined ? '.outline' : '.nodes'} [data-id="${id}"]`)?.focus(); }
+
   /** What is drawn, without positions: those are written by `paint`, so a tick re-renders nothing here. */
   const view = $derived.by(() => {
     shape; revision;
@@ -532,7 +560,7 @@
   function reset(animate = true) {
     // The element's own size: the bound `width` and `height` arrive a frame after mount.
     const width = host?.clientWidth ?? 0, height = host?.clientHeight ?? 0;
-    const positions = [...simNodes.values()]; if (!positions.length || !zoomer || width < 100 || height < 100) return;
+    const positions = [...simNodes.values()].filter(n => !filteredOut(n.id)); if (!positions.length || !zoomer || width < 100 || height < 100) return;
     const minX = Math.min(...positions.map(n => (n.x ?? 0)-75)), maxX = Math.max(...positions.map(n => (n.x ?? 0)+75));
     const minY = Math.min(...positions.map(n => (n.y ?? 0)-30)), maxY = Math.max(...positions.map(n => (n.y ?? 0)+95));
     const below = Math.min(cornerHeight, height / 3);
@@ -791,10 +819,13 @@
   function onNodeKey(e: KeyboardEvent) {
     // GV-70: moves go over drawn nodes; Right on a folded node unfolds it and goes to its first shown child.
     const focus = session.visit.focusId;
-    let target = keyboardTarget(drawnVisit(), focus, e.key);
+    // GV-146: and over the nodes the filters leave; a move to a hidden node stays where it is.
+    const v = keyVisit();
+    let target = Object.hasOwn(v.nodes, focus) ? keyboardTarget(v, focus, e.key) : focus;
+    if (!Object.hasOwn(v.nodes, target)) target = focus;
     if (e.key === 'ArrowRight' && collapsed.has(focus)) { foldNode(focus, false); target = (projection.children.get(focus) ?? []).find(id => projection.shown.has(id)) ?? focus; }
     if (['Home','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
-      e.preventDefault(); session.setFocus(target); afterUpdate().then(() => host.querySelector<HTMLButtonElement>(`[data-id="${target}"]`)?.focus());
+      e.preventDefault(); session.setFocus(target); afterUpdate().then(() => focusNode(target));
     } else if (e.key === 'Enter') {
       e.preventDefault(); if (!room.enter(session.visit.focusId)) document.querySelector<HTMLElement>('.panel')?.focus();
     }
@@ -822,7 +853,7 @@
 </script>
 
 <svelte:window onpointerdowncapture={menuOutside} onkeydown={windowKey} />
-<div class="graph {room.className}" class:degraded data-settled={settled} data-reduced={motionReduced()} bind:this={host} bind:clientWidth={width} bind:clientHeight={height}
+<div class="graph {room.className}" class:degraded class:outlined data-view={outlined ? 'outline' : 'graph'} data-settled={settled} data-reduced={motionReduced()} bind:this={host} bind:clientWidth={width} bind:clientHeight={height}
   style="--grow:{graphMotion.SPAWN_GROW_MS}ms;--stagger:{graphMotion.SPAWN_STAGGER_MS}ms;--breathe:{graphMotion.PENDING_BREATHE_PERIOD_MS}ms;--shrink:{graphMotion.SPAWN_SHRINK_MS}ms;--reveal:{graphMotion.SPAWN_REVEAL_MS}ms;--pulse:{graphMotion.BUSY_PULSE_PERIOD_MS}ms;--opacity-low:{graphMotion.PENDING_BREATHE_OPACITY[0]};--opacity-high:{graphMotion.PENDING_BREATHE_OPACITY[1]}">
   <div
     class="world"
@@ -832,9 +863,9 @@
   >
     <!-- Edges sit under the nodes: the opaque circles cut the lines at their rims. -->
     <svg class="edges" bind:this={edgesSvg} aria-hidden="true">
-      {#if settings.ui.textLinks}<g class="references">{#each view.references as e (e.id)}<path class="reference" use:refRef={e} />{/each}</g>{/if}
+      {#if settings.ui.textLinks}<g class="references">{#each view.references as e (e.id)}<path class="reference" class:filtered={filteredOut(e.from) || filteredOut(e.to)} use:refRef={e} />{/each}</g>{/if}
       {#each view.edges as e (e.id)}
-        <path data-edge={e.id} use:edgeRef={e.id} pathLength="1" class:route={e.onRoute}
+        <path data-edge={e.id} use:edgeRef={e.id} pathLength="1" class:route={e.onRoute} class:filtered={filteredOut(e.id) || filteredOut(session.visit.nodes[e.id]?.parents[0] ?? '')}
           data-spawn-pending={e.pending ? 'true' : undefined} />
       {/each}
     </svg>
@@ -855,6 +886,7 @@
         class:landmark={route.has(n.id) || n.parents[0] === session.visit.rootId}
         class:match={searching && matchSet.has(n.id)}
         class:unmatched={searching && !n.pending && !matchSet.has(n.id)}
+        class:filtered={filteredOut(n.id)}
         data-id={n.id}
         data-state={n.state}
         data-pending={n.pending}
@@ -876,6 +908,11 @@
     {/each}
     </div>
   </div>
+  {#if outlined}
+    <Outline visit={session.visit} ids={visibleSet ?? projection.drawn} children={projection.children} {collapsed} hidden={projection.hidden} {foldable}
+      fold={foldNode} focus={id => session.setFocus(id)} onkey={onNodeKey} {glyph} dataAttrs={room.dataAttrs} labelExtra={room.labelExtra}
+      untitled={room.untitled} busy={id => session.busy(id)} bottom={cornerHeight} />
+  {/if}
   <canvas class="embers" bind:this={embersCanvas} aria-hidden="true" hidden></canvas>
   <span class="sr-only" aria-live="polite">{announcement}</span>
   {#if menu && menuAt}
@@ -906,7 +943,9 @@
     {:else}
       <button class="icon-button" onclick={openSearch} aria-label={strings.searchNodes} title={strings.searchHint}><Icon name="search" size={14} /></button>
     {/if}
-    <button class="icon-button"
+    <!-- GV-140: graph or outline, app-wide like the layout (GV-12). -->
+    <button class="icon-button view-toggle" onclick={toggleOutline} aria-pressed={outlined} aria-label={outlined ? strings.graphView : strings.outlineView} title={outlined ? strings.graphView : strings.outlineView}><Icon name={outlined ? 'graph' : 'outline'} size={14} /></button>
+    {#if !outlined}<button class="icon-button"
       onclick={() => { settings.ui.graphLayout = layout === 'force' ? 'tree' : 'free'; preferencesChanged(); }}
       aria-pressed={layout==='tree'}
       aria-label={layout === 'force' ? strings.treeLayout : strings.freeLayout}
@@ -923,7 +962,7 @@
           <path d="m6.8 6.8-2.6-2.2M9.6 7.5l2.4-1.5M7 9.4l-1.2 2.2" />
         </svg>
       {/if}
-    </button>
+    </button>{/if}
   </nav>
 
   <nav class="zoom-controls">
@@ -936,6 +975,7 @@
     <!-- NW-31: the subject's file is on the computer running Lantern, out of a paired device's reach. -->
     {#if !remote}<button class="open-file legend-chip" title={strings.openFileHint} onclick={openFile} oncontextmenu={copyFilePath}>{strings.openFile}</button>{/if}
     {#if fileNote}<span class="file-note" role="status">{fileNote}</span>{/if}
+    {#if filtering(filters) && !legendShown}<span class="filter-note" role="status">{strings.filtersOn(filteredCount)}</span><button class="legend-chip" onclick={clearFilters}>{strings.clearFilters}</button>{/if}
   </div>
   <div class="legend" class:shown={legendShown}>
     <!-- NW-40: on a phone the legend starts folded each time, whatever the desktop keeps. -->
@@ -943,6 +983,16 @@
     {#if legendShown}
       {@render legend()}
       <label class="text-links"><input type="checkbox" bind:checked={settings.ui.textLinks} onchange={preferencesChanged} />{strings.textLinks}</label>
+      <!-- GV-145: the filters, kept for the session (GV-149). -->
+      <span class="filters" role="group" aria-label={strings.filters}>
+        <label class="module">{strings.filterModule}<select aria-label={strings.filterModule} value={filters.module ?? ''} onchange={e => setFilters({ module: e.currentTarget.value || null })}>
+          <option value="">{strings.allModules}</option>
+          {#each modules as m (m.id)}<option value={m.id}>{title(m.title)}</option>{/each}
+        </select></label>
+        <label><input type="checkbox" checked={filters.hideUnderstood} onchange={e => setFilters({ hideUnderstood: e.currentTarget.checked })} />{room.understoodLabel ?? strings.hideUnderstood}</label>
+        <label><input type="checkbox" checked={filters.neighbours} onchange={e => setFilters({ neighbours: e.currentTarget.checked })} />{strings.focusNeighbours}</label>
+        {#if filtering(filters)}<button class="legend-chip clear" onclick={clearFilters}>{strings.clearFilters}</button>{/if}
+      </span>
     {/if}
   </div>
   </div>
@@ -1139,6 +1189,16 @@
   .legend.shown .legend-chip { background:none; border-color:transparent; }
   .open-file { align-self:flex-start; }
   .legend .text-links { gap:6px; }
+  /* GV-145: filtered nodes, their lines and text links are hidden, not dimmed. */
+  .node.filtered, .edges path.filtered { display:none; }
+  .legend .filters { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; }
+  .legend .filters input[type='checkbox'] { width:14px; height:14px; }
+  .legend .filters select { padding:2px 26px 2px 8px; font-size:calc(12px * var(--text-scale)); max-width:180px; }
+  .legend .filters .module { gap:6px; }
+  .filter-note { color:var(--accent); }
+  /* GV-140: the outline takes the map's place; the legend, the filters and the tools stay. */
+  .graph.outlined { cursor:auto; }
+  .graph.outlined .world, .graph.outlined .zoom-controls, .graph.outlined .embers { display:none; }
   .legend .text-links input { width:14px; height:14px; }
   .legend label { display:flex; align-items:center; gap:4px; }
   /* NW-41, NW-42: on a phone the controls take a finger, the search field does not zoom the page, and the corner clears the zoom buttons. */

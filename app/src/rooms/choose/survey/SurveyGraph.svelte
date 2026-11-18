@@ -39,6 +39,9 @@
     tooltipExtra: (n: GraphNode) => { const rejected = rejectedOf(n); return rejected ? t.rejectedBecause(rejected.reason) : ''; },
     quiet: n => n.state === 'dismissed' || n.state === 'rejected',
     lights: n => n.state === 'lit' || n.state === 'chosen',
+    // GV-145: Choose's *understood* is settled (answered, ranked, shortlisted, chosen, bought).
+    understood: n => LOOK[glyphState(n, session.visit)] === 'settled',
+    understoodLabel: t.hideSettled,
     untitled: t.untitled,
     menuActions: (visit, node) => nodeActions(visit, node, session.running, session.useWeb()),
     runMenuAction(action: MenuAction, nodeId) {

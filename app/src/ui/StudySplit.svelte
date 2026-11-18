@@ -19,7 +19,7 @@
   let sheet = $state(false);
   const narrow = $derived(phone.current);
   $effect(() => { if (!narrow || !visible) sheet = false; });
-  function tapped(e: MouseEvent) { if (narrow && (e.target as Element).closest?.('.node[data-id], .node-menu [role=menuitem]')) sheet = true; }
+  function tapped(e: MouseEvent) { if (narrow && (e.target as Element).closest?.('.node[data-id], .outline-row[data-id], .node-menu [role=menuitem]')) sheet = true; }
   function sheetKey(e: KeyboardEvent) { if (e.key === 'Escape' && !document.querySelector('dialog[open]')) { e.preventDefault(); e.stopPropagation(); sheet = false; } }
   const graphPercent = $derived(Math.max(320/width*100, Math.min(100-380/width*100, 100-settings.ui.studySplitPercent)));
   function move(e: PointerEvent) {
