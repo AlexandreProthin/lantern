@@ -1,20 +1,24 @@
 import { test, expect, type Page } from '@playwright/test';
 // SE-60, SE-61: text size and theme apply at once, persist, and the light theme reaches every surface.
 const css = (page: Page, selector: string, property: string) => page.locator(selector).first().evaluate((el, p) => getComputedStyle(el).getPropertyValue(p), property);
+/** The reading text's size; 0 while the panel is (re)drawing it, as a streamed text replaces its element. */
+const reading = (page: Page) => page.evaluate(() => { const el = document.querySelector('.panel .md'); return el?.isConnected ? parseFloat(getComputedStyle(el).fontSize) || 0 : 0; });
 const token = (page: Page, name: string) => page.evaluate(n => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), name);
 
 test('SE-60: text size scales reading and UI text but not the graph, and persists', async ({ page }) => {
   await page.goto('/?study=1&subject=Text%20size');
   const node = page.locator('.graph .node .name').first();
   await expect(node).toBeVisible();
-  const before = { ui: parseFloat(await css(page, 'html', 'font-size')), reading: parseFloat(await css(page, '.panel .md', 'font-size')), node: parseFloat(await css(page, '.graph .node .name', 'font-size')) };
+  // The fake provider may still be writing the root's text under load; measure once it is there.
+  await expect.poll(() => reading(page), { timeout: 15000 }).toBeGreaterThan(0);
+  const before = { ui: parseFloat(await css(page, 'html', 'font-size')), reading: await reading(page), node: parseFloat(await css(page, '.graph .node .name', 'font-size')) };
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: 'Appearance', exact: true }).click();
   await dialog.getByRole('combobox', { name: 'Text size' }).selectOption('largest');
   await expect(page.locator('html')).toHaveAttribute('data-text-size', 'largest');
   expect(parseFloat(await css(page, 'html', 'font-size'))).toBeCloseTo(before.ui * 1.2, 1);
-  expect(parseFloat(await css(page, '.panel .md', 'font-size'))).toBeCloseTo(before.reading * 1.3, 1);
+  await expect.poll(() => reading(page)).toBeCloseTo(before.reading * 1.3, 1);
   expect(parseFloat(await css(page, '.graph .node .name', 'font-size'))).toBe(before.node);
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lantern.settings')!).appearance.textSize)).toBe('largest');
   await page.reload();
