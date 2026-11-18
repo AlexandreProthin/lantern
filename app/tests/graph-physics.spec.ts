@@ -15,9 +15,11 @@ function course() {
   return { format: 'lantern/2', id: 'drag-course', title: 'Drag course', createdAt: at(0),
     rooms: { learn: { model: 'opus', effort: 'medium', data: { tone: 'curious' }, focusId: ids[0], rootId: ids[0], log: [], nodes } } };
 }
+/** Seeds storage before any app code runs, once per test (a reload keeps what the app stored, pins included).
+ *  Seeding from a loaded page raced its own settings write, flushed on unload over the seeded settings. */
 async function open(page: Page, settings: object = {}) {
-  await page.goto('/');
-  await page.evaluate(([s, settings]) => {
+  await page.addInitScript(([s, settings]) => {
+    if (sessionStorage.getItem('seeded')) return; sessionStorage.setItem('seeded', '1');
     localStorage.clear();
     localStorage.setItem(`lantern.subject.${s.id}`, JSON.stringify(s));
     localStorage.setItem('lantern.recents', JSON.stringify([s.id]));
