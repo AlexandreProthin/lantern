@@ -5,7 +5,6 @@
   // physics by default, or the left-to-right tree. The room supplies the disc's contents, the legend,
   // the menu's actions and node attributes (types.ts).
   import {
-    forceCollide,
     forceLink,
     forceManyBody,
     forceSimulation,
@@ -30,12 +29,15 @@
   import { GraphScene, type SceneNode } from './graph-scene';
   import { SpawnMotion } from './spawn-motion';
   import { seatForce } from './seat-force';
+  import { labelCollide, labelBox, discBox, placeholderBox, type LabelBox } from './label-force';
+  import { treeShape, linkLength, chargeOf, type TreeShape } from './cluster';
   import { EmberCanvas, type Spark } from './ember-canvas';
   import { searchNodes, stepMatch } from './graph-search';
   import { backdropLight, backdropPan } from '../../frame/backdrop-signals';
   import type { GraphRoomView, GraphSession, GraphSnippets, MenuAction } from './types';
   import { childMap, collapsedAncestors, drawnIds, hiddenCounts, nearestShown, shownIds } from '../../core/visibility';
   import { collapseStore } from '../../frame/collapse-store';
+  import { pinStore, type Pins } from '../../frame/pin-store';
   import type { RoomVisit } from '../../core/model';
 
   let { session, room, glyph, legend, revision, settings, preferencesChanged, visible = true, library, linkPreview = null }: GraphSnippets & { library?: LibrarySpaces; linkPreview?: string | null; session: GraphSession; room: GraphRoomView; revision: number; settings: Settings; preferencesChanged: () => void; visible?: boolean } = $props();
@@ -221,6 +223,137 @@
   const sim = forceSimulation<SimNode>().alphaDecay(0.03).stop();
   const settled=$derived.by(()=>{tick;return sim.alpha()<=sim.alphaMin();});
 
+  // ---- What the free layout reads of the tree (GV-15) -------------------------------------
+  /** Depths and branch sizes of the drawn nodes, taken again whenever nodes come or go. */
+  let shape3 = $state.raw<TreeShape>({ depth: new Map(), descendants: new Map(), maxDepth: 0 });
+  const titleBoxes = new Map<string, LabelBox>();
+  /** A node's disc and title (GV-15): a waiting placeholder keeps room for its coming title; one shrinking away needs none. */
+  function boxOf(b: { id: string }): LabelBox {
+    const n = sceneNodes[b.id];
+    if (!n || n.pending === 'shrinking') return discBox;
+    if (n.pending === 'waiting') return placeholderBox;
+    const text = title(n.title);
+    let box = titleBoxes.get(text); if (!box) titleBoxes.set(text, box = labelBox(text));
+    return box;
+  }
+  const linkAt = (l: { target: { id: string } }) => linkLength(shape3.depth.get(l.target.id) ?? 2, shape3.descendants.get(l.target.id) ?? 0);
+  const chargeAt = (b: { id: string }) => chargeOf(shape3.depth.get(b.id) ?? 2, shape3.descendants.get(b.id) ?? 0);
+
+  // ---- Dragging and pins (GV-17) ------------------------------------------------------------
+  // A node dragged in the free layout stays where it is dropped (pinned). Only it and its branch move meanwhile, as
+  // new nodes are seated (GV-14): the rest of the map does not warm up. Pins are one reader's view, kept per subject
+  // in the app state (as folds, GV-136), not in the subject file.
+  let pins = $state<Pins>({}), pinsFor = $state('');
+  $effect(() => {
+    const subject = session.subject.id;
+    untrack(() => {
+      void pinStore.load(subject).catch((): Pins => ({})).then(loaded => {
+        if (session.subject.id !== subject) return;
+        const kept = Object.fromEntries(Object.entries(loaded).filter(([id]) => Object.hasOwn(session.visit.nodes, id) && id !== session.visit.rootId));
+        pins = kept; pinsFor = subject;
+        if (Object.keys(kept).length !== Object.keys(loaded).length) savePins();
+      });
+    });
+  });
+  function savePins() { void pinStore.save(session.subject.id, $state.snapshot(pins) as Pins).catch(() => {}); }
+  const draggable = (id: string, pending: boolean) => layout === 'force' && !pending && id !== session.visit.rootId;
+  /** The node and its branch (its drawn descendants that are not pinned themselves), at most a few dozen. */
+  function branchOf(id: string): string[] {
+    const out = [id];
+    for (let i = 0; i < out.length && out.length < 60; i++) for (const child of projection.children.get(out[i]) ?? []) if (simNodes.has(child) && !pins[child]) out.push(child);
+    return out;
+  }
+  /** Seats only these nodes against the still map (GV-14), warmed to `alpha`. */
+  function seatOnlyThese(ids: string[], alpha: number) {
+    stopSim(); slowSince = 0;
+    seating.clear(); for (const id of ids) seating.add(id);
+    seatOnly = true;
+    sim.nodes(ids.map(id => simNodes.get(id)!)).alphaDecay(graphMotion.SEAT_DECAY)
+      .force('charge', null).force('collide', null).force('link', null).force('x', null).force('y', null)
+      .force('seat', seatForce(() => simNodes.values(), () => simLinks,
+        { charge: chargeAt, collide: graphMotion.collide, box: boxOf, linkDistance: linkAt, linkStrength: .8, centre: .02 }));
+    sim.alpha(Math.max(sim.alpha(), alpha));
+  }
+  let drag: { id: string; pointer: number; x0: number; y0: number; armed: boolean; active: boolean; hold?: ReturnType<typeof setTimeout>; dx: number; dy: number } | null = null;
+  let dragging = $state(false), dragClick = false;
+  const toWorld = (clientX: number, clientY: number) => { const r = host.getBoundingClientRect();
+    return { x: (clientX - r.left - width / 2 - transform.x) / transform.k, y: (clientY - r.top - height / 2 - transform.y) / transform.k }; };
+  /** A press on a node may become a drag: a mouse or pen once it moves a few pixels, a touch once it has rested first (a quick swipe pans). */
+  function dragDown(e: PointerEvent, id: string, pending: boolean) {
+    dragClick = false; cancelDrag();
+    if (!draggable(id, pending) || e.button !== 0 || !e.isPrimary) return;
+    const touch = e.pointerType === 'touch';
+    drag = { id, pointer: e.pointerId, x0: e.clientX, y0: e.clientY, armed: !touch, active: false, dx: 0, dy: 0 };
+    if (touch) { const d = drag; d.hold = setTimeout(() => { d.armed = true; }, graphMotion.DRAG_HOLD_MS); }
+  }
+  function dragMove(e: PointerEvent) {
+    const d = drag; if (!d || e.pointerId !== d.pointer) return;
+    if (!d.active) {
+      if (Math.hypot(e.clientX - d.x0, e.clientY - d.y0) <= graphMotion.DRAG_THRESHOLD) return;
+      if (!d.armed) { cancelDrag(); return; }
+      const body = simNodes.get(d.id); if (!body) { cancelDrag(); return; }
+      d.active = true; dragging = true; pressEnd();
+      try { nodeEls.get(d.id)?.setPointerCapture(e.pointerId); } catch { /* the pointer is gone already */ }
+      const at = toWorld(d.x0, d.y0); d.dx = (body.x ?? 0) - at.x; d.dy = (body.y ?? 0) - at.y;
+      body.fx = body.x; body.fy = body.y;
+      // In the middle of a full layout the node is simply held; at rest only its branch moves.
+      if (seatOnly || sim.alpha() <= sim.alphaMin()) seatOnlyThese([...new Set([...(seatOnly ? seating : []), ...branchOf(d.id)])], graphMotion.DRAG_ALPHA);
+      sim.alphaTarget(graphMotion.DRAG_ALPHA);
+    }
+    e.preventDefault();
+    const body = simNodes.get(d.id); if (!body) return;
+    const at = toWorld(e.clientX, e.clientY);
+    body.fx = body.x = at.x + d.dx; body.fy = body.y = at.y + d.dy;
+    if (motionReduced() || !visible) moved(); else { runSim(); if (!simFrame) moved(); }
+  }
+  /** Dropped: the node is pinned where it is and its branch comes to rest. */
+  function dragUp(e: PointerEvent) {
+    const d = drag; if (!d || e.pointerId !== d.pointer) return;
+    drag = null; clearTimeout(d.hold);
+    if (!d.active) return;
+    dragging = false; dragClick = true;
+    const body = simNodes.get(d.id);
+    sim.alphaTarget(0);
+    if (body && body.fx != null && body.fy != null) { pins = { ...pins, [d.id]: [Math.round(body.fx * 10) / 10, Math.round(body.fy * 10) / 10] }; savePins(); }
+    if (motionReduced()) settleNow(); else runSim();
+  }
+  function cancelDrag() {
+    const d = drag; drag = null; if (!d) return;
+    clearTimeout(d.hold);
+    if (d.active) { dragging = false; sim.alphaTarget(0); const body = simNodes.get(d.id); if (body && !pins[d.id]) body.fx = body.fy = null; runSim(); }
+  }
+  /** Released (double-click, or the node menu): the node finds a seat again near where it is, with its branch. */
+  function unpin(id: string) {
+    if (!pins[id]) return;
+    const rest = { ...pins }; delete rest[id]; pins = rest; savePins();
+    const body = simNodes.get(id); if (!body || layout !== 'force') return;
+    body.fx = body.fy = null;
+    if (!seatOnly && sim.alpha() > sim.alphaMin()) { runSim(); return; }
+    seatOnlyThese([...new Set([...(seatOnly ? seating : []), ...branchOf(id)])], graphMotion.GROW_ALPHA);
+    if (motionReduced()) settleNow(); else runSim();
+  }
+  /** A touch resting on a node to drag it does not also pan the map (d3-zoom listens to touches on the view). */
+  function holdTouch(el: HTMLElement) {
+    const stop = (e: TouchEvent) => { if (drag?.armed && e.touches.length === 1 && nodeEls.get(drag.id) === el) { e.stopPropagation(); if (e.cancelable) e.preventDefault(); } };
+    el.addEventListener('touchmove', stop, { passive: false });
+    return { destroy() { el.removeEventListener('touchmove', stop); } };
+  }
+
+  // ---- Opening reveal (GV-16) ---------------------------------------------------------------
+  // The settled map comes in from the subject outward, a depth at a time: CSS animations with a delay per depth,
+  // no script per frame. A map opened out of sight plays it when first shown; none under reduced motion.
+  let revealing = $state(false), revealStep = $state(0), revealDue = false, revealTimer: ReturnType<typeof setTimeout> | undefined;
+  function startReveal() {
+    clearTimeout(revealTimer); revealing = false; revealDue = false;
+    if (motionReduced()) return;
+    if (!visible) { revealDue = true; return; }
+    revealStep = Math.round((graphMotion.OPEN_REVEAL_MS - graphMotion.OPEN_REVEAL_NODE_MS) / Math.max(1, shape3.maxDepth));
+    revealing = true;
+    revealTimer = setTimeout(() => { revealing = false; }, graphMotion.OPEN_REVEAL_MS + 100);
+  }
+  $effect(() => { if (visible && revealDue) untrack(startReveal); });
+  $effect(() => { if (settings.appearance.reduceMotion === 'on') untrack(() => { clearTimeout(revealTimer); revealing = revealDue = false; }); });
+
   /** The design's tree: depth columns, leaves on rows, parents centred on their children. */
   function treeTargets(): Map<string, { x: number; y: number }> {
     return treePositions({ ...session.visit, nodes: sceneNodes });
@@ -247,16 +380,17 @@
       sim.nodes([...seating].map(id => simNodes.get(id)!)).alphaDecay(graphMotion.SEAT_DECAY)
         .force('charge', null).force('collide', null).force('link', null).force('x', null).force('y', null)
         .force('seat', seatForce(() => simNodes.values(), () => simLinks,
-          { charge: graphMotion.charge, collide: graphMotion.collide, linkDistance: graphMotion.linkDistance, linkStrength: .8, centre: .02 }));
+          { charge: chargeAt, collide: graphMotion.collide, box: boxOf, linkDistance: linkAt, linkStrength: .8, centre: .02 }));
       sim.alpha(Math.max(sim.alpha(), changed > graphMotion.GROW_MANY ? graphMotion.GROW_ALPHA_MANY : graphMotion.GROW_ALPHA));
       if (motionReduced()) settleNow(); else runSim();
       return;
     }
     seatOnly = false; seating.clear();
-    sim.nodes([...simNodes.values()]).alphaDecay(0.03).force('seat', null);
+    sim.nodes([...simNodes.values()]).alphaDecay(0.03).alphaTarget(0).force('seat', null);
     if (layout === 'tree') {
       const t = treeTargets();
-      if (root) root.fx = root.fy = null;
+      // GV-17: the tree layout ignores pins.
+      for (const body of simNodes.values()) body.fx = body.fy = null;
       sim
         .force('charge', null)
         .force('collide', null)
@@ -264,19 +398,22 @@
         .force('x', forceX<SimNode>((d) => t.get(d.id)?.x ?? 0).strength(0.2))
         .force('y', forceY<SimNode>((d) => t.get(d.id)?.y ?? 0).strength(0.2));
     } else {
+      // GV-17: pinned nodes hold their place; the root holds the centre.
+      for (const body of simNodes.values()) { const pin = pins[body.id]; body.fx = pin ? pin[0] : null; body.fy = pin ? pin[1] : null; }
       if (root) {
         root.fx = 0;
         root.fy = 0;
       }
+      // GV-15: long links to the modules, short ones inside them; collision on each node's disc and title.
       sim
-        .force('charge', forceManyBody().strength(graphMotion.charge))
-        .force('collide', forceCollide(graphMotion.collide))
-        .force('link', forceLink<SimNode, SimLink>(simLinks).distance(graphMotion.linkDistance).strength(0.8))
+        .force('charge', forceManyBody<SimNode>().strength(chargeAt))
+        .force('collide', labelCollide(boxOf))
+        .force('link', forceLink<SimNode, SimLink>(simLinks).distance(linkAt).strength(0.8))
         .force('x', forceX(0).strength(0.02))
         .force('y', forceY(0).strength(0.02));
     }
     stopSim();slowSince=0;
-    if (kind === 'open' || motionReduced()) { sim.alpha(1); settleNow(); if (kind === 'open') needsFit = true; }
+    if (kind === 'open' || motionReduced()) { sim.alpha(1); settleNow(); if (kind === 'open') { needsFit = true; startReveal(); } }
     else { sim.alpha(kind === 'grow' ? Math.max(sim.alpha(), changed > graphMotion.GROW_MANY ? graphMotion.GROW_ALPHA_MANY : graphMotion.GROW_ALPHA) : .9); moved(); runSim(); }
   }
 
@@ -303,6 +440,8 @@
     }
     // A subject's first nodes all arrive together: the whole layout is new (`open`).
     const subjectId = untrack(() => session.subject.id), opening = subjectId !== laidSubject;
+    // GV-17: a subject's pins are in place before its first layout runs, so it settles around them.
+    if (opening && pinsFor !== subjectId) { if (simNodes.size) { simNodes.clear(); simLinks = []; untrack(() => shape++); } return; }
     if (opening) { laidSubject = subjectId; simNodes.clear(); slowMap = false; }
     let count = 0;
     for (const n of nodes) {
@@ -312,8 +451,9 @@
       const spread = Math.atan2(initialPosition(n.id).y, initialPosition(n.id).x);
       const outward = !opening && p && g && (p.x !== g.x || p.y !== g.y);
       const a = outward ? Math.atan2((p.y ?? 0) - (g.y ?? 0), (p.x ?? 0) - (g.x ?? 0)) + spread / 2.4 : spread, d = outward ? 70 : 30;
-      simNodes.set(n.id, { id: n.id, x: (p?.x ?? 0) + Math.cos(a) * d, y: (p?.y ?? 0) + Math.sin(a) * d });
-      if (!opening) seating.add(n.id);
+      const pin = layout === 'force' && n.id !== session.visit.rootId ? untrack(() => pins[n.id]) : undefined;
+      simNodes.set(n.id, pin ? { id: n.id, x: pin[0], y: pin[1], fx: pin[0], fy: pin[1] } : { id: n.id, x: (p?.x ?? 0) + Math.cos(a) * d, y: (p?.y ?? 0) + Math.sin(a) * d });
+      if (!opening && !pin) seating.add(n.id);
       changed = true; count++;
     }
     for (const id of [...simNodes.keys()]) {
@@ -327,6 +467,7 @@
     simLinks = nodes
       .filter((n) => n.parents[0] && simNodes.has(n.parents[0]))
       .map((n) => ({ source: simNodes.get(n.parents[0]!)!, target: simNodes.get(n.id)! }));
+    shape3 = treeShape(nodes);
     untrack(() => applyLayout(opening ? 'open' : 'grow', count));
   });
 
@@ -374,13 +515,18 @@
   /** GV-55, GV-130..132: the view's own items, after the shared list; not in the panel. */
   const viewActions = $derived.by((): MenuAction[] => {
     if (!menu || !session.visit.nodes[menu]) return [];
+    // GV-17: a pinned node can be released here as by a double-click.
+    const pin: MenuAction[] = layout === 'force' && pins[menu] ? [{ id: 'unpin', label: strings.releasePin, disabled: false }] : [];
+    return [...pin, ...foldActions(menu)];
+  });
+  function foldActions(menu: string): MenuAction[] {
     if (menu === session.visit.rootId) return [
       ...([...projection.shown].some(id => foldable(id) && !collapsed.has(id)) ? [{ id: 'collapse', label: strings.collapseAll, disabled: false }] : []),
       ...(collapsedIds.length ? [{ id: 'expand', label: strings.expandAll, disabled: false }] : [])];
     if (collapsed.has(menu)) return [{ id: 'expand', label: strings.expandNodes, disabled: false }];
     return foldable(menu) ? [{ id: 'collapse', label: strings.collapseNodes, disabled: false }] : [];
-  });
-  function chooseViewAction(action: MenuAction) { const id = menu!; closeMenu(true); foldNode(id, action.id === 'collapse'); }
+  }
+  function chooseViewAction(action: MenuAction) { const id = menu!; closeMenu(true); if (action.id === 'unpin') unpin(id); else foldNode(id, action.id === 'collapse'); }
   // Anchored to the node, so it follows the pan that focusing starts.
   const menuAt = $derived.by(() => { tick; const at = menuNode ? simNodes.get(menuNode.id) : undefined; return at ? {
     x: Math.max(8, Math.min(width - 200, transform.x + width / 2 + (at.x ?? 0) * transform.k + 18)),
@@ -391,7 +537,7 @@
   function pressStart(e: PointerEvent, id: string, pending: boolean) {
     if (e.pointerType !== 'touch' || pending) return;
     pressEnd(); pressedMenu = false;
-    press = { x: e.clientX, y: e.clientY, timer: setTimeout(() => { press = null; if (menu !== id) { pressedMenu = true; openMenu(e, id); } }, 500) };
+    press = { x: e.clientX, y: e.clientY, timer: setTimeout(() => { press = null; if (drag?.active) return; cancelDrag(); if (menu !== id) { pressedMenu = true; openMenu(e, id); } }, 500) };
   }
   function pressMove(e: PointerEvent) { if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 8) pressEnd(); }
   function pressEnd() { if (press) clearTimeout(press.timer); press = null; }
@@ -802,6 +948,7 @@
   onMount(() => {
     zoomer = zoom<HTMLDivElement, unknown>()
       .scaleExtent([0.1, 3])
+      .filter(e => (!e.ctrlKey || e.type === 'wheel') && !e.button && !(e.type === 'mousedown' && e.target instanceof Element && e.target.closest('.node[data-draggable]')))
       .on('start',e=>{if(e.sourceEvent)stopPan();})
       .on('zoom', (e) => { const t = zoomIdentity.translate(e.transform.x - width / 2, e.transform.y - height / 2).scale(e.transform.k); backdropPan(t.x - transform.x, t.y - transform.y, t.k / transform.k); transform = t; viewMoved(); });
     select(host).call(zoomer).on('dblclick.zoom', null);
@@ -821,9 +968,9 @@
   });
 </script>
 
-<svelte:window onpointerdowncapture={menuOutside} onkeydown={windowKey} />
-<div class="graph {room.className}" class:degraded data-settled={settled} data-reduced={motionReduced()} bind:this={host} bind:clientWidth={width} bind:clientHeight={height}
-  style="--grow:{graphMotion.SPAWN_GROW_MS}ms;--stagger:{graphMotion.SPAWN_STAGGER_MS}ms;--breathe:{graphMotion.PENDING_BREATHE_PERIOD_MS}ms;--shrink:{graphMotion.SPAWN_SHRINK_MS}ms;--reveal:{graphMotion.SPAWN_REVEAL_MS}ms;--pulse:{graphMotion.BUSY_PULSE_PERIOD_MS}ms;--opacity-low:{graphMotion.PENDING_BREATHE_OPACITY[0]};--opacity-high:{graphMotion.PENDING_BREATHE_OPACITY[1]}">
+<svelte:window onpointerdowncapture={menuOutside} onkeydown={windowKey} onpointermove={dragMove} onpointerup={dragUp} onpointercancel={cancelDrag} />
+<div class="graph {room.className}" class:degraded class:revealing class:dragging data-settled={settled} data-reduced={motionReduced()} bind:this={host} bind:clientWidth={width} bind:clientHeight={height}
+  style="--grow:{graphMotion.SPAWN_GROW_MS}ms;--stagger:{graphMotion.SPAWN_STAGGER_MS}ms;--breathe:{graphMotion.PENDING_BREATHE_PERIOD_MS}ms;--shrink:{graphMotion.SPAWN_SHRINK_MS}ms;--reveal:{graphMotion.SPAWN_REVEAL_MS}ms;--pulse:{graphMotion.BUSY_PULSE_PERIOD_MS}ms;--opacity-low:{graphMotion.PENDING_BREATHE_OPACITY[0]};--opacity-high:{graphMotion.PENDING_BREATHE_OPACITY[1]};--reveal-step:{revealStep}ms;--reveal-node:{graphMotion.OPEN_REVEAL_NODE_MS}ms;--reveal-all:{graphMotion.OPEN_REVEAL_MS - graphMotion.SPAWN_REVEAL_MS}ms">
   <div
     class="world"
     class:tiny={transform.k < graphMotion.hideTitlesBelow}
@@ -834,7 +981,7 @@
     <svg class="edges" bind:this={edgesSvg} aria-hidden="true">
       {#if settings.ui.textLinks}<g class="references">{#each view.references as e (e.id)}<path class="reference" use:refRef={e} />{/each}</g>{/if}
       {#each view.edges as e (e.id)}
-        <path data-edge={e.id} use:edgeRef={e.id} pathLength="1" class:route={e.onRoute}
+        <path data-edge={e.id} use:edgeRef={e.id} pathLength="1" class:route={e.onRoute} style:--depth={shape3.depth.get(e.id) ?? 1}
           data-spawn-pending={e.pending ? 'true' : undefined} />
       {/each}
     </svg>
@@ -861,16 +1008,21 @@
         {...room.dataAttrs?.(n)}
         data-growing={!n.pending&&scene.key(n.id)===n.id&&Date.parse(n.createdAt)>openedAt ? 'true' : undefined}
         use:nodeRef={n.id}
+        use:holdTouch
+        data-draggable={draggable(n.id, !!n.pending) ? '' : undefined}
+        class:pinned={layout === 'force' && !!pins[n.id]}
         style:--slot={n.slot ?? 0}
+        style:--depth={shape3.depth.get(n.id) ?? 0}
         aria-pressed={focused}
         aria-label="{title(n.title)} · {n.kind} · {n.state}{room.labelExtra?.(n) ?? ''}{projection.hidden.get(n.id) ? ' · '+strings.hiddenCount(projection.hidden.get(n.id)!) : ''}{busy ? ' · '+strings.preparing : ''}"
-        title="{title(n.title)} · {n.state}{room.tooltipExtra?.(n) ?? ''}"
-        onclick={() => { if (pressedMenu) { pressedMenu = false; return; } session.setFocus(n.id); }}
+        title="{title(n.title)} · {n.state}{room.tooltipExtra?.(n) ?? ''}{layout === 'force' && pins[n.id] ? ' · ' + strings.pinnedHint : ''}"
+        onclick={() => { if (pressedMenu) { pressedMenu = false; return; } if (dragClick) { dragClick = false; return; } session.setFocus(n.id); }}
+        ondblclick={() => { if (layout === 'force' && pins[n.id]) unpin(n.id); }}
         oncontextmenu={(e) => { if (n.pending) return; if (menu === n.id) { e.preventDefault(); return; } openMenu(e, n.id); }}
-        onpointerdown={(e) => pressStart(e, n.id, !!n.pending)} onpointermove={pressMove} onpointerup={pressEnd} onpointercancel={pressEnd}
+        onpointerdown={(e) => { pressStart(e, n.id, !!n.pending); dragDown(e, n.id, !!n.pending); }} onpointermove={pressMove} onpointerup={pressEnd} onpointercancel={pressEnd}
         aria-haspopup="menu"
       >
-        <span class="disc">{@render glyph(n)}{#if !n.pending && projection.hidden.get(n.id)}<span class="folded" aria-hidden="true">+{projection.hidden.get(n.id)}</span>{/if}</span>
+        <span class="disc">{@render glyph(n)}{#if layout === 'force' && pins[n.id] && !n.pending}<span class="pin-mark" aria-hidden="true"><Icon name="pin" size={10} /></span>{/if}{#if !n.pending && projection.hidden.get(n.id)}<span class="folded" aria-hidden="true">+{projection.hidden.get(n.id)}</span>{/if}</span>
         <span class="name">{n.pending ? '' : title(n.title)}</span>
       </button>
     {/each}
@@ -1091,6 +1243,13 @@
   .node[data-pending='shrinking'] .disc { border:1.5px dotted var(--path-muted); animation:shrink var(--shrink) ease-in both; }
   .node[data-growing='true'] .disc { animation:grow var(--grow) ease-out; }
   .node:not([data-pending]) .name { animation:reveal var(--reveal) ease-out; }
+  /* GV-16: the opening reveal. Each node fades and grows about its disc centre (the origin is the node's own point),
+     a depth step later than its parent; each edge draws out from its parent as its node comes; text links last. */
+  .graph.revealing .node { transform-origin:0 0; animation:open-node var(--reveal-node) cubic-bezier(.2,.7,.3,1) backwards; animation-delay:calc(var(--depth) * var(--reveal-step)); }
+  .graph.revealing .edges path[data-edge]:not([data-spawn-pending]) { stroke-dasharray:1; animation:open-edge var(--reveal-node) ease-out backwards; animation-delay:calc((var(--depth) - 1) * var(--reveal-step)); }
+  .graph.revealing .edges .references { animation:reveal var(--reveal) ease-out var(--reveal-all) backwards; }
+  @keyframes open-node { from { opacity:0; scale:.5; } }
+  @keyframes open-edge { from { stroke-dashoffset:1; } to { stroke-dashoffset:0; } }
   @keyframes grow { from { transform:scale(0); } to { transform:scale(1); } }
   @keyframes breathe { 0%,100% { opacity:var(--opacity-low); box-shadow:0 0 6px 1px var(--glow-far); } 50% { opacity:var(--opacity-high); box-shadow:0 0 18px 4px var(--glow-near),0 0 32px 6px var(--glow-far); } }
   @keyframes arrive { from { transform:scale(.75); } to { transform:scale(1); } }
@@ -1104,6 +1263,11 @@
   .node-menu .lead { font-weight:500; }
   .node-menu .lead :global(.icon) { color:var(--accent); }
   .icon-slot { width:16px; flex:none; }
+  /* GV-17: a dragged node; a pinned one carries a small pin above its disc, on the left, in the quiet ink. */
+  .graph.dragging, .graph.dragging .node { cursor:grabbing; }
+  .node[data-draggable]:active { cursor:grabbing; }
+  .pin-mark { position:absolute; right:calc(100% - 4px); top:-8px; display:grid; place-items:center; width:14px; height:14px; border-radius:50%; background:var(--bg); color:var(--ink-mute); pointer-events:none; }
+  .degraded .pin-mark, .tiny .pin-mark { display:none; }
   /* GV-133: how many shown nodes a fold hides; text, so it reads without colour. */
   .folded { position:absolute; left:calc(100% + 3px); top:-6px; font-size:10px; line-height:14px; padding:0 4px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink-mute); white-space:nowrap; pointer-events:none; }
   .zoom-controls { position:absolute; right:20px; bottom:20px; display:flex; gap:8px; z-index:2; }
@@ -1151,7 +1315,7 @@
     .node-menu > button { padding:12px 14px; font-size:15px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .node .disc, .node .name { animation:none !important; }
+    .node, .node .disc, .node .name, .edges path, .edges .references { animation:none !important; }
     .embers, :global(.link-preview) {
       display: none;
     }
